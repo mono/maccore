@@ -92,7 +92,62 @@ namespace MonoMac.Foundation
 
 		[Export ("initWithAttributedString:")]
 		IntPtr Constructor (NSAttributedString other);
+
+		[Field ("NSFontAttributeName")]
+		string FontAttributeName { get; }
+
+		[Field ("NSParagraphStyleAttributeName")]
+		string ParagraphStyleAttributeName { get; }
 	}
+
+#if MONOMAC || ALPHA
+	[BaseType (typeof (NSObject),
+		   Delegates=new string [] { "WeakDelegate" },
+		   Events=new Type [] { typeof (NSCacheDelegate)} )]
+	interface NSCache {
+		[Export ("objectForKey:")]
+		NSObject ObjectForKey (NSObject key);
+
+		[Export ("setObject:forKey:")]
+		void SetObjectforKey (NSObject obj, NSObject key);
+
+		[Export ("setObject:forKey:cost:")]
+		void SetCost (NSObject obj, NSObject key, uint cost);
+
+		[Export ("removeObjectForKey:")]
+		void RemoveObjectForKey (NSObject key);
+
+		[Export ("removeAllObjects")]
+		void RemoveAllObjects ();
+
+		//Detected properties
+		[Export ("name")]
+		string Name { get; set; }
+
+		[Export ("delegate")]
+		NSObject WeakDelegate { get; set; }
+
+		[Wrap ("WeakDelegate")]
+		NSCacheDelegate Delegate { get; set; }
+
+		[Export ("totalCostLimit")]
+		uint TotalCostLimit { get; set; }
+
+		[Export ("countLimit")]
+		uint CountLimit { get; set; }
+
+		[Export ("evictsObjectsWithDiscardedContent")]
+		bool EvictsObjectsWithDiscardedContent { get; set; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface NSCacheDelegate {
+		[Export ("cache:willEvictObject:"), EventArgs ("NSObject")]
+		void WillEvictObject (NSCache cache, NSObject obj);
+	}
+	
+#endif
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSCalendar {
@@ -801,7 +856,7 @@ namespace MonoMac.Foundation
 		NSSet CreateSet ();
 
 		[Export ("initWithArray:")]
-		void InitWithArray (NSArray array);
+		IntPtr Constructor (NSArray other);
 		
 		[Export ("count")]
 		uint Count { get; }
@@ -823,7 +878,7 @@ namespace MonoMac.Foundation
 
 		[Export ("isSubsetOfSet:")]
 		bool IsSubsetOf (NSSet other);
-#if ALPHA
+#if ALPHA || MONOMAC
 		[Export ("enumerateObjectsUsingBlock:")]
 		void Enumerate (NSSetEnumerator enumerator);
 #endif
@@ -1566,6 +1621,113 @@ namespace MonoMac.Foundation
 		[Export ("inputStreamWithFileAtPath:")]
 		NSInputStream FromFile (string  path);
 	}
+
+#if ALPHA || MONOMAC
+	[BaseType (typeof (NSObject))]
+	[Alpha]
+	interface NSOperation {
+		[Export ("start")]
+		void Start ();
+
+		[Export ("main")]
+		void Main ();
+
+		[Export ("isCancelled")]
+		bool IsCancelled { get; }
+
+		[Export ("cancel")]
+		void Cancel ();
+
+		[Export ("isExecuting")]
+		bool IsExecuting { get; }
+
+		[Export ("isFinished")]
+		bool IsFinished { get; }
+
+		[Export ("isConcurrent")]
+		bool IsConcurrent { get; }
+
+		[Export ("isReady")]
+		bool IsReady { get; }
+
+		[Export ("addDependency:")]
+		void AddDependency (NSOperation op);
+
+		[Export ("removeDependency:")]
+		void RemoveDependency (NSOperation op);
+
+		[Export ("dependencies")]
+		NSOperation [] Dependencies { get; }
+
+		[Export ("waitUntilFinished")]
+		void WaitUntilFinishedNS ();
+
+		[Export ("threadPriority")]
+		double ThreadPriority { get; set; }
+
+		//Detected properties
+		[Export ("queuePriority")]
+		NSOperationQueuePriority QueuePriority { get; set; }
+	}
+
+	[BaseType (typeof (NSOperation))]
+	[Alpha]
+	interface NSBlockOperation {
+		[Static]
+		[Export ("blockOperationWithBlock:")]
+		NSBlockOperation Create (NSAction method);
+
+		[Export ("addExecutionBlock:")]
+		void AddExecutionBlock (NSAction method);
+
+		[Export ("executionBlocks")]
+		NSObject [] ExecutionBlocks { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Alpha]
+	interface NSOperationQueue {
+		[Export ("addOperation:")]
+		void AddOperation (NSOperation op);
+
+		[Export ("addOperations:waitUntilFinished:")]
+		void AddOperations (NSOperation [] operations, bool waitUntilFinished);
+
+		[Export ("addOperationWithBlock:")]
+		void AddOperation (NSAction operation);
+
+		[Export ("operations")]
+		NSOperation [] Operations { get; }
+
+		[Export ("operationCount")]
+		int OperationCount { get; }
+
+		[Export ("name")]
+		string Name { get; set; }
+
+		[Export ("cancelAllOperations")]
+		void CancelAllOperations ();
+
+		[Export ("waitUntilAllOperationsAreFinished")]
+		void WaitUntilAllOperationsAreFinished ();
+
+		[Static]
+		[Export ("currentQueue")]
+		NSOperationQueue CurrentQueue { get; }
+
+		[Static]
+		[Export ("mainQueue")]
+		NSOperationQueue MainQueue { get; }
+
+		//Detected properties
+		[Export ("maxConcurrentOperationCount")]
+		int MaxConcurrentOperationCount { get; set; }
+
+		[Export ("suspended")]
+		bool Suspended { [Bind ("isSuspended")]get; set; }
+	}
+
+#endif
 	
 	[BaseType (typeof (NSStream))]
 	public interface NSOutputStream {
@@ -2083,8 +2245,17 @@ namespace MonoMac.Foundation
 	
 		[Export ("removeObserver:name:object:")]
 		void RemoveObserver ([RetainList (false, "ObserverList")] NSObject observer, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
+
+#if ALPHA || MONOMAC
+		[Export ("addObserverForName:object:queue:usingBlock:")]
+		void AddObserver (string name, NSObject obj, NSOperationQueue queue, NSNotificationHandler handler);
+#endif
 	}
 
+#if ALPHA || MONOMAC
+	delegate void NSNotificationHandler (NSNotification notification);
+#endif
+	
 	[BaseType (typeof (NSObject))]
 	interface NSValue {
 		[Export ("getValue:")]
@@ -2481,5 +2652,18 @@ namespace MonoMac.Foundation
 		[Export ("activeProcessorCount")]
 		uint ActiveProcessorCount { get; }
 	}
+
+#if ALPHA || MONOMAC
+	[BaseType (typeof (NSObject))]
+	interface NSPredicate {
+		[Export ("evaluateWithObject:")]
+		bool EvaluateWithObject (NSObject obj);
+	}
+
+	[BaseType (typeof (NSMutableData))]
+	interface NSPurgeableData {
+		
+	}
+#endif
 }
 

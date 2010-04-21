@@ -165,6 +165,19 @@ namespace MonoMac.Foundation {
 			}
 		}
 
+		public bool Save (string file, NSDataWritingOptions options, out NSError error)
+		{
+			unsafe {
+				IntPtr val;
+				IntPtr val_addr = (IntPtr) ((IntPtr *) &val);
+
+				bool ret = _Save (file, (int) options, val_addr);
+				error = (NSError) Runtime.GetNSObject (val);
+				
+				return ret;
+			}
+		}
+
 		public bool Save (NSUrl url, bool auxiliaryFile, out NSError error)
 		{
 			unsafe {

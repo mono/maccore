@@ -122,5 +122,21 @@ namespace MonoMac.Foundation  {
 #endif
 	}
 
+	[Flags]
+	public enum NSDataWritingOptions : uint {
+		Atomic = 1,
+#if ALPHA
+		FileProtectionNone = 0x10000000,
+		FileProtectionComplete = 0x20000000,
+		NSDataWritingFileProtectionMask = 0xf0000000
+#endif
+	}
+	
 	public delegate void NSSetEnumerator (NSObject obj, ref bool stop);
+
+#if ALPHA
+	public enum NSOperationQueuePriority {
+		VeryLow = -8, Low = -4, Normal = 0, High = 4, VeryHigh = 8
+	}
+#endif
 }

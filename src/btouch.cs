@@ -1,7 +1,8 @@
 //
-// This file describes the API that the generator will produce
+// Authors:
+//   Miguel de Icaza
 //
-// Copyright 2010, Novell, Inc.
+// Copyright 2009-2010 Novell, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the

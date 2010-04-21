@@ -9,10 +9,10 @@ using System.Collections.Generic;
 namespace MonoMac.Foundation {
 
 	[Register]
-	internal class NSNotificationHandler : NSObject  {
+	internal class InternalNSNotificationHandler : NSObject  {
 		Action<NSNotification> notify;
 		
-		public NSNotificationHandler (Action<NSNotification> notify)
+		public InternalNSNotificationHandler (Action<NSNotification> notify)
 		{
 				this.notify = notify;
 		}
@@ -36,7 +36,7 @@ namespace MonoMac.Foundation {
 			if (notify == null)
 				throw new ArgumentNullException ("notify");
 			
-			var proxy = new NSNotificationHandler (notify);
+			var proxy = new InternalNSNotificationHandler (notify);
 			
 			AddObserver (proxy, postSelector, aName, fromObject);
 
