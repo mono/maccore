@@ -80,6 +80,18 @@ public class RetainAttribute : Attribute {
 	public string WrapName { get; set; }
 }
 
+public class FieldAttribute : Attribute {
+	public FieldAttribute (string symbolName) {
+		SymbolName = symbolName;
+	}
+	public FieldAttribute (string libraryName, string symbolName) {
+		SymbolName = symbolName;
+		LibraryName = libraryName;
+	}
+	public string SymbolName { get; set; }
+	public string LibraryName { get; set; }
+}
+
 public class BaseTypeAttribute : Attribute {
 	public BaseTypeAttribute (Type t)
 	{
@@ -241,6 +253,15 @@ public class MarshalInfo {
 	}
 }
 
+public class Tuple<A,B> {
+	public Tuple (A a, B b)
+	{
+		Item1 = a;
+		Item2 = b;
+	}
+	public A Item1;
+	public B Item2;
+}
 //
 // Encapsulates the information necessary to create a block delegate
 //
@@ -788,8 +809,6 @@ public class Generator {
 				wrap = ((WrapAttribute) attrs [0]).MethodName;
 				return null;
 			}
-			
-			Console.WriteLine ("Warning: no Export attribute on {0}", pi.Name);
 			return null;
 		}
 
@@ -851,7 +870,7 @@ public class Generator {
 				continue;
 
 			var tselectors = new List<string> ();
-
+			
 			foreach (var pi in t.GetProperties ()){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
@@ -861,6 +880,12 @@ public class Generator {
 				if (export == null){
 					if (wrapname != null)
 						continue;
+
+					// Let properties with the [Field] attribute through as well.
+					var attrs = pi.GetCustomAttributes (typeof (FieldAttribute), true);
+					if (attrs.Length != 0)
+						continue;
+					
 					Console.WriteLine ("Error: no [Export] attribute on property {0}.{1}", pi.DeclaringType, pi);
 					Environment.Exit (1);
 				}
@@ -1478,9 +1503,15 @@ public class Generator {
 				}
 			}
 
+			var field_exports = new List<PropertyInfo> ();
 			foreach (var pi in type.GetProperties ()){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
+
+				if (HasAttribute (pi, typeof (FieldAttribute))){
+					field_exports.Add (pi);
+					continue;
+				}
 
 				string wrap;
 				var export = GetExportAttribute (pi, out wrap);
@@ -1584,6 +1615,39 @@ public class Generator {
 				print ("}}\n", pi.Name);
 			}
 
+			if (field_exports.Count != 0){
+				string library_name = type.Namespace.Substring (MainPrefix.Length+1);
+				print ("static IntPtr libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name );
+
+				foreach (var field_pi in field_exports){
+					string fieldTypeName = FormatType (field_pi.DeclaringType, field_pi.PropertyType);
+					// Value types we dont cache for now, to avoid Nullabel<T>
+					if (!field_pi.PropertyType.IsValueType)
+						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
+
+					var fieldAttr = (FieldAttribute) field_pi.GetCustomAttributes (typeof (FieldAttribute), true) [0];
+					print ("public static {0} {1} {{", fieldTypeName, field_pi.Name);
+					indent++;
+					print ("get {");
+					indent++;
+					if (field_pi.PropertyType == typeof (string)){
+						print ("if (_{0} == null)", field_pi.Name);
+						indent++;
+						print ("_{0} = Dlfcn.GetStringConstant (libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName);
+						indent--;
+						print ("return _{0};", field_pi.Name);
+					} else {
+						Console.WriteLine ("Unsupported type for Fields: {0}", fieldTypeName);
+						Environment.Exit (1);
+					}
+					
+					indent--;
+					print ("}");
+					indent--;
+					print ("}");
+				}
+			}
+			
 			var eventArgTypes = new Dictionary<string,ParameterInfo[]> ();
 			var delegateTypes = new Dictionary<string,MethodInfo> ();
 			
@@ -1765,7 +1829,17 @@ public class Generator {
 				del.Append (" (");
 				var delpars = delmethod.GetParameters ();
 				for (int dmi = 0; dmi < delpars.Length; dmi++){
-					del.AppendFormat ("{0} {1}{2}", FormatType (type, delpars [dmi].ParameterType), delpars [dmi].Name, dmi+1 == delpars.Length ? "" : ", ");
+					Type ptype = delpars [dmi].ParameterType;
+					string modifier = "";
+					if (ptype.IsByRef){
+						if (delpars [dmi].IsOut)
+							modifier = "out ";
+						else
+							modifier = "ref ";
+						ptype = ptype.GetElementType ();
+					}
+					
+					del.AppendFormat ("{0}{1} {2}{3}", modifier, FormatType (type, ptype), delpars [dmi].Name, dmi+1 == delpars.Length ? "" : ", ");
 				}
 				del.Append (");");
 				print (del.ToString ());
