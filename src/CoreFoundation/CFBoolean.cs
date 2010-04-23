@@ -44,7 +44,7 @@ namespace MonoMac.CoreFoundation {
 
 		static CFBoolean ()
 		{
-			var handle = Dlfcn.dlopen (Constants.CoreTextLibrary, 0);
+			var handle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
 			if (handle == IntPtr.Zero)
 				return;
 			try {

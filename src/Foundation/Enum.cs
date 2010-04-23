@@ -134,7 +134,7 @@ namespace MonoMac.Foundation  {
 	
 	public delegate void NSSetEnumerator (NSObject obj, ref bool stop);
 
-#if ALPHA
+#if ALPHA || MONOMAC
 	public enum NSOperationQueuePriority {
 		VeryLow = -8, Low = -4, Normal = 0, High = 4, VeryHigh = 8
 	}
