@@ -884,6 +884,30 @@ namespace MonoMac.Foundation
 #endif
 	}
 
+	[BaseType (typeof (NSObject))]
+	interface NSSortDescriptor {
+		[Export ("initWithKey:ascending:")]
+		IntPtr Constructor (string key, bool ascending);
+
+		[Export ("initWithKey:ascending:selector:")]
+		IntPtr Constructor (string key, bool ascending, Selector selector);
+
+		[Export ("key")]
+		string Key { get; }
+
+		[Export ("ascending")]
+		bool Ascending { get; }
+
+		[Export ("selector")]
+		Selector Selector { get; }
+
+		[Export ("compareObject:toObject:")]
+		NSComparisonResult Compare (NSObject object1, NSObject object2);
+
+		[Export ("reversedSortDescriptor")]
+		NSObject ReversedSortDescriptor { get; }
+	}
+
 	[BaseType (typeof(NSObject))]
 	public interface NSTimer {
 		// TODO: scheduledTimerWithTimeInterval:invocation:repeats:
