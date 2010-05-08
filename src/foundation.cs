@@ -31,7 +31,6 @@
 using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
-using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 
 #if !MONOMAC
@@ -94,10 +93,10 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSAttributedString other);
 
 		[Field ("NSFontAttributeName")]
-		string FontAttributeName { get; }
+		NSString FontAttributeName { get; }
 
 		[Field ("NSParagraphStyleAttributeName")]
-		string ParagraphStyleAttributeName { get; }
+		NSString ParagraphStyleAttributeName { get; }
 	}
 
 #if MONOMAC || ALPHA
@@ -607,7 +606,7 @@ namespace MonoMac.Foundation
 		[Export ("replaceCharactersInRange:withAttributedString:")]
 		void Replace (NSRange range, NSAttributedString value);
 		
-		[Export ("insertAttributedString:atIndex")]
+		[Export ("insertAttributedString:atIndex:")]
 		void Insert (NSAttributedString attrString, int location);
 
 		[Export ("appendAttributedString:")]
@@ -660,7 +659,7 @@ namespace MonoMac.Foundation
 		[Static]
 		NSDate Now { get; }
 
-		[Export ("addTimeInterval:")]
+		[Export ("dateByAddingTimeInterval:")]
 		NSDate AddSeconds (double seconds);
 
 		[Export ("description")]
@@ -775,6 +774,12 @@ namespace MonoMac.Foundation
 		NSNumber[] CallStackReturnAddresses { get; }
 	}
 
+	[BaseType (typeof (NSObject))]
+	public interface NSNull {
+		[Export ("null"), Static]
+		NSNull Null { get; }
+	}
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSLocale {
 		[Static]

@@ -176,6 +176,10 @@ namespace MonoMac.CoreFoundation {
 		internal DispatchQueue (IntPtr handle, bool owns) : base (handle, owns)
 		{
 		}
+
+		public DispatchQueue (IntPtr handle) : base (handle, false)
+		{
+		}
 		
 		public DispatchQueue (string label) : base ()
 		{

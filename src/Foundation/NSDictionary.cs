@@ -232,9 +232,7 @@ namespace MonoMac.Foundation {
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
-			var keys   = NSArray.FromNSObjects (new [] {key});
-			var values = ObjectsForKeys (keys, marker);
-			return object.ReferenceEquals (marker, values [0]);
+			return ObjectForKey (key) != null;
 		}
 
 		bool IDictionary<NSObject, NSObject>.Remove (NSObject key)
@@ -247,13 +245,10 @@ namespace MonoMac.Foundation {
 			if (key == null)
 				throw new ArgumentNullException ("key");
 
-			var keys   = NSArray.FromNSObjects (new [] {key});
-			var values = ObjectsForKeys (keys, marker);
-			if (object.ReferenceEquals (marker, values [0])) {
-				value = null;
+			value = ObjectForKey (key);
+			// NSDictionary can not contain NULLs, if you want a NULL, it exists as an NSNulln
+			if (value == null)
 				return false;
-			}
-			value = values [0];
 			return true;
 		}
 

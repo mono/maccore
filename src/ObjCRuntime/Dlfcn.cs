@@ -138,7 +138,7 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
-		public static string SlowGetStringConstant (string lib, string symbol)
+		public static NSString SlowGetStringConstant (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
 			if (handle == IntPtr.Zero)

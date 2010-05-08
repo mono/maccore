@@ -80,6 +80,15 @@ public class RetainAttribute : Attribute {
 	public string WrapName { get; set; }
 }
 
+public class PostGetAttribute : Attribute {
+	public PostGetAttribute (string name)
+	{
+		MethodName = name;
+	}
+
+	public string MethodName { get; set; }
+}
+
 public class FieldAttribute : Attribute {
 	public FieldAttribute (string symbolName) {
 		SymbolName = symbolName;
@@ -937,7 +946,7 @@ public class Generator {
 					} else  if (attr is AbstractAttribute){
 						need_abstract [t] = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute)
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute)
 						continue;
 					else 
 						Console.WriteLine ("Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -1347,6 +1356,10 @@ public class Generator {
 			print (disposes.ToString ());
 		if (assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ()))))
 			print ("{0} = ret;", assign);
+		if (HasAttribute (mi, typeof (PostGetAttribute))) {
+			PostGetAttribute [] attr = (PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true);
+			print ("var postget = {0};", attr [0].MethodName);
+		}
 		if (use_temp_return)
 			print ("return ret;");
 
@@ -1376,6 +1389,7 @@ public class Generator {
 		GeneratedFiles.Add (output_file);
 		using (var sw = new StreamWriter (output_file)){
 			this.sw = sw;
+			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0;
 			bool is_model = type.GetCustomAttributes (typeof (ModelAttribute), true).Length > 0;
 			object [] btype = type.GetCustomAttributes (typeof (BaseTypeAttribute), true);
 			BaseTypeAttribute bta = btype.Length > 0 ? ((BaseTypeAttribute) btype [0]) : null;
@@ -1384,7 +1398,13 @@ public class Generator {
 			Header (sw);
 
 			print ("namespace {0} {{", type.Namespace);
-			print ("\t[Register(\"{0}\")]", objc_type_name);
+
+			if (is_static_class){
+				base_type = typeof (object);
+			} else {
+				print ("\t[Register(\"{0}\")]", objc_type_name);
+			} 
+			
 			if (is_model)
 				print ("\t[Model]");
 
@@ -1403,30 +1423,32 @@ public class Generator {
 				}
 			}
 			print ("");
+
+			if (!is_static_class){
+				print ("\t\tstatic IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", objc_type_name);
+				if (!is_model && !external) {
+					print ("\t\tpublic override IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name);
+				}
+
+				if (external) {
+					sw.WriteLine ("\t\t[Export (\"init\")]\n\t\tpublic {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
+						      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix);
+				} else {
+					sw.WriteLine ("\t\t[Export (\"init\")]\n\t\tpublic {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
+						      TypeName,
+						      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
+						      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
+						      MainPrefix);
+					sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
+						      TypeName,
+						      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
+						      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
+						      MainPrefix);
+				}
+				sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
+				sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
+			}
 			
-			print ("\t\tstatic IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", objc_type_name);
-			if (!is_model && !external) {
-				print ("\t\tpublic override IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name);
-			}
-
-			if (external) {
-				sw.WriteLine ("\t\t[Export (\"init\")]\n\t\tpublic {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
-					      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix);
-			} else {
-				sw.WriteLine ("\t\t[Export (\"init\")]\n\t\tpublic {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
-					      TypeName,
-					      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
-					      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
-					      MainPrefix);
-				sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
-					      TypeName,
-					      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
-					      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
-					      MainPrefix);
-			}
-			sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
-			sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
-
 			indent = 2;
 			foreach (var mi in type.GetMethods (BindingFlags.Public | BindingFlags.Instance)){
 				if (mi.IsSpecialName)
@@ -1630,7 +1652,7 @@ public class Generator {
 					indent++;
 					print ("get {");
 					indent++;
-					if (field_pi.PropertyType == typeof (string)){
+					if (field_pi.PropertyType == typeof (NSString)){
 						print ("if (_{0} == null)", field_pi.Name);
 						indent++;
 						print ("_{0} = Dlfcn.GetStringConstant (libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName);

@@ -162,7 +162,9 @@ class BindingTouch {
 				BindThirdPartyLibrary = binding_third_party,
 				CoreNSObject = CoreObject,
 				BaseDir = basedir != null ? basedir : tmpdir,
+#if MONOMAC
 				OnlyX86 = true,
+#endif
 				Alpha = alpha
 			};
 					

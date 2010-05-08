@@ -93,9 +93,6 @@ namespace MonoMac.CoreGraphics {
 		extern static IntPtr CGColorGetConstantColor(IntPtr cfstring_colorName);
 		public CGColor (string name)
 		{
-#if ALPHA
-			throw new NotImplementedException ();
-#else
 			if (name == null)
 				throw new ArgumentNullException ("name");
 			
@@ -104,7 +101,6 @@ namespace MonoMac.CoreGraphics {
 				if (handle == IntPtr.Zero)
 					throw new ArgumentException ("name");
 			}
-#endif
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
