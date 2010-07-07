@@ -1547,7 +1547,7 @@ namespace MonoMac.Foundation
 		NSDictionary Headers { get; set; }
 
 		[Internal][Export ("setValue:forHTTPHeaderField:")]
-		string _SetValue (string value, string field);
+		void _SetValue (string value, string field);
 
 		[New][Export ("HTTPBody")]
 		NSData Body { get; set; }
