@@ -53,6 +53,8 @@ namespace MonoMac.CoreGraphics {
 	
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPDFDocumentRelease (IntPtr handle);
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGPDFDocumentRetain (IntPtr handle);
 		
 		protected virtual void Dispose (bool disposing)
 		{
@@ -65,6 +67,15 @@ namespace MonoMac.CoreGraphics {
 		internal CGPDFDocument (IntPtr handle)
 		{
 			this.handle = handle;
+			CGPDFDocumentRetain (handle);
+		}
+
+		[Preserve (Conditional=true)]
+		internal CGPDFDocument (IntPtr handle, bool owns)
+		{
+			this.handle = handle;
+			if (!owns)
+				CGPDFDocumentRetain (handle);
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -78,7 +89,7 @@ namespace MonoMac.CoreGraphics {
 				IntPtr handle = CGPDFDocumentCreateWithURL (url.Handle);
 				if (handle == IntPtr.Zero)
 					return null;
-				return new CGPDFDocument (handle);
+				return new CGPDFDocument (handle, true);
 			}
 			
 		}
@@ -91,7 +102,7 @@ namespace MonoMac.CoreGraphics {
 				IntPtr handle = CGPDFDocumentCreateWithURL (url.Handle);
 				if (handle == IntPtr.Zero)
 					return null;
-				return new CGPDFDocument (handle);
+				return new CGPDFDocument (handle, true);
 			}
 		}
 

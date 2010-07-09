@@ -29,6 +29,7 @@ using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
@@ -49,6 +50,15 @@ namespace MonoMac.CoreGraphics {
 			CGColorRetain (handle);
 		}
 
+		[Preserve (Conditional=true)]
+		internal CGColor (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CGColorRetain (handle);
+
+			this.handle = handle;
+		}
+
 		public void Dispose ()
 		{
 			Dispose (true);
@@ -62,12 +72,16 @@ namespace MonoMac.CoreGraphics {
 		[DllImport(Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGColorCreate(IntPtr space, float [] components);
 
-		public CGColor (CGColorSpace cs, float [] components)
+		public CGColor (CGColorSpace colorspace, float [] components)
 		{
 			if (components == null)
 				throw new ArgumentNullException ("components");
+			if (colorspace == null)
+				throw new ArgumentNullException ("colorspace");
+			if (colorspace.handle == IntPtr.Zero)
+				throw new ObjectDisposedException ("colorspace");
 			
-			handle = CGColorCreate (cs.handle, components);
+			handle = CGColorCreate (colorspace.handle, components);
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
@@ -105,16 +119,18 @@ namespace MonoMac.CoreGraphics {
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGColorCreateWithPattern(IntPtr space, IntPtr pattern, float [] components);
-		public CGColor (CGColorSpace space, CGPattern pattern, float [] components)
+		public CGColor (CGColorSpace colorspace, CGPattern pattern, float [] components)
 		{
-			if (space == null)
-				throw new ArgumentNullException ("space");
+			if (colorspace == null)
+				throw new ArgumentNullException ("colorspace");
+			if (colorspace.handle == IntPtr.Zero)
+				throw new ObjectDisposedException ("colorspace");
 			if (pattern == null)
 				throw new ArgumentNullException ("pattern");
 			if (components == null)
 				throw new ArgumentNullException ("components");
 
-			handle = CGColorCreateWithPattern (space.handle, pattern.handle, components);
+			handle = CGColorCreateWithPattern (colorspace.handle, pattern.handle, components);
 			if (handle == IntPtr.Zero)
 				throw new ArgumentException ();
 		}
@@ -125,6 +141,9 @@ namespace MonoMac.CoreGraphics {
 		{
 			if (source == null)
 				throw new ArgumentNullException ("source");
+			if (source.handle == IntPtr.Zero)
+				throw new ObjectDisposedException ("source");
+			
 			handle = CGColorCreateCopyWithAlpha (source.handle, alpha);
 		}
 

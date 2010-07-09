@@ -29,6 +29,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
@@ -75,6 +76,7 @@ namespace MonoMac.CoreGraphics {
 			this.handle = handle;
 		}
 
+		[Preserve (Conditional=true)]
 		internal CGImage (IntPtr handle, bool owns)
 		{
 			this.handle = handle;
@@ -343,8 +345,14 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 
-		//[DllImport (Constants.CoreGraphicsLibrary)]
-		//extern static CGDataProviderRef CGImageGetDataProvider(IntPtr image);
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGImageGetDataProvider(IntPtr image);
+
+		public CGDataProvider DataProvider {
+			get {
+				return new CGDataProvider (CGImageGetDataProvider (handle));
+			}
+		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		unsafe extern static float * CGImageGetDecode(IntPtr image);

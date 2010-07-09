@@ -30,6 +30,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 

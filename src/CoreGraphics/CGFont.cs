@@ -29,6 +29,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 
 #if !(GENERATOR || MONOMAC)
@@ -40,6 +41,7 @@ namespace MonoMac.CoreGraphics {
 	public class CGFont : INativeObject, IDisposable {
 		internal IntPtr handle;
 
+		[Preserve (Conditional=true)]
 		internal CGFont (IntPtr handle, bool owns)
 		{
 			if (handle == IntPtr.Zero)

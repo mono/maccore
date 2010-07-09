@@ -99,10 +99,10 @@ namespace MonoMac.Foundation
 		NSString ParagraphStyleAttributeName { get; }
 	}
 
-#if MONOMAC || ALPHA
 	[BaseType (typeof (NSObject),
 		   Delegates=new string [] { "WeakDelegate" },
 		   Events=new Type [] { typeof (NSCacheDelegate)} )]
+	[Since (4,0)]
 	interface NSCache {
 		[Export ("objectForKey:")]
 		NSObject ObjectForKey (NSObject key);
@@ -145,8 +145,6 @@ namespace MonoMac.Foundation
 		[Export ("cache:willEvictObject:"), EventArgs ("NSObject")]
 		void WillEvictObject (NSCache cache, NSObject obj);
 	}
-	
-#endif
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSCalendar {
@@ -339,7 +337,7 @@ namespace MonoMac.Foundation
 		[Export ("dataWithContentsOfFile:")][Static]
 		NSData FromFile (string path);
 
-		[Export ("dataWithBytes:length:")][Static]
+		[Export ("dataWithBytes:length:"), Static]
 		NSData FromBytes (IntPtr bytes, uint size);
 
 		[Export ("bytes")]
@@ -353,8 +351,62 @@ namespace MonoMac.Foundation
 		
 		[Export ("writeToURL:options:error:")]
 		bool _Save (NSUrl url, int options, IntPtr addr);
+
+		[Export ("rangeOfData:options:range:")]
+		[Since (4,0)]
+		NSRange Find (NSData dataToFind, NSDataSearchOptions searchOptions, NSRange searchRange);
 	}
 
+	[BaseType (typeof (NSObject))]
+	interface NSDateComponents {
+		[Since (4,0)]
+		[Export ("timeZone")]
+		NSTimeZone TimeZone { get; set; }
+
+		[Export ("calendar")]
+		[Since (4,0)]
+		NSCalendar Calendar { get; set; }
+
+		[Export ("quarter")]
+		[Since (4,0)]
+		int Quarter { get; set; }
+
+		[Export ("date")]
+		[Since (4,0)]
+		NSDate Date { get; }
+
+		//Detected properties
+		[Export ("era")]
+		int Era { get; set; }
+
+		[Export ("year")]
+		int Year { get; set; }
+
+		[Export ("month")]
+		int Month { get; set; }
+
+		[Export ("day")]
+		int Day { get; set; }
+
+		[Export ("hour")]
+		int Hour { get; set; }
+
+		[Export ("minute")]
+		int Minute { get; set; }
+
+		[Export ("second")]
+		int Second { get; set; }
+
+		[Export ("week")]
+		int Week { get; set; }
+
+		[Export ("weekday")]
+		int Weekday { get; set; }
+
+		[Export ("weekdayOrdinal")]
+		int WeekdayOrdinal { get; set; }
+	}
+	
 	[BaseType (typeof (NSFormatter))]
 	interface NSDateFormatter {
 		[Export ("stringFromDate:")]
@@ -663,7 +715,7 @@ namespace MonoMac.Foundation
 		NSDate AddSeconds (double seconds);
 
 		[Export ("description")]
-		string Description { get; } 
+		string Description { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -883,10 +935,9 @@ namespace MonoMac.Foundation
 
 		[Export ("isSubsetOfSet:")]
 		bool IsSubsetOf (NSSet other);
-#if ALPHA || MONOMAC
 		[Export ("enumerateObjectsUsingBlock:")]
+		[Since (4,0)]
 		void Enumerate (NSSetEnumerator enumerator);
-#endif
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -949,6 +1000,9 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof(NSObject))]
 	public interface NSTimeZone {
+		[Export ("initWithName:")]
+		IntPtr Constructor (string name);
+		
 		[Export ("name")]
 		string Name { get; } 
 
@@ -969,6 +1023,24 @@ namespace MonoMac.Foundation
 
 		[Export ("nextDaylightSavingTimeTransitionAfterDate:")]
 		NSDate NextDaylightSavingTimeTransitionAfter (NSDate date);
+
+		[Export ("defaultTimeZone"), Static]
+		NSTimeZone DefaultTimeZone { get; set; }
+
+		[Export ("localTimeZone"), Static]
+		NSTimeZone LocalTimeZone { get; set; }
+
+		[Export ("resetSystemTimeZone"), Static]
+		void ResetSystemTimeZone ();
+
+		[Export ("systemTimeZone"), Static]
+		NSTimeZone SystemTimeZone { get; }
+		
+		[Export ("timeZoneWithAbbreviation:"), Static]
+		NSTimeZone FromAbbreviation (string abbreviation);
+
+		[Export ("timeZoneWithName:"), Static]
+		NSTimeZone FromName (string timeZoneName);
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -1622,9 +1694,6 @@ namespace MonoMac.Foundation
 		
 		[Bind ("sizeWithFont:constrainedToSize:lineBreakMode:")]
 		SizeF StringSize (UIFont font, SizeF constrainedToSize, UILineBreakMode lineBreakMode);
-
-		[Bind ("stringWithFont:forWidth:lineBreakMode:")]
-		string Format (UIFont withFont, float width, UILineBreakMode breakMode);
 	}
 #endif
 	
@@ -1651,9 +1720,8 @@ namespace MonoMac.Foundation
 		NSInputStream FromFile (string  path);
 	}
 
-#if ALPHA || MONOMAC
 	[BaseType (typeof (NSObject))]
-	[Alpha]
+	[Since (4,0)]
 	interface NSOperation {
 		[Export ("start")]
 		void Start ();
@@ -1700,7 +1768,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSOperation))]
-	[Alpha]
+	[Since (4,0)]
 	interface NSBlockOperation {
 		[Static]
 		[Export ("blockOperationWithBlock:")]
@@ -1714,7 +1782,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
-	[Alpha]
+	[Since (4,0)]
 	interface NSOperationQueue {
 		[Export ("addOperation:")]
 		void AddOperation (NSOperation op);
@@ -1755,8 +1823,6 @@ namespace MonoMac.Foundation
 		[Export ("suspended")]
 		bool Suspended { [Bind ("isSuspended")]get; set; }
 	}
-
-#endif
 	
 	[BaseType (typeof (NSStream))]
 	public interface NSOutputStream {
@@ -1969,6 +2035,46 @@ namespace MonoMac.Foundation
 
 		[Export ("pathForSoundResource:")]
 		string PathForSoundResource (string resource);
+
+		[Export ("bundleURL")]
+		[Since (4,0)]
+		NSUrl BundleUrl { get; }
+		
+		[Export ("resourceURL")]
+		[Since (4,0)]
+		NSUrl ResourceUrl { get; }
+
+		[Export ("executableURL")]
+		[Since (4,0)]
+		NSUrl ExecutableUrl { get; }
+
+		[Export ("URLForAuxiliaryExecutable:")]
+		[Since (4,0)]
+		NSUrl UrlForAuxiliaryExecutable (string executable);
+
+		[Export ("privateFrameworksURL")]
+		[Since (4,0)]
+		NSUrl PrivateFrameworksUrl { get; }
+
+		[Export ("sharedFrameworksURL")]
+		[Since (4,0)]
+		NSUrl SharedFrameworksUrl { get; }
+
+		[Export ("sharedSupportURL")]
+		[Since (4,0)]
+		NSUrl SharedSupportUrl { get; }
+
+		[Export ("builtInPlugInsURL")]
+		[Since (4,0)]
+		NSUrl BuiltInPluginsUrl { get; }
+
+		[Export ("initWithURL:")]
+		[Since (4,0)]
+		IntPtr Constructor (NSUrl url);
+		
+		[Static, Export ("bundleWithURL:")]
+		[Since (4,0)]
+		NSBundle FromUrl (NSUrl url);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -2275,15 +2381,31 @@ namespace MonoMac.Foundation
 		[Export ("removeObserver:name:object:")]
 		void RemoveObserver ([RetainList (false, "ObserverList")] NSObject observer, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
 
-#if ALPHA || MONOMAC
+		[Since (4,0)]
 		[Export ("addObserverForName:object:queue:usingBlock:")]
 		void AddObserver (string name, NSObject obj, NSOperationQueue queue, NSNotificationHandler handler);
-#endif
 	}
 
-#if ALPHA || MONOMAC
+	[BaseType (typeof (NSObject))]
+	interface NSNotificationQueue {
+		[Static]
+		[Export ("defaultQueue")]
+		NSObject DefaultQueue { get; }
+
+		[Export ("initWithNotificationCenter:")]
+		IntPtr Constructor (NSNotificationCenter notificationCenter);
+
+		[Export ("enqueueNotification:postingStyle:")]
+		void EnqueueNotification (NSNotification notification, NSPostingStyle postingStyle);
+
+		[Export ("enqueueNotification:postingStyle:coalesceMask:forModes:")]
+		void EnqueueNotification (NSNotification notification, NSPostingStyle postingStyle, NSNotificationCoalescing coalesceMask, string [] modes);
+
+		[Export ("dequeueNotificationsMatching:coalesceMask:")]
+		void DequeueNotificationsMatchingcoalesceMask (NSNotification notification, NSNotificationCoalescing coalesceMask);
+	}
+
 	delegate void NSNotificationHandler (NSNotification notification);
-#endif
 	
 	[BaseType (typeof (NSObject))]
 	interface NSValue {
@@ -2325,6 +2447,9 @@ namespace MonoMac.Foundation
 		[Export ("CGSizeValue")]
 		System.Drawing.SizeF SizeFValue { get; }
 
+		[Export ("CATransform3DValue")]
+		MonoMac.CoreAnimation.CATransform3D CATransform3DValue { get; }
+
 #if !MONOMAC
 		[Export ("CGAffineTransformValue")]
 		MonoMac.CoreGraphics.CGAffineTransform CGAffineTransformValue { get; }
@@ -2346,7 +2471,9 @@ namespace MonoMac.Foundation
 		
 		[Export ("valueWithCGSize:")][Static]
 		NSValue FromSizeF (System.Drawing.SizeF size);
-		
+
+		[Export ("valueWithCATransform3D:")][Static]
+		NSValue FromCATransform3D (MonoMac.CoreAnimation.CATransform3D transform);
 	}
 	
 	[BaseType (typeof (NSValue))]
@@ -2682,17 +2809,17 @@ namespace MonoMac.Foundation
 		uint ActiveProcessorCount { get; }
 	}
 
-#if ALPHA || MONOMAC
 	[BaseType (typeof (NSObject))]
+	[Since (4,0)]
 	interface NSPredicate {
 		[Export ("evaluateWithObject:")]
 		bool EvaluateWithObject (NSObject obj);
 	}
 
 	[BaseType (typeof (NSMutableData))]
+	[Since (4,0)]
 	interface NSPurgeableData {
 		
 	}
-#endif
 }
 

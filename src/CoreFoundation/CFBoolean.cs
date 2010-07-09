@@ -33,6 +33,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreFoundation {
 	[Since (3,2)]
@@ -56,6 +57,7 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 
+		[Preserve (Conditional = true)]
 		internal CFBoolean (IntPtr handle, bool owns)
 		{
 			this.handle = handle;

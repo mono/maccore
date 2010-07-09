@@ -29,6 +29,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
@@ -63,8 +64,12 @@ namespace MonoMac.CoreGraphics {
 			CGColorSpaceRetain (handle);
 		}
 
-		private CGColorSpace (IntPtr handle, bool owns)
+		[Preserve (Conditional=true)]
+		internal CGColorSpace (IntPtr handle, bool owns)
 		{
+			if (!owns)
+				CGColorSpaceRetain (handle);
+
 			this.handle = handle;
 		}
 

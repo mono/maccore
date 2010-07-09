@@ -33,6 +33,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreFoundation {
 
@@ -111,6 +112,7 @@ namespace MonoMac.CoreFoundation {
 		{
 		}
 		
+		[Preserve (Conditional = true)]
 		internal CFString (IntPtr handle, bool owns)
 		{
 			this.handle = handle;

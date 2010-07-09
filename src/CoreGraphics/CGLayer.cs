@@ -1,5 +1,5 @@
 // 
-// CGGradient.cs: Implements the managed CGGradient
+// CGLayer.cs: Implements the managed CGLayer
 //
 // Authors: Mono Team
 //     
@@ -24,7 +24,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
@@ -32,25 +34,28 @@ using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
+	public class CGLayer : INativeObject, IDisposable {
+		IntPtr handle;
 
-	public enum CGGradientDrawingOptions {
-		DrawsBeforeStartLocation = (1 << 0),
-		DrawsAfterEndLocation = (1 << 1)
-	}
-	
-	public class CGGradient : INativeObject, IDisposable {
-		internal IntPtr handle;
+		internal CGLayer (IntPtr handle)
+		{
+			if (handle == IntPtr.Zero)
+				throw new Exception ("Invalid parameters to layer creation");
+					
+			this.handle = handle;
+			CGLayerRetain (handle);
+		}
 
 		[Preserve (Conditional=true)]
-		internal CGGradient (IntPtr handle, bool owns)
+		internal CGLayer (IntPtr handle, bool owns)
 		{
 			if (!owns)
-				CGGradientRetain (handle);
+				CGLayerRetain (handle);
 
 			this.handle = handle;
 		}
 
-		~CGGradient ()
+		~CGLayer ()
 		{
 			Dispose (false);
 		}
@@ -66,29 +71,43 @@ namespace MonoMac.CoreGraphics {
 		}
 	
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGGradientRetain (IntPtr handle);
+		extern static void CGLayerRelease (IntPtr handle);
+		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGGradientRelease (IntPtr handle);
+		extern static void CGLayerRetain (IntPtr handle);
 		
 		protected virtual void Dispose (bool disposing)
 		{
 			if (handle != IntPtr.Zero){
-				CGGradientRelease (handle);
+				CGLayerRelease (handle);
 				handle = IntPtr.Zero;
 			}
 		}
 
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static SizeF CGLayerGetSize (IntPtr layer);
 
-		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGGradientCreateWithColorComponents (IntPtr colorspace, float [] components, float [] locations, int size_t_count);
-		public CGGradient (CGColorSpace colorspace, float [] components, float [] locations)
-		{
-			if (colorspace == null)
-				throw new ArgumentNullException ("colorspace");
-			if (components == null)
-				throw new ArgumentNullException ("components");
-
-			handle = CGGradientCreateWithColorComponents (colorspace.handle, components, locations, components.Length / (colorspace.Components+1));
+		SizeF Size {
+			get {
+				return CGLayerGetSize (handle);
+			}
 		}
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGLayerGetContext (IntPtr layer);
+
+		public CGContext Context {
+			get {
+				return new CGContext (CGLayerGetContext (handle));
+			}
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGLayerCreateWithContext (IntPtr context, SizeF size, IntPtr dictionary);
+
+		public static CGLayer Create (CGContext context, SizeF size) {
+			return new CGLayer (CGLayerCreateWithContext (context.Handle, size, IntPtr.Zero));
+		}
+
 	}
 }

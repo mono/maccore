@@ -38,6 +38,7 @@ namespace MonoMac.CoreFoundation {
 
 		internal IntPtr handle;
 
+		[Preserve (Conditional = true)]
 		internal CFArray (IntPtr handle, bool owns)
 		{
 			if (handle == IntPtr.Zero)

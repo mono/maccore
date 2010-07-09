@@ -30,17 +30,23 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
 	public class CGBitmapContext : CGContext {
+
+		[Preserve (Conditional=true)]
+		internal CGBitmapContext (IntPtr handle, bool owns) : base (handle, owns)
+		{
+		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGBitmapContextCreate (IntPtr data, UIntPtr width, UIntPtr height, UIntPtr bitsPerComponent, 
 				UIntPtr bytesPerRow, IntPtr colorSpace, uint bitmapInfo);
 
 		public CGBitmapContext (IntPtr data, int width, int height, int bitsPerComponent, int bytesPerRow, CGColorSpace colorSpace, CGImageAlphaInfo bitmapInfo)
-			: base (CGBitmapContextCreate (data, (UIntPtr) width, (UIntPtr) height, (UIntPtr) bitsPerComponent, (UIntPtr) bytesPerRow, colorSpace.handle, (uint) bitmapInfo))
+			: base (CGBitmapContextCreate (data, (UIntPtr) width, (UIntPtr) height, (UIntPtr) bitsPerComponent, (UIntPtr) bytesPerRow, colorSpace.handle, (uint) bitmapInfo), true)
 		{
 		}
 
@@ -83,7 +89,7 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGBitmapContextGetColorSpace (IntPtr cgContextRef);
 		public CGColorSpace ColorSpace {
-			get {return new CGColorSpace (CGBitmapContextGetColorSpace (Handle));}
+			get {return new CGColorSpace (CGBitmapContextGetColorSpace (Handle), true);}
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -102,7 +108,7 @@ namespace MonoMac.CoreGraphics {
 		extern static IntPtr CGBitmapContextCreateImage (IntPtr c);
 		public CGImage ToImage ()
 		{
-			return new CGImage (CGBitmapContextCreateImage (Handle));
+			return new CGImage (CGBitmapContextCreateImage (Handle), true);
 		}
 	}
 }

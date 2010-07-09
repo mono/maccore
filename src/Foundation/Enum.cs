@@ -23,6 +23,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
+using MonoMac.ObjCRuntime;
+
 namespace MonoMac.Foundation  {
 	public enum NSUrlCredentialPersistence {
 		None,
@@ -116,27 +118,46 @@ namespace MonoMac.Foundation  {
 		NSWeekday = 512,
 		NSWeekdayOrdinal = 1024,
 		NSQuarter = 2048,
-#if ALPHA
-        NSCalendar = (1 << 20),
-        NSTimeZone = (1 << 21),
-#endif
+
+		[Since (4,0)]
+		NSCalendar = (1 << 20),
+		[Since (4,0)]
+		NSTimeZone = (1 << 21),
 	}
 
 	[Flags]
 	public enum NSDataWritingOptions : uint {
 		Atomic = 1,
-#if ALPHA
+
+		[Since (4,0)]
 		FileProtectionNone = 0x10000000,
+		[Since (4,0)]
 		FileProtectionComplete = 0x20000000,
+		[Since (4,0)]
 		NSDataWritingFileProtectionMask = 0xf0000000
-#endif
 	}
 	
 	public delegate void NSSetEnumerator (NSObject obj, ref bool stop);
 
-#if ALPHA || MONOMAC
+	[Since (4,0)]
 	public enum NSOperationQueuePriority {
 		VeryLow = -8, Low = -4, Normal = 0, High = 4, VeryHigh = 8
 	}
-#endif
+
+	[Flags]
+	public enum NSNotificationCoalescing {
+		NoCoalescing = 0,
+		CoalescingOnName = 1,
+		CoalescingOnSender = 2
+	}
+
+	public enum NSPostingStyle {
+		PostWhenIdle = 1, PostASAP = 2, Now = 3
+	}
+
+	[Flags]
+	public enum NSDataSearchOptions {
+		SearchBackwards = 1,
+		SearchAnchored = 2
+	}
 }

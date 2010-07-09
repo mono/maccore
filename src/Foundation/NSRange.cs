@@ -27,6 +27,8 @@ namespace MonoMac.Foundation {
 		public Int32 Location;
 		public Int32 Length;
 
+		public const int NotFound = Int32.MaxValue;
+		
 		public NSRange (int start, int len)
 		{
 			Location = start;

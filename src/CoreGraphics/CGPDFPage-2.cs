@@ -28,6 +28,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 

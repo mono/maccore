@@ -55,6 +55,7 @@ using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
 using MonoTouch.CoreFoundation;
 using MonoTouch.CoreGraphics;
+using MonoTouch.CoreMedia;
 #endif
 
 public class RetainListAttribute : Attribute {
@@ -133,6 +134,12 @@ public class WrapAttribute : Attribute {
 		MethodName = methodname;
 	}
 	public string MethodName { get; set; }
+}
+
+// When applied instructs the generator to call Release on the returned objects
+// this happens when factory methods in Objetive-C return objects with refcount=1
+public class FactoryAttribute : Attribute {
+	public FactoryAttribute () {}
 }
 
 // When applied, it instructs the generator to not use NSStrings for marshalling.
@@ -364,10 +371,12 @@ public class Generator {
 	public Type CoreNSObject = typeof (NSObject);
 #if MONOMAC
 	public Type MessagingType = typeof (MonoMac.ObjCRuntime.Messaging);
+	public Type SampleBufferType = typeof (MonoMac.CoreMedia.CMSampleBuffer);
 	string [] standard_namespaces = new string [] { "MonoMac.Foundation", "MonoMac.ObjCRuntime", "MonoMac.CoreGraphics" };
 	const string MainPrefix = "MonoMac";
 #else
 	public Type MessagingType = typeof (MonoTouch.ObjCRuntime.Messaging);
+	public Type SampleBufferType = typeof (MonoTouch.CoreMedia.CMSampleBuffer);
 	string [] standard_namespaces = new string [] { "MonoTouch.Foundation", "MonoTouch.ObjCRuntime", "MonoTouch.CoreGraphics" };
 	const string MainPrefix = "MonoTouch";
 #endif
@@ -471,7 +480,7 @@ public class Generator {
 		//
 		Console.WriteLine ("Do not know how to make a signature for {0}", mai.Type);
 		throw new Exception ();
-		return null;
+		//return null;
 	}
 
 	//
@@ -517,13 +526,11 @@ public class Generator {
 				invoke.AppendFormat ("NSString.FromHandle ({0})", pi.Name);
 				continue;
 			}
-#if ALPHA
-			if (pi.ParameterType == typeof (MonoTouch.CoreMedia.CMSampleBuffer)){
+			if (pi.ParameterType == SampleBufferType){
 				pars.AppendFormat ("IntPtr {0}", pi.Name);
 				invoke.AppendFormat ("new CMSampleBuffer ({0})", pi.Name);
 				continue;
 			}
-#endif
 
 			if (pi.ParameterType.IsArray){
 				Type et = pi.ParameterType.GetElementType ();
@@ -602,9 +609,7 @@ public class Generator {
 		}
 
 		if (pi.ParameterType.IsSubclassOf (typeof (Delegate))){
-			string trampoline_name = MakeTrampoline (pi.ParameterType);
-			
-			return String.Format ("BlockLiteral.CreateBlock ({0}, {1})", trampoline_name, pi.Name);
+			return String.Format ("(IntPtr) block_ptr_{0}", pi.Name);
 		}
 		
 		Console.WriteLine ("Unknown kind {0}", pi);
@@ -642,6 +647,8 @@ public class Generator {
 		if (pi.ParameterType == typeof (string))
 			return true;
 
+		if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
+			return true;
 		return false;
 	}
 
@@ -851,13 +858,13 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CFRunLoop), "IntPtr", "{0}.Handle", "new CFRunLoop ("));
 		marshal_types.Add (new MarshalType (typeof (CGColorSpace), "IntPtr", "{0}.Handle", "new CGColorSpace ("));
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
-#if !MONOMAC && ALPHA
+#if !MONOMAC
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));
 #endif
 
 		marshal_types.Add (new MarshalType (typeof (BlockLiteral), "BlockLiteral", "{0}", "THIS_IS_BROKEN"));
 
-		init_binding_type = String.Format ("IsDirectBinding = GetType ().Assembly == {0}.Messaging.this_assembly;", MessagingNS);
+		init_binding_type = String.Format ("IsDirectBinding = GetType ().Assembly == global::{0}.Messaging.this_assembly;", MessagingNS);
 
 		Directory.CreateDirectory (Path.Combine (basedir, "ObjCRuntime"));
 
@@ -943,16 +950,18 @@ public class Generator {
 						continue;
 					} else if (attr is InternalAttribute){
 						continue;
+					} else if (attr is FactoryAttribute){
+						continue;
 					} else  if (attr is AbstractAttribute){
 						need_abstract [t] = true;
 						continue;
 					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute)
 						continue;
 					else 
-						Console.WriteLine ("Unknown attribute {0} on {1}", attr.GetType (), t);
+						Console.WriteLine ("Error: Unknown attribute {0} on {1}", attr.GetType (), t);
 
 					if (selector == null){
-						Console.WriteLine ("No selector specified for method `{0}.{1}'", mi.DeclaringType, mi.Name);
+						Console.WriteLine ("Error: No selector specified for method `{0}.{1}'", mi.DeclaringType, mi.Name);
 						Environment.Exit (1);
 					}
 					
@@ -1294,6 +1303,32 @@ public class Generator {
 				}
 			}
 
+			
+			if (mai.Type.IsSubclassOf (typeof (Delegate))){
+				string trampoline_name = MakeTrampoline (pi.ParameterType);
+				string extra = "";
+				bool null_allowed = HasAttribute (pi, typeof (NullAllowedAttribute));
+				
+				convs.AppendFormat ("\t\t\tBlockLiteral *block_ptr_{0};\n", pi.Name);
+				convs.AppendFormat ("\t\t\tBlockLiteral block_{0};\n", pi.Name);
+				if (null_allowed){
+					convs.AppendFormat ("\t\t\tif ({0} == null){{\n", pi.Name);
+					convs.AppendFormat ("\t\t\t\tblock_ptr_{0} = (BlockLiteral *) 0;\n", pi.Name);
+					convs.AppendFormat ("\t\t\t}} else {{\n");
+					extra = "\t";
+				}
+				convs.AppendFormat (extra + "\t\t\tblock_{0} = new BlockLiteral ();\n", pi.Name);
+				convs.AppendFormat (extra + "\t\t\tblock_ptr_{0} = &block_{0};\n", pi.Name);
+				convs.AppendFormat (extra + "\t\t\tblock_{0}.SetupBlock ({1}, {0});\n", pi.Name, trampoline_name);
+				if (null_allowed)
+					convs.AppendFormat ("\t\t\t}}");
+
+				if (null_allowed){
+					disposes.AppendFormat ("if (block_ptr_{0} != (BlockLiteral *) 0)\n", pi.Name);
+				}
+				disposes.AppendFormat (extra + "\t\t\tblock_ptr_{0}->CleanupBlock ();\n", pi.Name);
+			}
+
 			// Insert parameter checking
 			if (!null_allowed_override && ParameterNeedsNullCheck (pi, mi)){
 				print ("if ({0} == null)", pi.Name);
@@ -1324,15 +1359,21 @@ public class Generator {
 			print (sw, convs.ToString ());
 
 
-		bool use_temp_return = (mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0) && mi.ReturnType != typeof (void)) || (assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ()))));
+		bool has_postget = HasAttribute (mi, typeof (PostGetAttribute));
+		bool use_temp_return =
+			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
+			(HasAttribute (mi, typeof (FactoryAttribute))) ||
+			(assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ()))));
+		
 
 		if (use_temp_return)
 			print ("{0} ret;", FormatType (mi.DeclaringType, mi.ReturnType)); //  = new {0} ();"
 		
+		bool needs_temp = use_temp_return || disposes.Length > 0;
 		if (virtual_method || mi.Name == "Constructor"){
 			//print ("if (this.GetType () == typeof ({0})) {{", type.Name);
 			if (external) {
-				GenerateInvoke (false, mi, selector, args.ToString (), use_temp_return || disposes.Length > 0, is_static);
+				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
 			} else {
 				if (BindThirdPartyLibrary && mi.Name == "Constructor"){
 					print (init_binding_type);
@@ -1340,26 +1381,30 @@ public class Generator {
 				
 				print ("if (IsDirectBinding) {{", type.Name);
 				indent++;
-				GenerateInvoke (false, mi, selector, args.ToString (), use_temp_return || disposes.Length > 0, is_static);
+				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
 				indent--;
 				print ("} else {");
 				indent++;
-				GenerateInvoke (true, mi, selector, args.ToString (), use_temp_return || disposes.Length > 0, is_static);
+				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, is_static);
 				indent--;
 				print ("}");
 			}
 		} else {
-			GenerateInvoke (false, mi, selector, args.ToString (), use_temp_return || disposes.Length > 0, is_static);
+			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
 		}
 		
 		if (disposes.Length > 0)
 			print (disposes.ToString ());
 		if (assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ()))))
 			print ("{0} = ret;", assign);
-		if (HasAttribute (mi, typeof (PostGetAttribute))) {
+		if (has_postget) {
 			PostGetAttribute [] attr = (PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true);
+			print ("#pragma warning disable 168");
 			print ("var postget = {0};", attr [0].MethodName);
+			print ("#pragma warning restore 168");
 		}
+		if (HasAttribute (mi, typeof (FactoryAttribute)))
+			print ("ret.Release (); // Release implicit ref taken by GetNSObject");
 		if (use_temp_return)
 			print ("return ret;");
 
@@ -1467,8 +1512,11 @@ public class Generator {
 					continue;
 				
 				foreach (ParameterInfo pi in mi.GetParameters ())
-					if (HasAttribute (pi, typeof (RetainAttribute)))
+					if (HasAttribute (pi, typeof (RetainAttribute))){
+						print ("#pragma warning disable 168");
 						print ("{0} __mt_{1}_{2};", pi.ParameterType, mi.Name, pi.Name);
+						print ("#pragma warning enable 168");
+					}
 
 				string selector = null;
 				bool virtual_method = false;
@@ -1504,9 +1552,15 @@ public class Generator {
 				bool is_override = HasAttribute (mi, typeof (OverrideAttribute));
 				bool is_new = HasAttribute (mi, typeof (NewAttribute));
 				bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
+				bool is_unsafe = false;
 
-				print ("{0} {1}{2}{3}{4}",
+				foreach (ParameterInfo pi in mi.GetParameters ())
+					if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
+						is_unsafe = true;
+
+				print ("{0} {1}{2}{3}{4}{5}",
 				       is_public ? "public" : "internal",
+				       is_unsafe ? "unsafe " : "",
 				       is_new ? "new " : "",
 				       is_sealed ? "" : (is_abstract ? "abstract " : (virtual_method ? (is_override ? "override " : "virtual ") : (is_static ? "static " : ""))),
 				       MakeSignature (mi),
@@ -1543,15 +1597,20 @@ public class Generator {
 				bool is_override = HasAttribute (pi, typeof (OverrideAttribute));
 				bool is_new = HasAttribute (pi, typeof (NewAttribute));
 				bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
+				bool is_unsafe = false;
 
 				foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
 					print ("[Obsolete (\"{0}\", {1})]",
 							oa.Message, oa.IsError ? "true" : "false");
 				}
 
+				if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
+					is_unsafe = true;
+
 				if (wrap != null){
-					print ("{0} {1}{2}{3} {4} {{",
+					print ("{0} {1}{2}{3}{4} {5} {{",
 					       is_public ? "public" : "internal",
+					       is_unsafe ? "unsafe " : "",
 					       is_new ? "new " : "",
 					       (is_static ? "static " : ""),
 					       FormatType (pi.DeclaringType,  pi.PropertyType),
@@ -1570,8 +1629,9 @@ public class Generator {
 
 				if ((IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ()))))
 					print ("{2}{0} {1};", pi.PropertyType, var_name, is_static ? "static " : "");
-				print ("{0} {1}{2}{3} {4} {{",
+				print ("{0} {1}{2}{3}{4} {5} {{",
 				       is_public ? "public" : "internal",
+				       is_unsafe ? "unsafe " : "",
 				       is_new ? "new " : "",
 				       is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual "))),
 				       FormatType (pi.DeclaringType,  pi.PropertyType),
@@ -1656,6 +1716,12 @@ public class Generator {
 						print ("if (_{0} == null)", field_pi.Name);
 						indent++;
 						print ("_{0} = Dlfcn.GetStringConstant (libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName);
+						indent--;
+						print ("return _{0};", field_pi.Name);
+					} else if (field_pi.PropertyType.Name == "NSArray"){
+						print ("if (_{0} == null)", field_pi.Name);
+						indent++;
+						print ("_{0} = new NSArray (Dlfcn.GetIndirect (libraryHandle, \"{1}\"));", field_pi.Name, fieldAttr.SymbolName);
 						indent--;
 						print ("return _{0};", field_pi.Name);
 					} else {
@@ -1820,7 +1886,7 @@ public class Generator {
 				print ("static unsafe void {0} ({1}) {{", ti.TrampolineName, ti.Parameters);
 				indent++;
 				print ("var descriptor = (BlockLiteral *) block;");
-				print ("var del = ({0}) GCHandle.FromIntPtr (descriptor->handle).Target;", ti.UserDelegate);
+				print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
 				print ("del ({0});", ti.Invoke);
 				indent--;
 				print ("}");

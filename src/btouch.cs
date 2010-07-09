@@ -39,7 +39,7 @@ class BindingTouch {
 	static string tool_name = "bmac";
 	static string compiler = "gmcs";
 #else
-	static string baselibdll = "monotouch.dll";
+	static string baselibdll = "/Developer/MonoTouch/usr/lib/mono/2.1/monotouch.dll";
 	static string RootNS = "MonoTouch";
 	static Type CoreObject = typeof (MonoTouch.Foundation.NSObject);
 	static string tool_name = "btouch";
@@ -63,7 +63,7 @@ class BindingTouch {
 		string tmpdir = null;
 		string ns = null;
 		string outfile = null;
-		bool delete_gen = true, delete_temp = true, debug = false;
+		bool delete_temp = true, debug = false;
 		bool verbose = false;
 		bool unsafef = false;
 		bool external = false;
@@ -122,7 +122,9 @@ class BindingTouch {
 		try {
 			var api_file = sources [0];
 			var tmpass = Path.Combine (tmpdir, "temp.dll");
-			var cargs = String.Format ("-target:library {0} -out:{1} -r:{2} {3} {4} {5} -r:{6} {7}",
+
+			// -nowarn:436 is to avoid conflicts in definitions between core.dll and the sources
+			var cargs = String.Format ("-target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7}",
 						   string.Join (" ", sources.ToArray ()),
 						   tmpass, Environment.GetCommandLineArgs ()[0],
 						   string.Join (" ", core_sources.ToArray ()), refs, unsafef ? "-unsafe" : "",
@@ -144,9 +146,20 @@ class BindingTouch {
 			Assembly a = null, baselib;
 			try {
 				a = Assembly.LoadFrom (tmpass);
+			} catch (Exception e) {
+				if (verbose)
+					Console.WriteLine (e);
+				
+				Console.Error.WriteLine ("Error loading API definition from {0}", tmpass);
+				return 1;
+			}
+			try {
 				baselib = Assembly.LoadFrom (baselibdll);
-			} catch {
-				Console.Error.WriteLine ("Error loading API definition");
+			} catch (Exception e){
+				if (verbose)
+					Console.WriteLine (e);
+
+				Console.Error.WriteLine ("Error loading base library {0}", baselibdll);
 				return 1;
 			}
 

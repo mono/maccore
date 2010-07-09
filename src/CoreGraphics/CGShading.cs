@@ -28,6 +28,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
@@ -37,15 +38,54 @@ namespace MonoMac.CoreGraphics {
 		internal CGShading (IntPtr handle)
 		{
 			this.handle = handle;
+			CGShadingRetain (handle);
+		}
+
+		[Preserve (Conditional=true)]
+		internal CGShading (IntPtr handle, bool owns)
+		{
+			this.handle = handle;
+			if (!owns)
+				CGShadingRetain (handle);
 		}
 		
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGShadingCreateAxial(IntPtr space, PointF start, PointF end, CGFunction function, bool extendStart, bool extendEnd);
-		
+		extern static IntPtr CGShadingCreateAxial(IntPtr space, PointF start, PointF end, IntPtr functionHandle, bool extendStart, bool extendEnd);
 
+		public static CGShading CreateAxial (CGColorSpace colorspace, PointF start, PointF end, CGFunction function, bool extendStart, bool extendEnd)
+		{
+			if (colorspace == null)
+				throw new ArgumentNullException ("colorspace");
+			if (colorspace.Handle == IntPtr.Zero)
+				throw new ObjectDisposedException ("colorspace");
+			if (function == null)
+				throw new ArgumentNullException ("function");
+			if (function.Handle == null)
+				throw new ObjectDisposedException ("function");
+
+			return new CGShading (CGShadingCreateAxial (colorspace.Handle, start, end, function.Handle, extendStart, extendEnd));
+		}
+		
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGShadingCreateRadial(IntPtr space, PointF start, CGFloat startRadius, PointF end, CGFloat endRadius, CGFunctionRef function, bool extendStart, bool extendEnd);
+		extern static IntPtr CGShadingCreateRadial(IntPtr space, PointF start, float startRadius, PointF end, float endRadius,
+							   IntPtr function, bool extendStart, bool extendEnd);
+
+		public static CGShading CreateRadial (CGColorSpace colorspace, PointF start, float startRadius, PointF end, float endRadius,
+						      CGFunction function, bool extendStart, bool extendEnd)
+		{
+			if (colorspace == null)
+				throw new ArgumentNullException ("colorspace");
+			if (colorspace.Handle == IntPtr.Zero)
+				throw new ObjectDisposedException ("colorspace");
+			if (function == null)
+				throw new ArgumentNullException ("function");
+			if (function.Handle == null)
+				throw new ObjectDisposedException ("function");
+
+			return new CGShading (CGShadingCreateRadial (colorspace.Handle, start, startRadius, end, endRadius,
+								     function.Handle, extendStart, extendEnd));
+		}
 
 		~CGShading ()
 		{
@@ -64,6 +104,8 @@ namespace MonoMac.CoreGraphics {
 	
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGShadingRelease (IntPtr handle);
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGShadingRetain (IntPtr handle);
 		
 		protected virtual void Dispose (bool disposing)
 		{

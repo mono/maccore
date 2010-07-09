@@ -29,10 +29,11 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
-	public class CGDataProvider : INativeObject, IDisposable {
+	public partial class CGDataProvider : INativeObject, IDisposable {
 		internal IntPtr handle;
 		IntPtr buffer;
 		
@@ -43,6 +44,7 @@ namespace MonoMac.CoreGraphics {
 			this.handle = handle;
 		}
 
+		[Preserve (Conditional=true)]
 		internal CGDataProvider (IntPtr handle, bool owns)
 		{
 			this.handle = handle;

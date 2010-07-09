@@ -30,6 +30,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
@@ -73,7 +74,8 @@ namespace MonoMac.CoreGraphics {
 		Default,
 		None,	
 		Low,	
-		High	
+		High,
+		Medium		       /* Yes, in this order, since Medium was added in 4 */
 	}
 	
 	public enum CGBlendMode {
@@ -115,9 +117,18 @@ namespace MonoMac.CoreGraphics {
 		{
 			if (handle == IntPtr.Zero)
 				throw new Exception ("Invalid parameters to context creation");
-					
-			this.handle = handle;
+
 			CGContextRetain (handle);
+			this.handle = handle;
+		}
+
+		[Preserve (Conditional=true)]
+		internal CGContext (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CGContextRetain (handle);
+
+			this.handle = handle;
 		}
 
 		~CGContext ()
@@ -996,16 +1007,74 @@ namespace MonoMac.CoreGraphics {
 			return CGContextConvertRectToUserSpace (handle, rect);
 		}
 
-#if ALPHA
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGContextDrawLayerInRect (IntPtr context, RectangleF rect, IntPtr layer);
+		public void DrawLayer (CGLayer layer, RectangleF rect)
+		{
+			if (layer == null)
+				throw new ArgumentNullException ("layer");
+			CGContextDrawLayerInRect (handle, rect, layer.Handle);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGContextDrawLayerAtPoint (IntPtr context, PointF rect, IntPtr layer);
+
+		public void DrawLayer (CGLayer layer, PointF point)
+		{
+			if (layer == null)
+				throw new ArgumentNullException ("layer");
+			CGContextDrawLayerAtPoint (handle, point, layer.Handle);
+		}
+
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGContextCopyPath (IntPtr context);
 
+		[Since (4,0)]
 		public CGPath CopyPath ()
 		{
 			var r = CGContextCopyPath (handle);
 
 			return new CGPath (r, true);
 		}
-#endif
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGContextSetAllowsFontSmoothing (IntPtr context, bool allows);
+		[Since (4,0)]
+		public void SetAllowsFontSmoothing (bool allows)
+		{
+			CGContextSetAllowsFontSmoothing (handle, allows);
+		}
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGContextSetAllowsFontSubpixelPositioning (IntPtr context, bool allows);
+		[Since (4,0)]
+		public void SetAllowsSubpixelPositioning (bool allows)
+		{
+			CGContextSetAllowsFontSubpixelPositioning (handle, allows);
+		}
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGContextSetAllowsFontSubpixelQuantization (IntPtr context, bool allows);
+		[Since (4,0)]
+		public void SetAllowsFontSubpixelQuantization (bool allows)
+		{
+			CGContextSetAllowsFontSubpixelQuantization (handle, allows);
+		}
+			
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGContextSetShouldSubpixelPositionFonts (IntPtr context, bool should);
+		[Since (4,0)]
+		public void SetShouldSubpixelPositionFonts (bool shouldSubpixelPositionFonts)
+		{
+			CGContextSetShouldSubpixelPositionFonts (handle, shouldSubpixelPositionFonts);
+		}
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGContextSetShouldSubpixelQuantizeFonts (IntPtr context, bool should);
+		[Since (4,0)]
+		public void ShouldSubpixelQuantizeFonts (bool shouldSubpixelQuantizeFonts)
+		{
+			CGContextSetShouldSubpixelQuantizeFonts (handle, shouldSubpixelQuantizeFonts);
+		}
 	}
 }

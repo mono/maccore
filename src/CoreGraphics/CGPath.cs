@@ -29,6 +29,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 	public enum CGPathElementType {
@@ -87,6 +88,7 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		// Indicates that we own it `owns'
+		[Preserve (Conditional=true)]
 		internal CGPath (IntPtr handle, bool owns)
 		{
 			if (!owns)
@@ -368,6 +370,14 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static RectangleF CGPathGetPathBoundingBox(IntPtr path);
+		public RectangleF PathBoundingBox {
+			get {
+				return CGPathGetPathBoundingBox (handle);
+			}
+		}
+		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static bool CGPathContainsPoint(IntPtr path, ref CGAffineTransform m, PointF point, bool eoFill);
 		public bool ContainsPoint (CGAffineTransform m, PointF point, bool eoFill)

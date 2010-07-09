@@ -29,6 +29,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
 
@@ -54,6 +55,15 @@ namespace MonoMac.CoreGraphics {
 		internal CGPattern (IntPtr handle)
 		{
 			this.handle = handle;
+			CGPatternRetain (this.handle);
+		}
+
+		[Preserve (Conditional=true)]
+		internal CGPattern (IntPtr handle, bool owns)
+		{
+			this.handle = handle;
+			if (!owns)
+				CGPatternRetain (this.handle);
 		}
 		
 		// This is what we expose on the API
@@ -131,6 +141,8 @@ namespace MonoMac.CoreGraphics {
 	
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPatternRelease (IntPtr handle);
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGPatternRetain (IntPtr handle);
 		
 		protected virtual void Dispose (bool disposing)
 		{
