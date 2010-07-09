@@ -81,7 +81,6 @@ namespace MonoMac.ObjCRuntime {
 		internal static IntPtr block_class = Class.GetHandle ("__NSStackBlock");
 		internal static BlockDescriptor global_descriptor = BlockDescriptor.CreateDescriptor ();
 		internal static IntPtr global_descriptor_ptr;
-		internal static Dictionary <IntPtr, Type> type_map = new Dictionary <IntPtr, Type> ();
 
 		static BlockLiteral () {
 			global_descriptor_ptr = Marshal.AllocHGlobal (Marshal.SizeOf (typeof (int))*2 + Marshal.SizeOf (typeof (IntPtr))*2);
@@ -99,10 +98,6 @@ namespace MonoMac.ObjCRuntime {
 			global_handle = IntPtr.Zero;
 			flags = BlockFlags.BLOCK_HAS_DESCRIPTOR | BlockFlags.BLOCK_HAS_COPY_DISPOSE;
 			block_descriptor = global_descriptor_ptr;
-
-			fixed (BlockLiteral *ptr = &this) {
-				type_map [(IntPtr) ptr] = userDelegate.GetType ();
-			}
 		}
 
 		public unsafe void CleanupBlock ()
