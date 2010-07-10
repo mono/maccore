@@ -716,6 +716,10 @@ namespace MonoMac.Foundation
 
 		[Export ("description")]
 		string Description { get; }
+
+		[Export ("dateWithTimeIntervalSinceNow:")]
+		[Static]
+		NSDate FromTimeIntervalSinceNow (double secs);
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -1023,6 +1027,18 @@ namespace MonoMac.Foundation
 
 		[Export ("nextDaylightSavingTimeTransitionAfterDate:")]
 		NSDate NextDaylightSavingTimeTransitionAfter (NSDate date);
+
+		[Static, Export ("timeZoneWithName:")]
+		NSTimeZone FromName (string tzName);
+
+		[Static, Export ("localTimeZone")]
+		NSTimeZone LocalTimeZone { get; }
+
+		[Export ("description")]
+		string Description { get; }
+
+		[Export ("secondsFromGMT")]
+		int SecondsFromGMT { get; }
 
 		[Export ("defaultTimeZone"), Static]
 		NSTimeZone DefaultTimeZone { get; set; }
