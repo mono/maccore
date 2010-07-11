@@ -1038,13 +1038,10 @@ namespace MonoMac.Foundation
 		string Description { get; }
 
 		[Export ("secondsFromGMT")]
-		int SecondsFromGMT { get; }
+		int GetSecondsFromGMT { get; }
 
 		[Export ("defaultTimeZone"), Static]
 		NSTimeZone DefaultTimeZone { get; set; }
-
-		[Export ("localTimeZone"), Static]
-		NSTimeZone LocalTimeZone { get; set; }
 
 		[Export ("resetSystemTimeZone"), Static]
 		void ResetSystemTimeZone ();
@@ -1054,9 +1051,6 @@ namespace MonoMac.Foundation
 		
 		[Export ("timeZoneWithAbbreviation:"), Static]
 		NSTimeZone FromAbbreviation (string abbreviation);
-
-		[Export ("timeZoneWithName:"), Static]
-		NSTimeZone FromName (string timeZoneName);
 	}
 	
 	[BaseType (typeof (NSObject))]
