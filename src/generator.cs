@@ -478,6 +478,10 @@ public class Generator {
 		//
 		// Edit the table in the "void Go ()" routine
 		//
+		
+		if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType == false)
+			return "IntPtr";
+		
 		Console.WriteLine ("Do not know how to make a signature for {0}", mai.Type);
 		throw new Exception ();
 		//return null;
@@ -560,6 +564,10 @@ public class Generator {
 	//
 	public string MarshalParameter (ParameterInfo pi, bool null_allowed_override)
 	{
+		if (pi.ParameterType.IsByRef && pi.ParameterType.GetElementType ().IsValueType == false){
+			return pi.Name + "Ptr";
+		}
+		
 		if (IsWrappedType (pi.ParameterType)){
 			if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
 				return String.Format ("{0} == null ? IntPtr.Zero : {0}.Handle", pi.Name);
@@ -1112,6 +1120,10 @@ public class Generator {
 				sb.Append ("out ");
 				parType = parType.GetElementType ();
 			} 
+			else if (parType.IsByRef && parType.GetElementType ().IsValueType == false){
+				sb.Append ("out ");
+				parType = parType.GetElementType ();
+			}
 		
 			sb.Append (FormatType (mi.DeclaringType, parType));
 			sb.Append (" ");
@@ -1270,6 +1282,7 @@ public class Generator {
 		var args = new StringBuilder ();
 		var convs = new StringBuilder ();
 		var disposes = new StringBuilder ();
+		var byRefPostProcessing = new StringBuilder();
 		
 		indent++;
 		foreach (var pi in mi.GetParameters ()){
@@ -1329,8 +1342,22 @@ public class Generator {
 				disposes.AppendFormat (extra + "\t\t\tblock_ptr_{0}->CleanupBlock ();\n", pi.Name);
 			}
 
+			// Handle ByRef
+			if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType == false){
+				print ("IntPtr {0}Ptr = Marshal.AllocHGlobal(4);", pi.Name);
+				print ("Marshal.WriteInt32({0}Ptr, 0);", pi.Name);
+				print ("");
+				
+				byRefPostProcessing.AppendLine();
+				byRefPostProcessing.AppendFormat("\t\t\tIntPtr {0}Value = Marshal.ReadIntPtr({0}Ptr);", pi.Name);
+				byRefPostProcessing.AppendLine();
+				byRefPostProcessing.AppendFormat("\t\t\t{0} = {0}Value != IntPtr.Zero ? ({1})Runtime.GetNSObject({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
+				byRefPostProcessing.AppendLine();
+				byRefPostProcessing.AppendFormat("\t\t\tMarshal.FreeHGlobal({0}Ptr);", pi.Name);
+				byRefPostProcessing.AppendLine();
+			}
 			// Insert parameter checking
-			if (!null_allowed_override && ParameterNeedsNullCheck (pi, mi)){
+			else if (!null_allowed_override && ParameterNeedsNullCheck (pi, mi)){
 				print ("if ({0} == null)", pi.Name);
 				print ("\tthrow new ArgumentNullException (\"{0}\");", pi.Name);
 			}
@@ -1363,7 +1390,8 @@ public class Generator {
 		bool use_temp_return =
 			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
 			(HasAttribute (mi, typeof (FactoryAttribute))) ||
-			(assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ()))));
+			(assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ())))) ||
+			byRefPostProcessing.Length > 0;
 		
 
 		if (use_temp_return)
@@ -1405,6 +1433,8 @@ public class Generator {
 		}
 		if (HasAttribute (mi, typeof (FactoryAttribute)))
 			print ("ret.Release (); // Release implicit ref taken by GetNSObject");
+		if (byRefPostProcessing.Length > 0)
+			print (byRefPostProcessing.ToString ());
 		if (use_temp_return)
 			print ("return ret;");
 
@@ -1699,7 +1729,7 @@ public class Generator {
 
 			if (field_exports.Count != 0){
 				string library_name = type.Namespace.Substring (MainPrefix.Length+1);
-				print ("static IntPtr libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name );
+				print ("static IntPtr libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
 
 				foreach (var field_pi in field_exports){
 					string fieldTypeName = FormatType (field_pi.DeclaringType, field_pi.PropertyType);
