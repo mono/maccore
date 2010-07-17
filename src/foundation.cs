@@ -97,6 +97,9 @@ namespace MonoMac.Foundation
 
 		[Field ("NSParagraphStyleAttributeName")]
 		NSString ParagraphStyleAttributeName { get; }
+
+		[Field ("NSForegroundColorAttributeName")]
+		NSString ForegroundColorAttributeName { get; }
 	}
 
 	[BaseType (typeof (NSObject),
@@ -828,6 +831,89 @@ namespace MonoMac.Foundation
 
 		[Export ("callStackReturnAddresses")]
 		NSNumber[] CallStackReturnAddresses { get; }
+	}
+
+	delegate void NSExpressionHandler (NSObject evaluatedObject, NSExpression [] expressions, NSMutableDictionary context);
+	
+	[BaseType (typeof (NSObject))]
+	interface NSExpression {
+
+		[Static, Export ("expressionForConstantValue:")]
+		NSExpression FromConstant (NSObject obj);
+
+		[Static, Export ("expressionForEvaluatedObject")]
+		NSExpression ExpressionForEvaluatedObject { get; }
+
+		[Static, Export ("expressionForVariable:")]
+		NSExpression FromVariable (string string1);
+
+		[Static, Export ("expressionForKeyPath:")]
+		NSExpression FromKeyPath (string keyPath);
+
+		[Static, Export ("expressionForFunction:arguments:")]
+		NSExpression FromFuction (string name, NSExpression[] parameters);
+
+		//+ (NSExpression *)expressionForAggregate:(NSArray *)subexpressions; 
+		[Export ("expressionForAggregate:")]
+		NSExpression FromAggregate (NSExpression [] subexpressions);
+
+		[Static, Export ("expressionForUnionSet:with:")]
+		NSExpression FromUnionSet (NSExpression left, NSExpression right);
+
+		[Static, Export ("expressionForIntersectSet:with:")]
+		NSExpression FromIntersectSet (NSExpression left, NSExpression right);
+
+		[Static, Export ("expressionForMinusSet:with:")]
+		NSExpression FromMinusSet (NSExpression left, NSExpression right);
+
+		//+ (NSExpression *)expressionForSubquery:(NSExpression *)expression usingIteratorVariable:(NSString *)variable predicate:(id)predicate; 
+		[Static, Export ("expressionForSubquery:usingIteratorVariable:predicate:")]
+		NSExpression FromSubquery (NSExpression expression, string variable, NSObject predicate);
+
+		[Static, Export ("expressionForFunction:selectorName:arguments:")]
+		NSExpression FromFunction (NSExpression target, string name, NSExpression[] parameters);
+
+		[Static, Export ("expressionForBlock:selectorName:arguments:")]
+		NSExpression FromFunction (NSExpressionHandler target, NSExpression[] parameters);
+
+		[Export ("initWithExpressionType:")]
+		IntPtr Constructor (NSExpressionType type);
+
+		[Export ("expressionType")]
+		NSExpressionType ExpressionType { get; }
+
+		[Export ("constantValue")]
+		NSObject ConstantValue { get; }
+
+		[Export ("keyPath")]
+		string KeyPath { get; }
+
+		[Export ("function")]
+		string Function { get; }
+
+		[Export ("variable")]
+		string Variable { get; }
+
+		[Export ("operand")]
+		NSExpression Operand { get; }
+
+		[Export ("arguments")]
+		NSExpression[] Arguments { get; }
+
+		[Export ("collection")]
+		NSObject Collection { get; }
+
+		[Export ("predicate")]
+		NSPredicate Predicate { get; }
+
+		[Export ("leftExpression")]
+		NSExpression LeftExpression { get; }
+
+		[Export ("rightExpression")]
+		NSExpression RightExpression { get; }
+
+		[Export ("expressionValueWithObject:context:")]
+		NSExpression ExpressionValueWithObject (NSObject object1, NSMutableDictionary context);
 	}
 
 	[BaseType (typeof (NSObject))]

@@ -160,4 +160,18 @@ namespace MonoMac.Foundation  {
 		SearchBackwards = 1,
 		SearchAnchored = 2
 	}
+
+	public enum NSExpressionType {
+		ConstantValue = 0, 
+		EvaluatedObject, 
+		Variable, 
+		KeyPath, 
+		Function,
+		UnionSet, 
+		IntersectSet, 
+		MinusSet, 
+		Subquery = 13,
+		NSAggregate,
+		Block = 19
+	}
 }
