@@ -112,6 +112,14 @@ public class BaseTypeAttribute : Attribute {
 	public Type [] Events { get; set; }
 	public string [] Delegates { get; set; }
 	public bool Singleton { get; set; }
+
+	// If set, the code will keep a reference in the EnsureXXX method for
+	// delegates and will clear the reference to the object in the method
+	// referenced by KeepUntilRef.   Currently uses an ArrayList, so this
+	// is not really designed as a workaround for systems that create
+	// too many objects, but two cases in particular that users keep
+	// trampling on: UIAlertView and UIActionSheet
+	public string KeepRefUntil { get; set; }
 }
 
 //
@@ -1785,20 +1793,35 @@ public class Generator {
 					string delName = bta.Delegates [delidx++];
 
 					// The ensure method
-					print ("_{0} Ensure{0} ()", dtype.Name);
+					if (bta.KeepRefUntil == null)
+						print ("_{0} Ensure{0} ()", dtype.Name);
+					else {
+						print ("static System.Collections.ArrayList instances;");
+						print ("_{0} Ensure{0} (object oref)", dtype.Name);
+					}
+					
 					print ("{"); indent++;
 					print ("var del = {0};", delName);
 					print ("if (del == null || (!(del is _{0}))){{", dtype.Name);
-					print ("\tdel = new _{0} ();", dtype.Name);
+					print ("\tdel = new _{0} ({1});", dtype.Name, bta.KeepRefUntil == null ? "" : "oref");
+					if (bta.KeepRefUntil != null){
+						print ("\tif (instances == null) instances = new System.Collections.ArrayList ();");
+						print ("\tinstances.Add (this);");
+					}
 					print ("\t{0} = del;", delName);
 					print ("}");
 					print ("return (_{0}) del;", dtype.Name);
 					indent--; print ("}\n");
 					
 					print ("[Register]");
-					print ("class _{0} : {1} {{", dtype.Name, RenderType (dtype));
+					print ("class _{0} : {1} {{ ", dtype.Name, RenderType (dtype));
 					indent++;
-					print ("public _{0} () {{}}\n", dtype.Name);
+					if (bta.KeepRefUntil != null){
+						print ("object reference;");
+						print ("public _{0} (object reference) {{ this.reference = reference; }}\n", dtype.Name);
+					} else 
+						print ("public _{0} () {{}}\n", dtype.Name);
+						
 
 					foreach (var mi in dtype.GetMethods ()){
 						if (HasAttribute (mi, typeof (AlphaAttribute)) && Alpha == false)
@@ -1830,6 +1853,9 @@ public class Generator {
 						print ("public override {0} {1} ({2})", RenderType (mi.ReturnType), mi.Name, RenderParameterDecl (pars));
 						print ("{"); indent++;
 
+						if (mi.Name == bta.KeepRefUntil)
+							print ("instances.Remove (reference);");
+						
 						if (mi.ReturnType == typeof (void)){
 							string eaname;
 								
@@ -1884,19 +1910,21 @@ public class Generator {
 						// Skip property getter/setters
 						if (mi.IsSpecialName && (mi.Name.StartsWith ("get_") || mi.Name.StartsWith ("set_")))
 							continue;
+
+						string ensureArg = bta.KeepRefUntil == null ? "" : "this";
 						
 						if (mi.ReturnType == typeof (void)){
 							if (bta.Singleton && mi.GetParameters ().Length == 0 || mi.GetParameters ().Length == 1)
 								print ("public event EventHandler {0} {{", CamelCase (GetEventName (mi)));
 							else 
 								print ("public event EventHandler<{0}> {1} {{", GetEventArgName (mi), CamelCase (GetEventName (mi)));
-							print ("\tadd {{ Ensure{0} ().{1} += value; }}", dtype.Name, PascalCase (mi.Name));
-							print ("\tremove {{ Ensure{0} ().{1} -= value; }}", dtype.Name, PascalCase (mi.Name));
+							print ("\tadd {{ Ensure{0} ({1}).{2} += value; }}", dtype.Name, ensureArg, PascalCase (mi.Name));
+							print ("\tremove {{ Ensure{0} ({1}).{2} -= value; }}", dtype.Name, ensureArg, PascalCase (mi.Name));
 							print ("}\n");
 						} else {
 							print ("public {0} {1} {{", GetDelegateName (mi), CamelCase (mi.Name));
-							print ("\tget {{ return Ensure{0} ().{1}; }}", dtype.Name, PascalCase (mi.Name));
-							print ("\tset {{ Ensure{0} ().{1} = value; }}", dtype.Name, PascalCase (mi.Name));
+							print ("\tget {{ return Ensure{0} ({1}).{2}; }}", dtype.Name, ensureArg, PascalCase (mi.Name));
+							print ("\tset {{ Ensure{0} ({1}).{2} = value; }}", dtype.Name, ensureArg, PascalCase (mi.Name));
 							print ("}\n");
 						}
 					}
