@@ -65,5 +65,11 @@ namespace MonoMac.Foundation {
 			h = Messaging.IntPtr_objc_msgSend_IntPtr_int (h, selInitWithDataEncoding, data.Handle, (int)encoding);
 			return new NSString (h);
 		}
+
+		public char this [int idx] {
+			get {
+				return _characterAtIndex (idx);
+			}
+		}
 	}
 }

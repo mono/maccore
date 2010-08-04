@@ -1776,9 +1776,9 @@ namespace MonoMac.Foundation
 		NSError Error { get; }
 	}
 
-#if !MONOMAC
 	[BaseType (typeof (NSObject)), Bind ("NSString")]
 	interface NSString2 {
+#if !MONOMAC
 		[Bind ("sizeWithFont:")]
 		SizeF StringSize (UIFont font);
 		
@@ -1790,8 +1790,13 @@ namespace MonoMac.Foundation
 		
 		[Bind ("sizeWithFont:constrainedToSize:lineBreakMode:")]
 		SizeF StringSize (UIFont font, SizeF constrainedToSize, UILineBreakMode lineBreakMode);
-	}
 #endif
+		[Export ("characterAtIndex:")]
+		char _characterAtIndex (int index);
+
+		[Export ("length")]
+		int Length {get;}
+	}
 	
 	[BaseType (typeof (NSStream))]
 	public interface NSInputStream {
@@ -2917,5 +2922,408 @@ namespace MonoMac.Foundation
 	interface NSPurgeableData {
 		
 	}
+
+	[BaseType (typeof (NSObject))]
+	interface NSFileManager {
+		[Field("NSFileType")]
+		NSString NSFileType { get; }
+
+		[Field("NSFileTypeDirectory")]
+		NSString TypeDirectory { get; }
+
+		[Field("NSFileTypeRegular")]
+		NSString TypeRegular { get; }
+
+		[Field("NSFileTypeSymbolicLink")]
+		NSString TypeSymbolicLink { get; }
+
+		[Field("NSFileTypeSocket")]
+		NSString TypeSocket { get; }
+
+		[Field("NSFileTypeCharacterSpecial")]
+		NSString TypeCharacterSpecial { get; }
+
+		[Field("NSFileTypeBlockSpecial")]
+		NSString TypeBlockSpecial { get; }
+
+		[Field("NSFileTypeUnknown")]
+		NSString TypeUnknown { get; }
+
+		[Field("NSFileSize")]
+		NSString Size { get; }
+
+		[Field("NSFileModificationDate")]
+		NSString ModificationDate { get; }
+
+		[Field("NSFileReferenceCount")]
+		NSString ReferenceCount { get; }
+
+		[Field("NSFileDeviceIdentifier")]
+		NSString DeviceIdentifier { get; }
+
+		[Field("NSFileOwnerAccountName")]
+		NSString OwnerAccountName { get; }
+
+		[Field("NSFileGroupOwnerAccountName")]
+		NSString GroupOwnerAccountName { get; }
+
+		[Field("NSFilePosixPermissions")]
+		NSString PosixPermissions { get; }
+
+		[Field("NSFileSystemNumber")]
+		NSString SystemNumber { get; }
+
+		[Field("NSFileSystemFileNumber")]
+		NSString SystemFileNumber { get; }
+
+		[Field("NSFileExtensionHidden")]
+		NSString ExtensionHidden { get; }
+
+		[Field("NSFileHFSCreatorCode")]
+		NSString HFSCreatorCode { get; }
+
+		[Field("NSFileHFSTypeCode")]
+		NSString HFSTypeCode { get; }
+
+		[Field("NSFileImmutable")]
+		NSString Immutable { get; }
+
+		[Field("NSFileAppendOnly")]
+		NSString AppendOnly { get; }
+
+		[Field("NSFileCreationDate")]
+		NSString CreationDate { get; }
+
+		[Field("NSFileOwnerAccountID")]
+		NSString OwnerAccountID { get; }
+
+		[Field("NSFileGroupOwnerAccountID")]
+		NSString GroupOwnerAccountID { get; }
+
+		[Field("NSFileBusy")]
+		NSString Busy { get; }
+
+		[Field("NSFileSystemSize")]
+		NSString SystemSize { get; }
+
+		[Field("NSFileSystemFreeSize")]
+		NSString SystemFreeSize { get; }
+
+		[Field("NSFileSystemNodes")]
+		NSString SystemNodes { get; }
+
+		[Field("NSFileSystemFreeNodes")]
+		NSString SystemFreeNodes { get; }
+
+		[Static, Export ("defaultManager")]
+		NSFileManager DefaultManager { get; }
+
+                [Export ("delegate")]
+                NSObject WeakDelegate { get; set; }
+
+                [Wrap ("WeakDelegate")]
+                NSFileManagerDelegate Delegate { get; set; }
+
+		[Export ("setAttributes:ofItemAtPath:error:")]
+		bool SetAttributes (NSDictionary attributes, string path, out NSError error);
+
+		[Export ("createDirectoryAtPath:withIntermediateDirectories:attributes:error:")]
+		bool CreateDirectory (string path, bool createIntermediates, NSDictionary attributes, out NSError error);
+
+		[Export ("contentsOfDirectoryAtPath:error:")]
+		string[] GetDirectoryContent (string path, out NSError error);
+
+		[Export ("subpathsOfDirectoryAtPath:error:")]
+		string[] GetDirectoryContentRecursive (string path, out NSError error);
+
+		[Export ("attributesOfItemAtPath:error:")]
+		NSDictionary GetAttributes (string path, out NSError error);
+
+		[Export ("attributesOfFileSystemForPath:error:")]
+		NSDictionary GetFileSystemAttributes (string path, out NSError error);
+
+		[Export ("createSymbolicLinkAtPath:withDestinationPath:error:")]
+		bool CreateSymbolicLink (string path, string destPath, out NSError error);
+
+		[Export ("destinationOfSymbolicLinkAtPath:error:")]
+		string GetSymbolicLinkDestination (string path, out NSError error);
+
+		[Export ("copyItemAtPath:toPath:error:")]
+		bool Copy (string srcPath, string dstPath, out NSError error);
+
+		[Export ("moveItemAtPath:toPath:error:")]
+		bool Move (string srcPath, string dstPath, out NSError error);
+
+		[Export ("linkItemAtPath:toPath:error:")]
+		bool Link (string srcPath, string dstPath, out NSError error);
+
+		[Export ("removeItemAtPath:error:")]
+		bool Remove (string path, out NSError error);
+
+		[Export ("linkPath:toPath:handler:")]
+		bool LinkPath (string src, string dest, IntPtr handler);
+
+		[Export ("copyPath:toPath:handler:")]
+		bool CopyPath (string src, string dest, IntPtr handler);
+
+		[Export ("movePath:toPath:handler:")]
+		bool MovePath (string src, string dest, IntPtr handler);
+
+		[Export ("removeFileAtPath:handler:")]
+		bool RemoveFileAtPath (string path, IntPtr handler);
+
+		[Export ("currentDirectoryPath")]
+		string CurrentDirectory { get; [Bind ("changeCurrentDirectoryPath:")] set; }
+
+		[Export ("fileExistsAtPath:")]
+		bool FileExists (string path);
+
+		[Export ("fileExistsAtPath:isDirectory:")]
+		bool FileExists (string path, bool isDirectory);
+
+		[Export ("isReadableFileAtPath:")]
+		bool IsReadableFile (string path);
+
+		[Export ("isWritableFileAtPath:")]
+		bool IsWritableFile (string path);
+
+		[Export ("isExecutableFileAtPath:")]
+		bool IsExecutableFile (string path);
+
+		[Export ("isDeletableFileAtPath:")]
+		bool IsDeletableFile (string path);
+
+		[Export ("contentsEqualAtPath:andPath:")]
+		bool ContentsEqual (string path1, string path2);
+
+		[Export ("displayNameAtPath:")]
+		string DisplayName (string path);
+
+		[Export ("componentsToDisplayForPath:")]
+		string[] ComponentsToDisplay (string path);
+
+		[Export ("enumeratorAtPath:")]
+		NSDirectoryEnumerator GetEnumerator (string path);
+
+		[Export ("subpathsAtPath:")]
+		string[] Subpaths (string path);
+
+		[Export ("contentsAtPath:")]
+		NSData Contents (string path);
+
+		[Export ("createFileAtPath:contents:attributes:")]
+		bool CreateFile (string path, NSData data, NSDictionary attr);
+
+		////- (const char *)fileSystemRepresentationWithPath:(NSString *)path;
+		//[Export ("fileSystemRepresentationWithPath:")]
+		//const char FileSystemRepresentationWithPath (string path);
+
+		////- (NSString *)stringWithFileSystemRepresentation:(const char *)str length:(NSUInteger)len;
+		//[Export ("stringWithFileSystemRepresentation:length:")]
+		//string StringWithFileSystemRepresentation (const char str, uint len);
+
+	}
+
+	[BaseType(typeof(NSObject))]
+	[Model]
+	interface NSFileManagerDelegate {
+        	[Export("fileManager:shouldCopyItemAtPath:toPath:")]
+        	bool ShouldCopyItemAtPath(NSFileManager fm, NSString srcPath, NSString dstPath);
+
+#if MONOTOUCH
+        	[Export("fileManager:shouldCopyItemAtURL:toURL:")]
+        	bool ShouldCopyItemAtUrl(NSFileManager fm, NSUrl srcUrl, NSUrl dstUrl);
+		
+		[Export ("fileManager:shouldLinkItemAtURL:toURL:")]
+		bool ShouldLinkItemAtUrl (NSFileManager fileManager, NSUrl srcUrl, NSUrl dstUrl);
+
+		[Export ("fileManager:shouldMoveItemAtURL:toURL:")]
+		bool ShouldMoveItemAtUrl (NSFileManager fileManager, NSUrl dstUrl, NSUrl dstUrl);
+
+		[Export ("fileManager:shouldProceedAfterError:copyingItemAtURL:toURL:")]
+		bool ShouldProceedAfterErrorCopyingItem (NSFileManager fileManager, NSError error, NSUrl srcUrl, NSUrl dstUrl);
+
+		[Export ("fileManager:shouldProceedAfterError:linkingItemAtURL:toURL:")]
+		bool ShouldProceedAfterErrorLinkingItem (NSFileManager fileManager, NSError error, NSUrl srcUrl, NSUrl dstUrl);
+
+		[Export ("fileManager:shouldProceedAfterError:movingItemAtURL:toURL:")]
+		bool ShouldProceedAfterErrorMovingItem (NSFileManager fileManager, NSError error, NSUrl srcUrl, NSUrl dstUrl);
+
+		[Export ("fileManager:shouldRemoveItemAtURL:")]
+		bool ShouldRemoveItemAtUrl (NSFileManager fileManager, NSUrl url);
+
+		[Export ("fileManager:shouldProceedAfterError:removingItemAtURL:")]
+		bool ShouldProceedAfterErrorRemovingItem (NSFileManager fileManager, NSError error, NSUrl url);
+#endif
+		
+		[Export ("fileManager:shouldProceedAfterError:")]
+		bool ShouldProceedAfterError (NSFileManager fm, NSDictionary errorInfo);
+
+		// Deprecated
+		//[Export ("fileManager:willProcessPath:")]
+		//void WillProcessPath (NSFileManager fm, string path);
+
+		[Export ("fileManager:shouldCopyItemAtPath:toPath:")]
+		bool ShouldCopyItemAtPath (NSFileManager fileManager, string srcPath, string dstPath);
+
+		[Export ("fileManager:shouldProceedAfterError:copyingItemAtPath:toPath:")]
+		bool ShouldProceedAfterErrorCopyingItem (NSFileManager fileManager, NSError error, string srcPath, string dstPath);
+
+		[Export ("fileManager:shouldMoveItemAtPath:toPath:")]
+		bool ShouldMoveItemAtPath (NSFileManager fileManager, string srcPath, string dstPath);
+
+		[Export ("fileManager:shouldProceedAfterError:movingItemAtPath:toPath:")]
+		bool ShouldProceedAfterErrorMovingItem (NSFileManager fileManager, NSError error, string srcPath, string dstPath);
+
+		[Export ("fileManager:shouldLinkItemAtPath:toPath:")]
+		bool ShouldLinkItemAtPath (NSFileManager fileManager, string srcPath, string dstPath);
+
+		[Export ("fileManager:shouldProceedAfterError:linkingItemAtPath:toPath:")]
+		bool ShouldProceedAfterErrorLinkingItem (NSFileManager fileManager, NSError error, string srcPath, string dstPath);
+
+		[Export ("fileManager:shouldRemoveItemAtPath:")]
+		bool ShouldRemoveItemAtPath (NSFileManager fileManager, string path);
+
+		[Export ("fileManager:shouldProceedAfterError:removingItemAtPath:")]
+		bool ShouldProceedAfterErrorRemovingItem (NSFileManager fileManager, NSError error, string path);
+	}
+    
+	[BaseType (typeof (NSEnumerator))]
+	interface NSDirectoryEnumerator {
+		[Export ("fileAttributes")]
+		NSDictionary FileAttributes { get; }
+
+		[Export ("directoryAttributes")]
+		NSDictionary DirectoryAttributes { get; }
+
+		[Export ("skipDescendents")]
+		void SkipDescendents ();
+
+#if MONOTOUCH
+		[Export ("level")]
+		int Level { get; }
+#endif
+#if MONOMAC
+		////- (unsigned long long)fileSize;
+		//[Export ("fileSize")]
+		//unsigned long long FileSize ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileModificationDate")]
+		NSDate FileModificationDate ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileType")]
+		string FileType ([Target] NSDictionary fileAttributes);
+
+		[Export ("filePosixPermissions")]
+		uint FilePosixPermissions ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileOwnerAccountName")]
+		string FileOwnerAccountName ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileGroupOwnerAccountName")]
+		string FileGroupOwnerAccountName ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileSystemNumber")]
+		int FileSystemNumber ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileSystemFileNumber")]
+		uint FileSystemFileNumber ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileExtensionHidden")]
+		bool FileExtensionHidden ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileHFSCreatorCode")]
+		uint FileHFSCreatorCode ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileHFSTypeCode")]
+		uint FileHFSTypeCode ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileIsImmutable")]
+		bool FileIsImmutable ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileIsAppendOnly")]
+		bool FileIsAppendOnly ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileCreationDate")]
+		NSDate FileCreationDate ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileOwnerAccountID")]
+		NSNumber FileOwnerAccountID ([Target] NSDictionary fileAttributes);
+
+		[Export ("fileGroupOwnerAccountID")]
+		NSNumber FileGroupOwnerAccountID ([Target] NSDictionary fileAttributes);
+#endif
+	}
+
+#if MONOMAC
+	[BaseType (typeof (NSObject))]
+	interface NSUrlDownload {
+		[Static, Export ("canResumeDownloadDecodedWithEncodingMIMEType:")]
+		bool CanResumeDownloadDecodedWithEncodingMimeType (string mimeType);
+
+		[Export ("initWithRequest:delegate:")]
+		IntPtr Constructor (NSUrlRequest request, NSObject delegate1);
+
+		[Export ("initWithResumeData:delegate:path:")]
+		IntPtr Constructor (NSData resumeData, NSObject delegate1, string path);
+
+		[Export ("cancel")]
+		void Cancel ();
+
+		[Export ("setDestination:allowOverwrite:")]
+		void SetDestination (string path, bool allowOverwrite);
+
+		[Export ("request")]
+		NSUrlRequest Request { get; }
+
+		[Export ("resumeData")]
+		NSData ResumeData { get; }
+
+		[Export ("deletesFileUponFailure")]
+		bool DeletesFileUponFailure { get; set; }
+	}
+
+    	[BaseType (typeof (NSObject))]
+    	[Model]
+	interface NSUrlDownloadDelegate {
+		[Export ("downloadDidBegin:")]
+		void DownloadBegan (NSUrlDownload download);
+
+		[Export ("download:willSendRequest:redirectResponse:")]
+		NSUrlRequest WillSendRequest (NSUrlDownload download, NSUrlRequest request, NSUrlResponse redirectResponse);
+
+		[Export ("download:didReceiveAuthenticationChallenge:")]
+		void ReceivedAuthenticationChallenge (NSUrlDownload download, NSUrlAuthenticationChallenge challenge);
+
+		[Export ("download:didCancelAuthenticationChallenge:")]
+		void CanceledAuthenticationChallenge (NSUrlDownload download, NSUrlAuthenticationChallenge challenge);
+
+		[Export ("download:didReceiveResponse:")]
+		void ReceivedResponse (NSUrlDownload download, NSUrlResponse response);
+
+		//- (void)download:(NSUrlDownload *)download willResumeWithResponse:(NSUrlResponse *)response fromByte:(long long)startingByte;
+		[Export ("download:willResumeWithResponse:fromByte:")]
+		void Resume (NSUrlDownload download, NSUrlResponse response, long startingByte);
+
+		//- (void)download:(NSUrlDownload *)download didReceiveDataOfLength:(NSUInteger)length;
+		[Export ("download:didReceiveDataOfLength:")]
+		void ReceivedData (NSUrlDownload download, uint length);
+
+		[Export ("download:shouldDecodeSourceDataOfMIMEType:")]
+		bool DecodeSourceData (NSUrlDownload download, string encodingType);
+
+		[Export ("download:decideDestinationWithSuggestedFilename:")]
+		void DecideDestination (NSUrlDownload download, string suggestedFilename);
+
+		[Export ("download:didCreateDestination:")]
+		void CreatedDestination (NSUrlDownload download, string path);
+
+		[Export ("downloadDidFinish:")]
+		void Finished (NSUrlDownload download);
+
+		[Export ("download:didFailWithError:")]
+        	void FailedWithError(NSUrlDownload download, NSError error);
+	}
+#endif
 }
 

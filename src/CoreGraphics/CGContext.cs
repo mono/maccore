@@ -1002,7 +1002,7 @@ namespace MonoMac.CoreGraphics {
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static RectangleF CGContextConvertRectToUserSpace(IntPtr context, RectangleF rect);
-		public RectangleF ConvertRectToUserSPace (RectangleF rect)
+		public RectangleF ConvertRectToUserSpace (RectangleF rect)
 		{
 			return CGContextConvertRectToUserSpace (handle, rect);
 		}

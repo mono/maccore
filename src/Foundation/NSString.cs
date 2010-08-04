@@ -53,14 +53,14 @@ namespace MonoMac.Foundation {
 		UTF32LittleEndian = 0x9c000100,
 	};
 
-#if GENERATOR
+#if GENERATOR && !MONOMAC
 	[Register ("NSString")]
 #endif
 	public partial class NSString : NSObject {
 		static IntPtr selUTF8String = Selector.sel_registerName ("UTF8String");
 		static IntPtr selInitWithUTF8String = Selector.sel_registerName ("initWithUTF8String:");
 
-#if GENERATOR
+#if GENERATOR && !MONOMAC
 		public NSString (IntPtr handle) : base (handle) {
 		}
 #endif
