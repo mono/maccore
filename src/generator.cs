@@ -1806,7 +1806,7 @@ public class Generator {
 					print ("\tdel = new _{0} ({1});", dtype.Name, bta.KeepRefUntil == null ? "" : "oref");
 					if (bta.KeepRefUntil != null){
 						print ("\tif (instances == null) instances = new System.Collections.ArrayList ();");
-						print ("\tinstances.Add (this);");
+						print ("\tif (!instances.Contains (this)) instances.Add (this);");
 					}
 					print ("\t{0} = del;", delName);
 					print ("}");

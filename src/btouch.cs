@@ -202,7 +202,7 @@ class BindingTouch {
 					       String.Join (" ", sources.Skip (1).ToArray ()),
 					       refs, unsafef ? "-unsafe" : "", baselibdll);
 
-			si = new ProcessStartInfo ("gmcs", cargs) {
+			si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
 			};
 			if (verbose)
