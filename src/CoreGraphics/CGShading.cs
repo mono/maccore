@@ -25,6 +25,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Drawing;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
@@ -61,7 +62,7 @@ namespace MonoMac.CoreGraphics {
 				throw new ObjectDisposedException ("colorspace");
 			if (function == null)
 				throw new ArgumentNullException ("function");
-			if (function.Handle == null)
+			if (function.Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("function");
 
 			return new CGShading (CGShadingCreateAxial (colorspace.Handle, start, end, function.Handle, extendStart, extendEnd));
@@ -80,7 +81,7 @@ namespace MonoMac.CoreGraphics {
 				throw new ObjectDisposedException ("colorspace");
 			if (function == null)
 				throw new ArgumentNullException ("function");
-			if (function.Handle == null)
+			if (function.Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("function");
 
 			return new CGShading (CGShadingCreateRadial (colorspace.Handle, start, startRadius, end, endRadius,

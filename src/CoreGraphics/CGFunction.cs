@@ -64,15 +64,6 @@ namespace MonoMac.CoreGraphics {
 			GC.SuppressFinalize (this);
 		}
 
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CGFunctionRetain (handle);
-				handle = IntPtr.Zero;
-				
-			}
-		}
-		
 		public IntPtr Handle {
 			get { return handle; }
 		}
@@ -88,7 +79,6 @@ namespace MonoMac.CoreGraphics {
 				CGFunctionRelease (handle);
 				handle = IntPtr.Zero;
 				gch.Free ();
-				gch = null;
 				evaluate = null;
 			}
 		}
@@ -98,24 +88,24 @@ namespace MonoMac.CoreGraphics {
 		[StructLayout (LayoutKind.Sequential)]
 		struct CGFunctionCallbacks {
 			public uint version;
-			CGFunctionEvaluateCallback evaluate;
-			IntPtr release;
+			public CGFunctionEvaluateCallback evaluate;
+			public IntPtr release;
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGFunctionCreate (IntPtr data, int domainCount, float [] domain, int rangeDomain, float [] range, ref CGFunctionCallbacks callbacks);
 		
-		public unsafe delegate CGFunctionEvaluate (float *data, float *outData);
+		unsafe public delegate void CGFunctionEvaluate (float *data, float *outData);
 
-		public CGFunction (float [] domain, float [] range, CGFunctionEvaluate callback)
+		public unsafe CGFunction (float [] domain, float [] range, CGFunctionEvaluate callback)
 		{
 			if (domain != null){
 				if ((domain.Length % 2) != 0)
-					throw new ArgumentException ("The domain array must consist of pairs of values", "domain")
+					throw new ArgumentException ("The domain array must consist of pairs of values", "domain");
 			}
-			if (range != null){
+			if (range != null) {
 				if ((range.Length % 2) != 0)
-					throw new ArgumentException ("The range array must consist of pairs of values", "range")
+					throw new ArgumentException ("The range array must consist of pairs of values", "range");
 			}
 			if (callback == null)
 				throw new ArgumentNullException ("callback");
@@ -124,11 +114,11 @@ namespace MonoMac.CoreGraphics {
 
 			CGFunctionCallbacks cbacks;
 			cbacks.version = 0;
-			cbacks.evaluate = EvaluateCallback;
+			cbacks.evaluate = new CGFunctionEvaluateCallback (EvaluateCallback);
 			cbacks.release = IntPtr.Zero;
 
 			gch = GCHandle.Alloc (this);
-			var handle = CGFunctionCreate (GCHandle.ToIntPtr (gch), domain != null ? domain.Length/2 : null, domain, range != null ? range.Length/2 : null, ref cbacks);
+			handle = CGFunctionCreate (GCHandle.ToIntPtr (gch), domain != null ? domain.Length/2 : 0, domain, range != null ? range.Length/2 : 0, range, ref cbacks);
 		}
 
 #if !MONOMAC
@@ -138,7 +128,7 @@ namespace MonoMac.CoreGraphics {
 			GCHandle lgc = GCHandle.FromIntPtr (info);
 			CGFunction container = (CGFunction) lgc.Target;
 
-			container.evaluate (intput, output);
+			container.evaluate (input, output);
 		}
 
 #endif
