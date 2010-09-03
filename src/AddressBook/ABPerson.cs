@@ -72,6 +72,12 @@ namespace MonoMac.AddressBook {
 		Url,
 	}
 
+	[Since (4,1)]
+	public enum ABPersonImageFormat {
+		Thumbnail = 0,
+		OriginalSize = 2
+	}
+	
 	static class ABPersonPropertyId {
 
 		public static int Address {get; private set;}
@@ -796,6 +802,15 @@ namespace MonoMac.AddressBook {
 				case ABPersonProperty.Url:                 return GetUrls ();
 			}
 			throw new ArgumentException ("Invalid property value: " + property);
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABPersonCopyImageDataWithFormat (IntPtr handle, ABPersonImageFormat format);
+		
+		[Since (4,1)]
+		NSData CopyImage (ABPersonImageFormat format)
+		{
+			return new NSData (ABPersonCopyImageDataWithFormat (Handle, format));
 		}
 	}
 }
