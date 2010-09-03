@@ -1745,4 +1745,33 @@ namespace MonoMac.AVFoundation {
                 [Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
                 void LoadValuesAsynchronously (string [] keys, NSAction handler);
         }
+
+	[Since (4,1)]
+	[BaseType (typeof (AVPlayer))]
+	interface AVQueuePlayer {
+		[Static, Export ("queuePlayerWithItems:")]
+		AVQueuePlayer FromItems (AVPlayerItem [] items);
+
+		[Export ("initWithItems:")]
+		IntPtr Constructor (AVPlayerItem [] items);
+
+		[Export ("items")]
+		AVPlayerItem [] Items { get; }
+
+		[Export ("advanceToNextItem")]
+		void AdvanceToNextItem ();
+
+		[Export ("canInsertItem:afterItem:")]
+		bool CanInsert (AVPlayerItem item, AVPlayerItem afterItem);
+
+		[Export ("insertItem:afterItem:")]
+		void InsertItem (AVPlayerItem item, AVPlayerItem afterItem);
+
+		[Export ("removeItem:")]
+		void RemoveItem (AVPlayerItem item);
+
+		[Export ("removeAllItems")]
+		void RemoveAllItems ();
+	}
+	
 }
