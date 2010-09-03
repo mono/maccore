@@ -544,6 +544,12 @@ public class Generator {
 				continue;
 			}
 
+			if (pi.ParameterType == typeof (string [])){
+				pars.AppendFormat ("string [] {0}", pi.Name);
+				invoke.AppendFormat ("{0}", pi.Name);
+				continue;
+			}
+			
 			if (pi.ParameterType.IsArray){
 				Type et = pi.ParameterType.GetElementType ();
 				if (IsWrappedType (et)){
@@ -1763,7 +1769,10 @@ public class Generator {
 						indent--;
 						print ("return _{0};", field_pi.Name);
 					} else {
-						Console.WriteLine ("Unsupported type for Fields: {0}", fieldTypeName);
+						if (field_pi.PropertyType == typeof (string))
+							Console.WriteLine ("Unsupported type for Fields (string), you probably meant NSString");
+						else
+							Console.WriteLine ("Unsupported type for Fields: {0}", fieldTypeName);
 						Environment.Exit (1);
 					}
 					
