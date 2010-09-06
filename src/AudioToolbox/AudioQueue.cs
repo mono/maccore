@@ -413,7 +413,37 @@ namespace MonoMac.AudioToolbox {
 				ref startTime,
 				out actualStartTime);
 		}
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioQueueStatus AudioQueueCreateTimeline (IntPtr AQ, out IntPtr timeline);
+
+		public AudioQueueTimeline CreateTimeline ()
+		{
+			IntPtr thandle;
+			
+			if (AudioQueueCreateTimeline (handle, out thandle) == AudioQueueStatus.Ok)
+				return new AudioQueueTimeline (handle, thandle);
+			return null;
+		}
 		
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioQueueStatus AudioQueueGetCurrentTime (IntPtr AQ, IntPtr timelineHandle, ref AudioTimeStamp time, ref bool discontinuty);
+
+		public AudioQueueStatus GetCurrentTime (AudioQueueTimeline timeline, ref AudioTimeStamp time, ref bool timelineDiscontinuty)
+		{
+			IntPtr arg;
+			if (timeline == null)
+				arg = IntPtr.Zero;
+			else {
+				arg = timeline.timelineHandle;
+				if (arg == IntPtr.Zero)
+					throw new ObjectDisposedException ("timeline");
+			}
+
+			return AudioQueueGetCurrentTime (handle, arg, ref time, ref timelineDiscontinuty);
+		}
+
+
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static AudioQueueStatus AudioQueueDeviceGetCurrentTime (IntPtr AQ, ref AudioTimeStamp time);
 
@@ -729,10 +759,6 @@ namespace MonoMac.AudioToolbox {
 		// Manipulating Audio Queue Properties
 		//   AudioQueueAddPropertyListener
 		//   AudioQueueRemovePropertyListener
-		// Handling Timing
-		//   AudioQueueCreateTimeline
-		//   AudioQueueDisposeTimeline
-		//   AudioQueueGetCurrentTime
 		// Performing Offline Rendering
 		//   AudioQueueSetOfflineRenderFormat
 		//   AudioQueueOfflineRender
@@ -885,6 +911,36 @@ namespace MonoMac.AudioToolbox {
 			gch.Free ();
 			throw new AudioQueueException (code);
 		}
+	}
+
+	public class AudioQueueTimeline : IDisposable {
+		internal protected IntPtr timelineHandle, queueHandle;
+
+		internal AudioQueueTimeline (IntPtr queueHandle, IntPtr timelineHandle)
+		{
+			this.queueHandle = queueHandle;
+			this.timelineHandle = timelineHandle;
+		}
 		
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioQueueStatus AudioQueueDisposeTimeline (IntPtr AQ, IntPtr timeline);
+
+		public void Dispose ()
+		{
+			Dispose (true);
+		}
+	
+		public virtual void Dispose (bool disposing)
+		{
+			if (timelineHandle != IntPtr.Zero){
+				AudioQueueDisposeTimeline (queueHandle, timelineHandle);
+				timelineHandle = IntPtr.Zero;
+			}
+		}
+
+		~AudioQueueTimeline ()
+		{
+			Dispose (false);
+		}
 	}
 }
