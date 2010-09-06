@@ -27,6 +27,7 @@
 //
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
@@ -410,11 +411,17 @@ namespace MonoMac.AudioToolbox {
 		public short Hours;
 		public short Minutes;
 		public short Seconds;
-		public short Frames;		
+		public short Frames;
+
+		public override string ToString ()
+		{
+			return String.Format ("[Subframes={0},Divisor={1},Counter={2},Type={3},Flags={4},Hours={5},Minutes={6},Seconds={7},Frames={8}]",
+					      Subframes, SubframeDivisor, Counter, Type, Flags, Hours, Minutes, Seconds, Frames);
+		}
 	}
 	
 	[StructLayout(LayoutKind.Sequential)]
-	public class AudioTimeStamp {
+	public struct AudioTimeStamp {
 
 		[Flags]
 		public enum AtsFlags { 
@@ -433,6 +440,41 @@ namespace MonoMac.AudioToolbox {
 		public SmpteTime SMPTETime;
 		public AtsFlags  Flags;
 		public uint      Reserved;
+
+		public override string ToString ()
+		{
+			var sb = new StringBuilder ("{");
+			if ((Flags & AtsFlags.SampleTimeValid) != 0)
+				sb.Append ("SampleTime=" + SampleTime.ToString ());
+			    
+			if ((Flags & AtsFlags.HostTimeValid) != 0){
+				if (sb.Length > 0)
+					sb.Append (',');
+				sb.Append ("HostTime="   + HostTime.ToString ());
+			}
+			
+			if ((Flags & AtsFlags.RateScalarValid) != 0){
+				if (sb.Length > 0)
+					sb.Append (',');
+				
+				sb.Append ("RateScalar=" + RateScalar.ToString ());
+			}
+				    
+			if ((Flags & AtsFlags.WordClockTimeValid) != 0){
+				if (sb.Length > 0)
+					sb.Append (',');
+				sb.Append ("WordClock="  + HostTime.ToString () + ",");
+			}
+					
+			if ((Flags & AtsFlags.SmpteTimeValid) != 0){
+				if (sb.Length > 0)
+					sb.Append (',');
+				sb.Append ("SmpteTime="   + SMPTETime.ToString ());
+			}
+			sb.Append ("}");
+
+			return sb.ToString ();
+		}
 	}
 
 }

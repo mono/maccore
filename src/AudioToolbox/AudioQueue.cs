@@ -60,7 +60,10 @@ namespace MonoMac.AudioToolbox {
 		CodecNotFound        = -66673,
 		InvalidCodecAccess	= -66672,
 		QueueInvalidated     = -66671,
-		EnqueueDuringReset   = -66632
+		EnqueueDuringReset   = -66632,
+
+		// Not documented, but returned
+		QueueStopped         = 0x73746f70,
 	}
 
 	public class AudioQueueException : Exception {
@@ -202,8 +205,8 @@ namespace MonoMac.AudioToolbox {
 	}
 
 	delegate void AudioQueueOutputCallback (IntPtr userData, IntPtr AQ, IntPtr audioQueueBuffer);
-	delegate void AudioQueueInputCallback (IntPtr userData, IntPtr AQ, IntPtr audioQueueBuffer,
-					       AudioTimeStamp startTime, int descriptors, IntPtr AudioStreamPacketDescription_inPacketDesc);
+	unsafe delegate void AudioQueueInputCallback (IntPtr userData, IntPtr AQ, IntPtr audioQueueBuffer,
+						      AudioTimeStamp *startTime, int descriptors, IntPtr AudioStreamPacketDescription_inPacketDesc);
 	delegate void AudioQueuePropertyListener (IntPtr userData, IntPtr AQ,  AudioQueueProperty id);
 
 	public class OutputCompletedEventArgs : EventArgs {
@@ -275,16 +278,19 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static AudioQueueStatus AudioQueueStart (IntPtr AQ, AudioTimeStamp startTime);
+		extern static AudioQueueStatus AudioQueueStart (IntPtr AQ, ref AudioTimeStamp startTime);
 
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioQueueStatus AudioQueueStart (IntPtr AQ, IntPtr startTime);
+		
 		public AudioQueueStatus Start (AudioTimeStamp startTime)
 		{
-			return AudioQueueStart (handle, startTime);
+			return AudioQueueStart (handle, ref startTime);
 		}
 
 		public AudioQueueStatus Start ()
 		{
-			return AudioQueueStart (handle, null);
+			return AudioQueueStart (handle, IntPtr.Zero);
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -391,11 +397,11 @@ namespace MonoMac.AudioToolbox {
 			int trimFramesAtEnd,
 			int nParam,
 			AudioQueueParameterEvent      [] parameterEvents,
-			AudioTimeStamp  startTime,
+			ref AudioTimeStamp  startTime,
 			out AudioTimeStamp actualStartTime);
 		AudioQueueStatus EnqueueBuffer (IntPtr audioQueueBuffer, AudioStreamPacketDescription [] desc,
 						int trimFramesAtStart, int trimFramesAtEnd, AudioQueueParameterEvent [] parameterEvents,
-						AudioTimeStamp startTime, out AudioTimeStamp actualStartTime)
+						ref AudioTimeStamp startTime, out AudioTimeStamp actualStartTime)
 		{
 			if (audioQueueBuffer == IntPtr.Zero)
 				throw new ArgumentNullException ("audioQueueBuffer");
@@ -404,18 +410,22 @@ namespace MonoMac.AudioToolbox {
 				handle, audioQueueBuffer, desc == null ? 0 : desc.Length, desc,
 				trimFramesAtStart, trimFramesAtEnd, parameterEvents == null ? 0 : parameterEvents.Length,
 				parameterEvents,
-				startTime,
+				ref startTime,
 				out actualStartTime);
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static AudioQueueStatus AudioQueueDeviceGetCurrentTime (IntPtr AQ, out AudioTimeStamp time);
+		extern static AudioQueueStatus AudioQueueDeviceGetCurrentTime (IntPtr AQ, ref AudioTimeStamp time);
 
 		public AudioTimeStamp CurrentTime {
 			get {
-				AudioTimeStamp stamp;
+				AudioTimeStamp stamp = new AudioTimeStamp ();
+				
+				if (AudioQueueDeviceGetCurrentTime (handle, ref stamp) != AudioQueueStatus.Ok){
+					// Set no values as valid
+					stamp.Flags = 0;
+				}
 
-				AudioQueueDeviceGetCurrentTime (handle, out stamp);
 				return stamp;
 			}
 		}
@@ -800,7 +810,7 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioQueueOfflineRender (IntPtr aq, AudioTimeStamp stamp, IntPtr buffer, int frames);
+		extern static OSStatus AudioQueueOfflineRender (IntPtr aq, ref AudioTimeStamp stamp, IntPtr buffer, int frames);
 
 		public int OfflineRender (double timeStamp, IntPtr audioQueueBuffer, int frameCount)
 		{
@@ -810,28 +820,30 @@ namespace MonoMac.AudioToolbox {
 				SampleTime = timeStamp,
 				Flags = AudioTimeStamp.AtsFlags.SampleTimeValid
 			};
-			AudioQueueOfflineRender (handle, stamp, audioQueueBuffer, frameCount);
+			AudioQueueOfflineRender (handle, ref stamp, audioQueueBuffer, frameCount);
 		}
 		// TODO: Need to bind the 
 #endif
 	}
 
 	public class InputAudioQueue : AudioQueue {
-		static AudioQueueInputCallback dInputCallback;
+		static unsafe AudioQueueInputCallback dInputCallback;
 
 		static InputAudioQueue ()
 		{
-			dInputCallback = input_callback;
+			unsafe {
+				dInputCallback = input_callback;
+			}
 		}
 
 		[MonoPInvokeCallback(typeof(AudioQueueInputCallback))]
-		static void input_callback (IntPtr userData, IntPtr AQ, IntPtr audioQueueBuffer,
-					    AudioTimeStamp startTime, int descriptors, IntPtr inPacketDesc)
+		unsafe static void input_callback (IntPtr userData, IntPtr AQ, IntPtr audioQueueBuffer,
+					    AudioTimeStamp *startTime, int descriptors, IntPtr inPacketDesc)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (userData);
 			var aq = gch.Target as InputAudioQueue;
 
-			aq.OnInputCompleted (audioQueueBuffer, startTime, AudioFile.PacketDescriptionFrom (descriptors, inPacketDesc));
+			aq.OnInputCompleted (audioQueueBuffer, *startTime, AudioFile.PacketDescriptionFrom (descriptors, inPacketDesc));
 		}
 
 		public event EventHandler<InputCompletedEventArgs> InputCompleted;
