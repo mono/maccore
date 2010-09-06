@@ -57,6 +57,10 @@ namespace MonoMac.Foundation  {
 		ReloadRevalidatingCacheData = 5, // Unimplemented
 	}
 
+	public enum NSUrlCacheStoragePolicy {
+		Allowed, AllowedInMemoryOnly, NotAllowed
+	}
+	
 	public enum NSStreamStatus {
 		NotOpen = 0,
 		Opening = 1,

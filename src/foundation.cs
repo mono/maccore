@@ -148,6 +148,24 @@ namespace MonoMac.Foundation
 		[Export ("cache:willEvictObject:"), EventArgs ("NSObject")]
 		void WillEvictObject (NSCache cache, NSObject obj);
 	}
+
+	[BaseType (typeof (NSObject), Name="NSCachedURLResponse")]
+	public interface NSCachedUrlResponse {
+		[Export ("initWithResponse:data:userInfo:storagePolicy:")]
+		IntPtr Constructor (NSUrlResponse response, NSData data, NSDictionary userInfo, NSUrlCacheStoragePolicy storagePolicy);
+
+		[Export ("response")]
+		NSUrlResponse Response { get; }
+
+		[Export ("data")]
+		NSData Data { get; }
+
+		[Export ("userInfo")]
+		NSDictionary UserInfo { get; }
+
+		[Export ("storagePolicy")]
+		NSUrlCacheStoragePolicy StoragePolicy { get; }
+	}
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSCalendar {
@@ -1322,6 +1340,39 @@ namespace MonoMac.Foundation
 		//NSNumber Port { get;}
 	}
 
+	[BaseType (typeof (NSObject), Name="NSURLCache")]
+	public interface NSUrlCache {
+		[Export ("sharedURLCache"), Static]
+		NSUrlCache SharedCache { get; set; }
+
+		[Export ("initWithMemoryCapacity:diskCapacity:diskPath:")]
+		IntPtr Constructor (uint memoryCapacity, uint diskCapacity, string diskPath);
+
+		[Export ("cachedResponseForRequest:")]
+		NSCachedUrlResponse CachedResponseForRequest (NSUrlRequest request);
+
+		[Export ("storeCachedResponse:forRequest:")]
+		void StoreCachedResponse (NSCachedUrlResponse cachedResponse, NSUrlRequest forRequest);
+
+		[Export ("removeCachedResponseForRequest:")]
+		void RemoveCachedResponse (NSUrlRequest request);
+
+		[Export ("removeAllCachedResponses")]
+		void RemoveAllCachedResponses ();
+
+		[Export ("memoryCapacity")]
+		uint MemoryCapacity { get; set; }
+
+		[Export ("diskCapacity")]
+		uint DiskCapacity { get; set; }
+
+		[Export ("currentMemoryUsage")]
+		uint CurrentMemoryUsage { get; }
+
+		[Export ("currentDiskUsage")]
+		uint CurrentDiskUsage { get; }
+	}
+	
 	[BaseType (typeof (NSObject), Name="NSURLAuthenticationChallenge")]
 	public interface NSUrlAuthenticationChallenge {
 		[Export ("initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:")]
@@ -1422,8 +1473,8 @@ namespace MonoMac.Foundation
 		[Export ("connection:didFailWithError:")]
 		void FailedWithError (NSUrlConnection connection, NSError error);
 
-		//[Export ("connection:willCacheResponse:")]
-		//NSCachedUrlResponse WillCacheResponse (NSUrlConnection connection, NSCachedUrlResponse cachedResponse);
+		[Export ("connection:willCacheResponse:")]
+		NSCachedUrlResponse WillCacheResponse (NSUrlConnection connection, NSCachedUrlResponse cachedResponse);
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLCredential")]
