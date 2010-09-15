@@ -32,6 +32,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
+using MonoMac.CoreAudio;
 
 using OSStatus = System.Int32;
 using AudioQueueParameterID = System.UInt32;
