@@ -180,6 +180,33 @@ namespace MonoMac.CoreGraphics {
 				return new CGImage (UIGetScreenImage (), true);
 			}
 		}
+#else
+        public enum CGWindowListOption : uint{
+            All                 = 0,
+            OnScreenOnly        = (1 << 0),
+            OnScreenAboveWindow = (1 << 1),
+            OnScreenBelowWindow = (1 << 2),
+            IncludingWindow     = (1 << 3),
+            ExcludeDesktopElements    = (1 << 4)
+        }
+        
+        public enum CGWindowImageOption : uint{
+            Default             = 0,
+            BoundsIgnoreFraming = (1 << 0),
+            ShouldBeOpaque      = (1 << 1),
+            OnlyShadows         = (1 << 2)
+        }
+    
+        [DllImport (Constants.CoreGraphicsLibrary)]
+        static extern IntPtr CGWindowListCreateImage(RectangleF screenBounds, CGWindowListOption windowOption, uint windowID, CGWindowImageOption imageOption);
+        
+		public static CGImage ScreenImage(int windownumber, RectangleF bounds)
+		{                    
+            IntPtr imageRef = CGWindowListCreateImage(bounds, CGWindowListOption.IncludingWindow,
+                                          (uint)windownumber, CGWindowImageOption.Default);
+                                    
+            return new CGImage(imageRef, true);                              
+		}
 #endif
 	
 		[DllImport (Constants.CoreGraphicsLibrary)]
