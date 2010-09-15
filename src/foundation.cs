@@ -731,6 +731,14 @@ namespace MonoMac.Foundation
 		[Export ("date")]
 		[Static]
 		NSDate Now { get; }
+		
+		[Export ("distantPast")]
+		[Static]
+		NSDate DistantPast { get; }
+		
+		[Export ("distantFuture")]
+		[Static]
+		NSDate DistantFuture { get; }
 
 		[Export ("dateByAddingTimeInterval:")]
 		NSDate AddSeconds (double seconds);
@@ -1013,6 +1021,14 @@ namespace MonoMac.Foundation
 
 		[Export ("runUntilDate:")]
 		void RunUntil (NSDate date);
+		
+		[Field ("NSDefaultRunLoopMode")]
+		NSString NSDefaultRunLoopMode { get; }
+
+		[Field ("NSRunLoopCommonModes")]
+		NSString NSRunLoopCommonModes { get; }
+
+        // TODO :: Additional RunLoop should be defined in NSConnect and NSApplication (NSConnectionReplyMode, NSModalPanelRunLoopMode, NSEventTrackingRunLoopMode)
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -2177,8 +2193,15 @@ namespace MonoMac.Foundation
 
 		[Export ("developmentLocalization")]
 		string DevelopmentLocalization { get; }
+		
+		[Export ("infoDictionary")]
+		NSDictionary InfoDictionary{ get; }
 
 		// Additions from AppKit
+		[Static]
+		[Export ("loadNibNamed:owner:")]
+		bool LoadNib (string nibName, NSObject owner);
+		
 		[Export ("loadNibNamed:owner:options:")]
 		NSArray LoadNib (string nibName, NSObject owner, [NullAllowed] NSDictionary options);
 
@@ -2537,7 +2560,43 @@ namespace MonoMac.Foundation
 		[Export ("addObserverForName:object:queue:usingBlock:")]
 		void AddObserver (string name, NSObject obj, NSOperationQueue queue, NSNotificationHandler handler);
 	}
+	
+	[BaseType (typeof (NSNotificationCenter))]
+	interface NSDistributedNotificationCenter {
+		[Static]
+		[Export ("defaultCenter")]
+		NSObject DefaultCenter { get; }
 
+		[Export ("addObserver:selector:name:object:suspensionBehavior:")]
+		void AddObserver (NSObject observer, Selector selector, string name, string anObject, NSNotificationSuspensionBehavior suspensionBehavior);
+
+		[Export ("postNotificationName:object:userInfo:deliverImmediately:")]
+		void PostNotificationName (string name, string anObject, NSDictionary userInfo, bool deliverImmediately);
+		
+		[Export ("postNotificationName:object:userInfo:options:")]
+		void PostNotificationName (string name, string anObject, NSDictionary userInfo, NSNotificationFlags options);
+
+		[Export ("addObserver:selector:name:object:")]
+		void AddObserver (NSObject observer, Selector aSelector, string aName, string anObject);
+
+		[Export ("postNotificationName:object:")]
+		void PostNotificationName (string aName, string anObject);
+
+		[Export ("postNotificationName:object:userInfo:")]
+		void PostNotificationName (string aName, string anObject, NSDictionary aUserInfo);
+
+		[Export ("removeObserver:name:object:")]
+		void RemoveObserver (NSObject observer, string aName, string anObject);
+
+		//Detected properties
+		[Export ("suspended")]
+		bool Suspended { get; set; }
+		
+		//
+		[Field ("NSLocalNotificationCenterType")]
+        NSString NSLocalNotificationCenterType {get;}
+	}
+	
 	[BaseType (typeof (NSObject))]
 	interface NSNotificationQueue {
 		[Static]
