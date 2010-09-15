@@ -66,7 +66,7 @@ namespace MonoMac.AudioToolbox {
 		DVIIntelIMA             = 0x6d730011,
 		MicrosoftGSM            = 0x6d730031,
 		AES3                    = 0x61657333,
-		MPEG4AAC_ELD		= 0x61616365
+		MPEG4AAC_ELD	    	= 0x61616365
 	}
 
 	[Flags]
@@ -400,7 +400,7 @@ namespace MonoMac.AudioToolbox {
 		}
 
 	}
-
+/*  This is moved to CoreAudioTypes.cs - JM
 	[StructLayout(LayoutKind.Sequential)]
 	public struct SmpteTime {
 		public short Subframes;
@@ -476,6 +476,6 @@ namespace MonoMac.AudioToolbox {
 			return sb.ToString ();
 		}
 	}
-
+*/
 }
 
