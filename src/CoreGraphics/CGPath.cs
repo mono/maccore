@@ -396,45 +396,50 @@ namespace MonoMac.CoreGraphics {
 		public delegate void ApplierFunction (CGPathElement element);
 		delegate void CGPathApplierFunction (IntPtr info, IntPtr CGPathElementPtr);
 		
+#if !MONOMAC
+		[MonoPInvokeCallback (typeof (CGPathApplierFunction))]
+#endif
+		static void ApplierCallback (IntPtr info, IntPtr element_ptr)
+		{
+			GCHandle gch = GCHandle.FromIntPtr (info);
+			CGPathElement element = new CGPathElement (Marshal.ReadInt32 (element_ptr, 0));
+			ApplierFunction func = (ApplierFunction) gch.Target;
+
+			IntPtr ptr = Marshal.ReadIntPtr (element_ptr, 4);
+			int ptsize = Marshal.SizeOf (typeof (PointF));
+
+			switch (element.Type){
+			case CGPathElementType.CloseSubpath:
+				break;
+
+			case CGPathElementType.MoveToPoint:
+			case CGPathElementType.AddLineToPoint:
+				element.Point1 = (PointF) Marshal.PtrToStructure (ptr, typeof (PointF));
+				break;
+
+			case CGPathElementType.AddQuadCurveToPoint:
+				element.Point1 = (PointF) Marshal.PtrToStructure (ptr, typeof (PointF));
+				element.Point2 = (PointF) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + ptsize)), typeof (PointF));
+				break;
+
+			case CGPathElementType.AddCurveToPoint:
+				element.Point1 = (PointF) Marshal.PtrToStructure (ptr, typeof (PointF));
+				element.Point2 = (PointF) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + ptsize)), typeof (PointF));
+				element.Point3 = (PointF) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + (2*ptsize))), typeof (PointF));
+				break;
+			}
+
+			func (element);
+		}
+
+
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPathApply(IntPtr path, IntPtr info, CGPathApplierFunction function);
 		public void Apply (ApplierFunction func)
 		{
-			CGPathApply (handle, IntPtr.Zero, delegate (IntPtr info, IntPtr element_ptr){
-
-
-				// Fetch the data, which is in this layout:
-				// struct _CGPathElement {
-				//     CGPathElementType type;
-				//     PointFs *points;
-				// }
-
-				CGPathElement element = new CGPathElement (Marshal.ReadInt32 (element_ptr, 0));
-
-				IntPtr ptr = Marshal.ReadIntPtr (element_ptr, 4);
-				switch (element.Type){
-				case CGPathElementType.CloseSubpath:
-					break;
-					
-				case CGPathElementType.MoveToPoint:
-				case CGPathElementType.AddLineToPoint:
-					element.Point1 = (PointF) Marshal.PtrToStructure (ptr, typeof (PointF));
-					break;
-
-				case CGPathElementType.AddQuadCurveToPoint:
-					element.Point1 = (PointF) Marshal.PtrToStructure (ptr, typeof (PointF));
-					element.Point2 = (PointF) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + IntPtr.Size)), typeof (PointF));
-					break;
-					
-				case CGPathElementType.AddCurveToPoint:
-					element.Point1 = (PointF) Marshal.PtrToStructure (ptr, typeof (PointF));
-					element.Point2 = (PointF) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + IntPtr.Size)), typeof (PointF));
-					element.Point3 = (PointF) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + (2*IntPtr.Size))), typeof (PointF));
-					break;
-				}
-
-				func (element);
-			});
+			GCHandle gch = GCHandle.Alloc (func);
+			CGPathApply (handle, GCHandle.ToIntPtr (gch), ApplierCallback);
+			gch.Free ();
 		}
 
 	}
