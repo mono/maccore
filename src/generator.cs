@@ -533,6 +533,11 @@ public class Generator {
 				continue;
 			}
 		
+			if (pi.ParameterType == typeof (string [])){
+				pars.AppendFormat ("IntPtr {0}", pi.Name);
+				invoke.AppendFormat ("NSArray.StringArrayFromHandle ({0})", pi.Name);
+				continue;
+			}
 			if (pi.ParameterType == typeof (string)){
 				pars.AppendFormat ("IntPtr {0}", pi.Name);
 				invoke.AppendFormat ("NSString.FromHandle ({0})", pi.Name);
