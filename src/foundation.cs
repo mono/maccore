@@ -2560,7 +2560,8 @@ namespace MonoMac.Foundation
 		[Export ("addObserverForName:object:queue:usingBlock:")]
 		void AddObserver (string name, NSObject obj, NSOperationQueue queue, NSNotificationHandler handler);
 	}
-	
+
+#if MONOMAC
 	[BaseType (typeof (NSNotificationCenter))]
 	interface NSDistributedNotificationCenter {
 		[Static]
@@ -2592,10 +2593,10 @@ namespace MonoMac.Foundation
 		[Export ("suspended")]
 		bool Suspended { get; set; }
 		
-		//
 		[Field ("NSLocalNotificationCenterType")]
-        NSString NSLocalNotificationCenterType {get;}
+		NSString NSLocalNotificationCenterType {get;}
 	}
+#endif
 	
 	[BaseType (typeof (NSObject))]
 	interface NSNotificationQueue {

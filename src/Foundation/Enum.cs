@@ -224,17 +224,19 @@ namespace MonoMac.Foundation  {
 		DownloadDecodingFailedMidStream = -3006,
 		DownloadDecodingFailedToComplete =-3007,
 	}
-	
-	public enum  NSNotificationSuspensionBehavior {
-        Drop = 1,
-        Coalesce = 2,
-        Hold = 3,
-        DeliverImmediately = 4,
-    }
+
+#if MONOMAC
+	public enum NSNotificationSuspensionBehavior {
+		Drop = 1,
+		Coalesce = 2,
+		Hold = 3,
+		DeliverImmediately = 4,
+	}
     
-    [Flags]
-    public enum NSNotificationFlags : uint{
-       DeliverImmediately = (1 << 0),
-       PostToAllSessions = (1 << 1),
-    }
+	[Flags]
+	public enum NSNotificationFlags {
+		DeliverImmediately = (1 << 0),
+		PostToAllSessions = (1 << 1),
+	}
+#endif
 }
