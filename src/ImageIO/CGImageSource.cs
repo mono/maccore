@@ -35,8 +35,7 @@ namespace MonoMac.ImageIO {
 		internal IntPtr handle;
 
 		// invoked by marshallers
-		internal CGImageSource (IntPtr handle)
-			: this (handle, false)
+		internal CGImageSource (IntPtr handle) : this (handle, false)
 		{
 			this.handle = handle;
 		}
@@ -72,18 +71,24 @@ namespace MonoMac.ImageIO {
 			}
 		}
 				
-		[DllImport (Constants.IOImageLibrary)]
+		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCreateWithURL(IntPtr url, IntPtr options);
-		public static CGImageSource CreateWithURL (CFUrl url, IntPtr options)
+		public static CGImageSource CreateWithURL (NSUrl url, NSDictionary options)
 		{
-			return new CGImageSource(CGImageSourceCreateWithURL(url.Handle, options));
+			if (url == null)
+				throw new ArgumentNullException ("url");
+			
+			return new CGImageSource (CGImageSourceCreateWithURL (url.Handle, options == null ? IntPtr.Zero : options.Handle));
 		}
 		
-		[DllImport (Constants.IOImageLibrary)]
+		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCreateImageAtIndex(IntPtr isrc, int index, IntPtr options);
-		public static CGImage CreateImageAtIndex (CGImageSource isrc, int index, IntPtr options)
+		public static CGImage CreateImageAtIndex (CGImageSource isrc, int index, NSDictionary options)
 		{
-			return new CGImage(CGImageSourceCreateImageAtIndex(isrc.Handle, index, options));
+			if (isrc == null)
+				throw new ArgumentNullException ("isrc");
+			
+			return new CGImage(CGImageSourceCreateImageAtIndex(isrc.Handle, index, options == null ? IntPtr.Zero : options.Handle));
 		}
 	}
 }
