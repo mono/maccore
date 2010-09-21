@@ -481,13 +481,13 @@ namespace MonoMac.AudioToolbox {
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct AudioBuffer {
-		public int mNumberChannels;
-		public int mDataByteSize;
-		public IntPtr mData;
+		public int NumberChannels;
+		public int DataByteSize;
+		public IntPtr Data;
 
 		public override string ToString ()
 		{
-			return string.Format ("[channels={0},dataByteSize={1},ptrData=0x{2:x}]", mNumberChannels, mDataByteSize, mData);
+			return string.Format ("[channels={0},dataByteSize={1},ptrData=0x{2:x}]", NumberChannels, DataByteSize, Data);
 		}
 	}
 }
