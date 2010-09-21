@@ -54,9 +54,9 @@ namespace MonoMac.AudioToolbox
 			bufferCount = nubuffers;
 			buffers = new AudioBuffer[bufferCount];
 			for (int i = 0; i < bufferCount; i++) {
-				buffers[i].mNumberChannels = 1;
-				buffers[i].mDataByteSize = bufferSize;
-				buffers[i].mData = Marshal.AllocHGlobal((int)bufferSize);
+				buffers[i].NumberChannels = 1;
+				buffers[i].DataByteSize = bufferSize;
+				buffers[i].Data = Marshal.AllocHGlobal((int)bufferSize);
 			}
 		}
 		#endregion
@@ -72,7 +72,7 @@ namespace MonoMac.AudioToolbox
 		{
 			if (buffers != null){
 				foreach (var mbuf in buffers)
-					Marshal.FreeHGlobal(mbuf.mData);
+					Marshal.FreeHGlobal(mbuf.Data);
 				buffers = null;
 			}
 		}
@@ -86,7 +86,7 @@ namespace MonoMac.AudioToolbox
 		public override string ToString ()
 		{
 			if (buffers != null)
-				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0].mDataByteSize);
+				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0].DataByteSize);
 			else
 				return string.Format ("[empty]");
 		}
