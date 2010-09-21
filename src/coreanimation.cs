@@ -916,6 +916,18 @@ namespace MonoMac.CoreAnimation {
 		//[Export ("getControlPointAtIndex:values:")]
 		//void getControlPointAtIndex:values: (size_t idx, float[2] ptr);
 	
+		[Field("kCAMediaTimingFunctionLinear")]
+		NSString Linear { get; }
+		
+		[Field("kCAMediaTimingFunctionEaseIn")]
+		NSString EaseIn { get; }
+		
+		[Field("kCAMediaTimingFunctionEaseOut")]
+		NSString EaseOut { get; }
+		
+		[Field("kCAMediaTimingFunctionEaseInEaseOut")]
+		NSString EaseInEaseOut { get; }
+		
 	}
 
 	[BaseType (typeof (NSObject))]
