@@ -40,6 +40,7 @@ namespace MonoMac.AudioToolbox
 		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
 		AudioBuffer [] buffers;
 		#endregion
+		uint allocated;
 		
 		public int BufferCount { get { return bufferCount; }}
 		public AudioBuffer [] Buffers { get { return buffers; }}
@@ -51,6 +52,7 @@ namespace MonoMac.AudioToolbox
 
 		public AudioBufferList (int nubuffers, int bufferSize)
 		{
+			allocated = 0xcafebabe;
 			bufferCount = nubuffers;
 			buffers = new AudioBuffer[bufferCount];
 			for (int i = 0; i < bufferCount; i++) {
@@ -70,7 +72,7 @@ namespace MonoMac.AudioToolbox
 
 		public virtual void Dispose (bool disposing)
 		{
-			if (buffers != null){
+			if (buffers != null && allocated != 0){
 				foreach (var mbuf in buffers)
 					Marshal.FreeHGlobal(mbuf.Data);
 				buffers = null;
