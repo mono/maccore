@@ -33,26 +33,31 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.AudioToolbox
 {
 	[StructLayout(LayoutKind.Sequential)]
-	public class AudioBufferList : IDisposable {
-		#region Variables
-		int bufferCount;
+	public class AudioBufferList {
+		internal int bufferCount;
 		// mBuffers array size is variable. But here we uses fixed size of 2, because iPhone phone terminal two (L/R) channels.        
 		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-		AudioBuffer [] buffers;
-		#endregion
-		uint allocated;
+		internal AudioBuffer [] buffers;
 		
 		public int BufferCount { get { return bufferCount; }}
 		public AudioBuffer [] Buffers { get { return buffers; }}
 		
-		#region Constructor
 		public AudioBufferList() 
 		{
 		}
 
-		public AudioBufferList (int nubuffers, int bufferSize)
+		public override string ToString ()
 		{
-			allocated = 0xcafebabe;
+			if (buffers != null)
+				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0].DataByteSize);
+			else
+				return string.Format ("[empty]");
+		}
+	}
+
+	public class MutableAudioBufferList : AudioBufferList, IDisposable {
+		public MutableAudioBufferList (int nubuffers, int bufferSize)
+		{
 			bufferCount = nubuffers;
 			buffers = new AudioBuffer[bufferCount];
 			for (int i = 0; i < bufferCount; i++) {
@@ -61,9 +66,7 @@ namespace MonoMac.AudioToolbox
 				buffers[i].Data = Marshal.AllocHGlobal((int)bufferSize);
 			}
 		}
-		#endregion
 			
-		#region IDisposable メンバ (Members)
 		public void Dispose()
 		{
 			Dispose (true);
@@ -72,25 +75,16 @@ namespace MonoMac.AudioToolbox
 
 		public virtual void Dispose (bool disposing)
 		{
-			if (buffers != null && allocated != 0){
+			if (buffers != null){
 				foreach (var mbuf in buffers)
 					Marshal.FreeHGlobal(mbuf.Data);
 				buffers = null;
 			}
 		}
 
-		~AudioBufferList ()
+		~MutableAudioBufferList ()
 		{
 			Dispose (false);
-		}
-		#endregion
-
-		public override string ToString ()
-		{
-			if (buffers != null)
-				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0].DataByteSize);
-			else
-				return string.Format ("[empty]");
 		}
 	}
 }
