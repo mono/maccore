@@ -37,8 +37,8 @@ namespace MonoMac.AudioToolbox
     public class AudioGraphEventArgs : AudioUnitEventArgs {
 	    public AudioGraphEventArgs(AudioUnitRenderActionFlags actionFlags,
 				       MonoMac.AudioToolbox.AudioTimeStamp timeStamp,
-				       uint busNumber,
-				       uint numberFrames,
+				       int busNumber,
+				       int numberFrames,
 				       AudioBufferList data)
 		    : base(actionFlags, timeStamp, busNumber, numberFrames, data)
 	    {

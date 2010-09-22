@@ -33,6 +33,91 @@ using System.Runtime.InteropServices;
 
 namespace MonoMac.AudioToolbox
 {
+	public enum AudioUnitErrors {
+		InvalidProperty = -10879,
+		InvalidParameter = -10878,
+		InvalidElement = -10877,
+		NoConnection = -10876,
+		FailedInitialization = -10875,
+		TooManyFramesToProcess = -10874,
+		InvalidFile = -10871,
+		FormatNotSupported = -10868,
+		Uninitialized = -10867,
+		InvalidScope = -10866,
+		PropertyNotWritable = -10865,
+		CannotDoInCurrentContext = -10863,
+		InvalidPropertyValue = -10851,
+		PropertyNotInUse = -10850,
+		Initialized = -10849,
+		InvalidOfflineRender = -10848,
+		Unauthorized = -10847,
+	}
+	
+	public class AudioUnitException : Exception {
+		static string Lookup (int k)
+		{
+			switch ((AudioUnitErrors)k)
+			{
+			case AudioUnitErrors.InvalidProperty:
+				return "Invalid Property";
+				
+			case AudioUnitErrors.InvalidParameter :
+				return "Invalid Parameter";
+				
+			case AudioUnitErrors.InvalidElement :
+				return "Invalid Element";
+				
+			case AudioUnitErrors.NoConnection :
+				return "No Connection";
+				
+			case AudioUnitErrors.FailedInitialization :
+				return "Failed Initialization";
+				
+			case AudioUnitErrors.TooManyFramesToProcess :
+				return "Too Many Frames To Process";
+				
+			case AudioUnitErrors.InvalidFile :
+				return "Invalid File";
+				
+			case AudioUnitErrors.FormatNotSupported :
+				return "Format Not Supported";
+				
+			case AudioUnitErrors.Uninitialized :
+				return "Uninitialized";
+				
+			case AudioUnitErrors.InvalidScope :
+				return "Invalid Scope";
+				
+			case AudioUnitErrors.PropertyNotWritable :
+				return "Property Not Writable";
+				
+			case AudioUnitErrors.CannotDoInCurrentContext :
+				return "Cannot Do In Current Context";
+				
+			case AudioUnitErrors.InvalidPropertyValue :
+				return "Invalid Property Value";
+				
+			case AudioUnitErrors.PropertyNotInUse :
+				return "Property Not In Use";
+				
+			case AudioUnitErrors.Initialized :
+				return "Initialized";
+				
+			case AudioUnitErrors.InvalidOfflineRender :
+				return "Invalid Offline Render";
+				
+			case AudioUnitErrors.Unauthorized :
+				return "Unauthorized";
+				
+			}
+			return String.Format ("Unknown error code: 0x{0:x}", k);
+		}
+		
+		internal AudioUnitException (int k) : base (Lookup (k))
+		{
+		}
+	}
+	
 	public class AudioUnit : IDisposable, MonoMac.ObjCRuntime.INativeObject {
 		GCHandle gcHandle;
 		IntPtr handle;
@@ -60,15 +145,15 @@ namespace MonoMac.AudioToolbox
 						       callbackStruct,
 						       (uint)Marshal.SizeOf(callbackStruct));
 			if (err != 0)
-				throw new ArgumentException(String.Format("Error code: {0}", err));           
+				throw new AudioUnitException (err);
 		}
 		
 		// callback funtion should be static method and be attatched a MonoPInvokeCallback attribute.        
 		[MonoMac.MonoPInvokeCallback(typeof(AURenderCallback))]
 		static int renderCallback(IntPtr inRefCon, ref AudioUnitRenderActionFlags _ioActionFlags,
 					  ref AudioTimeStamp _inTimeStamp,
-					  uint _inBusNumber,
-					  uint _inNumberFrames,
+					  int _inBusNumber,
+					  int _inNumberFrames,
 					  AudioBufferList _ioData)
 		{
 			// getting audiounit instance
@@ -98,7 +183,7 @@ namespace MonoMac.AudioToolbox
 						       ref audioFormat,
 						       (uint)Marshal.SizeOf(audioFormat));
 			if (err != 0)
-				throw new ArgumentException(String.Format("Error code:{0}", err));
+				throw new AudioUnitException (err);
 		}
 		public MonoMac.AudioToolbox.AudioStreamBasicDescription GetAudioFormat(AudioUnitScopeType scope, uint audioUnitElement)
 		{
@@ -112,7 +197,7 @@ namespace MonoMac.AudioToolbox
 						       ref audioFormat,
 						       ref size);
 			if (err != 0)
-				throw new ArgumentException(String.Format("Error code:{0}", err));
+				throw new AudioUnitException (err);
 			
 			return audioFormat;
 		}
@@ -127,7 +212,7 @@ namespace MonoMac.AudioToolbox
 						       ref flag,
 						       (uint)Marshal.SizeOf(typeof(uint)));
 			if (err != 0)
-				throw new InvalidOperationException(String.Format("Error code:{0}", err));
+				throw new AudioUnitException (err);
 		}
 			
 		public static AudioUnit CreateInstance(AudioComponent cmp)
@@ -135,7 +220,7 @@ namespace MonoMac.AudioToolbox
 			IntPtr handle;
 			int err = AudioComponentInstanceNew(cmp.handle, out handle);
 			if (err != 0)
-				throw new ArgumentException(String.Format("Error code:", err));
+				throw new AudioUnitException (err);
 			
 			if (handle != IntPtr.Zero)
 				return new AudioUnit (handle);
@@ -176,7 +261,7 @@ namespace MonoMac.AudioToolbox
 						  numberFrames,
 						  data);
 			if (err != 0)
-				throw new InvalidOperationException(String.Format("Error code:{0}", err));
+				throw new AudioUnitException (err);
 		}
 
 		#region IDisposable メンバ
@@ -202,8 +287,8 @@ namespace MonoMac.AudioToolbox
 		internal delegate int AURenderCallback(IntPtr inRefCon,
 					      ref AudioUnitRenderActionFlags ioActionFlags,
 					      ref AudioTimeStamp inTimeStamp,
-					      uint inBusNumber,
-					      uint inNumberFrames,
+					      int inBusNumber,
+					      int inNumberFrames,
 					      AudioBufferList ioData);
 		
 		[StructLayout(LayoutKind.Sequential)]

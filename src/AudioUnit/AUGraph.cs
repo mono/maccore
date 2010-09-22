@@ -63,8 +63,8 @@ namespace MonoMac.AudioToolbox
 		static int renderCallback(IntPtr inRefCon,
 					  ref AudioUnitRenderActionFlags _ioActionFlags,
 					  ref AudioTimeStamp _inTimeStamp,
-					  uint _inBusNumber,
-					  uint _inNumberFrames,
+					  int _inBusNumber,
+					  int _inNumberFrames,
 					  AudioBufferList _ioData)
 		{
 			// getting audiounit instance
