@@ -49,20 +49,31 @@ using System.Runtime.InteropServices;
 	}
 
 	public enum AudioComponentSubType {
+		OutputGeneric=0x67656e72, // 'genr'
+#if MONOMAC
 		OutputHAL=0x6168616c, // 'ahal'
 		OutputDefault=0x64656620, // 'def'
 		OutputSystem=0x73797320, // 'sys'
-		OutputGeneric=0x67656e72, // 'genr'
+#else
+		OutputRemote=0x72696f63, // 'rioc'
+#endif
 
+#if MONOMAC
 		MusicDeviceDLSSynth=0x646c7320, // 'dls'
+#endif
 			
 		ConverterAU=0x636f6e76, // 'conv'
+#if MONOMAC
 		ConverterVarispeed=0x76617269, // 'vari'
 		ConverterDeferredRenderer=0x64656672, // 'defr'
 		ConverterTimePitch=0x746d7074, // 'tmpt'
 		ConverterSplitter=0x73706c74, // 'splt'
 		ConverterMerger=0x6d657267, // 'merg'
+#else
+		ConverterAUiPodTime=0x6970746d, // 'iptm'
+#endif
 
+#if MONOMAC
 		EffectDelay=0x64656c79, // 'dely'
 		EffectLowPassFilter=0x6c706173, // 'lpas'
 		EffectHighPassFilter=0x68706173, // 'hpas'
@@ -81,12 +92,20 @@ using System.Runtime.InteropServices;
 		EffectNetSend=0x6e736e64, // 'nsnd'
 		EffectDistortion=0x64697374, // 'dist'
 		EffectRogerBeep=0x726f6772, // 'rogr'
+#else
+		EffectAUiPodEQ=0x69706571, // 'ipeq'
+#endif
 			
+		MixerMultiChannel=0x6d636d78, // 'mcmx'
+#if MONOMAC
 		MixerStereo=0x736d7872, // 'smxr'
 		Mixer3D=0x33646d78, // '3dmx'
 		MixerMatrix=0x6d786d78, // 'mxmx'
-		MixerMultiChannel=0x6d636d78, // 'mcmx'
-			
+#else
+		Mixer3DEmbedded=0x3364656d, // '3dem'
+#endif
+
+#if MONOMAC
 		PannerSphericalHead=0x73706872, // 'sphr'
 		PannerVector=0x76626173, // 'vbas'
 		PannerSoundField=0x616d6269, // 'ambi'
@@ -95,6 +114,7 @@ using System.Runtime.InteropServices;
 		GeneratorScheduledSoundPlayer=0x7373706c, // 'sspl'
 		GeneratorAudioFilePlayer=0x6166706c, // 'afpl'
 		GeneratorNetReceive=0x6e726376, // 'nrcv'
+#endif
         }
         
         public enum AudioComponentManufacturerType {
@@ -122,8 +142,8 @@ using System.Runtime.InteropServices;
 			ComponentType = type;
 			ComponentSubType = subType;
 			ComponentManufacturer = AudioComponentManufacturerType.Apple;
-			ComponentFlags = 0;
-			ComponentFlagsMask = 0;
+			//ComponentFlags = 0;
+			//ComponentFlagsMask = 0;
 		}
 
 		public override string ToString ()
