@@ -38,23 +38,23 @@ namespace MonoMac.AudioToolbox
         #region Variables
         public readonly AudioUnitRenderActionFlags ActionFlags;
         public readonly MonoMac.AudioToolbox.AudioTimeStamp TimeStamp;
-        public readonly uint BusNumber;
-        public readonly uint NumberFrames;
+        public readonly int BusNumber;
+        public readonly int NumberFrames;
         public readonly AudioBufferList Data;
         #endregion
 
         #region Constructor
-        public AudioUnitEventArgs(AudioUnitRenderActionFlags _ioActionFlags,
-				  MonoMac.AudioToolbox.AudioTimeStamp _inTimeStamp,
-				  uint _inBusNumber,
-            uint _inNumberFrames,
-            AudioBufferList _ioData)
+        public AudioUnitEventArgs(AudioUnitRenderActionFlags actionFlags,
+				  MonoMac.AudioToolbox.AudioTimeStamp timestamp,
+				  int busNumber,
+				  int frames,
+				  AudioBufferList data)
         {
-            ActionFlags = _ioActionFlags;
-            this.TimeStamp = _inTimeStamp;
-            BusNumber = _inBusNumber;
-            NumberFrames = _inNumberFrames;
-            Data = _ioData;
+            ActionFlags = actionFlags;
+            this.TimeStamp = timestamp;
+            BusNumber = busNumber;
+            NumberFrames = frames;
+            Data = data;
         }
         #endregion
     }
