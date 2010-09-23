@@ -33,7 +33,9 @@ using System.Runtime.InteropServices;
 
 namespace MonoMac.AudioToolbox
 {
-	public enum AudioUnitErrors {
+	public enum AudioUnitStatus {
+		NoError = 0,
+		ParameterError = -50,
 		InvalidProperty = -10879,
 		InvalidParameter = -10878,
 		InvalidElement = -10877,
@@ -56,57 +58,57 @@ namespace MonoMac.AudioToolbox
 	public class AudioUnitException : Exception {
 		static string Lookup (int k)
 		{
-			switch ((AudioUnitErrors)k)
+			switch ((AudioUnitStatus)k)
 			{
-			case AudioUnitErrors.InvalidProperty:
+			case AudioUnitStatus.InvalidProperty:
 				return "Invalid Property";
 				
-			case AudioUnitErrors.InvalidParameter :
+			case AudioUnitStatus.InvalidParameter :
 				return "Invalid Parameter";
 				
-			case AudioUnitErrors.InvalidElement :
+			case AudioUnitStatus.InvalidElement :
 				return "Invalid Element";
 				
-			case AudioUnitErrors.NoConnection :
+			case AudioUnitStatus.NoConnection :
 				return "No Connection";
 				
-			case AudioUnitErrors.FailedInitialization :
+			case AudioUnitStatus.FailedInitialization :
 				return "Failed Initialization";
 				
-			case AudioUnitErrors.TooManyFramesToProcess :
+			case AudioUnitStatus.TooManyFramesToProcess :
 				return "Too Many Frames To Process";
 				
-			case AudioUnitErrors.InvalidFile :
+			case AudioUnitStatus.InvalidFile :
 				return "Invalid File";
 				
-			case AudioUnitErrors.FormatNotSupported :
+			case AudioUnitStatus.FormatNotSupported :
 				return "Format Not Supported";
 				
-			case AudioUnitErrors.Uninitialized :
+			case AudioUnitStatus.Uninitialized :
 				return "Uninitialized";
 				
-			case AudioUnitErrors.InvalidScope :
+			case AudioUnitStatus.InvalidScope :
 				return "Invalid Scope";
 				
-			case AudioUnitErrors.PropertyNotWritable :
+			case AudioUnitStatus.PropertyNotWritable :
 				return "Property Not Writable";
 				
-			case AudioUnitErrors.CannotDoInCurrentContext :
+			case AudioUnitStatus.CannotDoInCurrentContext :
 				return "Cannot Do In Current Context";
 				
-			case AudioUnitErrors.InvalidPropertyValue :
+			case AudioUnitStatus.InvalidPropertyValue :
 				return "Invalid Property Value";
 				
-			case AudioUnitErrors.PropertyNotInUse :
+			case AudioUnitStatus.PropertyNotInUse :
 				return "Property Not In Use";
 				
-			case AudioUnitErrors.Initialized :
+			case AudioUnitStatus.Initialized :
 				return "Initialized";
 				
-			case AudioUnitErrors.InvalidOfflineRender :
+			case AudioUnitStatus.InvalidOfflineRender :
 				return "Invalid Offline Render";
 				
-			case AudioUnitErrors.Unauthorized :
+			case AudioUnitStatus.Unauthorized :
 				return "Unauthorized";
 				
 			}
@@ -264,6 +266,19 @@ namespace MonoMac.AudioToolbox
 				throw new AudioUnitException (err);
 		}
 
+		public AudioUnitStatus TryRender(AudioUnitRenderActionFlags flags,
+						AudioTimeStamp timeStamp,
+						int outputBusnumber,
+						int numberFrames, AudioBufferList data)
+		{
+			return (AudioUnitStatus) AudioUnitRender(handle,
+								ref flags,
+								ref timeStamp,
+								outputBusnumber,
+								numberFrames,
+								data);
+		}
+		
 		#region IDisposable メンバ
 		public void Dispose()
 		{
