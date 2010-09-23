@@ -31,8 +31,9 @@ using MonoMac.Foundation;
 using MonoMac.CoreGraphics;
 #if MONOMAC
 using MonoMac.AppKit;
-#endif
+#else
 using MonoMac.UIKit;
+#endif
 using System;
 using System.Drawing;
 
