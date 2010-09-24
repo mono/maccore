@@ -33,9 +33,13 @@ using System.Runtime.InteropServices;
 
 namespace MonoMac.AudioToolbox
 {
+<<<<<<< HEAD
 	public enum AudioUnitStatus {
 		NoError = 0,
 		ParameterError = -50,
+=======
+	public enum AudioUnitErrors {
+>>>>>>> 1d1e70104bf0050679f6cea90f55dd76ee11da3d
 		InvalidProperty = -10879,
 		InvalidParameter = -10878,
 		InvalidElement = -10877,
@@ -58,6 +62,7 @@ namespace MonoMac.AudioToolbox
 	public class AudioUnitException : Exception {
 		static string Lookup (int k)
 		{
+<<<<<<< HEAD
 			switch ((AudioUnitStatus)k)
 			{
 			case AudioUnitStatus.InvalidProperty:
@@ -109,6 +114,59 @@ namespace MonoMac.AudioToolbox
 				return "Invalid Offline Render";
 				
 			case AudioUnitStatus.Unauthorized :
+=======
+			switch ((AudioUnitErrors)k)
+			{
+			case AudioUnitErrors.InvalidProperty:
+				return "Invalid Property";
+				
+			case AudioUnitErrors.InvalidParameter :
+				return "Invalid Parameter";
+				
+			case AudioUnitErrors.InvalidElement :
+				return "Invalid Element";
+				
+			case AudioUnitErrors.NoConnection :
+				return "No Connection";
+				
+			case AudioUnitErrors.FailedInitialization :
+				return "Failed Initialization";
+				
+			case AudioUnitErrors.TooManyFramesToProcess :
+				return "Too Many Frames To Process";
+				
+			case AudioUnitErrors.InvalidFile :
+				return "Invalid File";
+				
+			case AudioUnitErrors.FormatNotSupported :
+				return "Format Not Supported";
+				
+			case AudioUnitErrors.Uninitialized :
+				return "Uninitialized";
+				
+			case AudioUnitErrors.InvalidScope :
+				return "Invalid Scope";
+				
+			case AudioUnitErrors.PropertyNotWritable :
+				return "Property Not Writable";
+				
+			case AudioUnitErrors.CannotDoInCurrentContext :
+				return "Cannot Do In Current Context";
+				
+			case AudioUnitErrors.InvalidPropertyValue :
+				return "Invalid Property Value";
+				
+			case AudioUnitErrors.PropertyNotInUse :
+				return "Property Not In Use";
+				
+			case AudioUnitErrors.Initialized :
+				return "Initialized";
+				
+			case AudioUnitErrors.InvalidOfflineRender :
+				return "Invalid Offline Render";
+				
+			case AudioUnitErrors.Unauthorized :
+>>>>>>> 1d1e70104bf0050679f6cea90f55dd76ee11da3d
 				return "Unauthorized";
 				
 			}
@@ -266,6 +324,7 @@ namespace MonoMac.AudioToolbox
 				throw new AudioUnitException (err);
 		}
 
+<<<<<<< HEAD
 		public AudioUnitStatus TryRender(AudioUnitRenderActionFlags flags,
 						AudioTimeStamp timeStamp,
 						int outputBusnumber,
@@ -279,6 +338,8 @@ namespace MonoMac.AudioToolbox
 								data);
 		}
 		
+=======
+>>>>>>> 1d1e70104bf0050679f6cea90f55dd76ee11da3d
 		#region IDisposable メンバ
 		public void Dispose()
 		{
