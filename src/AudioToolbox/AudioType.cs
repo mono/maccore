@@ -3,8 +3,10 @@
 //
 // Authors:
 //    Miguel de Icaza (miguel@novell.com)
+//    AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
 //     
-// Copyright 2009 Novell, Inc
+// Copyright 2009, 2010 Novell, Inc
+// Copyright 2010, Reinforce Lab.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -477,5 +479,16 @@ namespace MonoMac.AudioToolbox {
 		}
 	}
 
+	[StructLayout(LayoutKind.Sequential)]
+	public struct AudioBuffer {
+		public int NumberChannels;
+		public int DataByteSize;
+		public IntPtr Data;
+
+		public override string ToString ()
+		{
+			return string.Format ("[channels={0},dataByteSize={1},ptrData=0x{2:x}]", NumberChannels, DataByteSize, Data);
+		}
+	}
 }
 

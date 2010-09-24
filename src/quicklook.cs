@@ -29,8 +29,11 @@
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 using MonoMac.CoreGraphics;
-using MonoMac.CoreLocation;
+#if MONOMAC
+using MonoMac.AppKit;
+#else
 using MonoMac.UIKit;
+#endif
 using System;
 using System.Drawing;
 
