@@ -927,10 +927,6 @@ namespace MonoMac.CoreAnimation {
 		
 		[Field("kCAMediaTimingFunctionEaseInEaseOut")]
 		NSString EaseInEaseOut { get; }
-<<<<<<< HEAD
-=======
-		
->>>>>>> 1d1e70104bf0050679f6cea90f55dd76ee11da3d
 	}
 
 	[BaseType (typeof (NSObject))]
