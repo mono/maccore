@@ -123,6 +123,7 @@ namespace MonoMac.CoreGraphics {
 
 #if !MONOMAC
 		[MonoPInvokeCallback (typeof (CGFunctionEvaluateCallback))]
+#endif
 		unsafe static void EvaluateCallback (IntPtr info, float *input, float *output)
 		{
 			GCHandle lgc = GCHandle.FromIntPtr (info);
@@ -130,7 +131,5 @@ namespace MonoMac.CoreGraphics {
 
 			container.evaluate (input, output);
 		}
-
-#endif
 	}
 }
