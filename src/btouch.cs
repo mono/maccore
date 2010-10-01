@@ -124,7 +124,7 @@ class BindingTouch {
 			var tmpass = Path.Combine (tmpdir, "temp.dll");
 
 			// -nowarn:436 is to avoid conflicts in definitions between core.dll and the sources
-			var cargs = String.Format ("-target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7}",
+			var cargs = String.Format ("-unsafe -target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7}",
 						   string.Join (" ", sources.ToArray ()),
 						   tmpass, Environment.GetCommandLineArgs ()[0],
 						   string.Join (" ", core_sources.ToArray ()), refs, unsafef ? "-unsafe" : "",
@@ -195,7 +195,7 @@ class BindingTouch {
 				return 0;
 			}
 			
-			cargs = String.Format ("-target:library -out:{0} -r:{6} {1} {2} {3} {4} {5} -r:{6}",
+			cargs = String.Format ("-unsafe -target:library -out:{0} -r:{6} {1} {2} {3} {4} {5} -r:{6}",
 					       outfile,
 					       String.Join (" ", g.GeneratedFiles.ToArray ()),
 					       String.Join (" ", core_sources.ToArray ()),
