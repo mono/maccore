@@ -1166,6 +1166,7 @@ public class Generator {
 		"MonoMac.CoreAnimation",
 		"MonoMac.QTKit",
 #else
+		"MonoTouch",
 		"MonoTouch.CoreFoundation",
 		"MonoTouch.CoreMedia",
 		"MonoTouch.Foundation", 
