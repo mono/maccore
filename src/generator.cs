@@ -1182,6 +1182,8 @@ public class Generator {
 	void Header (StreamWriter w)
 	{
 		print (w, "//\n// Auto-generated from generator.cs, do not edit\n//");
+		print (w, "// We keep references to objects, so warning 414 is expected\n");
+		print (w, "#pragma warning disable 414\n");
 		print (w, from ns in implicit_ns select "using " + ns + ";\n");
 	}
 
