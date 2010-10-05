@@ -225,6 +225,18 @@ namespace MonoMac.Foundation  {
 		DownloadDecodingFailedToComplete =-3007,
 	}
 
+	[Flags]
+	public enum NSKeyValueObservingOptions {
+		New = 1, Old = 2, OldNew = 3, Initial = 4, Prior = 8, 
+	}
+
+	public enum NSKeyValueChange {
+		Setting = 1, Insertion, Removal, Replacement
+	}
+
+	public enum NSKeyValueSetMutationKind {
+		UnionSet = 1, MinusSet, IntersectSet, SetSet
+	}
 #if MONOMAC
 	public enum NSNotificationSuspensionBehavior {
 		Drop = 1,
