@@ -1888,6 +1888,33 @@ namespace MonoMac.Foundation
 		NSInputStream FromFile (string  path);
 	}
 
+	[BaseType (typeof (NSObject)), Bind ("NSObject")]
+	public interface NSObject2 {
+               [Export ("observeValueForKeyPath:ofObject:change:context:")]
+	       void ObserveValue (string keyPath, NSObject ofObject, NSDictionary change, IntPtr context);
+
+                [Export ("addObserver:forKeyPath:options:context:")]
+                void AddObserver (NSObject observer, string keyPath, NSKeyValueObservingOptions options, IntPtr context);
+
+                [Export ("removeObserver:forKeyPath:")]
+                void RemoveObserver (NSObject observer, string keyPath);
+
+		[Field ("NSKeyValueChangeKindKey")]
+		NSString ChangeKindKey { get; }
+
+		[Field ("NSKeyValueChangeNewKey")]
+		NSString ChangeNewKey { get; }
+
+		[Field ("NSKeyValueChangeOldKey")]
+		NSString ChangeOldKey { get; }
+
+		[Field ("NSKeyValueChangeIndexesKey")]
+		NSString ChangeIndexesKey { get; }
+
+		[Field ("NSKeyValueChangeNotificationIsPriorKey")]
+		NSString ChangeNotificationIsPriorKey { get; }
+	}
+	
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
 	interface NSOperation {

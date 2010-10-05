@@ -826,14 +826,14 @@ public class Generator {
 	{
 		bool arm_stret = ArmNeedStret (mi);
 		try {
-		RegisterMethod (arm_stret, mi, MakeSig (mi, arm_stret));
-		RegisterMethod (arm_stret, mi, MakeSuperSig (mi, arm_stret));
-
-		bool x86_stret = X86NeedStret (mi);
-		if (x86_stret != arm_stret){
-			RegisterMethod (x86_stret, mi, MakeSig (mi, x86_stret));
-			RegisterMethod (x86_stret, mi, MakeSuperSig (mi, x86_stret));
-		}
+			RegisterMethod (arm_stret, mi, MakeSig (mi, arm_stret));
+			RegisterMethod (arm_stret, mi, MakeSuperSig (mi, arm_stret));
+			
+			bool x86_stret = X86NeedStret (mi);
+			if (x86_stret != arm_stret){
+				RegisterMethod (x86_stret, mi, MakeSig (mi, x86_stret));
+				RegisterMethod (x86_stret, mi, MakeSuperSig (mi, x86_stret));
+			}
 		} catch {
 			Console.WriteLine ("   in Method: {0}", mi);
 		}
@@ -1506,11 +1506,10 @@ public class Generator {
 			if (is_model)
 				print ("\t[Model]");
 
-			
 			print ("\tpublic {0}partial class {1} {2} {{",
 			       need_abstract.ContainsKey (type) ? "abstract " : "",
 			       TypeName,
-			       base_type != typeof (object) ? ": " + FormatType (type, base_type) : "");
+			       base_type != typeof (object) && TypeName != "NSObject" ? ": " + FormatType (type, base_type) : "");
 
 			if (!is_model){
 				foreach (var ea in selectors [type]){
@@ -1525,26 +1524,28 @@ public class Generator {
 			if (!is_static_class){
 				print ("\t\tstatic IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", objc_type_name);
 				if (!is_model && !external) {
-					print ("\t\tpublic override IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name);
+					print ("\t\tpublic {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
 				}
 
-				if (external) {
-					sw.WriteLine ("\t\t[Export (\"init\")]\n\t\tpublic {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
-						      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix);
-				} else {
-					sw.WriteLine ("\t\t[Export (\"init\")]\n\t\tpublic {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
-						      TypeName,
-						      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
-						      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
-						      MainPrefix);
-					sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
-						      TypeName,
-						      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
-						      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
-						      MainPrefix);
+				if (TypeName != "NSObject"){
+					if (external) {
+						sw.WriteLine ("\t\t[Export (\"init\")]\n\t\tpublic {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
+							      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix);
+					} else {
+						sw.WriteLine ("\t\t[Export (\"init\")]\n\t\tpublic {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
+							      TypeName,
+							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
+							      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
+							      MainPrefix);
+						sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
+							      TypeName,
+							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
+							      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
+							      MainPrefix);
+					}
+					sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
+					sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
 				}
-				sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
-				sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
 			}
 			
 			indent = 2;
