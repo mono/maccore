@@ -220,8 +220,9 @@ namespace MonoMac.CoreFoundation {
 				return new DispatchQueue (dispatch_get_global_queue ((IntPtr) DispatchQueuePriority.Default, IntPtr.Zero), false);
 			}
 		}
-		
+#if !MONOMAC	
 		static IntPtr main_q;
+#endif
 		static object lockobj = new object ();
 
 		public static DispatchQueue MainQueue {
