@@ -1039,7 +1039,7 @@ namespace MonoMac.Foundation
 		[Field ("NSRunLoopCommonModes")]
 		NSString NSRunLoopCommonModes { get; }
 
-        // TODO :: Additional RunLoop should be defined in NSConnect and NSApplication (NSConnectionReplyMode, NSModalPanelRunLoopMode, NSEventTrackingRunLoopMode)
+		// TODO :: Additional RunLoop should be defined in NSConnect and NSApplication (NSConnectionReplyMode, NSModalPanelRunLoopMode, NSEventTrackingRunLoopMode)
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1904,14 +1904,14 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject)), Bind ("NSObject")]
 	public interface NSObject2 {
-               [Export ("observeValueForKeyPath:ofObject:change:context:")]
-	       void ObserveValue (string keyPath, NSObject ofObject, NSDictionary change, IntPtr context);
+		[Export ("observeValueForKeyPath:ofObject:change:context:")]
+		void ObserveValue (string keyPath, NSObject ofObject, NSDictionary change, IntPtr context);
 
-                [Export ("addObserver:forKeyPath:options:context:")]
-                void AddObserver (NSObject observer, string keyPath, NSKeyValueObservingOptions options, IntPtr context);
+		[Export ("addObserver:forKeyPath:options:context:")]
+		void AddObserver (NSObject observer, string keyPath, NSKeyValueObservingOptions options, IntPtr context);
 
-                [Export ("removeObserver:forKeyPath:")]
-                void RemoveObserver (NSObject observer, string keyPath);
+		[Export ("removeObserver:forKeyPath:")]
+		void RemoveObserver (NSObject observer, string keyPath);
 
 		[Field ("NSKeyValueChangeKindKey")]
 		NSString ChangeKindKey { get; }
@@ -3170,11 +3170,11 @@ namespace MonoMac.Foundation
 		[Static, Export ("defaultManager")]
 		NSFileManager DefaultManager { get; }
 
-                [Export ("delegate")]
-                NSObject WeakDelegate { get; set; }
+		[Export ("delegate")]
+		NSObject WeakDelegate { get; set; }
 
-                [Wrap ("WeakDelegate")]
-                NSFileManagerDelegate Delegate { get; set; }
+		[Wrap ("WeakDelegate")]
+		NSFileManagerDelegate Delegate { get; set; }
 
 		[Export ("setAttributes:ofItemAtPath:error:")]
 		bool SetAttributes (NSDictionary attributes, string path, out NSError error);
@@ -3279,12 +3279,12 @@ namespace MonoMac.Foundation
 	[BaseType(typeof(NSObject))]
 	[Model]
 	interface NSFileManagerDelegate {
-        	[Export("fileManager:shouldCopyItemAtPath:toPath:")]
-        	bool ShouldCopyItemAtPath(NSFileManager fm, NSString srcPath, NSString dstPath);
+		[Export("fileManager:shouldCopyItemAtPath:toPath:")]
+		bool ShouldCopyItemAtPath(NSFileManager fm, NSString srcPath, NSString dstPath);
 
 #if MONOTOUCH
-        	[Export("fileManager:shouldCopyItemAtURL:toURL:")]
-        	bool ShouldCopyItemAtUrl(NSFileManager fm, NSUrl srcUrl, NSUrl dstUrl);
+		[Export("fileManager:shouldCopyItemAtURL:toURL:")]
+		bool ShouldCopyItemAtUrl(NSFileManager fm, NSUrl srcUrl, NSUrl dstUrl);
 		
 		[Export ("fileManager:shouldLinkItemAtURL:toURL:")]
 		bool ShouldLinkItemAtUrl (NSFileManager fileManager, NSUrl srcUrl, NSUrl dstUrl);
@@ -3474,7 +3474,7 @@ namespace MonoMac.Foundation
 		void Finished (NSUrlDownload download);
 
 		[Export ("download:didFailWithError:")]
-        	void FailedWithError(NSUrlDownload download, NSError error);
+		void FailedWithError(NSUrlDownload download, NSError error);
 	}
 #endif
 }
