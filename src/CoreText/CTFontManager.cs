@@ -75,8 +75,6 @@ namespace MonoMac.CoreText {
 		{
 			if (fontUrl == null)
 				throw new ArgumentNullException ("fontUrl");
-			if (scope == null)
-				throw new ArgumentNullException ("scope");
 			
 			NSError e = new NSError ();
 
@@ -92,8 +90,6 @@ namespace MonoMac.CoreText {
 		{
 			if (fontUrls == null)
 				throw new ArgumentNullException ("fontUrls");
-			if (scope == null)
-				throw new ArgumentNullException ("scope");
 
 			foreach (var furl in fontUrls)
 				if (furl == null)
@@ -117,8 +113,6 @@ namespace MonoMac.CoreText {
 		{
 			if (fontUrl == null)
 				throw new ArgumentNullException ("fontUrl");
-			if (scope == null)
-				throw new ArgumentNullException ("scope");
 
 			var e = new NSError ();
 			if (CTFontManagerUnregisterFontsForURLs (fontUrl.Handle, scope, e.Handle))
@@ -133,8 +127,6 @@ namespace MonoMac.CoreText {
 		{
 			if (fontUrls == null)
 				throw new ArgumentNullException ("fontUrls");
-			if (scope == null)
-				throw new ArgumentNullException ("scope");
 
 			foreach (var furl in fontUrls)
 				if (furl == null)
