@@ -126,7 +126,7 @@ namespace MonoMac.AudioToolbox {
 		public override string ToString ()
 		{
 			return String.Format ("[SampleRate={0} FormatID={1} FormatFlags={2} BytesPerPacket={3} FramesPerPacket={4} BytesPerFrame={5} ChannelsPerFrame={6} BitsPerChannel={7}]",
-					      SampleRate, FormatID, FormatFlags, BytesPerPacket, FramesPerPacket, BytesPerFrame, ChannelsPerFrame, BitsPerChannel);
+					      SampleRate, Format, FormatFlags, BytesPerPacket, FramesPerPacket, BytesPerFrame, ChannelsPerFrame, BitsPerChannel);
 		}
 	}
 
@@ -398,7 +398,7 @@ namespace MonoMac.AudioToolbox {
 
 		public override string ToString ()
 		{
-			return String.Format ("AudioChannelLayout: Tag={0} Bitmap={1} Channels={2}", Tag, Bitmap, Channels.Length);
+			return String.Format ("AudioChannelLayout: Tag={0} Bitmap={1} Channels={2}", AudioTag, Bitmap, Channels.Length);
 		}
 
 	}
