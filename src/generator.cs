@@ -1164,6 +1164,7 @@ public class Generator {
 		"MonoMac.ObjCRuntime",
 		"MonoMac.CoreGraphics",
 		"MonoMac.CoreAnimation",
+		"MonoMac.CoreLocation", 
 		"MonoMac.QTKit",
 #else
 		"MonoTouch",
