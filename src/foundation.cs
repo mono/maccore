@@ -92,13 +92,25 @@ namespace MonoMac.Foundation
 		[Export ("initWithAttributedString:")]
 		IntPtr Constructor (NSAttributedString other);
 
+#if MONOMAC
+		[Field ("NSFontAttributeName", "AppKit")]
+#else
 		[Field ("NSFontAttributeName")]
+#endif
 		NSString FontAttributeName { get; }
 
+#if MONOMAC
+		[Field ("NSParagraphStyleAttributeName", "AppKit")]
+#else
 		[Field ("NSParagraphStyleAttributeName")]
+#endif
 		NSString ParagraphStyleAttributeName { get; }
 
+#if MONOMAC
+		[Field ("NSForegroundColorAttributeName", "AppKit")]
+#else
 		[Field ("NSForegroundColorAttributeName")]
+#endif
 		NSString ForegroundColorAttributeName { get; }
 
 #if MONOMAC
