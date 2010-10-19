@@ -1856,7 +1856,10 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject)), Bind ("NSString")]
 	interface NSString2 {
-#if !MONOMAC
+#if MONOMAC
+		[Bind ("sizeWithAttributes:")]
+		SizeF StringSize (NSDictionary attributedStringAttributes);
+#else
 		[Bind ("sizeWithFont:")]
 		SizeF StringSize (UIFont font);
 		
