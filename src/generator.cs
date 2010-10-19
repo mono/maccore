@@ -94,7 +94,7 @@ public class FieldAttribute : Attribute {
 	public FieldAttribute (string symbolName) {
 		SymbolName = symbolName;
 	}
-	public FieldAttribute (string libraryName, string symbolName) {
+	public FieldAttribute (string symbolName, string libraryName) {
 		SymbolName = symbolName;
 		LibraryName = libraryName;
 	}
@@ -1753,16 +1753,27 @@ public class Generator {
 			}
 
 			if (field_exports.Count != 0){
-				string library_name = type.Namespace.Substring (MainPrefix.Length+1);
-				print ("static IntPtr libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+				List <string> libraries = new List <string> ();
 
 				foreach (var field_pi in field_exports){
+					var fieldAttr = (FieldAttribute) field_pi.GetCustomAttributes (typeof (FieldAttribute), true) [0];
+					string library_name; 
+
+					if (fieldAttr.LibraryName != null)
+						library_name = fieldAttr.LibraryName;
+					else
+						library_name = type.Namespace.Substring (MainPrefix.Length+1);
+
+					if (!libraries.Contains (library_name)) {
+						print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+						libraries.Add (library_name);
+					}
+
 					string fieldTypeName = FormatType (field_pi.DeclaringType, field_pi.PropertyType);
 					// Value types we dont cache for now, to avoid Nullabel<T>
 					if (!field_pi.PropertyType.IsValueType)
 						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
 
-					var fieldAttr = (FieldAttribute) field_pi.GetCustomAttributes (typeof (FieldAttribute), true) [0];
 					print ("public static {0} {1} {{", fieldTypeName, field_pi.Name);
 					indent++;
 					print ("get {");
@@ -1770,13 +1781,13 @@ public class Generator {
 					if (field_pi.PropertyType == typeof (NSString)){
 						print ("if (_{0} == null)", field_pi.Name);
 						indent++;
-						print ("_{0} = Dlfcn.GetStringConstant (libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName);
+						print ("_{0} = Dlfcn.GetStringConstant ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 						indent--;
 						print ("return _{0};", field_pi.Name);
 					} else if (field_pi.PropertyType.Name == "NSArray"){
 						print ("if (_{0} == null)", field_pi.Name);
 						indent++;
-						print ("_{0} = new NSArray (Dlfcn.GetIndirect (libraryHandle, \"{1}\"));", field_pi.Name, fieldAttr.SymbolName);
+						print ("_{0} = new NSArray (Dlfcn.GetIndirect ({2}_libraryHandle, \"{1}\"));", field_pi.Name, fieldAttr.SymbolName, library_name);
 						indent--;
 						print ("return _{0};", field_pi.Name);
 					} else {
