@@ -679,7 +679,7 @@ namespace MonoMac.Foundation
 		void SetAttributes (NSDictionary attrs, NSRange range);
 
 		[Export ("addAttribute:value:range:")]
-		void AddAttribute (string name, NSObject value, NSRange range);
+		void AddAttribute (NSString attributeName, NSObject value, NSRange range);
 
 		[Export ("addAttributes:range:")]
 		void AddAttributes (NSDictionary attrs, NSRange range);
