@@ -1908,8 +1908,15 @@ public class Generator {
 							var def = GetDefaultValue (mi);
 							if ((def is string) && ((def as string) == "null") && mi.ReturnType.IsValueType)
 								print ("throw new Exception ();");
-							else
+							else {
+								foreach (var j in pars){
+									if (j.ParameterType.IsByRef && j.IsOut){
+										print ("{0} = null;", j.Name);
+									}
+								}
+										
 								print ("return {0};", def);
+							}
 						}
 						
 						indent--;
@@ -2072,7 +2079,9 @@ public class Generator {
 	//
 	string RenderParameterDecl (IEnumerable<ParameterInfo> pi)
 	{
-		return String.Join (", ", pi.Select (p => RenderType (p.ParameterType) + " " + p.Name).ToArray ());
+		return String.Join (", ", pi.Select (p => 
+					(p.ParameterType.IsByRef ? (p.IsOut ? "out " : "ref ") + RenderType (p.ParameterType.GetElementType ())
+					: RenderType (p.ParameterType)) + " " + p.Name).ToArray ());
 	}
 
 	string GetPublicParameterName (ParameterInfo pi)
@@ -2087,7 +2096,7 @@ public class Generator {
 	
 	string RenderArgs (IEnumerable<ParameterInfo> pi)
 	{
-		return String.Join (", ", pi.Select (p => p.Name).ToArray ());
+		return String.Join (", ", pi.Select (p => (p.ParameterType.IsByRef ? (p.IsOut ? "out " : "ref ") : "")+ p.Name).ToArray ());
 	}
 
 	string CamelCase (string ins)
