@@ -100,6 +100,17 @@ namespace MonoMac.Foundation
 
 		[Field ("NSForegroundColorAttributeName")]
 		NSString ForegroundColorAttributeName { get; }
+
+#if MONOMAC
+		[Export ("initWithData:options:documentAttributes:error:")]
+		IntPtr Constructor (NSData data, NSDictionary options, out NSDictionary docAttributes, out NSError error);
+
+		[Export ("initWithDocFormat:documentAttributes:")]
+		IntPtr Constructor(NSData wordDocFormat, out NSDictionary docAttributes);
+
+		[Export ("initWithHTML:baseURL:documentAttributes:")]
+		IntPtr Constructor (NSData htmlData, NSUrl baseUrl, out NSDictionary docAttributes);
+#endif
 	}
 
 	[BaseType (typeof (NSObject),
