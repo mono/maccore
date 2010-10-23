@@ -5,7 +5,6 @@
 //   Miguel de Icaza
 //
 // Copyright 2009, Novell, Inc.
-// Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -987,6 +986,32 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("cancelExport")]
 		void CancelExport ();
+
+		[Field ("AVAssetExportPresetLowQuality")]
+		NSString PresetLowQuality { get; }
+
+		[Field ("AVAssetExportPresetMediumQuality")]
+		NSString PresetMediumQuality { get; }
+
+		[Field ("AVAssetExportPresetHighestQuality")]
+		NSString PresetHighestQuality { get; }
+
+		[Field ("AVAssetExportPreset640x480")]
+		NSString Preset640x480 { get; }
+
+		[Field ("AVAssetExportPreset960x540")]
+		NSString Preset960x540 { get; }
+
+		[Field ("AVAssetExportPreset1280x720")]
+		NSString Preset1280x720 { get; }
+
+		[Field ("AVAssetExportPresetAppleM4A")]
+		NSString PresetAppleM4A { get; }
+
+		[Field ("AVAssetExportPresetPassthrough")]
+		NSString PresetPassthrough { get; }
+
+		
 	}
 	
 	[BaseType (typeof (NSObject))]
