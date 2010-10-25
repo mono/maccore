@@ -12,4 +12,14 @@ namespace MonoMac.Security {
 		InteractionNotAllowed = -25308,
 		Decode = -26275, 
 	}
+
+	public enum SecPadding {
+		None      = 0,
+		PKCS1     = 1,
+		OAEP      = 2,
+		PKCS1MD2  = 0x8000,
+		PKCS1MD5  = 0x8001,
+		PKCS1SHA1 = 0x8002,
+	}
+	
 }
