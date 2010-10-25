@@ -53,6 +53,12 @@ namespace MonoMac.Foundation
 
 		[Export ("arrayWithObjects:count:")][Static][Internal]
 		NSArray FromObjects (IntPtr array, int count);
+
+		[Export ("valueForKey:")]
+		NSObject ValueForKey (NSString key);
+
+		[Export ("setValue:forKey:")]
+		void SetValueForKey (NSObject value, NSString key);
 	}
 
 	[Since (3,2)]
@@ -1914,17 +1920,73 @@ namespace MonoMac.Foundation
 		NSInputStream FromFile (string  path);
 	}
 
+	//
+	// We expose NSString versions of these methods because it could
+	// avoid an extra lookup in cases where there is a large volume of
+	// calls being made and the keys are mostly tokens
+	//
 	[BaseType (typeof (NSObject)), Bind ("NSObject")]
 	public interface NSObject2 {
 		[Export ("observeValueForKeyPath:ofObject:change:context:")]
-		void ObserveValue (string keyPath, NSObject ofObject, NSDictionary change, IntPtr context);
+		void ObserveValue (NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context);
 
 		[Export ("addObserver:forKeyPath:options:context:")]
-		void AddObserver (NSObject observer, string keyPath, NSKeyValueObservingOptions options, IntPtr context);
+		void AddObserver (NSObject observer, NSString keyPath, NSKeyValueObservingOptions options, IntPtr context);
 
 		[Export ("removeObserver:forKeyPath:")]
-		void RemoveObserver (NSObject observer, string keyPath);
+		void RemoveObserver (NSObject observer, NSString keyPath);
 
+		[Export ("willChangeValueForKey:")]
+		void WillChangeValue (string forKey);
+
+		[Export ("didChangeValueForKey:")]
+		void DidChangeValue (string forKey);
+
+		[Export ("willChange:valuesAtIndexes:forKey:")]
+		void WillChange (NSKeyValueChange changeKind, NSIndexSet indexes, NSString forKey);
+
+		[Export ("didChange:valuesAtIndexes:forKey:")]
+		void DidChange (NSKeyValueChange changeKind, NSIndexSet indexes, NSString forKey);
+
+		[Export ("willChangeValueForKey:withSetMutation:usingObjects:")]
+		void WillChange (NSString forKey, NSKeyValueSetMutationKind mutationKind, NSSet objects);
+
+		[Export ("didChangeValueForKey:withSetMutation:usingObjects:")]
+		void DidChange (NSString forKey, NSKeyValueSetMutationKind mutationKind, NSSet objects);
+
+		[Static, Export ("keyPathsForValuesAffectingValueForKey:")]
+		NSSet GetKeyPathsForValuesAffecting (NSString key);
+
+		[Static, Export ("automaticallyNotifiesObserversForKey:")]
+		bool AutomaticallyNotifiesObserversForKey (string key);
+
+		[Export ("valueForKey:")]
+		NSObject ValueForKey (NSString key);
+
+		[Export ("setValue:forKey:")]
+		void SetValueForKey (NSObject value, NSString key);
+
+		[Export ("valueForKeyPath:")]
+		NSObject ValueForKeyPath (NSString keyPath);
+
+		[Export ("setValue:forKeyPath:")]
+		void SetValueForKeyPath (NSObject value, NSString keyPath);
+
+		[Export ("valueForUndefinedKey:")]
+		NSObject ValueForUndefinedKey (NSString key);
+
+		[Export ("setValue:forUndefinedKey:")]
+		void SetValueForUndefinedKey (NSObject value, NSString undefinedKey);
+
+		[Export ("setNilValueForKey:")]
+		void SetNilValueForKey (NSString key);
+
+		[Export ("dictionaryWithValuesForKeys:")]
+		NSDictionary GetDictionaryOfValuesFromKeys (NSString [] keys);
+
+		[Export ("setValuesForKeysWithDictionary:")]
+		void SetValuesForKeysWithDictionary (NSDictionary keyedValues);
+		
 		[Field ("NSKeyValueChangeKindKey")]
 		NSString ChangeKindKey { get; }
 

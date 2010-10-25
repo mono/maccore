@@ -25,8 +25,10 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
+using MonoMac.Foundation;
 
 namespace MonoMac.Security {
 
@@ -66,19 +68,22 @@ namespace MonoMac.Security {
 		public string SubjectSummary {
 			get {
 				if (handle == IntPtr.Zero)
-					throw new ObjectDisposedException ();
+					throw new ObjectDisposedException ("SecCertificate");
 				
 				IntPtr cfstr = SecCertificateCopySubjectSummary (handle);
-				string ret = CFString.FetchString (cfstring);
+				string ret = CFString.FetchString (cfstr);
 				CFObject.CFRelease (cfstr);
 				return ret;
 			}
 		}
 
+		[DllImport (Constants.SecurityLibrary)]
+		extern static IntPtr SecCertificateCopyData (IntPtr cert);
+
 		public NSData DerData {
 			get {
 				if (handle == IntPtr.Zero)
-					throw new ObjectDisposedException ();
+					throw new ObjectDisposedException ("SecCertificate");
 
 				IntPtr data = SecCertificateCopyData (handle);
 				if (data == null)
@@ -111,6 +116,6 @@ namespace MonoMac.Security {
 				handle = IntPtr.Zero;
 			}
 		}
-		
 	}
+
 }
