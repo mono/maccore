@@ -39,10 +39,33 @@ namespace MonoMac.CoreFoundation {
 	[Since (3,2)]
 	class CFBoolean : INativeObject, IDisposable {
 		IntPtr handle;
+		static NSObject _TrueObject;
+		static NSObject _FalseObject;
 
 		public static readonly CFBoolean True;
 		public static readonly CFBoolean False;
 
+		public static NSObject TrueObject {
+			get {
+				if (_TrueObject == null)
+					_TrueObject = new NSObject (True.Handle);
+				return _TrueObject;
+			}
+		}
+
+		public static NSObject FalseObject {
+			get {
+				if (_FalseObject == null)
+					_FalseObject = new NSObject (False.Handle);
+				return _FalseObject;
+			}
+		}
+
+		public static NSObject GetBoolObject (bool val)
+		{
+			return val ? CFBoolean.TrueObject : CFBoolean.FalseObject;
+		}
+		
 		static CFBoolean ()
 		{
 			var handle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);

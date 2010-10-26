@@ -86,7 +86,7 @@ namespace MonoMac.Security {
 					throw new ObjectDisposedException ("SecCertificate");
 
 				IntPtr data = SecCertificateCopyData (handle);
-				if (data == null)
+				if (data == IntPtr.Zero)
 					throw new ArgumentException ("Not a valid certificate");
 				return new NSData (data);
 			}
@@ -140,7 +140,7 @@ namespace MonoMac.Security {
 
 		public SecCertificate Certificate {
 			get {
-				if (handle == null)
+				if (handle == IntPtr.Zero)
 					throw new ObjectDisposedException ("SecIdentity");
 				IntPtr cert;
 				SecIdentityCopyCertificate (handle, out cert);

@@ -87,6 +87,13 @@ namespace MonoMac.Foundation {
 			return str.ToString ();
 		}
 
+		public static explicit operator NSString (string str)
+		{
+			if (str == null)
+				return null;
+			return new NSString (str);
+		}
+
 		public unsafe static string FromHandle (IntPtr usrhandle)
 		{
 			if (usrhandle == IntPtr.Zero)
