@@ -397,6 +397,9 @@ namespace MonoMac.AudioToolbox {
 
 		static internal AudioStreamPacketDescription [] PacketDescriptionFrom (int nPackets, IntPtr b)
 		{
+			if (b == IntPtr.Zero)
+				return new AudioStreamPacketDescription [0];
+
 			var ret = new AudioStreamPacketDescription [nPackets];
 			int p = 0;
 			for (int i = 0; i < nPackets; i++){
