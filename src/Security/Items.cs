@@ -35,10 +35,141 @@ using System.Runtime.InteropServices;
 
 namespace MonoMac.Security {
 
-	public class SecQuery {
-		NSMutableDictionary queryDict;
+	public class SecurityException : Exception {
+		static string ToMessage (SecStatusCode code)
+		{
+			
+			switch (code){
+			case SecStatusCode.Success: 
+			case SecStatusCode.Unimplemented: 
+			case SecStatusCode.Param:
+			case SecStatusCode.Allocate:
+			case SecStatusCode.NotAvailable:
+			case SecStatusCode.DuplicateItem:
+			case SecStatusCode.ItemNotFound:
+			case SecStatusCode.InteractionNotAllowed:
+			case SecStatusCode.Decode:
+				return code.ToString ();
+			}
+			return String.Format ("Unknown error: 0x{0:x}", code);
+		}
 		
-		public SecQuery (SecClass secClassKind)
+		public SecurityException (SecStatusCode code) : base (ToMessage (code))
+		{
+		}
+	}
+	
+	public class SecKeyChain {
+		public static SecStatusCode TryQueryAsData (SecRecord query, bool wantPersistentReference, out NSData result)
+		{
+			if (query == null){
+				result = null;
+				return SecStatusCode.Param;
+			}
+
+			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
+				copy.SetObject (CFBoolean.TrueObject, SecItem.ReturnData);
+
+				IntPtr ptr;
+				var ret = SecItem.CopyMatching (copy, out ptr);
+				if (ret == SecStatusCode.Success)
+					result = new NSData (ptr);
+				else
+					result = null;
+				return ret;
+			}
+		}
+
+		public static NSData QueryAsData (SecRecord query, bool wantPersistentReference)
+		{
+			if (query == null)
+				throw new ArgumentNullException ("query");
+			
+			NSData result;
+			
+			var code = TryQueryAsData (query, wantPersistentReference, out result);
+			if (code != SecStatusCode.Success)
+				throw new SecurityException (code);
+			return result;
+		}
+
+		public static SecStatusCode TryQueryAsRecord (SecRecord query, out SecRecord result)
+		{
+			if (query == null){
+				result = null;
+				return SecStatusCode.Param;
+			}
+			
+			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
+				copy.SetObject (CFBoolean.TrueObject, SecItem.ReturnAttributes);
+
+				IntPtr ptr;
+				var ret = SecItem.CopyMatching (copy, out ptr);
+				if (ret == SecStatusCode.Success)
+					result = new SecRecord (new NSMutableDictionary (new NSDictionary (ptr)));
+				else
+					result = null;
+				return ret;
+			}
+		}
+		
+		public static SecRecord QueryAsRecord (SecRecord query)
+		{
+			if (query == null)
+				throw new ArgumentNullException ("query");
+			
+			SecRecord result;
+			
+			var code = TryQueryAsRecord (query, out result);
+			if (code != SecStatusCode.Success)
+				throw new SecurityException (code);
+			return result;
+		}
+
+		public static SecStatusCode TryQueryAsConcreteType (SecRecord query, out object result)
+		{
+			if (query == null){
+				result = null;
+				return SecStatusCode.Param;
+			}
+			
+			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
+				copy.SetObject (CFBoolean.TrueObject, SecItem.ReturnRef);
+
+				IntPtr ptr;
+				var ret = SecItem.CopyMatching (copy, out ptr);
+				if (ret == SecStatusCode.Success){
+					// FIXME: implement me
+					result = null;
+				} else
+					result = null;
+				return ret;
+			}
+		}
+		
+		static object QueryAsConcreteType (SecRecord query)
+		{
+			if (query == null)
+				throw new ArgumentNullException ("query");
+			
+			object result;
+			
+			var code = TryQueryAsConcreteType (query, out result);
+			if (code != SecStatusCode.Success)
+				throw new SecurityException (code);
+			return result;
+		}
+	}
+	
+	public class SecRecord {
+		internal NSMutableDictionary queryDict;
+
+		internal SecRecord (NSMutableDictionary dict)
+		{
+			queryDict = dict;
+		}
+		
+		public SecRecord (SecClass secClassKind)
 		{
 			queryDict = NSMutableDictionary.FromObjectAndKey (secClassKind, SecClass.SecClassKey);
 		}
@@ -580,7 +711,7 @@ namespace MonoMac.Security {
 		[DllImport (Constants.SecurityLibrary)]
 		extern static SecStatusCode SecItemCopyMatching (IntPtr cfDictRef, out IntPtr result);
 
-		public SecStatusCode CopyMatching (NSDictionary queryDictionary, out IntPtr result)
+		public static SecStatusCode CopyMatching (NSDictionary queryDictionary, out IntPtr result)
 		{
 			if (queryDictionary == null)
 				throw new ArgumentNullException ("queryDictionary");
