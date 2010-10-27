@@ -53,5 +53,16 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
+
+		public override bool Equals (object other)
+		{
+			var o = other as SecPolicy;
+			return this == o;
+		}
+
+		public override int GetHashCode ()
+		{
+			return (int) Handle;
+		}
 	}
 }

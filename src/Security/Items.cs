@@ -1262,6 +1262,17 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
+
+		public override bool Equals (object other)
+		{
+			var o = other as SecAttributeAccesssible;
+			return this == o;
+		}
+
+		public override int GetHashCode ()
+		{
+			return (int) Handle;
+		}
 	}
 
 	public class SecProtocol : NSNumber {
@@ -1564,6 +1575,17 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
+
+		public override bool Equals (object other)
+		{
+			var o = other as SecProtocol;
+			return this == o;
+		}
+
+		public override int GetHashCode ()
+		{
+			return (int) Handle;
+		}
 	}
 
 	public class SecAuthenticationType : NSNumber {
@@ -1659,6 +1681,17 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
+
+		public override bool Equals (object other)
+		{
+			var o = other as SecAuthenticationType;
+			return this == o;
+		}
+
+		public override int GetHashCode ()
+		{
+			return (int) Handle;
+		}
 	}
 
 	public class SecKeyClass : NSNumber {
@@ -1709,6 +1742,17 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
+
+		public override bool Equals (object other)
+		{
+			var o = other as SecKeyClass;
+			return this == o;
+		}
+
+		public override int GetHashCode ()
+		{
+			return (int) Handle;
+		}
 	}
 
 	public class SecKeyType : NSObject {
@@ -1751,6 +1795,17 @@ namespace MonoMac.Security {
 			else if (b == null)
 				return true;
 			return a.Handle != b.Handle;
+		}
+
+		public override bool Equals (object other)
+		{
+			var o = other as SecKeyType;
+			return this == o;
+		}
+
+		public override int GetHashCode ()
+		{
+			return (int) Handle;
 		}
 	}
 
@@ -1798,5 +1853,15 @@ namespace MonoMac.Security {
 			return a.Handle != b.Handle;
 		}
 		
+		public override bool Equals (object other)
+		{
+			var o = other as SecMatchLimit;
+			return this == o;
+		}
+
+		public override int GetHashCode ()
+		{
+			return (int) Handle;
+		}
 	}
 }
