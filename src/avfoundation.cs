@@ -987,6 +987,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("cancelExport")]
 		void CancelExport ();
 
+		[Export ("error")]
+		NSError Error { get; }
+
 		[Field ("AVAssetExportPresetLowQuality")]
 		NSString PresetLowQuality { get; }
 
