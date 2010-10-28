@@ -35,6 +35,9 @@ namespace MonoMac.Security {
 	public class SecPolicy : NSObject {
 		internal SecPolicy (IntPtr handle) : base (handle) {}
 		
+		[DllImport (Constants.SecurityLibrary, EntryPoint="SecPolicyGetTypeID")]
+		public extern static int GetTypeID ();
+
 		public static bool operator == (SecPolicy a, SecPolicy b)
 		{
 			if (a == null)

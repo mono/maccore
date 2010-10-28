@@ -139,7 +139,16 @@ namespace MonoMac.Security {
 				IntPtr ptr;
 				var ret = SecItem.CopyMatching (copy, out ptr);
 				if (ret == SecStatusCode.Success){
-					// FIXME: implement me
+					int cfType = CFType.GetTypeID (ptr);
+
+					if (cfType == SecCertificate.GetTypeID ())
+						result = new SecCertificate (ptr, true);
+					else if (cfType == SecKey.GetTypeID ())
+						result = new SecKey (ptr, true);
+					else if (cfType == SecIdentity.GetTypeID ())
+						result = new SecIdentity (ptr, true);
+					else
+						throw new Exception (String.Format ("Unexpected type: 0x{0:x}", ret));
 					result = null;
 				} else
 					result = null;

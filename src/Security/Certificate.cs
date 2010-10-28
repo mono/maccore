@@ -49,6 +49,9 @@ namespace MonoMac.Security {
 				CFObject.CFRetain (handle);
 		}
 
+		[DllImport (Constants.SecurityLibrary, EntryPoint="SecCertificateGetTypeID")]
+		public extern static int GetTypeID ();
+			
 		[DllImport (Constants.SecurityLibrary)]
 		extern static IntPtr SecCertificateCreateWithData (IntPtr allocator, IntPtr cfData);
 
@@ -135,6 +138,9 @@ namespace MonoMac.Security {
 				CFObject.CFRetain (handle);
 		}
 
+		[DllImport (Constants.SecurityLibrary, EntryPoint="SecIdentityGetTypeID")]
+		public extern static int GetTypeID ();
+
 		[DllImport (Constants.SecurityLibrary)]
 		extern static IntPtr SecIdentityCopyCertificate (IntPtr handle, out IntPtr cert);
 
@@ -192,6 +198,9 @@ namespace MonoMac.Security {
 				CFObject.CFRetain (handle);
 		}
 
+		[DllImport (Constants.SecurityLibrary, EntryPoint="SecKeyGetTypeID")]
+		public extern static int GetTypeID ();
+		
 		[DllImport (Constants.SecurityLibrary)]
 		extern static SecStatusCode SecKeyGeneratePair (IntPtr dictHandle, out IntPtr pubKey, out IntPtr privKey);
 
