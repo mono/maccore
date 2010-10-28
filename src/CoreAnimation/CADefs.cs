@@ -45,7 +45,7 @@ namespace MonoMac.CoreAnimation {
 		const string RotateAuto = "auto";
 		const string RotateAutoReverse = "autoReverse";
 
-		[DllImport(Constants.QuartzLibrary)]
+		[DllImport(Constants.QuartzLibrary, EntryPoint="CACurrentMediaTime")]
 		public extern static double CurrentMediaTime ();
 	}
 
