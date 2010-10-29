@@ -194,7 +194,7 @@ namespace MonoMac.CoreAnimation {
 		RectangleF ConvertRectToLayer (RectangleF rect, CALayer layer);
 
 		[Export ("convertTime:fromLayer:")]
-		double ConvertTimeFromLayer (double rect, CALayer layer);
+		double ConvertTimeFromLayer (double rect, [NullAllowed] CALayer layer);
 		
 		[Export ("convertTime:toLayer:")]
 		double ConvertTimeToLayer (double t, CALayer layer);
