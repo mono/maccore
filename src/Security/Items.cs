@@ -35,6 +35,19 @@ using System.Runtime.InteropServices;
 
 namespace MonoMac.Security {
 
+	public enum SecKind {
+		GenericPassword, InternetPassword, Certificate, Key, Identity
+	}
+
+	public enum SecAccessible {
+		WhenUnlocked,
+		AfterFirstUnlock,
+		Always,
+		WhenUnlockedThisDeviceOnly,
+		AfterFirstUnlockThisDeviceOnly,
+		AlwaysThisDeviceOnly
+	}
+	
 	public class SecurityException : Exception {
 		static string ToMessage (SecStatusCode code)
 		{
@@ -178,23 +191,22 @@ namespace MonoMac.Security {
 			queryDict = dict;
 		}
 		
-		public SecRecord (SecClass secClassKind)
+		public SecRecord (SecKind secKind)
 		{
-			queryDict = NSMutableDictionary.FromObjectAndKey (secClassKind, SecClass.SecClassKey);
+			var kind = SecClass.FromSecKind (secKind);
+			queryDict = NSMutableDictionary.FromObjectAndKey (kind, SecClass.SecClassKey);
 		}
 
 		//
 		// Attributes
 		//
-		public SecAttributeAccesssible Accessible {
+		public SecAccessible Accessible {
 			get {
-				return new SecAttributeAccesssible (queryDict.ObjectForKey (SecAttributeKey.AttrAccessible).Handle);
+				return SecAttributeAccesssible.ToSecAccessible (queryDict.ObjectForKey (SecAttributeKey.AttrAccessible));
 			}
 			
 			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecAttributeKey.AttrAccessible);
+				queryDict.SetObject (SecAttributeAccesssible.FromSecAccessible (value), SecAttributeKey.AttrAccessible);
 			}
 		}
 
@@ -891,70 +903,51 @@ namespace MonoMac.Security {
 	}
 
 	public class SecClass : NSObject {
-		internal SecClass (IntPtr handle) : base (handle)
+		public static SecClass SecClassKey;
+		public static SecClass GenericPassword;
+		public static SecClass InternetPassword;
+		public static SecClass Certificate;
+		public static SecClass Key;
+		public static SecClass Identity;
+
+		internal SecClass (IntPtr handle): base (handle)
 		{
 		}
 		
-		static SecClass _SecClassKey;
-		public static SecClass SecClassKey {
-			get {
-				if (_SecClassKey == null)
-					_SecClassKey = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClass"));
-				return _SecClassKey;
-			}
+		static SecClass ()
+		{
+			SecClassKey = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClass"));
+			GenericPassword = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassGenericPassword"));
+			InternetPassword = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassInternetPassword"));
+			Certificate = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassCertificate"));
+			Key = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassKey"));
+			Identity = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassIdentity"));
 		}
-		
-		static SecClass _GenericPassword;
-		public static SecClass GenericPassword {
-			get {
-				if (_GenericPassword == null)
-					_GenericPassword = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassGenericPassword"));
-				return _GenericPassword;
-			}
-		}
-
-		static SecClass _InternetPassword;
-		public static SecClass InternetPassword {
-			get {
-				if (_InternetPassword == null)
-					_InternetPassword = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassInternetPassword"));
-				return _InternetPassword;
-			}
-		}
-		
-		static SecClass _Certificate;
-		public static SecClass Certificate {
-			get {
-				if (_Certificate == null)
-					_Certificate = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassCertificate"));
-				return _Certificate;
-			}
-		}
-		
-		static SecClass _Key;
-		public static SecClass Key {
-			get {
-				if (_Key == null)
-					_Key = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassKey"));
-				return _Key;
-			}
-		}
-		
-		static SecClass _Identity;
-		public static SecClass Identity {
-			get {
-				if (_Identity == null)
-					_Identity = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassIdentity"));
-				return _Identity;
+	
+		public static SecClass FromSecKind (SecKind secKind)
+		{
+			switch (secKind){
+			case SecKind.GenericPassword:
+				return GenericPassword;
+			case SecKind.InternetPassword:
+				return InternetPassword;
+			case SecKind.Certificate:
+				return Certificate;
+			case SecKind.Key:
+				return Key;
+			case SecKind.Identity:
+				return Identity;
+			default:
+				throw new ArgumentException ("secKind");
 			}
 		}
 	}
-
+	
 	public class SecAttributeKey : NSObject {
 		internal SecAttributeKey (IntPtr handle) : base (handle)
 		{
 		}
-
+	
 		static SecAttributeKey _AttrAccessible;
 		public static SecAttributeKey AttrAccessible {
 			get {
@@ -1324,8 +1317,28 @@ namespace MonoMac.Security {
 			}
 		}
 	}
-
+	
 	public class SecAttributeAccesssible : NSObject {
+		public static SecAttributeAccesssible FromSecAccessible (SecAccessible accessible)
+		{
+			switch (accessible){
+			case SecAccessible.WhenUnlocked:
+				return AttrAccessibleWhenUnlocked;
+			case SecAccessible.AfterFirstUnlock:
+				return AttrAccessibleAfterFirstUnlock;
+			case SecAccessible.Always:
+				return AttrAccessibleAlways;
+			case SecAccessible.WhenUnlockedThisDeviceOnly:
+				return AttrAccessibleWhenUnlockedThisDeviceOnly;
+			case SecAccessible.AfterFirstUnlockThisDeviceOnly:
+				return AttrAccessibleAfterFirstUnlockThisDeviceOnly;
+			case SecAccessible.AlwaysThisDeviceOnly:
+				return AttrAccessibleAlwaysThisDeviceOnly;
+			default:
+				throw new ArgumentException ("accessible");
+			}
+		}
+			
 		internal SecAttributeAccesssible (IntPtr handle) : base (handle)
 		{
 		}
@@ -1383,38 +1396,26 @@ namespace MonoMac.Security {
 				return _AttrAccessibleAlwaysThisDeviceOnly;
 			}
 		}
-
-		public static bool operator == (SecAttributeAccesssible a, SecAttributeAccesssible b)
+	
+		public static SecAccessible ToSecAccessible (NSObject obj)
 		{
-			if (a == null)
-				return b == null;
-			else if (b == null)
-				return false;
-			
-			return a.Handle == b.Handle;
-		}
-
-		public static bool operator != (SecAttributeAccesssible a, SecAttributeAccesssible b)
-		{
-			if (a == null)
-				return b != null;
-			else if (b == null)
-				return true;
-			return a.Handle != b.Handle;
-		}
-
-		public override bool Equals (object other)
-		{
-			var o = other as SecAttributeAccesssible;
-			return this == o;
-		}
-
-		public override int GetHashCode ()
-		{
-			return (int) Handle;
+			var handle = obj.Handle;
+			if (handle == AttrAccessibleWhenUnlocked.Handle)
+				return SecAccessible.WhenUnlocked;
+			if (handle == AttrAccessibleAfterFirstUnlock.Handle)
+				return SecAccessible.AfterFirstUnlock;
+			if (handle == AttrAccessibleAlways.Handle)
+				return SecAccessible.Always;
+			if (handle == AttrAccessibleWhenUnlockedThisDeviceOnly.Handle)
+				return SecAccessible.WhenUnlockedThisDeviceOnly;
+			if (handle == AttrAccessibleAfterFirstUnlockThisDeviceOnly.Handle)
+				return SecAccessible.AfterFirstUnlockThisDeviceOnly;
+			if (handle == AttrAccessibleAlwaysThisDeviceOnly.Handle)
+				return SecAccessible.AlwaysThisDeviceOnly;
+			throw new ArgumentException ("obj");
 		}
 	}
-
+	
 	public class SecProtocol : NSNumber {
 		internal SecProtocol (IntPtr handle): base (handle) {}
 		
@@ -1696,7 +1697,7 @@ namespace MonoMac.Security {
 				return _AttrProtocolPOP3S;
 			}
 		}
-
+	
 		public static bool operator == (SecProtocol a, SecProtocol b)
 		{
 			if (a == null)
@@ -1706,7 +1707,7 @@ namespace MonoMac.Security {
 			
 			return a.Handle == b.Handle;
 		}
-
+	
 		public static bool operator != (SecProtocol a, SecProtocol b)
 		{
 			if (a == null)
@@ -1715,19 +1716,19 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
-
+	
 		public override bool Equals (object other)
 		{
 			var o = other as SecProtocol;
 			return this == o;
 		}
-
+	
 		public override int GetHashCode ()
 		{
 			return (int) Handle;
 		}
 	}
-
+	
 	public class SecAuthenticationType : NSNumber {
 		internal SecAuthenticationType (IntPtr handle) : base (handle) {}
 		
@@ -1802,7 +1803,7 @@ namespace MonoMac.Security {
 				return _AttrAuthenticationTypeDefault;
 			}
 		}
-
+	
 		public static bool operator == (SecAuthenticationType a, SecAuthenticationType b)
 		{
 			if (a == null)
@@ -1812,7 +1813,7 @@ namespace MonoMac.Security {
 			
 			return a.Handle == b.Handle;
 		}
-
+	
 		public static bool operator != (SecAuthenticationType a, SecAuthenticationType b)
 		{
 			if (a == null)
@@ -1821,19 +1822,19 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
-
+	
 		public override bool Equals (object other)
 		{
 			var o = other as SecAuthenticationType;
 			return this == o;
 		}
-
+	
 		public override int GetHashCode ()
 		{
 			return (int) Handle;
 		}
 	}
-
+	
 	public class SecKeyClass : NSNumber {
 		internal SecKeyClass (IntPtr handle):base(handle) {}
 		
@@ -1863,7 +1864,7 @@ namespace MonoMac.Security {
 				return _AttrKeyClassSymmetric;
 			}
 		}
-
+	
 		public static bool operator == (SecKeyClass a, SecKeyClass b)
 		{
 			if (a == null)
@@ -1873,7 +1874,7 @@ namespace MonoMac.Security {
 			
 			return a.Handle == b.Handle;
 		}
-
+	
 		public static bool operator != (SecKeyClass a, SecKeyClass b)
 		{
 			if (a == null)
@@ -1882,24 +1883,24 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
-
+	
 		public override bool Equals (object other)
 		{
 			var o = other as SecKeyClass;
 			return this == o;
 		}
-
+	
 		public override int GetHashCode ()
 		{
 			return (int) Handle;
 		}
 	}
-
+	
 	public class SecKeyType : NSObject {
 		internal SecKeyType (IntPtr handle) : base (handle)
 		{
 		}
-
+	
 		static SecKeyType _AttrKeyTypeRSA;
 		public static SecKeyType AttrKeyTypeRSA {
 			get {
@@ -1917,7 +1918,7 @@ namespace MonoMac.Security {
 				return _AttrKeyTypeEC;
 			}
 		}
-
+	
 		public static bool operator == (SecKeyType a, SecKeyType b)
 		{
 			if (a == null)
@@ -1927,7 +1928,7 @@ namespace MonoMac.Security {
 			
 			return a.Handle == b.Handle;
 		}
-
+	
 		public static bool operator != (SecKeyType a, SecKeyType b)
 		{
 			if (a == null)
@@ -1936,22 +1937,22 @@ namespace MonoMac.Security {
 				return true;
 			return a.Handle != b.Handle;
 		}
-
+	
 		public override bool Equals (object other)
 		{
 			var o = other as SecKeyType;
 			return this == o;
 		}
-
+	
 		public override int GetHashCode ()
 		{
 			return (int) Handle;
 		}
 	}
-
+	
 	public class SecMatchLimit : NSNumber {
 		internal SecMatchLimit (IntPtr handle) : base (handle) {}
-
+	
 		public SecMatchLimit (int limit) : base (limit)
 		{
 		}
@@ -1973,7 +1974,7 @@ namespace MonoMac.Security {
 				return _MatchLimitAll;
 			}
 		}
-
+	
 		public static bool operator == (SecMatchLimit a, SecMatchLimit b)
 		{
 			if (a == null)
@@ -1983,7 +1984,7 @@ namespace MonoMac.Security {
 			
 			return a.Handle == b.Handle;
 		}
-
+	
 		public static bool operator != (SecMatchLimit a, SecMatchLimit b)
 		{
 			if (a == null)
@@ -1998,7 +1999,7 @@ namespace MonoMac.Security {
 			var o = other as SecMatchLimit;
 			return this == o;
 		}
-
+	
 		public override int GetHashCode ()
 		{
 			return (int) Handle;
