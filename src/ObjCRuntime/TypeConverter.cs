@@ -92,6 +92,9 @@ namespace MonoMac.ObjCRuntime {
 		 * http://developer.apple.com/documentation/DeveloperTools/gcc-4.0.1/gcc/Type-encoding.html
 		 */
 		public static string ToNative (Type type) {
+			if (type.IsGenericParameter)
+				throw new ArgumentException ("Unable to convert generic types");
+
 			if (type.IsByRef) return "^" + ToNative (type.GetElementType ());
 			if (type == typeof (IntPtr)) return "^v";
 			if (type == typeof (byte)) return "c";
