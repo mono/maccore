@@ -523,10 +523,10 @@ namespace MonoMac.AVFoundation {
 		AVAssetTrack Track { get;  }
 
 		[Static, Export ("assetReaderTrackOutputWithTrack:outputSettings:")]
-		AVAssetReaderTrackOutput FromTrack (AVAssetTrack track, NSDictionary outputSettings);
+		AVAssetReaderTrackOutput FromTrack (AVAssetTrack track, [NullAllowed] NSDictionary outputSettings);
 
 		[Export ("initWithTrack:outputSettings:")]
-		IntPtr Constructor (AVAssetTrack track, NSDictionary outputSettings);
+		IntPtr Constructor (AVAssetTrack track, [NullAllowed] NSDictionary outputSettings);
 
 		[Export ("outputSettings")]
 		NSDictionary OutputSettings { get; }
