@@ -47,7 +47,2001 @@ namespace MonoMac.Security {
 		AfterFirstUnlockThisDeviceOnly,
 		AlwaysThisDeviceOnly
 	}
+
+	public enum SecProtocol {
+		Ftp, FtpAccount, Http, Irc, Nntp, Pop3, Smtp, Socks, Imap, Ldap, AppleTalk, Afp, Telnet, Ssh,
+		Ftps, Https, HttpProxy, HttpsProxy, FtpProxy, Smb, Rtsp, RtspProxy, Daap, Eppc, Ipp,
+		Nntps, Ldaps, Telnets, Imaps, Ircs, Pop3s, 
+	}
+
+	public enum SecAuthenticationType {
+		Ntlm, Msn, Dpa, Rpa, HttpBasic, HttpDigest, HtmlForm, Default
+	}
+
+	public enum SecKeyClass {
+		Public, Private, Symmetric
+	}
+
+	public enum SecKeyType {
+		RSA, EC
+	}
+
+	public class SecKeyChain {
+		static NSNumber SetLimit (NSMutableDictionary dict, int max)
+		{
+			NSNumber n = null;
+			IntPtr val;
+			if (max == -1)
+				val = SecMatchLimit.MatchLimitAll;
+			else if (max == 1)
+				val = SecMatchLimit.MatchLimitOne;
+			else {
+				n = NSNumber.FromInt32 (max);
+				val = n.Handle;
+			}
+			
+			dict.LowlevelSetObject (val, SecItem.MatchLimit);
+			return n;
+		}
+		
+		public static NSData QueryAsData (SecRecord query, bool wantPersistentReference, out SecStatusCode status)
+		{
+			if (query == null){
+				status = SecStatusCode.Param;
+				return null;
+			}
+
+			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
+				SetLimit (copy, 1);
+				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnData);
+
+				IntPtr ptr;
+				status = SecItem.CopyMatching (copy, out ptr);
+				if (status == SecStatusCode.Success)
+					return new NSData (ptr);
+				return null;
+			}
+		}
+
+		public static NSData [] QueryAsData (SecRecord query, bool wantPersistentReference, int max, out SecStatusCode status)
+		{
+			if (query == null){
+				status = SecStatusCode.Param;
+				return null;
+			}
+
+			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
+				var n = SetLimit (copy, max);
+				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnData);
+
+				IntPtr ptr;
+				status = SecItem.CopyMatching (copy, out ptr);
+				n = null;
+				if (status == SecStatusCode.Success){
+					if (max == 1)
+						return new NSData [] { new NSData (ptr) };
+					else
+						return NSArray.ArrayFromHandle<NSData> (ptr);
+				}
+				return null;
+			}
+		}
+		
+		public static NSData QueryAsData (SecRecord query)
+		{
+			SecStatusCode status;
+			return QueryAsData (query, false, out status);
+		}
+
+		public static NSData [] QueryAsData (SecRecord query, int max)
+		{
+			SecStatusCode status;
+			return QueryAsData (query, false, max, out status);
+		}
+		
+		public static SecRecord QueryAsRecord (SecRecord query, out SecStatusCode result)
+		{
+			if (query == null){
+				result = SecStatusCode.Param;
+				return null;
+			}
+			
+			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
+				SetLimit (copy, 1);
+				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnAttributes);
+
+				IntPtr ptr;
+				result = SecItem.CopyMatching (copy, out ptr);
+				if (result == SecStatusCode.Success)
+					return new SecRecord (new NSMutableDictionary (new NSDictionary (ptr)));
+				return null;
+			}
+		}
+		
+		public static SecRecord [] QueryAsRecord (SecRecord query, int max, out SecStatusCode result)
+		{
+			if (query == null){
+				result = SecStatusCode.Param;
+				return null;
+			}
+			
+			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
+				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnAttributes);
+				var n = SetLimit (copy, max);
+				
+				IntPtr ptr;
+				result = SecItem.CopyMatching (copy, out ptr);
+				n = null;
+				if (result == SecStatusCode.Success){
+					var dicts = NSArray.ArrayFromHandle<NSDictionary> (ptr);
+					var records = new SecRecord [dicts.Length];
+					for (int i = 0; i < dicts.Length; i++)
+						records [i] = new SecRecord (new NSMutableDictionary (dicts [i]));
+					return records;
+				}
+				return null;
+			}
+		}
+		
+		public static object QueryAsConcreteType (SecRecord query, out SecStatusCode result)
+		{
+			if (query == null){
+				result = SecStatusCode.Param;
+				return null;
+			}
+			
+			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
+				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnRef);
+				SetLimit (copy, 1);
+				
+				IntPtr ptr;
+				result = SecItem.CopyMatching (copy, out ptr);
+				if (result == SecStatusCode.Success){
+					int cfType = CFType.GetTypeID (ptr);
+
+					if (cfType == SecCertificate.GetTypeID ())
+						return new SecCertificate (ptr, true);
+					else if (cfType == SecKey.GetTypeID ())
+						return new SecKey (ptr, true);
+					else if (cfType == SecIdentity.GetTypeID ())
+						return new SecIdentity (ptr, true);
+					else
+						throw new Exception (String.Format ("Unexpected type: 0x{0:x}", cfType));
+				} 
+				return null;
+			}
+		}
+	}
 	
+	public class SecRecord {
+		internal NSMutableDictionary queryDict;
+
+		internal SecRecord (NSMutableDictionary dict)
+		{
+			queryDict = dict;
+		}
+		
+		public SecRecord (SecKind secKind)
+		{
+			var kind = SecClass.FromSecKind (secKind);
+			queryDict = NSMutableDictionary.LowlevelFromObjectAndKey (kind, SecClass.SecClassKey);
+		}
+
+		IntPtr Fetch (IntPtr key)
+		{
+			return queryDict.LowlevelObjectForKey (key);
+		}
+
+		NSObject FetchObject (IntPtr key)
+		{
+			return Runtime.GetNSObject (queryDict.LowlevelObjectForKey (key));
+		}
+
+		string FetchString (IntPtr key)
+		{
+			return (string) (NSString) Runtime.GetNSObject (queryDict.LowlevelObjectForKey (key));
+		}
+
+		NSNumber FetchNumber (IntPtr key)
+		{
+			return (NSNumber) Runtime.GetNSObject (queryDict.LowlevelObjectForKey (key));
+		}
+
+		NSData FetchData (IntPtr key)
+		{
+			return (NSData) Runtime.GetNSObject (queryDict.LowlevelObjectForKey (key));
+		}
+		
+
+		void SetValue (NSObject val, IntPtr key)
+		{
+			queryDict.LowlevelSetObject (val, key);
+		}
+
+		void SetValue (IntPtr val, IntPtr key)
+		{
+			queryDict.LowlevelSetObject (val, key);
+		}
+		
+		//
+		// Attributes
+		//
+		public SecAccessible Accessible {
+			get {
+				return KeysAccessible.ToSecAccessible (Fetch (SecAttributeKey.AttrAccessible));
+			}
+			
+			set {
+				SetValue (KeysAccessible.FromSecAccessible (value), SecAttributeKey.AttrAccessible);
+			}
+		}
+
+		public NSDate CreationDate {
+			get {
+				return (NSDate) FetchObject (SecAttributeKey.AttrCreationDate);
+			}
+			
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecAttributeKey.AttrCreationDate);
+			}
+		}
+
+		public NSDate ModificationDate {
+			get {
+				return (NSDate) FetchObject (SecAttributeKey.AttrModificationDate);
+			}
+			
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecAttributeKey.AttrModificationDate);
+			}
+		}
+
+		public string Description {
+			get {
+				return FetchString (SecAttributeKey.AttrDescription);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrDescription);
+			}
+		}
+
+		public string Comment {
+			get {
+				return FetchString (SecAttributeKey.AttrComment);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrComment);
+			}
+		}
+
+		public int Creator {
+			get {
+				return FetchNumber (SecAttributeKey.AttrCreator).Int32Value;
+			}
+					
+			set {
+				SetValue (new NSNumber (value), SecAttributeKey.AttrCreator);
+			}
+		}
+
+		public int CreatorType {
+			get {
+				return FetchNumber (SecAttributeKey.AttrType).Int32Value;
+			}
+					
+			set {
+				SetValue (new NSNumber (value), SecAttributeKey.AttrType);
+			}
+		}
+
+		public string Label {
+			get {
+				return FetchString (SecAttributeKey.AttrLabel);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrLabel);
+			}
+		}
+
+		public bool Invisible {
+			get {
+				return Fetch (SecAttributeKey.AttrIsInvisible) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsInvisible);
+			}
+		}
+
+		public bool IsNegative {
+			get {
+				return Fetch (SecAttributeKey.AttrIsNegative) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsNegative);
+			}
+		}
+
+		public string Account {
+			get {
+				return FetchString (SecAttributeKey.AttrAccount);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrAccount);
+			}
+		}
+
+		public string Service {
+			get {
+				return FetchString (SecAttributeKey.AttrService);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrService);
+			}
+		}
+
+		public string Generic {
+			get {
+				return FetchString (SecAttributeKey.AttrGeneric);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrGeneric);
+			}
+		}
+
+		public string SecurityDomain {
+			get {
+				return FetchString (SecAttributeKey.AttrSecurityDomain);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrSecurityDomain);
+			}
+		}
+
+		public string Server {
+			get {
+				return FetchString (SecAttributeKey.AttrServer);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrServer);
+			}
+		}
+
+		public SecProtocol Protocol {
+			get {
+				return SecProtocolKeys.ToSecProtocol (Fetch (SecAttributeKey.AttrProtocol));
+			}
+			
+			set {
+				SetValue (SecProtocolKeys.FromSecProtocol (value), SecAttributeKey.AttrProtocol);
+			}
+		}
+
+		public SecAuthenticationType AuthenticationType {
+			get {
+				return KeysAuthenticationType.ToSecAuthenticationType (
+					Fetch (SecAttributeKey.AttrAuthenticationType));
+			}
+			
+			set {
+				SetValue (KeysAuthenticationType.FromSecAuthenticationType (value),
+							     SecAttributeKey.AttrAuthenticationType);
+			}
+		}
+
+		public int Port {
+			get {
+				return FetchNumber (SecAttributeKey.AttrPort).Int32Value;
+			}
+					
+			set {
+				SetValue (new NSNumber (value), SecAttributeKey.AttrPort);
+			}
+		}
+
+		public string Path {
+			get {
+				return FetchString (SecAttributeKey.AttrPath);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrPath);
+			}
+		}
+
+		// read only
+		public string Subject {
+			get {
+				return FetchString (SecAttributeKey.AttrSubject);
+			}
+		}
+
+		// read only
+		public NSData Issuer {
+			get {
+				return FetchData (SecAttributeKey.AttrIssuer);
+			}
+		}
+
+		// read only
+		public NSData SerialNumber {
+			get {
+				return FetchData (SecAttributeKey.AttrSerialNumber);
+			}
+		}
+
+		// read only
+		public NSData SubjectKeyID {
+			get {
+				return FetchData (SecAttributeKey.AttrSubjectKeyID);
+			}
+		}
+
+		// read only
+		public NSData PublicKeyHash {
+			get {
+				return FetchData (SecAttributeKey.AttrPublicKeyHash);
+			}
+		}
+
+		// read only
+		public NSNumber CertificateType {
+			get {
+				return FetchNumber (SecAttributeKey.AttrCertificateType);
+			}
+		}
+
+		// read only
+		public NSNumber CertificateEncoding {
+			get {
+				return FetchNumber (SecAttributeKey.AttrCertificateEncoding);
+			}
+		}
+
+		public SecKeyClass KeyClass {
+			get {
+				var k = Fetch (SecAttributeKey.AttrKeyClass);
+				if (k == ClassKeys.Public)
+					return SecKeyClass.Public;
+				else if (k == ClassKeys.Private)
+					return SecKeyClass.Private;
+				else if (k == ClassKeys.Symmetric)
+					return SecKeyClass.Symmetric;
+				throw new Exception ("Unknown value");
+			}
+			set {
+				SetValue (value == SecKeyClass.Public ? ClassKeys.Public : value == SecKeyClass.Private ? ClassKeys.Private : ClassKeys.Symmetric, SecAttributeKey.AttrKeyClass);
+			}
+		}
+
+		public string ApplicationLabel {
+			get {
+				return FetchString (SecAttributeKey.AttrApplicationLabel);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrApplicationLabel);
+			}
+		}
+
+		public bool IsPermanent {
+			get {
+				return Fetch (SecAttributeKey.AttrIsPermanent) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsPermanent);
+			}
+		}
+
+		public NSData ApplicationTag {
+			get {
+				return FetchData (SecAttributeKey.AttrApplicationTag);
+			}
+			
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecAttributeKey.AttrApplicationTag);
+			}
+		}
+
+		public SecKeyType KeyType {
+			get {
+				var k = Fetch (SecAttributeKey.AttrKeyType);
+				if (k == KeyTypeKeys.RSA)
+					return SecKeyType.RSA;
+				else
+					return SecKeyType.EC;
+			}
+			
+			set {
+				SetValue (value == SecKeyType.RSA ? KeyTypeKeys.RSA : KeyTypeKeys.EC, SecAttributeKey.AttrKeyType);
+			}
+		}
+
+		public int KeySizeInBits {
+			get {
+				return FetchNumber (SecAttributeKey.AttrKeySizeInBits).Int32Value;
+			}
+					
+			set {
+				SetValue (new NSNumber (value), SecAttributeKey.AttrKeySizeInBits);
+			}
+		}
+
+		public int EffectiveKeySize {
+			get {
+				return FetchNumber (SecAttributeKey.AttrEffectiveKeySize).Int32Value;
+			}
+					
+			set {
+				SetValue (new NSNumber (value), SecAttributeKey.AttrEffectiveKeySize);
+			}
+		}
+
+		public bool CanEncrypt {
+			get {
+				return Fetch (SecAttributeKey.AttrCanEncrypt) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanEncrypt);
+			}
+		}
+
+		public bool CanDecrypt {
+			get {
+				return Fetch (SecAttributeKey.AttrCanDecrypt) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanDecrypt);
+			}
+		}
+
+		public bool CanDerive {
+			get {
+				return Fetch (SecAttributeKey.AttrCanDerive) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanDerive);
+			}
+		}
+
+		public bool CanSign {
+			get {
+				return Fetch (SecAttributeKey.AttrCanSign) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanSign);
+			}
+		}
+
+		public bool CanVerify {
+			get {
+				return Fetch (SecAttributeKey.AttrCanVerify) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanVerify);
+			}
+		}
+
+		public bool CanWrap {
+			get {
+				return Fetch (SecAttributeKey.AttrCanWrap) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanWrap);
+			}
+		}
+
+		public bool CanUnwrap {
+			get {
+				return Fetch (SecAttributeKey.AttrCanUnwrap) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanUnwrap);
+			}
+		}
+
+		public string AccessGroup {
+			get {
+				return FetchString (SecAttributeKey.AttrAccessGroup);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecAttributeKey.AttrAccessGroup);
+			}
+		}
+
+		//
+		// Matches
+		//
+
+		public SecPolicy MatchPolicy {
+			get {
+				return new SecPolicy (Fetch (SecItem.MatchPolicy));
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecItem.MatchPolicy);
+			}
+		}
+
+		public NSArray MatchItemList {
+			get {
+				return (NSArray) Runtime.GetNSObject (Fetch (SecItem.MatchItemList));
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecItem.MatchItemList);
+			}
+		}
+
+		public NSData [] MatchIssuers {
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				
+				SetValue (NSArray.FromNSObjects (value), SecItem.MatchIssuers);
+			}
+		}
+
+		public string MatchEmailAddressIfPresent {
+			get {
+				return FetchString (SecItem.MatchEmailAddressIfPresent);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecItem.MatchEmailAddressIfPresent);
+			}
+		}
+
+		public string MatchSubjectContains {
+			get {
+				return FetchString (SecItem.MatchSubjectContains);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (new NSString (value), SecItem.MatchSubjectContains);
+			}
+		}
+
+		public bool MatchCaseInsensitive {
+			get {
+				return Fetch (SecItem.MatchCaseInsensitive) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value), SecItem.MatchCaseInsensitive);
+			}
+		}
+
+		public bool MatchTrustedOnly {
+			get {
+				return Fetch (SecItem.MatchTrustedOnly) == CFBoolean.True.Handle;
+			}
+			
+			set {
+				SetValue (CFBoolean.GetBoolObject (value).Handle, SecItem.MatchTrustedOnly);
+			}
+		}
+
+		public NSDate MatchValidOnDate {
+			get {
+				return (NSDate) (Runtime.GetNSObject (Fetch (SecItem.MatchValidOnDate)));
+			}
+			
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecItem.MatchValidOnDate);
+			}
+		}
+	}
+	
+	internal class SecItem {
+		internal static IntPtr securityLibrary = Dlfcn.dlopen (Constants.SecurityLibrary, 0);
+
+		[DllImport (Constants.SecurityLibrary)]
+		extern static SecStatusCode SecItemCopyMatching (IntPtr cfDictRef, out IntPtr result);
+
+		public static SecStatusCode CopyMatching (NSDictionary queryDictionary, out IntPtr result)
+		{
+			if (queryDictionary == null)
+				throw new ArgumentNullException ("queryDictionary");
+			return SecItemCopyMatching (queryDictionary.Handle, out result);
+		}
+
+		static IntPtr _MatchPolicy;
+		public static IntPtr MatchPolicy {
+			get {
+				if (_MatchPolicy == IntPtr.Zero)
+					_MatchPolicy = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchPolicy");
+				return _MatchPolicy;
+			}
+		}
+		
+		static IntPtr _MatchItemList;
+		public static IntPtr MatchItemList {
+			get {
+				if (_MatchItemList == IntPtr.Zero)
+					_MatchItemList = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchItemList");
+				return _MatchItemList;
+			}
+		}
+		
+		static IntPtr _MatchSearchList;
+		public static IntPtr MatchSearchList {
+			get {
+				if (_MatchSearchList == IntPtr.Zero)
+					_MatchSearchList = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchSearchList");
+				return _MatchSearchList;
+			}
+		}
+		
+		static IntPtr _MatchIssuers;
+		public static IntPtr MatchIssuers {
+			get {
+				if (_MatchIssuers == IntPtr.Zero)
+					_MatchIssuers = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchIssuers");
+				return _MatchIssuers;
+			}
+		}
+		
+		static IntPtr _MatchEmailAddressIfPresent;
+		public static IntPtr MatchEmailAddressIfPresent {
+			get {
+				if (_MatchEmailAddressIfPresent == IntPtr.Zero)
+					_MatchEmailAddressIfPresent = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchEmailAddressIfPresent");
+				return _MatchEmailAddressIfPresent;
+			}
+		}
+		
+		static IntPtr _MatchSubjectContains;
+		public static IntPtr MatchSubjectContains {
+			get {
+				if (_MatchSubjectContains == IntPtr.Zero)
+					_MatchSubjectContains = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchSubjectContains");
+				return _MatchSubjectContains;
+			}
+		}
+		
+		static IntPtr _MatchCaseInsensitive;
+		public static IntPtr MatchCaseInsensitive {
+			get {
+				if (_MatchCaseInsensitive == IntPtr.Zero)
+					_MatchCaseInsensitive = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchCaseInsensitive");
+				return _MatchCaseInsensitive;
+			}
+		}
+		
+		static IntPtr _MatchTrustedOnly;
+		public static IntPtr MatchTrustedOnly {
+			get {
+				if (_MatchTrustedOnly == IntPtr.Zero)
+					_MatchTrustedOnly = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchTrustedOnly");
+				return _MatchTrustedOnly;
+			}
+		}
+		
+		static IntPtr _MatchValidOnDate;
+		public static IntPtr MatchValidOnDate {
+			get {
+				if (_MatchValidOnDate == IntPtr.Zero)
+					_MatchValidOnDate = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchValidOnDate");
+				return _MatchValidOnDate;
+			}
+		}
+		
+		static IntPtr _MatchLimit;
+		public static IntPtr MatchLimit {
+			get {
+				if (_MatchLimit == IntPtr.Zero)
+					_MatchLimit = Dlfcn.GetIntPtr (securityLibrary, "kSecMatchLimit");
+				return _MatchLimit;
+			}
+		}
+
+		static IntPtr _ReturnData;
+		public static IntPtr ReturnData {
+			get {
+				if (_ReturnData == IntPtr.Zero)
+					_ReturnData = Dlfcn.GetIntPtr (securityLibrary, "kSecReturnData");
+				return _ReturnData;
+			}
+		}
+		
+		static IntPtr _ReturnAttributes;
+		public static IntPtr ReturnAttributes {
+			get {
+				if (_ReturnAttributes == IntPtr.Zero)
+					_ReturnAttributes = Dlfcn.GetIntPtr (securityLibrary, "kSecReturnAttributes");
+				return _ReturnAttributes;
+			}
+		}
+		
+		static IntPtr _ReturnRef;
+		public static IntPtr ReturnRef {
+			get {
+				if (_ReturnRef == IntPtr.Zero)
+					_ReturnRef = Dlfcn.GetIntPtr (securityLibrary, "kSecReturnRef");
+				return _ReturnRef;
+			}
+		}
+		
+		static IntPtr _ReturnPersistentRef;
+		public static IntPtr ReturnPersistentRef {
+			get {
+				if (_ReturnPersistentRef == IntPtr.Zero)
+					_ReturnPersistentRef = Dlfcn.GetIntPtr (securityLibrary, "kSecReturnPersistentRef");
+				return _ReturnPersistentRef;
+			}
+		}
+		
+		static IntPtr _ValueData;
+		public static IntPtr ValueData {
+			get {
+				if (_ValueData == IntPtr.Zero)
+					_ValueData = Dlfcn.GetIntPtr (securityLibrary, "kSecValueData");
+				return _ValueData;
+			}
+		}
+		
+		static IntPtr _ValueRef;
+		public static IntPtr ValueRef {
+			get {
+				if (_ValueRef == IntPtr.Zero)
+					_ValueRef = Dlfcn.GetIntPtr (securityLibrary, "kSecValueRef");
+				return _ValueRef;
+			}
+		}
+		
+		static IntPtr _ValuePersistentRef;
+		public static IntPtr ValuePersistentRef {
+			get {
+				if (_ValuePersistentRef == IntPtr.Zero)
+					_ValuePersistentRef = Dlfcn.GetIntPtr (securityLibrary, "kSecValuePersistentRef");
+				return _ValuePersistentRef;
+			}
+		}
+		
+		static IntPtr _UseItemList;
+		public static IntPtr UseItemList {
+			get {
+				if (_UseItemList == IntPtr.Zero)
+					_UseItemList = Dlfcn.GetIntPtr (securityLibrary, "kSecUseItemList");
+				return _UseItemList;
+			}
+		}
+	}
+
+	internal static class SecClass {
+		public static IntPtr SecClassKey;
+		public static IntPtr GenericPassword;
+		public static IntPtr InternetPassword;
+		public static IntPtr Certificate;
+		public static IntPtr Key;
+		public static IntPtr Identity;
+
+		static SecClass ()
+		{
+			SecClassKey = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClass");
+			GenericPassword = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassGenericPassword");
+			InternetPassword = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassInternetPassword");
+			Certificate = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassCertificate");
+			Key = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassKey");
+			Identity = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassIdentity");
+		}
+	
+		public static IntPtr FromSecKind (SecKind secKind)
+		{
+			switch (secKind){
+			case SecKind.GenericPassword:
+				return GenericPassword;
+			case SecKind.InternetPassword:
+				return InternetPassword;
+			case SecKind.Certificate:
+				return Certificate;
+			case SecKind.Key:
+				return Key;
+			case SecKind.Identity:
+				return Identity;
+			default:
+				throw new ArgumentException ("secKind");
+			}
+		}
+	}
+	
+	internal static class SecAttributeKey {
+		static IntPtr _AttrAccessible;
+		public static IntPtr AttrAccessible {
+			get {
+				if (_AttrAccessible == IntPtr.Zero)
+					_AttrAccessible = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessible");
+				return _AttrAccessible;
+			}
+		}
+		
+		static IntPtr _AttrAccessGroup;
+		public static IntPtr AttrAccessGroup {
+			get {
+				if (_AttrAccessGroup == IntPtr.Zero)
+					_AttrAccessGroup = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessGroup");
+				return _AttrAccessGroup;
+			}
+		}
+		
+		static IntPtr _AttrCreationDate;
+		public static IntPtr AttrCreationDate {
+			get {
+				if (_AttrCreationDate == IntPtr.Zero)
+					_AttrCreationDate = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCreationDate");
+				return _AttrCreationDate;
+			}
+		}
+		
+		static IntPtr _AttrModificationDate;
+		public static IntPtr AttrModificationDate {
+			get {
+				if (_AttrModificationDate == IntPtr.Zero)
+					_AttrModificationDate = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrModificationDate");
+				return _AttrModificationDate;
+			}
+		}
+		
+		static IntPtr _AttrDescription;
+		public static IntPtr AttrDescription {
+			get {
+				if (_AttrDescription == IntPtr.Zero)
+					_AttrDescription = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrDescription");
+				return _AttrDescription;
+			}
+		}
+		
+		static IntPtr _AttrComment;
+		public static IntPtr AttrComment {
+			get {
+				if (_AttrComment == IntPtr.Zero)
+					_AttrComment = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrComment");
+				return _AttrComment;
+			}
+		}
+		
+		static IntPtr _AttrCreator;
+		public static IntPtr AttrCreator {
+			get {
+				if (_AttrCreator == IntPtr.Zero)
+					_AttrCreator = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCreator");
+				return _AttrCreator;
+			}
+		}
+		
+		static IntPtr _AttrType;
+		public static IntPtr AttrType {
+			get {
+				if (_AttrType == IntPtr.Zero)
+					_AttrType = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrType");
+				return _AttrType;
+			}
+		}
+		
+		static IntPtr _AttrLabel;
+		public static IntPtr AttrLabel {
+			get {
+				if (_AttrLabel == IntPtr.Zero)
+					_AttrLabel = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrLabel");
+				return _AttrLabel;
+			}
+		}
+		
+		static IntPtr _AttrIsInvisible;
+		public static IntPtr AttrIsInvisible {
+			get {
+				if (_AttrIsInvisible == IntPtr.Zero)
+					_AttrIsInvisible = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrIsInvisible");
+				return _AttrIsInvisible;
+			}
+		}
+		
+		static IntPtr _AttrIsNegative;
+		public static IntPtr AttrIsNegative {
+			get {
+				if (_AttrIsNegative == IntPtr.Zero)
+					_AttrIsNegative = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrIsNegative");
+				return _AttrIsNegative;
+			}
+		}
+		
+		static IntPtr _AttrAccount;
+		public static IntPtr AttrAccount {
+			get {
+				if (_AttrAccount == IntPtr.Zero)
+					_AttrAccount = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccount");
+				return _AttrAccount;
+			}
+		}
+		
+		static IntPtr _AttrService;
+		public static IntPtr AttrService {
+			get {
+				if (_AttrService == IntPtr.Zero)
+					_AttrService = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrService");
+				return _AttrService;
+			}
+		}
+		
+		static IntPtr _AttrGeneric;
+		public static IntPtr AttrGeneric {
+			get {
+				if (_AttrGeneric == IntPtr.Zero)
+					_AttrGeneric = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrGeneric");
+				return _AttrGeneric;
+			}
+		}
+		
+		static IntPtr _AttrSecurityDomain;
+		public static IntPtr AttrSecurityDomain {
+			get {
+				if (_AttrSecurityDomain == IntPtr.Zero)
+					_AttrSecurityDomain = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrSecurityDomain");
+				return _AttrSecurityDomain;
+			}
+		}
+		
+		static IntPtr _AttrServer;
+		public static IntPtr AttrServer {
+			get {
+				if (_AttrServer == IntPtr.Zero)
+					_AttrServer = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrServer");
+				return _AttrServer;
+			}
+		}
+		
+		static IntPtr _AttrProtocol;
+		public static IntPtr AttrProtocol {
+			get {
+				if (_AttrProtocol == IntPtr.Zero)
+					_AttrProtocol = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocol");
+				return _AttrProtocol;
+			}
+		}
+		
+		static IntPtr _AttrAuthenticationType;
+		public static IntPtr AttrAuthenticationType {
+			get {
+				if (_AttrAuthenticationType == IntPtr.Zero)
+					_AttrAuthenticationType = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationType");
+				return _AttrAuthenticationType;
+			}
+		}
+		
+		static IntPtr _AttrPort;
+		public static IntPtr AttrPort {
+			get {
+				if (_AttrPort == IntPtr.Zero)
+					_AttrPort = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrPort");
+				return _AttrPort;
+			}
+		}
+		
+		static IntPtr _AttrPath;
+		public static IntPtr AttrPath {
+			get {
+				if (_AttrPath == IntPtr.Zero)
+					_AttrPath = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrPath");
+				return _AttrPath;
+			}
+		}
+		
+		static IntPtr _AttrSubject;
+		public static IntPtr AttrSubject {
+			get {
+				if (_AttrSubject == IntPtr.Zero)
+					_AttrSubject = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrSubject");
+				return _AttrSubject;
+			}
+		}
+		
+		static IntPtr _AttrIssuer;
+		public static IntPtr AttrIssuer {
+			get {
+				if (_AttrIssuer == IntPtr.Zero)
+					_AttrIssuer = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrIssuer");
+				return _AttrIssuer;
+			}
+		}
+		
+		static IntPtr _AttrSerialNumber;
+		public static IntPtr AttrSerialNumber {
+			get {
+				if (_AttrSerialNumber == IntPtr.Zero)
+					_AttrSerialNumber = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrSerialNumber");
+				return _AttrSerialNumber;
+			}
+		}
+		
+		static IntPtr _AttrSubjectKeyID;
+		public static IntPtr AttrSubjectKeyID {
+			get {
+				if (_AttrSubjectKeyID == IntPtr.Zero)
+					_AttrSubjectKeyID = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrSubjectKeyID");
+				return _AttrSubjectKeyID;
+			}
+		}
+		
+		static IntPtr _AttrPublicKeyHash;
+		public static IntPtr AttrPublicKeyHash {
+			get {
+				if (_AttrPublicKeyHash == IntPtr.Zero)
+					_AttrPublicKeyHash = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrPublicKeyHash");
+				return _AttrPublicKeyHash;
+			}
+		}
+		
+		static IntPtr _AttrCertificateType;
+		public static IntPtr AttrCertificateType {
+			get {
+				if (_AttrCertificateType == IntPtr.Zero)
+					_AttrCertificateType = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCertificateType");
+				return _AttrCertificateType;
+			}
+		}
+		
+		static IntPtr _AttrCertificateEncoding;
+		public static IntPtr AttrCertificateEncoding {
+			get {
+				if (_AttrCertificateEncoding == IntPtr.Zero)
+					_AttrCertificateEncoding = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCertificateEncoding");
+				return _AttrCertificateEncoding;
+			}
+		}
+		
+		static IntPtr _AttrKeyClass;
+		public static IntPtr AttrKeyClass {
+			get {
+				if (_AttrKeyClass == IntPtr.Zero)
+					_AttrKeyClass = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyClass");
+				return _AttrKeyClass;
+			}
+		}
+		
+		static IntPtr _AttrApplicationLabel;
+		public static IntPtr AttrApplicationLabel {
+			get {
+				if (_AttrApplicationLabel == IntPtr.Zero)
+					_AttrApplicationLabel = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrApplicationLabel");
+				return _AttrApplicationLabel;
+			}
+		}
+		
+		static IntPtr _AttrIsPermanent;
+		public static IntPtr AttrIsPermanent {
+			get {
+				if (_AttrIsPermanent == IntPtr.Zero)
+					_AttrIsPermanent = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrIsPermanent");
+				return _AttrIsPermanent;
+			}
+		}
+		
+		static IntPtr _AttrApplicationTag;
+		public static IntPtr AttrApplicationTag {
+			get {
+				if (_AttrApplicationTag == IntPtr.Zero)
+					_AttrApplicationTag = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrApplicationTag");
+				return _AttrApplicationTag;
+			}
+		}
+		
+		static IntPtr _AttrKeyType;
+		public static IntPtr AttrKeyType {
+			get {
+				if (_AttrKeyType == IntPtr.Zero)
+					_AttrKeyType = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyType");
+				return _AttrKeyType;
+			}
+		}
+		
+		static IntPtr _AttrKeySizeInBits;
+		public static IntPtr AttrKeySizeInBits {
+			get {
+				if (_AttrKeySizeInBits == IntPtr.Zero)
+					_AttrKeySizeInBits = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeySizeInBits");
+				return _AttrKeySizeInBits;
+			}
+		}
+		
+		static IntPtr _AttrEffectiveKeySize;
+		public static IntPtr AttrEffectiveKeySize {
+			get {
+				if (_AttrEffectiveKeySize == IntPtr.Zero)
+					_AttrEffectiveKeySize = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrEffectiveKeySize");
+				return _AttrEffectiveKeySize;
+			}
+		}
+		
+		static IntPtr _AttrCanEncrypt;
+		public static IntPtr AttrCanEncrypt {
+			get {
+				if (_AttrCanEncrypt == IntPtr.Zero)
+					_AttrCanEncrypt = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanEncrypt");
+				return _AttrCanEncrypt;
+			}
+		}
+		
+		static IntPtr _AttrCanDecrypt;
+		public static IntPtr AttrCanDecrypt {
+			get {
+				if (_AttrCanDecrypt == IntPtr.Zero)
+					_AttrCanDecrypt = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanDecrypt");
+				return _AttrCanDecrypt;
+			}
+		}
+		
+		static IntPtr _AttrCanDerive;
+		public static IntPtr AttrCanDerive {
+			get {
+				if (_AttrCanDerive == IntPtr.Zero)
+					_AttrCanDerive = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanDerive");
+				return _AttrCanDerive;
+			}
+		}
+		
+		static IntPtr _AttrCanSign;
+		public static IntPtr AttrCanSign {
+			get {
+				if (_AttrCanSign == IntPtr.Zero)
+					_AttrCanSign = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanSign");
+				return _AttrCanSign;
+			}
+		}
+		
+		static IntPtr _AttrCanVerify;
+		public static IntPtr AttrCanVerify {
+			get {
+				if (_AttrCanVerify == IntPtr.Zero)
+					_AttrCanVerify = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanVerify");
+				return _AttrCanVerify;
+			}
+		}
+		
+		static IntPtr _AttrCanWrap;
+		public static IntPtr AttrCanWrap {
+			get {
+				if (_AttrCanWrap == IntPtr.Zero)
+					_AttrCanWrap = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanWrap");
+				return _AttrCanWrap;
+			}
+		}
+		
+		static IntPtr _AttrCanUnwrap;
+		public static IntPtr AttrCanUnwrap {
+			get {
+				if (_AttrCanUnwrap == IntPtr.Zero)
+					_AttrCanUnwrap = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanUnwrap");
+				return _AttrCanUnwrap;
+			}
+		}
+	}
+	
+	internal static class KeysAccessible {
+		public static IntPtr FromSecAccessible (SecAccessible accessible)
+		{
+			switch (accessible){
+			case SecAccessible.WhenUnlocked:
+				return WhenUnlocked;
+			case SecAccessible.AfterFirstUnlock:
+				return AfterFirstUnlock;
+			case SecAccessible.Always:
+				return Always;
+			case SecAccessible.WhenUnlockedThisDeviceOnly:
+				return WhenUnlockedThisDeviceOnly;
+			case SecAccessible.AfterFirstUnlockThisDeviceOnly:
+				return AfterFirstUnlockThisDeviceOnly;
+			case SecAccessible.AlwaysThisDeviceOnly:
+				return AlwaysThisDeviceOnly;
+			default:
+				throw new ArgumentException ("accessible");
+			}
+		}
+			
+		static IntPtr _WhenUnlocked;
+		public static IntPtr WhenUnlocked {
+			get {
+				if (_WhenUnlocked == IntPtr.Zero)
+					_WhenUnlocked = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleWhenUnlocked");
+				return _WhenUnlocked;
+			}
+		}
+		
+		static IntPtr _AfterFirstUnlock;
+		public static IntPtr AfterFirstUnlock {
+			get {
+				if (_AfterFirstUnlock == IntPtr.Zero)
+					_AfterFirstUnlock = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleAfterFirstUnlock");
+				return _AfterFirstUnlock;
+			}
+		}
+		
+		static IntPtr _Always;
+		public static IntPtr Always {
+			get {
+				if (_Always == IntPtr.Zero)
+					_Always = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleAlways");
+				return _Always;
+			}
+		}
+		
+		static IntPtr _WhenUnlockedThisDeviceOnly;
+		public static IntPtr WhenUnlockedThisDeviceOnly {
+			get {
+				if (_WhenUnlockedThisDeviceOnly == IntPtr.Zero)
+					_WhenUnlockedThisDeviceOnly = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleWhenUnlockedThisDeviceOnly");
+				return _WhenUnlockedThisDeviceOnly;
+			}
+		}
+		
+		static IntPtr _AfterFirstUnlockThisDeviceOnly;
+		public static IntPtr AfterFirstUnlockThisDeviceOnly {
+			get {
+				if (_AfterFirstUnlockThisDeviceOnly == IntPtr.Zero)
+					_AfterFirstUnlockThisDeviceOnly = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly");
+				return _AfterFirstUnlockThisDeviceOnly;
+			}
+		}
+		
+		static IntPtr _AlwaysThisDeviceOnly;
+		public static IntPtr AlwaysThisDeviceOnly {
+			get {
+				if (_AlwaysThisDeviceOnly == IntPtr.Zero)
+					_AlwaysThisDeviceOnly = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleAlwaysThisDeviceOnly");
+				return _AlwaysThisDeviceOnly;
+			}
+		}
+	
+		public static SecAccessible ToSecAccessible (IntPtr handle)
+		{
+			if (handle == WhenUnlocked)
+				return SecAccessible.WhenUnlocked;
+			if (handle == AfterFirstUnlock)
+				return SecAccessible.AfterFirstUnlock;
+			if (handle == Always)
+				return SecAccessible.Always;
+			if (handle == WhenUnlockedThisDeviceOnly)
+				return SecAccessible.WhenUnlockedThisDeviceOnly;
+			if (handle == AfterFirstUnlockThisDeviceOnly)
+				return SecAccessible.AfterFirstUnlockThisDeviceOnly;
+			if (handle == AlwaysThisDeviceOnly)
+				return SecAccessible.AlwaysThisDeviceOnly;
+			throw new ArgumentException ("obj");
+		}
+	}
+	
+	internal static class SecProtocolKeys {
+		public static IntPtr FromSecProtocol (SecProtocol protocol)
+		{
+			switch (protocol){
+			case SecProtocol.Ftp: return AttrProtocolFTP;
+			case SecProtocol.FtpAccount: return AttrProtocolFTPAccount;
+			case SecProtocol.Http: return AttrProtocolHTTP;
+			case SecProtocol.Irc: return AttrProtocolIRC;
+			case SecProtocol.Nntp: return AttrProtocolNNTP;
+			case SecProtocol.Pop3: return AttrProtocolPOP3;
+			case SecProtocol.Smtp: return AttrProtocolSMTP;
+			case SecProtocol.Socks:return AttrProtocolSOCKS;
+			case SecProtocol.Imap:return AttrProtocolIMAP;
+			case SecProtocol.Ldap:return AttrProtocolLDAP;
+			case SecProtocol.AppleTalk:return AttrProtocolAppleTalk;
+			case SecProtocol.Afp:return AttrProtocolAFP;
+			case SecProtocol.Telnet:return AttrProtocolTelnet;
+			case SecProtocol.Ssh:return AttrProtocolSSH;
+			case SecProtocol.Ftps:return AttrProtocolFTPS;
+			case SecProtocol.Https:return AttrProtocolHTTPS;
+			case SecProtocol.HttpProxy:return AttrProtocolHTTPProxy;
+			case SecProtocol.HttpsProxy:return AttrProtocolHTTPSProxy;
+			case SecProtocol.FtpProxy:return AttrProtocolFTPProxy;
+			case SecProtocol.Smb:return AttrProtocolSMB;
+			case SecProtocol.Rtsp:return AttrProtocolRTSP;
+			case SecProtocol.RtspProxy:return AttrProtocolRTSPProxy;
+			case SecProtocol.Daap:return AttrProtocolDAAP;
+			case SecProtocol.Eppc:return AttrProtocolEPPC;
+			case SecProtocol.Ipp:return AttrProtocolIPP;
+			case SecProtocol.Nntps:return AttrProtocolNNTPS;
+			case SecProtocol.Ldaps:return AttrProtocolLDAPS;
+			case SecProtocol.Telnets:return AttrProtocolTelnetS;
+			case SecProtocol.Imaps:return AttrProtocolIMAPS;
+			case SecProtocol.Ircs:return AttrProtocolIRCS;
+			case SecProtocol.Pop3s: return AttrProtocolPOP3S;
+			}
+			throw new ArgumentException ("protocol");
+		}
+
+		public static SecProtocol ToSecProtocol (IntPtr handle)
+		{
+			if (handle == AttrProtocolFTP)
+				return SecProtocol.Ftp;
+			if (handle == AttrProtocolFTPAccount)
+				return SecProtocol.FtpAccount;
+			if (handle == AttrProtocolHTTP)
+				return SecProtocol.Http;
+			if (handle == AttrProtocolIRC)
+				return SecProtocol.Irc;
+			if (handle == AttrProtocolNNTP)
+				return SecProtocol.Nntp;
+			if (handle == AttrProtocolPOP3)
+				return SecProtocol.Pop3;
+			if (handle == AttrProtocolSMTP)
+				return SecProtocol.Smtp;
+			if (handle == AttrProtocolSOCKS)
+				return SecProtocol.Socks;
+			if (handle == AttrProtocolIMAP)
+				return SecProtocol.Imap;
+			if (handle == AttrProtocolLDAP)
+				return SecProtocol.Ldap;
+			if (handle == AttrProtocolAppleTalk)
+				return SecProtocol.AppleTalk;
+			if (handle == AttrProtocolAFP)
+				return SecProtocol.Afp;
+			if (handle == AttrProtocolTelnet)
+				return SecProtocol.Telnet;
+			if (handle == AttrProtocolSSH)
+				return SecProtocol.Ssh;
+			if (handle == AttrProtocolFTPS)
+				return SecProtocol.Ftps;
+			if (handle == AttrProtocolHTTPS)
+				return SecProtocol.Https;
+			if (handle == AttrProtocolHTTPProxy)
+				return SecProtocol.HttpProxy;
+			if (handle == AttrProtocolHTTPSProxy)
+				return SecProtocol.HttpsProxy;
+			if (handle == AttrProtocolFTPProxy)
+				return SecProtocol.FtpProxy;
+			if (handle == AttrProtocolSMB)
+				return SecProtocol.Smb;
+			if (handle == AttrProtocolRTSP)
+				return SecProtocol.Rtsp;
+			if (handle == AttrProtocolRTSPProxy)
+				return SecProtocol.RtspProxy;
+			if (handle == AttrProtocolDAAP)
+				return SecProtocol.Daap;
+			if (handle == AttrProtocolEPPC)
+				return SecProtocol.Eppc;
+			if (handle == AttrProtocolIPP)
+				return SecProtocol.Ipp;
+			if (handle == AttrProtocolNNTPS)
+				return SecProtocol.Nntps;
+			if (handle == AttrProtocolLDAPS)
+				return SecProtocol.Ldaps;
+			if (handle == AttrProtocolTelnetS)
+				return SecProtocol.Telnets;
+			if (handle == AttrProtocolIMAPS)
+				return SecProtocol.Imaps;
+			if (handle == AttrProtocolIRCS)
+				return SecProtocol.Ircs;
+			if (handle == AttrProtocolPOP3S)
+				return SecProtocol.Pop3s;
+			throw new ArgumentException ("handle");
+		}
+		
+		static IntPtr _AttrProtocolFTP;
+		public static IntPtr AttrProtocolFTP {
+			get {
+				if (_AttrProtocolFTP == IntPtr.Zero)
+					_AttrProtocolFTP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolFTP");
+				return _AttrProtocolFTP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolFTPAccount;
+		public static IntPtr AttrProtocolFTPAccount {
+			get {
+				if (_AttrProtocolFTPAccount == IntPtr.Zero)
+					_AttrProtocolFTPAccount = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolFTPAccount");
+				return _AttrProtocolFTPAccount;
+			}
+		}
+		
+		static IntPtr _AttrProtocolHTTP;
+		public static IntPtr AttrProtocolHTTP {
+			get {
+				if (_AttrProtocolHTTP == IntPtr.Zero)
+					_AttrProtocolHTTP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolHTTP");
+				return _AttrProtocolHTTP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolIRC;
+		public static IntPtr AttrProtocolIRC {
+			get {
+				if (_AttrProtocolIRC == IntPtr.Zero)
+					_AttrProtocolIRC = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIRC");
+				return _AttrProtocolIRC;
+			}
+		}
+		
+		static IntPtr _AttrProtocolNNTP;
+		public static IntPtr AttrProtocolNNTP {
+			get {
+				if (_AttrProtocolNNTP == IntPtr.Zero)
+					_AttrProtocolNNTP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolNNTP");
+				return _AttrProtocolNNTP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolPOP3;
+		public static IntPtr AttrProtocolPOP3 {
+			get {
+				if (_AttrProtocolPOP3 == IntPtr.Zero)
+					_AttrProtocolPOP3 = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolPOP3");
+				return _AttrProtocolPOP3;
+			}
+		}
+		
+		static IntPtr _AttrProtocolSMTP;
+		public static IntPtr AttrProtocolSMTP {
+			get {
+				if (_AttrProtocolSMTP == IntPtr.Zero)
+					_AttrProtocolSMTP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolSMTP");
+				return _AttrProtocolSMTP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolSOCKS;
+		public static IntPtr AttrProtocolSOCKS {
+			get {
+				if (_AttrProtocolSOCKS == IntPtr.Zero)
+					_AttrProtocolSOCKS = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolSOCKS");
+				return _AttrProtocolSOCKS;
+			}
+		}
+		
+		static IntPtr _AttrProtocolIMAP;
+		public static IntPtr AttrProtocolIMAP {
+			get {
+				if (_AttrProtocolIMAP == IntPtr.Zero)
+					_AttrProtocolIMAP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIMAP");
+				return _AttrProtocolIMAP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolLDAP;
+		public static IntPtr AttrProtocolLDAP {
+			get {
+				if (_AttrProtocolLDAP == IntPtr.Zero)
+					_AttrProtocolLDAP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolLDAP");
+				return _AttrProtocolLDAP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolAppleTalk;
+		public static IntPtr AttrProtocolAppleTalk {
+			get {
+				if (_AttrProtocolAppleTalk == IntPtr.Zero)
+					_AttrProtocolAppleTalk = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolAppleTalk");
+				return _AttrProtocolAppleTalk;
+			}
+		}
+		
+		static IntPtr _AttrProtocolAFP;
+		public static IntPtr AttrProtocolAFP {
+			get {
+				if (_AttrProtocolAFP == IntPtr.Zero)
+					_AttrProtocolAFP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolAFP");
+				return _AttrProtocolAFP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolTelnet;
+		public static IntPtr AttrProtocolTelnet {
+			get {
+				if (_AttrProtocolTelnet == IntPtr.Zero)
+					_AttrProtocolTelnet = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolTelnet");
+				return _AttrProtocolTelnet;
+			}
+		}
+		
+		static IntPtr _AttrProtocolSSH;
+		public static IntPtr AttrProtocolSSH {
+			get {
+				if (_AttrProtocolSSH == IntPtr.Zero)
+					_AttrProtocolSSH = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolSSH");
+				return _AttrProtocolSSH;
+			}
+		}
+		
+		static IntPtr _AttrProtocolFTPS;
+		public static IntPtr AttrProtocolFTPS {
+			get {
+				if (_AttrProtocolFTPS == IntPtr.Zero)
+					_AttrProtocolFTPS = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolFTPS");
+				return _AttrProtocolFTPS;
+			}
+		}
+		
+		static IntPtr _AttrProtocolHTTPS;
+		public static IntPtr AttrProtocolHTTPS {
+			get {
+				if (_AttrProtocolHTTPS == IntPtr.Zero)
+					_AttrProtocolHTTPS = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolHTTPS");
+				return _AttrProtocolHTTPS;
+			}
+		}
+		
+		static IntPtr _AttrProtocolHTTPProxy;
+		public static IntPtr AttrProtocolHTTPProxy {
+			get {
+				if (_AttrProtocolHTTPProxy == IntPtr.Zero)
+					_AttrProtocolHTTPProxy = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolHTTPProxy");
+				return _AttrProtocolHTTPProxy;
+			}
+		}
+		
+		static IntPtr _AttrProtocolHTTPSProxy;
+		public static IntPtr AttrProtocolHTTPSProxy {
+			get {
+				if (_AttrProtocolHTTPSProxy == IntPtr.Zero)
+					_AttrProtocolHTTPSProxy = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolHTTPSProxy");
+				return _AttrProtocolHTTPSProxy;
+			}
+		}
+		
+		static IntPtr _AttrProtocolFTPProxy;
+		public static IntPtr AttrProtocolFTPProxy {
+			get {
+				if (_AttrProtocolFTPProxy == IntPtr.Zero)
+					_AttrProtocolFTPProxy = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolFTPProxy");
+				return _AttrProtocolFTPProxy;
+			}
+		}
+		
+		static IntPtr _AttrProtocolSMB;
+		public static IntPtr AttrProtocolSMB {
+			get {
+				if (_AttrProtocolSMB == IntPtr.Zero)
+					_AttrProtocolSMB = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolSMB");
+				return _AttrProtocolSMB;
+			}
+		}
+		
+		static IntPtr _AttrProtocolRTSP;
+		public static IntPtr AttrProtocolRTSP {
+			get {
+				if (_AttrProtocolRTSP == IntPtr.Zero)
+					_AttrProtocolRTSP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolRTSP");
+				return _AttrProtocolRTSP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolRTSPProxy;
+		public static IntPtr AttrProtocolRTSPProxy {
+			get {
+				if (_AttrProtocolRTSPProxy == IntPtr.Zero)
+					_AttrProtocolRTSPProxy = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolRTSPProxy");
+				return _AttrProtocolRTSPProxy;
+			}
+		}
+		
+		static IntPtr _AttrProtocolDAAP;
+		public static IntPtr AttrProtocolDAAP {
+			get {
+				if (_AttrProtocolDAAP == IntPtr.Zero)
+					_AttrProtocolDAAP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolDAAP");
+				return _AttrProtocolDAAP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolEPPC;
+		public static IntPtr AttrProtocolEPPC {
+			get {
+				if (_AttrProtocolEPPC == IntPtr.Zero)
+					_AttrProtocolEPPC = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolEPPC");
+				return _AttrProtocolEPPC;
+			}
+		}
+		
+		static IntPtr _AttrProtocolIPP;
+		public static IntPtr AttrProtocolIPP {
+			get {
+				if (_AttrProtocolIPP == IntPtr.Zero)
+					_AttrProtocolIPP = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIPP");
+				return _AttrProtocolIPP;
+			}
+		}
+		
+		static IntPtr _AttrProtocolNNTPS;
+		public static IntPtr AttrProtocolNNTPS {
+			get {
+				if (_AttrProtocolNNTPS == IntPtr.Zero)
+					_AttrProtocolNNTPS = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolNNTPS");
+				return _AttrProtocolNNTPS;
+			}
+		}
+		
+		static IntPtr _AttrProtocolLDAPS;
+		public static IntPtr AttrProtocolLDAPS {
+			get {
+				if (_AttrProtocolLDAPS == IntPtr.Zero)
+					_AttrProtocolLDAPS = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolLDAPS");
+				return _AttrProtocolLDAPS;
+			}
+		}
+		
+		static IntPtr _AttrProtocolTelnetS;
+		public static IntPtr AttrProtocolTelnetS {
+			get {
+				if (_AttrProtocolTelnetS == IntPtr.Zero)
+					_AttrProtocolTelnetS = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolTelnetS");
+				return _AttrProtocolTelnetS;
+			}
+		}
+		
+		static IntPtr _AttrProtocolIMAPS;
+		public static IntPtr AttrProtocolIMAPS {
+			get {
+				if (_AttrProtocolIMAPS == IntPtr.Zero)
+					_AttrProtocolIMAPS = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIMAPS");
+				return _AttrProtocolIMAPS;
+			}
+		}
+		
+		static IntPtr _AttrProtocolIRCS;
+		public static IntPtr AttrProtocolIRCS {
+			get {
+				if (_AttrProtocolIRCS == IntPtr.Zero)
+					_AttrProtocolIRCS = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIRCS");
+				return _AttrProtocolIRCS;
+			}
+		}
+		
+		static IntPtr _AttrProtocolPOP3S;
+		public static IntPtr AttrProtocolPOP3S {
+			get {
+				if (_AttrProtocolPOP3S == IntPtr.Zero)
+					_AttrProtocolPOP3S = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolPOP3S");
+				return _AttrProtocolPOP3S;
+			}
+		}
+	}
+	
+	internal static class KeysAuthenticationType {
+		public static SecAuthenticationType ToSecAuthenticationType (IntPtr handle)
+		{
+			if (handle == NTLM)
+				return SecAuthenticationType.Ntlm;
+			if (handle == MSN)
+				return SecAuthenticationType.Msn;
+			if (handle == DPA)
+				return SecAuthenticationType.Dpa;
+			if (handle == RPA)
+				return SecAuthenticationType.Rpa;
+			if (handle == HTTPBasic)
+				return SecAuthenticationType.HttpBasic;
+			if (handle == HTTPDigest)
+				return SecAuthenticationType.HttpDigest;
+			if (handle == HTMLForm)
+				return SecAuthenticationType.HtmlForm;
+			if (handle == Default)
+				return SecAuthenticationType.Default;
+
+			throw new ArgumentException ("handle");
+		}
+
+		public static IntPtr FromSecAuthenticationType (SecAuthenticationType type)
+		{
+			switch (type){
+			case SecAuthenticationType.Ntlm:
+				return NTLM;
+			case SecAuthenticationType.Msn:
+				return MSN;
+			case SecAuthenticationType.Dpa:
+				return DPA;
+			case SecAuthenticationType.Rpa:
+				return RPA;
+			case SecAuthenticationType.HttpBasic:
+				return HTTPBasic;
+			case SecAuthenticationType.HttpDigest:
+				return HTTPDigest;
+			case SecAuthenticationType.HtmlForm:
+				return HTMLForm;
+			case SecAuthenticationType.Default:
+				return Default;
+			default:
+				throw new ArgumentException ("type");
+			}
+		}
+	
+		static IntPtr _NTLM;
+		public static IntPtr NTLM {
+			get {
+				if (_NTLM == IntPtr.Zero)
+					_NTLM = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeNTLM");
+				return _NTLM;
+			}
+		}
+		
+		static IntPtr _MSN;
+		public static IntPtr MSN {
+			get {
+				if (_MSN == IntPtr.Zero)
+					_MSN = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeMSN");
+				return _MSN;
+			}
+		}
+		
+		static IntPtr _DPA;
+		public static IntPtr DPA {
+			get {
+				if (_DPA == IntPtr.Zero)
+					_DPA = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeDPA");
+				return _DPA;
+			}
+		}
+		
+		static IntPtr _RPA;
+		public static IntPtr RPA {
+			get {
+				if (_RPA == IntPtr.Zero)
+					_RPA = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeRPA");
+				return _RPA;
+			}
+		}
+		
+		static IntPtr _HTTPBasic;
+		public static IntPtr HTTPBasic {
+			get {
+				if (_HTTPBasic == IntPtr.Zero)
+					_HTTPBasic = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeHTTPBasic");
+				return _HTTPBasic;
+			}
+		}
+		
+		static IntPtr _HTTPDigest;
+		public static IntPtr HTTPDigest {
+			get {
+				if (_HTTPDigest == IntPtr.Zero)
+					_HTTPDigest = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeHTTPDigest");
+				return _HTTPDigest;
+			}
+		}
+		
+		static IntPtr _HTMLForm;
+		public static IntPtr HTMLForm {
+			get {
+				if (_HTMLForm == IntPtr.Zero)
+					_HTMLForm = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeHTMLForm");
+				return _HTMLForm;
+			}
+		}
+		
+		static IntPtr _Default;
+		public static IntPtr Default {
+			get {
+				if (_Default == IntPtr.Zero)
+					_Default = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeDefault");
+				return _Default;
+			}
+		}
+	}
+	
+	internal static class ClassKeys {
+		static IntPtr _Public;
+		public static IntPtr Public {
+			get {
+				if (_Public == IntPtr.Zero)
+					_Public = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyClassPublic");
+				return _Public;
+			}
+		}
+		
+		static IntPtr _Private;
+		public static IntPtr Private {
+			get {
+				if (_Private == IntPtr.Zero)
+					_Private = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyClassPrivate");
+				return _Private;
+			}
+		}
+		
+		static IntPtr _Symmetric;
+		public static IntPtr Symmetric {
+			get {
+				if (_Symmetric == IntPtr.Zero)
+					_Symmetric = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyClassSymmetric");
+				return _Symmetric;
+			}
+		}
+	}
+	
+	internal static class KeyTypeKeys {
+		static IntPtr _RSA;
+		public static IntPtr RSA {
+			get {
+				if (_RSA == IntPtr.Zero)
+					_RSA = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyTypeRSA");
+				return _RSA;
+			}
+		}
+		
+		static IntPtr _EC;
+		public static IntPtr EC {
+			get {
+				if (_EC == IntPtr.Zero)
+					_EC = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyTypeEC");
+				return _EC;
+			}
+		}
+	}
+	
+	public static class SecMatchLimit {
+		
+		static IntPtr _MatchLimitOne;
+		public static IntPtr MatchLimitOne {
+			get {
+				if (_MatchLimitOne == IntPtr.Zero)
+					_MatchLimitOne = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecMatchLimitOne");
+				return _MatchLimitOne;
+			}
+		}
+		
+		static IntPtr _MatchLimitAll;
+		public static IntPtr MatchLimitAll {
+			get {
+				if (_MatchLimitAll == IntPtr.Zero)
+					_MatchLimitAll = Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecMatchLimitAll");
+				return _MatchLimitAll;
+			}
+		}
+	}
+
 	public class SecurityException : Exception {
 		static string ToMessage (SecStatusCode code)
 		{
@@ -72,1937 +2066,4 @@ namespace MonoMac.Security {
 		}
 	}
 	
-	public class SecKeyChain {
-		public static SecStatusCode TryQueryAsData (SecRecord query, bool wantPersistentReference, out NSData result)
-		{
-			if (query == null){
-				result = null;
-				return SecStatusCode.Param;
-			}
-
-			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
-				copy.SetObject (CFBoolean.TrueObject, SecItem.ReturnData);
-
-				IntPtr ptr;
-				var ret = SecItem.CopyMatching (copy, out ptr);
-				if (ret == SecStatusCode.Success)
-					result = new NSData (ptr);
-				else
-					result = null;
-				return ret;
-			}
-		}
-
-		public static NSData QueryAsData (SecRecord query, bool wantPersistentReference)
-		{
-			if (query == null)
-				throw new ArgumentNullException ("query");
-			
-			NSData result;
-			
-			var code = TryQueryAsData (query, wantPersistentReference, out result);
-			if (code != SecStatusCode.Success)
-				throw new SecurityException (code);
-			return result;
-		}
-
-		public static SecStatusCode TryQueryAsRecord (SecRecord query, out SecRecord result)
-		{
-			if (query == null){
-				result = null;
-				return SecStatusCode.Param;
-			}
-			
-			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
-				copy.SetObject (CFBoolean.TrueObject, SecItem.ReturnAttributes);
-
-				IntPtr ptr;
-				var ret = SecItem.CopyMatching (copy, out ptr);
-				if (ret == SecStatusCode.Success)
-					result = new SecRecord (new NSMutableDictionary (new NSDictionary (ptr)));
-				else
-					result = null;
-				return ret;
-			}
-		}
-		
-		public static SecRecord QueryAsRecord (SecRecord query)
-		{
-			if (query == null)
-				throw new ArgumentNullException ("query");
-			
-			SecRecord result;
-			
-			var code = TryQueryAsRecord (query, out result);
-			if (code != SecStatusCode.Success)
-				throw new SecurityException (code);
-			return result;
-		}
-
-		public static SecStatusCode TryQueryAsConcreteType (SecRecord query, out object result)
-		{
-			if (query == null){
-				result = null;
-				return SecStatusCode.Param;
-			}
-			
-			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
-				copy.SetObject (CFBoolean.TrueObject, SecItem.ReturnRef);
-
-				IntPtr ptr;
-				var ret = SecItem.CopyMatching (copy, out ptr);
-				if (ret == SecStatusCode.Success){
-					int cfType = CFType.GetTypeID (ptr);
-
-					if (cfType == SecCertificate.GetTypeID ())
-						result = new SecCertificate (ptr, true);
-					else if (cfType == SecKey.GetTypeID ())
-						result = new SecKey (ptr, true);
-					else if (cfType == SecIdentity.GetTypeID ())
-						result = new SecIdentity (ptr, true);
-					else
-						throw new Exception (String.Format ("Unexpected type: 0x{0:x}", ret));
-					result = null;
-				} else
-					result = null;
-				return ret;
-			}
-		}
-		
-		static object QueryAsConcreteType (SecRecord query)
-		{
-			if (query == null)
-				throw new ArgumentNullException ("query");
-			
-			object result;
-			
-			var code = TryQueryAsConcreteType (query, out result);
-			if (code != SecStatusCode.Success)
-				throw new SecurityException (code);
-			return result;
-		}
-	}
-	
-	public class SecRecord {
-		internal NSMutableDictionary queryDict;
-
-		internal SecRecord (NSMutableDictionary dict)
-		{
-			queryDict = dict;
-		}
-		
-		public SecRecord (SecKind secKind)
-		{
-			var kind = SecClass.FromSecKind (secKind);
-			queryDict = NSMutableDictionary.FromObjectAndKey (kind, SecClass.SecClassKey);
-		}
-
-		//
-		// Attributes
-		//
-		public SecAccessible Accessible {
-			get {
-				return SecAttributeAccesssible.ToSecAccessible (queryDict.ObjectForKey (SecAttributeKey.AttrAccessible));
-			}
-			
-			set {
-				queryDict.SetObject (SecAttributeAccesssible.FromSecAccessible (value), SecAttributeKey.AttrAccessible);
-			}
-		}
-
-		public NSDate CreationDate {
-			get {
-				return (NSDate) (queryDict.ObjectForKey (SecAttributeKey.AttrCreationDate));
-			}
-			
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecAttributeKey.AttrCreationDate);
-			}
-		}
-
-		public NSDate ModificationDate {
-			get {
-				return (NSDate) (queryDict.ObjectForKey (SecAttributeKey.AttrModificationDate));
-			}
-			
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecAttributeKey.AttrModificationDate);
-			}
-		}
-
-		public string Description {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrDescription));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrDescription);
-			}
-		}
-
-		public string Comment {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrComment));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrComment);
-			}
-		}
-
-		public int Creator {
-			get {
-				return ((NSNumber)queryDict.ObjectForKey (SecAttributeKey.AttrCreator)).Int32Value;
-			}
-					
-			set {
-				queryDict.SetObject (new NSNumber (value), SecAttributeKey.AttrCreator);
-			}
-		}
-
-		public int CreatorType {
-			get {
-				return ((NSNumber) queryDict.ObjectForKey (SecAttributeKey.AttrType)).Int32Value;
-			}
-					
-			set {
-				queryDict.SetObject (new NSNumber (value), SecAttributeKey.AttrType);
-			}
-		}
-
-		public string Label {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrLabel));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrLabel);
-			}
-		}
-
-		public bool Invisible {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrIsInvisible).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsInvisible);
-			}
-		}
-
-		public bool IsNegative {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrIsNegative).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsNegative);
-			}
-		}
-
-		public string Account {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrAccount));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrAccount);
-			}
-		}
-
-		public string Service {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrService));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrService);
-			}
-		}
-
-		public string Generic {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrGeneric));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrGeneric);
-			}
-		}
-
-		public string SecurityDomain {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrSecurityDomain));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrSecurityDomain);
-			}
-		}
-
-		public string Server {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrServer));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrServer);
-			}
-		}
-
-		public SecProtocol Protocol {
-			get {
-				return new SecProtocol (queryDict.ObjectForKey (SecAttributeKey.AttrProtocol).Handle);
-			}
-			
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecAttributeKey.AttrProtocol);
-			}
-		}
-
-		public SecAuthenticationType AuthenticationType {
-			get {
-				return new SecAuthenticationType (queryDict.ObjectForKey (SecAttributeKey.AttrAuthenticationType).Handle);
-			}
-			
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-			
-				queryDict.SetObject (value, SecAttributeKey.AttrAuthenticationType);
-			}
-		}
-
-		public int Port {
-			get {
-				return ((NSNumber) queryDict.ObjectForKey (SecAttributeKey.AttrPort)).Int32Value;
-			}
-					
-			set {
-				queryDict.SetObject (new NSNumber (value), SecAttributeKey.AttrPort);
-			}
-		}
-
-		public string Path {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrPath));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrPath);
-			}
-		}
-
-		// read only
-		public string Subject {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrSubject));
-			}
-		}
-
-		// read only
-		public NSData Issuer {
-			get {
-				return (NSData) (queryDict.ObjectForKey (SecAttributeKey.AttrIssuer));
-			}
-		}
-
-		// read only
-		public NSData SerialNumber {
-			get {
-				return (NSData) (queryDict.ObjectForKey (SecAttributeKey.AttrSerialNumber));
-			}
-		}
-
-		// read only
-		public NSData SubjectKeyID {
-			get {
-				return (NSData) (queryDict.ObjectForKey (SecAttributeKey.AttrSubjectKeyID));
-			}
-		}
-
-		// read only
-		public NSData PublicKeyHash {
-			get {
-				return (NSData) (queryDict.ObjectForKey (SecAttributeKey.AttrPublicKeyHash));
-			}
-		}
-
-		// read only
-		public NSNumber CertificateType {
-			get {
-				return (NSNumber) (queryDict.ObjectForKey (SecAttributeKey.AttrCertificateType));
-			}
-		}
-
-		// read only
-		public NSNumber CertificateEncoding {
-			get {
-				return (NSNumber) (queryDict.ObjectForKey (SecAttributeKey.AttrCertificateEncoding));
-			}
-		}
-
-		public SecKeyClass KeyClass {
-			get {
-				return new SecKeyClass (queryDict.ObjectForKey (SecAttributeKey.AttrKeyClass).Handle);
-			}
-		}
-
-		public string ApplicationLabel {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrApplicationLabel));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrApplicationLabel);
-			}
-		}
-
-		public bool IsPermanent {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrIsPermanent).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsPermanent);
-			}
-		}
-
-		public NSData ApplicationTag {
-			get {
-				return (NSData) (queryDict.ObjectForKey (SecAttributeKey.AttrApplicationTag));
-			}
-			
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecAttributeKey.AttrApplicationTag);
-			}
-		}
-
-		public SecKeyType KeyType {
-			get {
-				return new SecKeyType (queryDict.ObjectForKey (SecAttributeKey.AttrKeyType).Handle);
-			}
-			
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecAttributeKey.AttrKeyType);
-			}
-		}
-
-		public int KeySizeInBits {
-			get {
-				return ((NSNumber) queryDict.ObjectForKey (SecAttributeKey.AttrKeySizeInBits)).Int32Value;
-			}
-					
-			set {
-				queryDict.SetObject (new NSNumber (value), SecAttributeKey.AttrKeySizeInBits);
-			}
-		}
-
-		public int EffectiveKeySize {
-			get {
-				return ((NSNumber) queryDict.ObjectForKey (SecAttributeKey.AttrEffectiveKeySize)).Int32Value;
-			}
-					
-			set {
-				queryDict.SetObject (new NSNumber (value), SecAttributeKey.AttrEffectiveKeySize);
-			}
-		}
-
-		public bool CanEncrypt {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrCanEncrypt).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanEncrypt);
-			}
-		}
-
-		public bool CanDecrypt {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrCanDecrypt).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanDecrypt);
-			}
-		}
-
-		public bool CanDerive {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrCanDerive).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanDerive);
-			}
-		}
-
-		public bool CanSign {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrCanSign).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanSign);
-			}
-		}
-
-		public bool CanVerify {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrCanVerify).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanVerify);
-			}
-		}
-
-		public bool CanWrap {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrCanWrap).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanWrap);
-			}
-		}
-
-		public bool CanUnwrap {
-			get {
-				return queryDict.ObjectForKey (SecAttributeKey.AttrCanUnwrap).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanUnwrap);
-			}
-		}
-
-		public string AccessGroup {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecAttributeKey.AttrAccessGroup));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecAttributeKey.AttrAccessGroup);
-			}
-		}
-
-		//
-		// Matches
-		//
-
-		public SecPolicy MatchPolicy {
-			get {
-				return new SecPolicy (queryDict.ObjectForKey (SecItem.MatchPolicy).Handle);
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecItem.MatchPolicy);
-			}
-		}
-
-		public NSArray MatchItemList {
-			get {
-				return (NSArray) queryDict.ObjectForKey (SecItem.MatchItemList);
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecItem.MatchItemList);
-			}
-		}
-
-		public NSData [] MatchIssuers {
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				
-				queryDict.SetObject (NSArray.FromNSObjects (value), SecItem.MatchIssuers);
-			}
-		}
-
-		public string MatchEmailAddressIfPresent {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecItem.MatchEmailAddressIfPresent));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecItem.MatchEmailAddressIfPresent);
-			}
-		}
-
-		public string MatchSubjectContains {
-			get {
-				return (string)((NSString) queryDict.ObjectForKey (SecItem.MatchSubjectContains));
-			}
-
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (new NSString (value), SecItem.MatchSubjectContains);
-			}
-		}
-
-		public bool MatchCaseInsensitive {
-			get {
-				return queryDict.ObjectForKey (SecItem.MatchCaseInsensitive).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecItem.MatchCaseInsensitive);
-			}
-		}
-
-		public bool MatchTrustedOnly {
-			get {
-				return queryDict.ObjectForKey (SecItem.MatchTrustedOnly).Handle == CFBoolean.True.Handle;
-			}
-			
-			set {
-				queryDict.SetObject (CFBoolean.GetBoolObject (value), SecItem.MatchTrustedOnly);
-			}
-		}
-
-		public NSDate MatchValidOnDate {
-			get {
-				return (NSDate) (queryDict.ObjectForKey (SecItem.MatchValidOnDate));
-			}
-			
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecItem.MatchValidOnDate);
-			}
-		}
-
-		public SecMatchLimit MatchLimit {
-			get {
-				return new SecMatchLimit (queryDict.ObjectForKey (SecItem.MatchLimit).Handle);
-			}
-					
-			set {
-				if (value == null)
-					throw new ArgumentNullException ("value");
-				queryDict.SetObject (value, SecItem.MatchLimit);
-			}
-		}
-	}
-	
-	public class SecItem {
-		internal static IntPtr securityLibrary = Dlfcn.dlopen (Constants.SecurityLibrary, 0);
-
-		[DllImport (Constants.SecurityLibrary)]
-		extern static SecStatusCode SecItemCopyMatching (IntPtr cfDictRef, out IntPtr result);
-
-		public static SecStatusCode CopyMatching (NSDictionary queryDictionary, out IntPtr result)
-		{
-			if (queryDictionary == null)
-				throw new ArgumentNullException ("queryDictionary");
-			return SecItemCopyMatching (queryDictionary.Handle, out result);
-		}
-
-		static NSObject _MatchPolicy;
-		public static NSObject MatchPolicy {
-			get {
-				if (_MatchPolicy == null)
-					_MatchPolicy = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchPolicy"));
-				return _MatchPolicy;
-			}
-		}
-		
-		static NSObject _MatchItemList;
-		public static NSObject MatchItemList {
-			get {
-				if (_MatchItemList == null)
-					_MatchItemList = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchItemList"));
-				return _MatchItemList;
-			}
-		}
-		
-		static NSObject _MatchSearchList;
-		public static NSObject MatchSearchList {
-			get {
-				if (_MatchSearchList == null)
-					_MatchSearchList = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchSearchList"));
-				return _MatchSearchList;
-			}
-		}
-		
-		static NSObject _MatchIssuers;
-		public static NSObject MatchIssuers {
-			get {
-				if (_MatchIssuers == null)
-					_MatchIssuers = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchIssuers"));
-				return _MatchIssuers;
-			}
-		}
-		
-		static NSObject _MatchEmailAddressIfPresent;
-		public static NSObject MatchEmailAddressIfPresent {
-			get {
-				if (_MatchEmailAddressIfPresent == null)
-					_MatchEmailAddressIfPresent = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchEmailAddressIfPresent"));
-				return _MatchEmailAddressIfPresent;
-			}
-		}
-		
-		static NSObject _MatchSubjectContains;
-		public static NSObject MatchSubjectContains {
-			get {
-				if (_MatchSubjectContains == null)
-					_MatchSubjectContains = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchSubjectContains"));
-				return _MatchSubjectContains;
-			}
-		}
-		
-		static NSObject _MatchCaseInsensitive;
-		public static NSObject MatchCaseInsensitive {
-			get {
-				if (_MatchCaseInsensitive == null)
-					_MatchCaseInsensitive = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchCaseInsensitive"));
-				return _MatchCaseInsensitive;
-			}
-		}
-		
-		static NSObject _MatchTrustedOnly;
-		public static NSObject MatchTrustedOnly {
-			get {
-				if (_MatchTrustedOnly == null)
-					_MatchTrustedOnly = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchTrustedOnly"));
-				return _MatchTrustedOnly;
-			}
-		}
-		
-		static NSObject _MatchValidOnDate;
-		public static NSObject MatchValidOnDate {
-			get {
-				if (_MatchValidOnDate == null)
-					_MatchValidOnDate = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchValidOnDate"));
-				return _MatchValidOnDate;
-			}
-		}
-		
-		static NSObject _MatchLimit;
-		public static NSObject MatchLimit {
-			get {
-				if (_MatchLimit == null)
-					_MatchLimit = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecMatchLimit"));
-				return _MatchLimit;
-			}
-		}
-
-		static NSObject _ReturnData;
-		public static NSObject ReturnData {
-			get {
-				if (_ReturnData == null)
-					_ReturnData = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecReturnData"));
-				return _ReturnData;
-			}
-		}
-		
-		static NSObject _ReturnAttributes;
-		public static NSObject ReturnAttributes {
-			get {
-				if (_ReturnAttributes == null)
-					_ReturnAttributes = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecReturnAttributes"));
-				return _ReturnAttributes;
-			}
-		}
-		
-		static NSObject _ReturnRef;
-		public static NSObject ReturnRef {
-			get {
-				if (_ReturnRef == null)
-					_ReturnRef = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecReturnRef"));
-				return _ReturnRef;
-			}
-		}
-		
-		static NSObject _ReturnPersistentRef;
-		public static NSObject ReturnPersistentRef {
-			get {
-				if (_ReturnPersistentRef == null)
-					_ReturnPersistentRef = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecReturnPersistentRef"));
-				return _ReturnPersistentRef;
-			}
-		}
-		
-		static NSObject _ValueData;
-		public static NSObject ValueData {
-			get {
-				if (_ValueData == null)
-					_ValueData = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecValueData"));
-				return _ValueData;
-			}
-		}
-		
-		static NSObject _ValueRef;
-		public static NSObject ValueRef {
-			get {
-				if (_ValueRef == null)
-					_ValueRef = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecValueRef"));
-				return _ValueRef;
-			}
-		}
-		
-		static NSObject _ValuePersistentRef;
-		public static NSObject ValuePersistentRef {
-			get {
-				if (_ValuePersistentRef == null)
-					_ValuePersistentRef = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecValuePersistentRef"));
-				return _ValuePersistentRef;
-			}
-		}
-		
-		static NSObject _UseItemList;
-		public static NSObject UseItemList {
-			get {
-				if (_UseItemList == null)
-					_UseItemList = new NSObject (Dlfcn.GetIntPtr (securityLibrary, "kSecUseItemList"));
-				return _UseItemList;
-			}
-		}
-	}
-
-	public class SecClass : NSObject {
-		public static SecClass SecClassKey;
-		public static SecClass GenericPassword;
-		public static SecClass InternetPassword;
-		public static SecClass Certificate;
-		public static SecClass Key;
-		public static SecClass Identity;
-
-		internal SecClass (IntPtr handle): base (handle)
-		{
-		}
-		
-		static SecClass ()
-		{
-			SecClassKey = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClass"));
-			GenericPassword = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassGenericPassword"));
-			InternetPassword = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassInternetPassword"));
-			Certificate = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassCertificate"));
-			Key = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassKey"));
-			Identity = new SecClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecClassIdentity"));
-		}
-	
-		public static SecClass FromSecKind (SecKind secKind)
-		{
-			switch (secKind){
-			case SecKind.GenericPassword:
-				return GenericPassword;
-			case SecKind.InternetPassword:
-				return InternetPassword;
-			case SecKind.Certificate:
-				return Certificate;
-			case SecKind.Key:
-				return Key;
-			case SecKind.Identity:
-				return Identity;
-			default:
-				throw new ArgumentException ("secKind");
-			}
-		}
-	}
-	
-	public class SecAttributeKey : NSObject {
-		internal SecAttributeKey (IntPtr handle) : base (handle)
-		{
-		}
-	
-		static SecAttributeKey _AttrAccessible;
-		public static SecAttributeKey AttrAccessible {
-			get {
-				if (_AttrAccessible == null)
-					_AttrAccessible = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessible"));
-				return _AttrAccessible;
-			}
-		}
-		
-		static SecAttributeKey _AttrAccessGroup;
-		public static SecAttributeKey AttrAccessGroup {
-			get {
-				if (_AttrAccessGroup == null)
-					_AttrAccessGroup = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessGroup"));
-				return _AttrAccessGroup;
-			}
-		}
-		
-		static SecAttributeKey _AttrCreationDate;
-		public static SecAttributeKey AttrCreationDate {
-			get {
-				if (_AttrCreationDate == null)
-					_AttrCreationDate = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCreationDate"));
-				return _AttrCreationDate;
-			}
-		}
-		
-		static SecAttributeKey _AttrModificationDate;
-		public static SecAttributeKey AttrModificationDate {
-			get {
-				if (_AttrModificationDate == null)
-					_AttrModificationDate = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrModificationDate"));
-				return _AttrModificationDate;
-			}
-		}
-		
-		static SecAttributeKey _AttrDescription;
-		public static SecAttributeKey AttrDescription {
-			get {
-				if (_AttrDescription == null)
-					_AttrDescription = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrDescription"));
-				return _AttrDescription;
-			}
-		}
-		
-		static SecAttributeKey _AttrComment;
-		public static SecAttributeKey AttrComment {
-			get {
-				if (_AttrComment == null)
-					_AttrComment = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrComment"));
-				return _AttrComment;
-			}
-		}
-		
-		static SecAttributeKey _AttrCreator;
-		public static SecAttributeKey AttrCreator {
-			get {
-				if (_AttrCreator == null)
-					_AttrCreator = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCreator"));
-				return _AttrCreator;
-			}
-		}
-		
-		static SecAttributeKey _AttrType;
-		public static SecAttributeKey AttrType {
-			get {
-				if (_AttrType == null)
-					_AttrType = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrType"));
-				return _AttrType;
-			}
-		}
-		
-		static SecAttributeKey _AttrLabel;
-		public static SecAttributeKey AttrLabel {
-			get {
-				if (_AttrLabel == null)
-					_AttrLabel = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrLabel"));
-				return _AttrLabel;
-			}
-		}
-		
-		static SecAttributeKey _AttrIsInvisible;
-		public static SecAttributeKey AttrIsInvisible {
-			get {
-				if (_AttrIsInvisible == null)
-					_AttrIsInvisible = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrIsInvisible"));
-				return _AttrIsInvisible;
-			}
-		}
-		
-		static SecAttributeKey _AttrIsNegative;
-		public static SecAttributeKey AttrIsNegative {
-			get {
-				if (_AttrIsNegative == null)
-					_AttrIsNegative = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrIsNegative"));
-				return _AttrIsNegative;
-			}
-		}
-		
-		static SecAttributeKey _AttrAccount;
-		public static SecAttributeKey AttrAccount {
-			get {
-				if (_AttrAccount == null)
-					_AttrAccount = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccount"));
-				return _AttrAccount;
-			}
-		}
-		
-		static SecAttributeKey _AttrService;
-		public static SecAttributeKey AttrService {
-			get {
-				if (_AttrService == null)
-					_AttrService = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrService"));
-				return _AttrService;
-			}
-		}
-		
-		static SecAttributeKey _AttrGeneric;
-		public static SecAttributeKey AttrGeneric {
-			get {
-				if (_AttrGeneric == null)
-					_AttrGeneric = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrGeneric"));
-				return _AttrGeneric;
-			}
-		}
-		
-		static SecAttributeKey _AttrSecurityDomain;
-		public static SecAttributeKey AttrSecurityDomain {
-			get {
-				if (_AttrSecurityDomain == null)
-					_AttrSecurityDomain = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrSecurityDomain"));
-				return _AttrSecurityDomain;
-			}
-		}
-		
-		static SecAttributeKey _AttrServer;
-		public static SecAttributeKey AttrServer {
-			get {
-				if (_AttrServer == null)
-					_AttrServer = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrServer"));
-				return _AttrServer;
-			}
-		}
-		
-		static SecAttributeKey _AttrProtocol;
-		public static SecAttributeKey AttrProtocol {
-			get {
-				if (_AttrProtocol == null)
-					_AttrProtocol = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocol"));
-				return _AttrProtocol;
-			}
-		}
-		
-		static SecAttributeKey _AttrAuthenticationType;
-		public static SecAttributeKey AttrAuthenticationType {
-			get {
-				if (_AttrAuthenticationType == null)
-					_AttrAuthenticationType = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationType"));
-				return _AttrAuthenticationType;
-			}
-		}
-		
-		static SecAttributeKey _AttrPort;
-		public static SecAttributeKey AttrPort {
-			get {
-				if (_AttrPort == null)
-					_AttrPort = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrPort"));
-				return _AttrPort;
-			}
-		}
-		
-		static SecAttributeKey _AttrPath;
-		public static SecAttributeKey AttrPath {
-			get {
-				if (_AttrPath == null)
-					_AttrPath = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrPath"));
-				return _AttrPath;
-			}
-		}
-		
-		static SecAttributeKey _AttrSubject;
-		public static SecAttributeKey AttrSubject {
-			get {
-				if (_AttrSubject == null)
-					_AttrSubject = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrSubject"));
-				return _AttrSubject;
-			}
-		}
-		
-		static SecAttributeKey _AttrIssuer;
-		public static SecAttributeKey AttrIssuer {
-			get {
-				if (_AttrIssuer == null)
-					_AttrIssuer = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrIssuer"));
-				return _AttrIssuer;
-			}
-		}
-		
-		static SecAttributeKey _AttrSerialNumber;
-		public static SecAttributeKey AttrSerialNumber {
-			get {
-				if (_AttrSerialNumber == null)
-					_AttrSerialNumber = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrSerialNumber"));
-				return _AttrSerialNumber;
-			}
-		}
-		
-		static SecAttributeKey _AttrSubjectKeyID;
-		public static SecAttributeKey AttrSubjectKeyID {
-			get {
-				if (_AttrSubjectKeyID == null)
-					_AttrSubjectKeyID = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrSubjectKeyID"));
-				return _AttrSubjectKeyID;
-			}
-		}
-		
-		static SecAttributeKey _AttrPublicKeyHash;
-		public static SecAttributeKey AttrPublicKeyHash {
-			get {
-				if (_AttrPublicKeyHash == null)
-					_AttrPublicKeyHash = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrPublicKeyHash"));
-				return _AttrPublicKeyHash;
-			}
-		}
-		
-		static SecAttributeKey _AttrCertificateType;
-		public static SecAttributeKey AttrCertificateType {
-			get {
-				if (_AttrCertificateType == null)
-					_AttrCertificateType = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCertificateType"));
-				return _AttrCertificateType;
-			}
-		}
-		
-		static SecAttributeKey _AttrCertificateEncoding;
-		public static SecAttributeKey AttrCertificateEncoding {
-			get {
-				if (_AttrCertificateEncoding == null)
-					_AttrCertificateEncoding = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCertificateEncoding"));
-				return _AttrCertificateEncoding;
-			}
-		}
-		
-		static SecAttributeKey _AttrKeyClass;
-		public static SecAttributeKey AttrKeyClass {
-			get {
-				if (_AttrKeyClass == null)
-					_AttrKeyClass = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyClass"));
-				return _AttrKeyClass;
-			}
-		}
-		
-		static SecAttributeKey _AttrApplicationLabel;
-		public static SecAttributeKey AttrApplicationLabel {
-			get {
-				if (_AttrApplicationLabel == null)
-					_AttrApplicationLabel = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrApplicationLabel"));
-				return _AttrApplicationLabel;
-			}
-		}
-		
-		static SecAttributeKey _AttrIsPermanent;
-		public static SecAttributeKey AttrIsPermanent {
-			get {
-				if (_AttrIsPermanent == null)
-					_AttrIsPermanent = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrIsPermanent"));
-				return _AttrIsPermanent;
-			}
-		}
-		
-		static SecAttributeKey _AttrApplicationTag;
-		public static SecAttributeKey AttrApplicationTag {
-			get {
-				if (_AttrApplicationTag == null)
-					_AttrApplicationTag = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrApplicationTag"));
-				return _AttrApplicationTag;
-			}
-		}
-		
-		static SecAttributeKey _AttrKeyType;
-		public static SecAttributeKey AttrKeyType {
-			get {
-				if (_AttrKeyType == null)
-					_AttrKeyType = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyType"));
-				return _AttrKeyType;
-			}
-		}
-		
-		static SecAttributeKey _AttrKeySizeInBits;
-		public static SecAttributeKey AttrKeySizeInBits {
-			get {
-				if (_AttrKeySizeInBits == null)
-					_AttrKeySizeInBits = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeySizeInBits"));
-				return _AttrKeySizeInBits;
-			}
-		}
-		
-		static SecAttributeKey _AttrEffectiveKeySize;
-		public static SecAttributeKey AttrEffectiveKeySize {
-			get {
-				if (_AttrEffectiveKeySize == null)
-					_AttrEffectiveKeySize = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrEffectiveKeySize"));
-				return _AttrEffectiveKeySize;
-			}
-		}
-		
-		static SecAttributeKey _AttrCanEncrypt;
-		public static SecAttributeKey AttrCanEncrypt {
-			get {
-				if (_AttrCanEncrypt == null)
-					_AttrCanEncrypt = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanEncrypt"));
-				return _AttrCanEncrypt;
-			}
-		}
-		
-		static SecAttributeKey _AttrCanDecrypt;
-		public static SecAttributeKey AttrCanDecrypt {
-			get {
-				if (_AttrCanDecrypt == null)
-					_AttrCanDecrypt = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanDecrypt"));
-				return _AttrCanDecrypt;
-			}
-		}
-		
-		static SecAttributeKey _AttrCanDerive;
-		public static SecAttributeKey AttrCanDerive {
-			get {
-				if (_AttrCanDerive == null)
-					_AttrCanDerive = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanDerive"));
-				return _AttrCanDerive;
-			}
-		}
-		
-		static SecAttributeKey _AttrCanSign;
-		public static SecAttributeKey AttrCanSign {
-			get {
-				if (_AttrCanSign == null)
-					_AttrCanSign = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanSign"));
-				return _AttrCanSign;
-			}
-		}
-		
-		static SecAttributeKey _AttrCanVerify;
-		public static SecAttributeKey AttrCanVerify {
-			get {
-				if (_AttrCanVerify == null)
-					_AttrCanVerify = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanVerify"));
-				return _AttrCanVerify;
-			}
-		}
-		
-		static SecAttributeKey _AttrCanWrap;
-		public static SecAttributeKey AttrCanWrap {
-			get {
-				if (_AttrCanWrap == null)
-					_AttrCanWrap = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanWrap"));
-				return _AttrCanWrap;
-			}
-		}
-		
-		static SecAttributeKey _AttrCanUnwrap;
-		public static SecAttributeKey AttrCanUnwrap {
-			get {
-				if (_AttrCanUnwrap == null)
-					_AttrCanUnwrap = new SecAttributeKey (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrCanUnwrap"));
-				return _AttrCanUnwrap;
-			}
-		}
-	}
-	
-	public class SecAttributeAccesssible : NSObject {
-		public static SecAttributeAccesssible FromSecAccessible (SecAccessible accessible)
-		{
-			switch (accessible){
-			case SecAccessible.WhenUnlocked:
-				return AttrAccessibleWhenUnlocked;
-			case SecAccessible.AfterFirstUnlock:
-				return AttrAccessibleAfterFirstUnlock;
-			case SecAccessible.Always:
-				return AttrAccessibleAlways;
-			case SecAccessible.WhenUnlockedThisDeviceOnly:
-				return AttrAccessibleWhenUnlockedThisDeviceOnly;
-			case SecAccessible.AfterFirstUnlockThisDeviceOnly:
-				return AttrAccessibleAfterFirstUnlockThisDeviceOnly;
-			case SecAccessible.AlwaysThisDeviceOnly:
-				return AttrAccessibleAlwaysThisDeviceOnly;
-			default:
-				throw new ArgumentException ("accessible");
-			}
-		}
-			
-		internal SecAttributeAccesssible (IntPtr handle) : base (handle)
-		{
-		}
-		
-		static SecAttributeAccesssible _AttrAccessibleWhenUnlocked;
-		public static SecAttributeAccesssible AttrAccessibleWhenUnlocked {
-			get {
-				if (_AttrAccessibleWhenUnlocked == null)
-					_AttrAccessibleWhenUnlocked = new SecAttributeAccesssible (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleWhenUnlocked"));
-				return _AttrAccessibleWhenUnlocked;
-			}
-		}
-		
-		static SecAttributeAccesssible _AttrAccessibleAfterFirstUnlock;
-		public static SecAttributeAccesssible AttrAccessibleAfterFirstUnlock {
-			get {
-				if (_AttrAccessibleAfterFirstUnlock == null)
-					_AttrAccessibleAfterFirstUnlock = new SecAttributeAccesssible (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleAfterFirstUnlock"));
-				return _AttrAccessibleAfterFirstUnlock;
-			}
-		}
-		
-		static SecAttributeAccesssible _AttrAccessibleAlways;
-		public static SecAttributeAccesssible AttrAccessibleAlways {
-			get {
-				if (_AttrAccessibleAlways == null)
-					_AttrAccessibleAlways = new SecAttributeAccesssible (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleAlways"));
-				return _AttrAccessibleAlways;
-			}
-		}
-		
-		static SecAttributeAccesssible _AttrAccessibleWhenUnlockedThisDeviceOnly;
-		public static SecAttributeAccesssible AttrAccessibleWhenUnlockedThisDeviceOnly {
-			get {
-				if (_AttrAccessibleWhenUnlockedThisDeviceOnly == null)
-					_AttrAccessibleWhenUnlockedThisDeviceOnly = new SecAttributeAccesssible (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleWhenUnlockedThisDeviceOnly"));
-				return _AttrAccessibleWhenUnlockedThisDeviceOnly;
-			}
-		}
-		
-		static SecAttributeAccesssible _AttrAccessibleAfterFirstUnlockThisDeviceOnly;
-		public static SecAttributeAccesssible AttrAccessibleAfterFirstUnlockThisDeviceOnly {
-			get {
-				if (_AttrAccessibleAfterFirstUnlockThisDeviceOnly == null)
-					_AttrAccessibleAfterFirstUnlockThisDeviceOnly = new SecAttributeAccesssible (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly"));
-				return _AttrAccessibleAfterFirstUnlockThisDeviceOnly;
-			}
-		}
-		
-		static SecAttributeAccesssible _AttrAccessibleAlwaysThisDeviceOnly;
-		public static SecAttributeAccesssible AttrAccessibleAlwaysThisDeviceOnly {
-			get {
-				if (_AttrAccessibleAlwaysThisDeviceOnly == null)
-					_AttrAccessibleAlwaysThisDeviceOnly = new SecAttributeAccesssible (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAccessibleAlwaysThisDeviceOnly"));
-				return _AttrAccessibleAlwaysThisDeviceOnly;
-			}
-		}
-	
-		public static SecAccessible ToSecAccessible (NSObject obj)
-		{
-			var handle = obj.Handle;
-			if (handle == AttrAccessibleWhenUnlocked.Handle)
-				return SecAccessible.WhenUnlocked;
-			if (handle == AttrAccessibleAfterFirstUnlock.Handle)
-				return SecAccessible.AfterFirstUnlock;
-			if (handle == AttrAccessibleAlways.Handle)
-				return SecAccessible.Always;
-			if (handle == AttrAccessibleWhenUnlockedThisDeviceOnly.Handle)
-				return SecAccessible.WhenUnlockedThisDeviceOnly;
-			if (handle == AttrAccessibleAfterFirstUnlockThisDeviceOnly.Handle)
-				return SecAccessible.AfterFirstUnlockThisDeviceOnly;
-			if (handle == AttrAccessibleAlwaysThisDeviceOnly.Handle)
-				return SecAccessible.AlwaysThisDeviceOnly;
-			throw new ArgumentException ("obj");
-		}
-	}
-	
-	public class SecProtocol : NSNumber {
-		internal SecProtocol (IntPtr handle): base (handle) {}
-		
-		static SecProtocol _AttrProtocolFTP;
-		public static SecProtocol AttrProtocolFTP {
-			get {
-				if (_AttrProtocolFTP == null)
-					_AttrProtocolFTP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolFTP"));
-				return _AttrProtocolFTP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolFTPAccount;
-		public static SecProtocol AttrProtocolFTPAccount {
-			get {
-				if (_AttrProtocolFTPAccount == null)
-					_AttrProtocolFTPAccount = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolFTPAccount"));
-				return _AttrProtocolFTPAccount;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolHTTP;
-		public static SecProtocol AttrProtocolHTTP {
-			get {
-				if (_AttrProtocolHTTP == null)
-					_AttrProtocolHTTP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolHTTP"));
-				return _AttrProtocolHTTP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolIRC;
-		public static SecProtocol AttrProtocolIRC {
-			get {
-				if (_AttrProtocolIRC == null)
-					_AttrProtocolIRC = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIRC"));
-				return _AttrProtocolIRC;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolNNTP;
-		public static SecProtocol AttrProtocolNNTP {
-			get {
-				if (_AttrProtocolNNTP == null)
-					_AttrProtocolNNTP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolNNTP"));
-				return _AttrProtocolNNTP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolPOP3;
-		public static SecProtocol AttrProtocolPOP3 {
-			get {
-				if (_AttrProtocolPOP3 == null)
-					_AttrProtocolPOP3 = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolPOP3"));
-				return _AttrProtocolPOP3;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolSMTP;
-		public static SecProtocol AttrProtocolSMTP {
-			get {
-				if (_AttrProtocolSMTP == null)
-					_AttrProtocolSMTP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolSMTP"));
-				return _AttrProtocolSMTP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolSOCKS;
-		public static SecProtocol AttrProtocolSOCKS {
-			get {
-				if (_AttrProtocolSOCKS == null)
-					_AttrProtocolSOCKS = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolSOCKS"));
-				return _AttrProtocolSOCKS;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolIMAP;
-		public static SecProtocol AttrProtocolIMAP {
-			get {
-				if (_AttrProtocolIMAP == null)
-					_AttrProtocolIMAP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIMAP"));
-				return _AttrProtocolIMAP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolLDAP;
-		public static SecProtocol AttrProtocolLDAP {
-			get {
-				if (_AttrProtocolLDAP == null)
-					_AttrProtocolLDAP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolLDAP"));
-				return _AttrProtocolLDAP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolAppleTalk;
-		public static SecProtocol AttrProtocolAppleTalk {
-			get {
-				if (_AttrProtocolAppleTalk == null)
-					_AttrProtocolAppleTalk = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolAppleTalk"));
-				return _AttrProtocolAppleTalk;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolAFP;
-		public static SecProtocol AttrProtocolAFP {
-			get {
-				if (_AttrProtocolAFP == null)
-					_AttrProtocolAFP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolAFP"));
-				return _AttrProtocolAFP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolTelnet;
-		public static SecProtocol AttrProtocolTelnet {
-			get {
-				if (_AttrProtocolTelnet == null)
-					_AttrProtocolTelnet = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolTelnet"));
-				return _AttrProtocolTelnet;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolSSH;
-		public static SecProtocol AttrProtocolSSH {
-			get {
-				if (_AttrProtocolSSH == null)
-					_AttrProtocolSSH = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolSSH"));
-				return _AttrProtocolSSH;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolFTPS;
-		public static SecProtocol AttrProtocolFTPS {
-			get {
-				if (_AttrProtocolFTPS == null)
-					_AttrProtocolFTPS = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolFTPS"));
-				return _AttrProtocolFTPS;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolHTTPS;
-		public static SecProtocol AttrProtocolHTTPS {
-			get {
-				if (_AttrProtocolHTTPS == null)
-					_AttrProtocolHTTPS = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolHTTPS"));
-				return _AttrProtocolHTTPS;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolHTTPProxy;
-		public static SecProtocol AttrProtocolHTTPProxy {
-			get {
-				if (_AttrProtocolHTTPProxy == null)
-					_AttrProtocolHTTPProxy = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolHTTPProxy"));
-				return _AttrProtocolHTTPProxy;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolHTTPSProxy;
-		public static SecProtocol AttrProtocolHTTPSProxy {
-			get {
-				if (_AttrProtocolHTTPSProxy == null)
-					_AttrProtocolHTTPSProxy = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolHTTPSProxy"));
-				return _AttrProtocolHTTPSProxy;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolFTPProxy;
-		public static SecProtocol AttrProtocolFTPProxy {
-			get {
-				if (_AttrProtocolFTPProxy == null)
-					_AttrProtocolFTPProxy = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolFTPProxy"));
-				return _AttrProtocolFTPProxy;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolSMB;
-		public static SecProtocol AttrProtocolSMB {
-			get {
-				if (_AttrProtocolSMB == null)
-					_AttrProtocolSMB = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolSMB"));
-				return _AttrProtocolSMB;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolRTSP;
-		public static SecProtocol AttrProtocolRTSP {
-			get {
-				if (_AttrProtocolRTSP == null)
-					_AttrProtocolRTSP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolRTSP"));
-				return _AttrProtocolRTSP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolRTSPProxy;
-		public static SecProtocol AttrProtocolRTSPProxy {
-			get {
-				if (_AttrProtocolRTSPProxy == null)
-					_AttrProtocolRTSPProxy = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolRTSPProxy"));
-				return _AttrProtocolRTSPProxy;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolDAAP;
-		public static SecProtocol AttrProtocolDAAP {
-			get {
-				if (_AttrProtocolDAAP == null)
-					_AttrProtocolDAAP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolDAAP"));
-				return _AttrProtocolDAAP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolEPPC;
-		public static SecProtocol AttrProtocolEPPC {
-			get {
-				if (_AttrProtocolEPPC == null)
-					_AttrProtocolEPPC = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolEPPC"));
-				return _AttrProtocolEPPC;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolIPP;
-		public static SecProtocol AttrProtocolIPP {
-			get {
-				if (_AttrProtocolIPP == null)
-					_AttrProtocolIPP = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIPP"));
-				return _AttrProtocolIPP;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolNNTPS;
-		public static SecProtocol AttrProtocolNNTPS {
-			get {
-				if (_AttrProtocolNNTPS == null)
-					_AttrProtocolNNTPS = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolNNTPS"));
-				return _AttrProtocolNNTPS;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolLDAPS;
-		public static SecProtocol AttrProtocolLDAPS {
-			get {
-				if (_AttrProtocolLDAPS == null)
-					_AttrProtocolLDAPS = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolLDAPS"));
-				return _AttrProtocolLDAPS;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolTelnetS;
-		public static SecProtocol AttrProtocolTelnetS {
-			get {
-				if (_AttrProtocolTelnetS == null)
-					_AttrProtocolTelnetS = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolTelnetS"));
-				return _AttrProtocolTelnetS;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolIMAPS;
-		public static SecProtocol AttrProtocolIMAPS {
-			get {
-				if (_AttrProtocolIMAPS == null)
-					_AttrProtocolIMAPS = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIMAPS"));
-				return _AttrProtocolIMAPS;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolIRCS;
-		public static SecProtocol AttrProtocolIRCS {
-			get {
-				if (_AttrProtocolIRCS == null)
-					_AttrProtocolIRCS = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolIRCS"));
-				return _AttrProtocolIRCS;
-			}
-		}
-		
-		static SecProtocol _AttrProtocolPOP3S;
-		public static SecProtocol AttrProtocolPOP3S {
-			get {
-				if (_AttrProtocolPOP3S == null)
-					_AttrProtocolPOP3S = new SecProtocol (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrProtocolPOP3S"));
-				return _AttrProtocolPOP3S;
-			}
-		}
-	
-		public static bool operator == (SecProtocol a, SecProtocol b)
-		{
-			if (a == null)
-				return b == null;
-			else if (b == null)
-				return false;
-			
-			return a.Handle == b.Handle;
-		}
-	
-		public static bool operator != (SecProtocol a, SecProtocol b)
-		{
-			if (a == null)
-				return b != null;
-			else if (b == null)
-				return true;
-			return a.Handle != b.Handle;
-		}
-	
-		public override bool Equals (object other)
-		{
-			var o = other as SecProtocol;
-			return this == o;
-		}
-	
-		public override int GetHashCode ()
-		{
-			return (int) Handle;
-		}
-	}
-	
-	public class SecAuthenticationType : NSNumber {
-		internal SecAuthenticationType (IntPtr handle) : base (handle) {}
-		
-		static SecAuthenticationType _AttrAuthenticationTypeNTLM;
-		public static SecAuthenticationType AttrAuthenticationTypeNTLM {
-			get {
-				if (_AttrAuthenticationTypeNTLM == null)
-					_AttrAuthenticationTypeNTLM = new SecAuthenticationType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeNTLM"));
-				return _AttrAuthenticationTypeNTLM;
-			}
-		}
-		
-		static SecAuthenticationType _AttrAuthenticationTypeMSN;
-		public static SecAuthenticationType AttrAuthenticationTypeMSN {
-			get {
-				if (_AttrAuthenticationTypeMSN == null)
-					_AttrAuthenticationTypeMSN = new SecAuthenticationType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeMSN"));
-				return _AttrAuthenticationTypeMSN;
-			}
-		}
-		
-		static SecAuthenticationType _AttrAuthenticationTypeDPA;
-		public static SecAuthenticationType AttrAuthenticationTypeDPA {
-			get {
-				if (_AttrAuthenticationTypeDPA == null)
-					_AttrAuthenticationTypeDPA = new SecAuthenticationType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeDPA"));
-				return _AttrAuthenticationTypeDPA;
-			}
-		}
-		
-		static SecAuthenticationType _AttrAuthenticationTypeRPA;
-		public static SecAuthenticationType AttrAuthenticationTypeRPA {
-			get {
-				if (_AttrAuthenticationTypeRPA == null)
-					_AttrAuthenticationTypeRPA = new SecAuthenticationType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeRPA"));
-				return _AttrAuthenticationTypeRPA;
-			}
-		}
-		
-		static SecAuthenticationType _AttrAuthenticationTypeHTTPBasic;
-		public static SecAuthenticationType AttrAuthenticationTypeHTTPBasic {
-			get {
-				if (_AttrAuthenticationTypeHTTPBasic == null)
-					_AttrAuthenticationTypeHTTPBasic = new SecAuthenticationType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeHTTPBasic"));
-				return _AttrAuthenticationTypeHTTPBasic;
-			}
-		}
-		
-		static SecAuthenticationType _AttrAuthenticationTypeHTTPDigest;
-		public static SecAuthenticationType AttrAuthenticationTypeHTTPDigest {
-			get {
-				if (_AttrAuthenticationTypeHTTPDigest == null)
-					_AttrAuthenticationTypeHTTPDigest = new SecAuthenticationType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeHTTPDigest"));
-				return _AttrAuthenticationTypeHTTPDigest;
-			}
-		}
-		
-		static SecAuthenticationType _AttrAuthenticationTypeHTMLForm;
-		public static SecAuthenticationType AttrAuthenticationTypeHTMLForm {
-			get {
-				if (_AttrAuthenticationTypeHTMLForm == null)
-					_AttrAuthenticationTypeHTMLForm = new SecAuthenticationType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeHTMLForm"));
-				return _AttrAuthenticationTypeHTMLForm;
-			}
-		}
-		
-		static SecAuthenticationType _AttrAuthenticationTypeDefault;
-		public static SecAuthenticationType AttrAuthenticationTypeDefault {
-			get {
-				if (_AttrAuthenticationTypeDefault == null)
-					_AttrAuthenticationTypeDefault = new SecAuthenticationType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrAuthenticationTypeDefault"));
-				return _AttrAuthenticationTypeDefault;
-			}
-		}
-	
-		public static bool operator == (SecAuthenticationType a, SecAuthenticationType b)
-		{
-			if (a == null)
-				return b == null;
-			else if (b == null)
-				return false;
-			
-			return a.Handle == b.Handle;
-		}
-	
-		public static bool operator != (SecAuthenticationType a, SecAuthenticationType b)
-		{
-			if (a == null)
-				return b != null;
-			else if (b == null)
-				return true;
-			return a.Handle != b.Handle;
-		}
-	
-		public override bool Equals (object other)
-		{
-			var o = other as SecAuthenticationType;
-			return this == o;
-		}
-	
-		public override int GetHashCode ()
-		{
-			return (int) Handle;
-		}
-	}
-	
-	public class SecKeyClass : NSNumber {
-		internal SecKeyClass (IntPtr handle):base(handle) {}
-		
-		static SecKeyClass _AttrKeyClassPublic;
-		public static SecKeyClass AttrKeyClassPublic {
-			get {
-				if (_AttrKeyClassPublic == null)
-					_AttrKeyClassPublic = new SecKeyClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyClassPublic"));
-				return _AttrKeyClassPublic;
-			}
-		}
-		
-		static SecKeyClass _AttrKeyClassPrivate;
-		public static SecKeyClass AttrKeyClassPrivate {
-			get {
-				if (_AttrKeyClassPrivate == null)
-					_AttrKeyClassPrivate = new SecKeyClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyClassPrivate"));
-				return _AttrKeyClassPrivate;
-			}
-		}
-		
-		static SecKeyClass _AttrKeyClassSymmetric;
-		public static SecKeyClass AttrKeyClassSymmetric {
-			get {
-				if (_AttrKeyClassSymmetric == null)
-					_AttrKeyClassSymmetric = new SecKeyClass (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyClassSymmetric"));
-				return _AttrKeyClassSymmetric;
-			}
-		}
-	
-		public static bool operator == (SecKeyClass a, SecKeyClass b)
-		{
-			if (a == null)
-				return b == null;
-			else if (b == null)
-				return false;
-			
-			return a.Handle == b.Handle;
-		}
-	
-		public static bool operator != (SecKeyClass a, SecKeyClass b)
-		{
-			if (a == null)
-				return b != null;
-			else if (b == null)
-				return true;
-			return a.Handle != b.Handle;
-		}
-	
-		public override bool Equals (object other)
-		{
-			var o = other as SecKeyClass;
-			return this == o;
-		}
-	
-		public override int GetHashCode ()
-		{
-			return (int) Handle;
-		}
-	}
-	
-	public class SecKeyType : NSObject {
-		internal SecKeyType (IntPtr handle) : base (handle)
-		{
-		}
-	
-		static SecKeyType _AttrKeyTypeRSA;
-		public static SecKeyType AttrKeyTypeRSA {
-			get {
-				if (_AttrKeyTypeRSA == null)
-					_AttrKeyTypeRSA = new SecKeyType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyTypeRSA"));
-				return _AttrKeyTypeRSA;
-			}
-		}
-		
-		static SecKeyType _AttrKeyTypeEC;
-		public static SecKeyType AttrKeyTypeEC {
-			get {
-				if (_AttrKeyTypeEC == null)
-					_AttrKeyTypeEC = new SecKeyType (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecAttrKeyTypeEC"));
-				return _AttrKeyTypeEC;
-			}
-		}
-	
-		public static bool operator == (SecKeyType a, SecKeyType b)
-		{
-			if (a == null)
-				return b == null;
-			else if (b == null)
-				return false;
-			
-			return a.Handle == b.Handle;
-		}
-	
-		public static bool operator != (SecKeyType a, SecKeyType b)
-		{
-			if (a == null)
-				return b != null;
-			else if (b == null)
-				return true;
-			return a.Handle != b.Handle;
-		}
-	
-		public override bool Equals (object other)
-		{
-			var o = other as SecKeyType;
-			return this == o;
-		}
-	
-		public override int GetHashCode ()
-		{
-			return (int) Handle;
-		}
-	}
-	
-	public class SecMatchLimit : NSNumber {
-		internal SecMatchLimit (IntPtr handle) : base (handle) {}
-	
-		public SecMatchLimit (int limit) : base (limit)
-		{
-		}
-		
-		static SecMatchLimit _MatchLimitOne;
-		public static SecMatchLimit MatchLimitOne {
-			get {
-				if (_MatchLimitOne == null)
-					_MatchLimitOne = new SecMatchLimit (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecMatchLimitOne"));
-				return _MatchLimitOne;
-			}
-		}
-		
-		static SecMatchLimit _MatchLimitAll;
-		public static SecMatchLimit MatchLimitAll {
-			get {
-				if (_MatchLimitAll == null)
-					_MatchLimitAll = new SecMatchLimit (Dlfcn.GetIntPtr (SecItem.securityLibrary, "kSecMatchLimitAll"));
-				return _MatchLimitAll;
-			}
-		}
-	
-		public static bool operator == (SecMatchLimit a, SecMatchLimit b)
-		{
-			if (a == null)
-				return b == null;
-			else if (b == null)
-				return false;
-			
-			return a.Handle == b.Handle;
-		}
-	
-		public static bool operator != (SecMatchLimit a, SecMatchLimit b)
-		{
-			if (a == null)
-				return b != null;
-			else if (b == null)
-				return true;
-			return a.Handle != b.Handle;
-		}
-		
-		public override bool Equals (object other)
-		{
-			var o = other as SecMatchLimit;
-			return this == o;
-		}
-	
-		public override int GetHashCode ()
-		{
-			return (int) Handle;
-		}
-	}
 }

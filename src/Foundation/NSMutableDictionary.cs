@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 
@@ -254,6 +255,24 @@ namespace MonoMac.Foundation {
 			foreach (var key in Keys) {
 				yield return new KeyValuePair<NSObject, NSObject> (key, ObjectForKey (key));
 			}
+		}
+
+		public static NSMutableDictionary LowlevelFromObjectAndKey (IntPtr obj, IntPtr key)
+		{
+			return (NSMutableDictionary) Runtime.GetNSObject (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr (class_ptr, selDictionaryWithObjectForKey, obj, key));
+		}
+
+		public void LowlevelSetObject (IntPtr obj, IntPtr key)
+		{
+			MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selSetObjectForKey, obj, key);
+		}
+
+		public void LowlevelSetObject (NSObject obj, IntPtr key)
+		{
+			if (obj == null)
+				throw new ArgumentNullException ("obj");
+			
+			MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selSetObjectForKey, obj.Handle, key);
 		}
 	}
 }

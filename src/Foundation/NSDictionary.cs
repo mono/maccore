@@ -23,6 +23,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 
@@ -283,6 +284,11 @@ namespace MonoMac.Foundation {
 			foreach (var key in Keys) {
 				yield return new KeyValuePair<NSObject, NSObject> (key, ObjectForKey (key));
 			}
+		}
+
+		public IntPtr LowlevelObjectForKey (IntPtr key)
+		{
+			return MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, selObjectForKey, key);
 		}
 	}
 }
