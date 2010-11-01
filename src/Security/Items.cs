@@ -146,7 +146,6 @@ namespace MonoMac.Security {
 			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
 				SetLimit (copy, 1);
 				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnAttributes);
-
 				IntPtr ptr;
 				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (result == SecStatusCode.Success)
@@ -203,7 +202,7 @@ namespace MonoMac.Security {
 			return SecItem.SecItemUpdate (query.queryDict.Handle, newAttributes.queryDict.Handle);
 
 		}
-#if MONOTOUCH
+#if !MONOMAC
 		public static object QueryAsConcreteType (SecRecord query, out SecStatusCode result)
 		{
 			if (query == null){
@@ -235,7 +234,7 @@ namespace MonoMac.Security {
 #endif
 	}
 	
-	public class SecRecord {
+	public class SecRecord : IDisposable {
 		internal NSMutableDictionary queryDict;
 
 		internal SecRecord (NSMutableDictionary dict)
@@ -249,6 +248,32 @@ namespace MonoMac.Security {
 			queryDict = NSMutableDictionary.LowlevelFromObjectAndKey (kind, SecClass.SecClassKey);
 		}
 
+		public SecRecord Clone ()
+		{
+			return new SecRecord (NSMutableDictionary.FromDictionary (queryDict));
+		}
+
+		public void Dispose ()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		public virtual void Dispose (bool disposing)
+		{
+			if (queryDict != null){
+				if (disposing){
+					queryDict.Dispose ();
+					queryDict = null;
+				}
+			}
+		}
+
+		~SecRecord ()
+		{
+			Dispose (false);
+		}
+			
 		IntPtr Fetch (IntPtr key)
 		{
 			return queryDict.LowlevelObjectForKey (key);
@@ -422,15 +447,15 @@ namespace MonoMac.Security {
 			}
 		}
 
-		public string Generic {
+		public NSData Generic {
 			get {
-				return FetchString (SecAttributeKey.AttrGeneric);
+				return FetchData (SecAttributeKey.AttrGeneric);
 			}
 
 			set {
 				if (value == null)
 					throw new ArgumentNullException ("value");
-				SetValue (new NSString (value), SecAttributeKey.AttrGeneric);
+				SetValue (value, SecAttributeKey.AttrGeneric);
 			}
 		}
 
@@ -809,6 +834,18 @@ namespace MonoMac.Security {
 				SetValue (value, SecItem.MatchValidOnDate);
 			}
 		}
+
+		public NSData ValueData {
+			get {
+				return FetchData (SecItem.ValueData);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecItem.ValueData);
+			}
+		}
 	}
 	
 	internal class SecItem {
@@ -1012,7 +1049,7 @@ namespace MonoMac.Security {
 			switch (secKind){
 			case SecKind.InternetPassword:
 				return InternetPassword;
-#if MONOTOUCH
+#if !MONOMAC
 			case SecKind.GenericPassword:
 				return GenericPassword;
 			case SecKind.Certificate:
