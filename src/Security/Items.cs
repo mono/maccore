@@ -36,7 +36,10 @@ using System.Runtime.InteropServices;
 namespace MonoMac.Security {
 
 	public enum SecKind {
-		GenericPassword, InternetPassword, Certificate, Key, Identity
+		InternetPassword,
+#if !MONOMAC
+		GenericPassword, Certificate, Key, Identity
+#endif
 	}
 
 	public enum SecAccessible {
@@ -86,17 +89,15 @@ namespace MonoMac.Security {
 		
 		public static NSData QueryAsData (SecRecord query, bool wantPersistentReference, out SecStatusCode status)
 		{
-			if (query == null){
-				status = SecStatusCode.Param;
-				return null;
-			}
+			if (query == null)
+				throw new ArgumentNullException ("query");
 
 			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
 				SetLimit (copy, 1);
 				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnData);
 
 				IntPtr ptr;
-				status = SecItem.CopyMatching (copy, out ptr);
+				status = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (status == SecStatusCode.Success)
 					return new NSData (ptr);
 				return null;
@@ -105,17 +106,15 @@ namespace MonoMac.Security {
 
 		public static NSData [] QueryAsData (SecRecord query, bool wantPersistentReference, int max, out SecStatusCode status)
 		{
-			if (query == null){
-				status = SecStatusCode.Param;
-				return null;
-			}
+			if (query == null)
+				throw new ArgumentNullException ("query");
 
 			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
 				var n = SetLimit (copy, max);
 				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnData);
 
 				IntPtr ptr;
-				status = SecItem.CopyMatching (copy, out ptr);
+				status = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				n = null;
 				if (status == SecStatusCode.Success){
 					if (max == 1)
@@ -141,17 +140,15 @@ namespace MonoMac.Security {
 		
 		public static SecRecord QueryAsRecord (SecRecord query, out SecStatusCode result)
 		{
-			if (query == null){
-				result = SecStatusCode.Param;
-				return null;
-			}
+			if (query == null)
+				throw new ArgumentNullException ("query");
 			
 			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
 				SetLimit (copy, 1);
 				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnAttributes);
 
 				IntPtr ptr;
-				result = SecItem.CopyMatching (copy, out ptr);
+				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (result == SecStatusCode.Success)
 					return new SecRecord (new NSMutableDictionary (new NSDictionary (ptr)));
 				return null;
@@ -160,17 +157,15 @@ namespace MonoMac.Security {
 		
 		public static SecRecord [] QueryAsRecord (SecRecord query, int max, out SecStatusCode result)
 		{
-			if (query == null){
-				result = SecStatusCode.Param;
-				return null;
-			}
+			if (query == null)
+				throw new ArgumentNullException ("query");
 			
 			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
 				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnAttributes);
 				var n = SetLimit (copy, max);
 				
 				IntPtr ptr;
-				result = SecItem.CopyMatching (copy, out ptr);
+				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				n = null;
 				if (result == SecStatusCode.Success){
 					var dicts = NSArray.ArrayFromHandle<NSDictionary> (ptr);
@@ -182,7 +177,33 @@ namespace MonoMac.Security {
 				return null;
 			}
 		}
+
+		public SecStatusCode Add (SecRecord record)
+		{
+			if (record == null)
+				throw new ArgumentNullException ("record");
+			IntPtr output;
+			return SecItem.SecItemAdd (record.queryDict.Handle, out output);
+		}
+
+		public SecStatusCode Remove (SecRecord record)
+		{
+			if (record == null)
+				throw new ArgumentNullException ("record");
+			return SecItem.SecItemDelete (record.queryDict.Handle);
+		}
 		
+		public SecStatusCode Update (SecRecord query, SecRecord newAttributes)
+		{
+			if (query == null)
+				throw new ArgumentNullException ("record");
+			if (newAttributes == null)
+				throw new ArgumentNullException ("newAttributes");
+
+			return SecItem.SecItemUpdate (query.queryDict.Handle, newAttributes.queryDict.Handle);
+
+		}
+#if MONOTOUCH
 		public static object QueryAsConcreteType (SecRecord query, out SecStatusCode result)
 		{
 			if (query == null){
@@ -195,7 +216,7 @@ namespace MonoMac.Security {
 				SetLimit (copy, 1);
 				
 				IntPtr ptr;
-				result = SecItem.CopyMatching (copy, out ptr);
+				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (result == SecStatusCode.Success){
 					int cfType = CFType.GetTypeID (ptr);
 
@@ -211,6 +232,7 @@ namespace MonoMac.Security {
 				return null;
 			}
 		}
+#endif
 	}
 	
 	public class SecRecord {
@@ -793,14 +815,16 @@ namespace MonoMac.Security {
 		internal static IntPtr securityLibrary = Dlfcn.dlopen (Constants.SecurityLibrary, 0);
 
 		[DllImport (Constants.SecurityLibrary)]
-		extern static SecStatusCode SecItemCopyMatching (IntPtr cfDictRef, out IntPtr result);
+		internal extern static SecStatusCode SecItemCopyMatching (IntPtr cfDictRef, out IntPtr result);
 
-		public static SecStatusCode CopyMatching (NSDictionary queryDictionary, out IntPtr result)
-		{
-			if (queryDictionary == null)
-				throw new ArgumentNullException ("queryDictionary");
-			return SecItemCopyMatching (queryDictionary.Handle, out result);
-		}
+		[DllImport (Constants.SecurityLibrary)]
+		internal extern static SecStatusCode SecItemAdd (IntPtr cfDictRef, out IntPtr result);
+
+		[DllImport (Constants.SecurityLibrary)]
+		internal extern static SecStatusCode SecItemDelete (IntPtr cfDictRef);
+
+		[DllImport (Constants.SecurityLibrary)]
+		internal extern static SecStatusCode SecItemUpdate (IntPtr cfDictRef, IntPtr attrsToUpdate);
 
 		static IntPtr _MatchPolicy;
 		public static IntPtr MatchPolicy {
@@ -986,16 +1010,18 @@ namespace MonoMac.Security {
 		public static IntPtr FromSecKind (SecKind secKind)
 		{
 			switch (secKind){
-			case SecKind.GenericPassword:
-				return GenericPassword;
 			case SecKind.InternetPassword:
 				return InternetPassword;
+#if MONOTOUCH
+			case SecKind.GenericPassword:
+				return GenericPassword;
 			case SecKind.Certificate:
 				return Certificate;
 			case SecKind.Key:
 				return Key;
 			case SecKind.Identity:
 				return Identity;
+#endif
 			default:
 				throw new ArgumentException ("secKind");
 			}
