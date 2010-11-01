@@ -178,7 +178,7 @@ namespace MonoMac.Security {
 			}
 		}
 
-		public SecStatusCode Add (SecRecord record)
+		public static SecStatusCode Add (SecRecord record)
 		{
 			if (record == null)
 				throw new ArgumentNullException ("record");
@@ -186,14 +186,14 @@ namespace MonoMac.Security {
 			return SecItem.SecItemAdd (record.queryDict.Handle, out output);
 		}
 
-		public SecStatusCode Remove (SecRecord record)
+		public static SecStatusCode Remove (SecRecord record)
 		{
 			if (record == null)
 				throw new ArgumentNullException ("record");
 			return SecItem.SecItemDelete (record.queryDict.Handle);
 		}
 		
-		public SecStatusCode Update (SecRecord query, SecRecord newAttributes)
+		public static SecStatusCode Update (SecRecord query, SecRecord newAttributes)
 		{
 			if (query == null)
 				throw new ArgumentNullException ("record");
