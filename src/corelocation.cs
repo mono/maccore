@@ -1,4 +1,4 @@
-//
+
 // This file describes the API that the generator will produce
 //
 // Authors:
@@ -86,6 +86,10 @@ namespace MonoMac.CoreLocation {
 		[Since (3,2)]
 		[Export ("distanceFromLocation:")]
 		double DistanceFrom (CLLocation location);
+
+		[Since (4,2)]
+		[Export ("initWithCoordinate:altitude:horizontalAccuracy:verticalAccuracy:course:speed:timestamp:")]
+		IntPtr Constructor (CLLocationCoordinate2D coordinate, double altitude, double hAccuracy, double vAccuracy, double course, double speed, NSDate timestamp);
 	}
 	
 	[BaseType (typeof (NSObject), Delegates=new string [] {"WeakDelegate"}, Events=new Type [] {typeof (CLLocationManagerDelegate)})]
@@ -184,6 +188,10 @@ namespace MonoMac.CoreLocation {
 		[Since (4,0)]
 		[Export ("stopMonitoringForRegion:")]
 		void StopMonitoring (CLRegion region);
+
+		[Since (4,2)]
+		[Export ("authorizationStatus")][Static]
+		CLAuthorizationStatus Status { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -212,6 +220,9 @@ namespace MonoMac.CoreLocation {
 		[Since (4,0)]
 		[Export ("locationManager:monitoringDidFailForRegion:withError:"), EventArgs ("CLRegionError")]
 		void MonitoringFailed (CLLocationManager manager, CLRegion region, NSError error);
+
+		[Since (4,2)]
+		[Export ("locationManager:didChangeAuthorizationStatus:"), EventArgs ("CLAuthroziationChanged")]
 	}
 
 	[Since (4,0)]

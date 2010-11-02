@@ -53,4 +53,11 @@ namespace MonoMac.CoreLocation {
 		FaceUp,
 		FaceDown
 	} 
+
+	public enum CLAuthorizationStatus {
+		NotDetermined = 0,
+		Restricted,
+		Denied,
+		Authorized
+	}
 }
