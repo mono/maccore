@@ -467,6 +467,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("metadataForFormat:")]
 		AVMetadataItem [] MetadataForFormat (string format);
+
+		[Since (4,2)]
+		[Export ("hasProtectedContent")]
+		bool ProtectedContent { get; }
 	}
 
 	[Since (4,1)]
@@ -821,6 +825,10 @@ namespace MonoMac.AVFoundation {
 		[Static]
 		[Export ("metadataItemsFromArray:withKey:keySpace:")]
 		AVMetadataItem [] FilterWithKey (AVMetadataItem [] array, NSObject key, string keySpace);
+
+		[Since (4,2)]
+		[Export ("duration")]
+		CMTime Duration { get; }
 	}
 
 	[Since (4,0)]
@@ -846,6 +854,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("key", ArgumentSemantic.Copy)]
 		NSObject Key { get; }
+		
+		[Since (4,2)]
+		[Export ("duration")]
+		CMTime Duration { get; }
 	}
 
 	[Since (4,0)]
