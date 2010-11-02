@@ -69,7 +69,7 @@ namespace MonoMac.Security {
 		RSA, EC
 	}
 
-	public class SecKeyChain {
+	public static class SecKeyChain {
 		static NSNumber SetLimit (NSMutableDictionary dict, int max)
 		{
 			NSNumber n = null;
