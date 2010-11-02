@@ -223,6 +223,7 @@ namespace MonoMac.CoreLocation {
 
 		[Since (4,2)]
 		[Export ("locationManager:didChangeAuthorizationStatus:"), EventArgs ("CLAuthroziationChanged")]
+		void AuthorizationChanged (CLLocationManager manager, CLAuthorizationStatus status);
 	}
 
 	[Since (4,0)]
