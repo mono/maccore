@@ -36,10 +36,12 @@ namespace MonoMac.Foundation {
 		public NSError Error { get; private set; }
 	}
 
-	public partial class NSError {
+	public partial class NSError : NSObject {
+#if !COREBUILD
 		public override string ToString ()
 		{
 			return LocalizedDescription;
 		}
+#endif
 	}
 }
