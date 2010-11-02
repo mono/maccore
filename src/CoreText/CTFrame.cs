@@ -42,10 +42,21 @@ namespace MonoMac.CoreText {
 		RightToLeft = 1
 	}
 
+	[Since (4,2)]
+	public enum CTFramePathFillRule {
+		EvenOdd,
+		WindingNumber
+	}
+
 	[Since (3,2)]
 	public static class CTFrameAttributeKey {
 
 		public static readonly NSString Progression;
+
+		[Since (4,2)]
+		public static readonly NSString PathFillRule;
+		[Since (4,2)]
+		public static readonly NSString PathWidth;
 
 		static CTFrameAttributeKey ()
 		{
@@ -54,6 +65,8 @@ namespace MonoMac.CoreText {
 				return;
 			try {
 				Progression = Dlfcn.GetStringConstant (handle, "kCTFrameProgressionAttributeName");
+				PathFillRule = Dlfcn.GetStringConstant (handle, "kCTFramePathFillRuleAttributeName");
+				PathWidth = Dlfcn.GetStringConstant (handle, "kCTFramePathWidthAttributeName");
 			}
 			finally {
 				Dlfcn.dlclose (handle);

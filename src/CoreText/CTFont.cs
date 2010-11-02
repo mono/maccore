@@ -134,6 +134,8 @@ namespace MonoMac.CoreText {
 		Tracking                   = 0x7472616b,  // 'Trak'
 		VerticalHeader             = 0x76686561,  // 'Vhea'
 		VerticalMetrics            = 0x766d7478,  // 'Vmtx'
+		SBitmapData 		   = 0x73626974, // 'sbit'
+		SExtendedBitmapData        = 0x73626978, // 'sbix'
 	}
 
 	[Since (3,2)]
@@ -925,6 +927,35 @@ namespace MonoMac.CoreText {
 			if (h == IntPtr.Zero)
 				return null;
 			return new CGPath (h, true);
+		}
+
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern void CTFontDrawGlyphs (IntPtr font, [In] CGGlyph [] glyphs, [In] PointF [] positions, int count, IntPtr context);
+
+		[Since(4,2)]
+		public void DrawGlyphs (CGContext context, CGGlyph [] glyphs, PointF [] positions)
+		{
+			if (context == null)
+				throw new ArgumentNullException ("context");
+			if (glyphs == null)
+				throw new ArgumentNullException ("glyphs");
+			if (positions == null)
+				throw new ArgumentNullException ("positions");
+			int gl = glyphs.Length;
+			if (gl != positions.Length)
+				throw new ArgumentException ("array sizes fo context and glyphs differ");
+			CTFontDrawGlyphs (handle, glyphs, positions, gl, context.Handle);
+		}
+
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern int CTFontGetLigatureCaretPositions (IntPtr handle, CGGlyph glyph, [Out] float [] positions, int max);
+
+		[Since(4,2)]
+		public int GetLigatureCaretPositions (CGGlyph glyph, float [] positions)
+		{
+			if (positions == null)
+				throw new ArgumentNullException ("positions");
+			return CTFontGetLigatureCaretPositions (handle, glyph, positions, positions.Length);
 		}
 #endregion
 

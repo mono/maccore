@@ -68,6 +68,7 @@ namespace MonoMac.AudioToolbox {
 		DoesNotAllow64BitDataSize = 0x6f66663f, // off?
 		InvalidPacketOffset = 0x70636b3f, // pck?
 		InvalidFile = 0x6474613f, // dta?
+		FileNotOpen = -38,
 		EndOfFile = -39,
 		FileNotFound = -43,
 		FilePosition = -40,
