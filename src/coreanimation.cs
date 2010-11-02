@@ -542,6 +542,14 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("strokeColor")]
 		CGColor StrokeColor { get; set; }
+
+		[Since (4,2)]
+		[Export ("strokeStart")]
+		float StrokeStart { get; set; }
+
+		[Since (4,2)]
+		[Export ("strokeEnd")]
+		float StrokeEnd { get; set; }
 	}
 
 	[BaseType (typeof (CALayer))]
