@@ -699,10 +699,10 @@ namespace MonoMac.AVFoundation {
 		NSUrl Url { get;  }
 
 		[Static, Export ("URLAssetWithURL:options:")]
-		AVUrlAsset FromUrl (NSUrl URL, NSDictionary options);
+		AVUrlAsset FromUrl (NSUrl URL, [NullAllowed] NSDictionary options);
 
 		[Export ("initWithURL:options:")]
-		IntPtr Constructor (NSUrl URL, NSDictionary options);
+		IntPtr Constructor (NSUrl URL, [NullAllowed] NSDictionary options);
 
 		[Export ("compatibleTrackForCompositionTrack:")]
 		AVAssetTrack CompatibleTrack (AVCompositionTrack forCompositionTrack);
