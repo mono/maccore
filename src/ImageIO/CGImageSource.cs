@@ -47,8 +47,11 @@ namespace MonoMac.ImageIO {
 		static IntPtr kShouldCache;
 		static IntPtr kShouldAllowFloat;
 		
-		static CGImageOptions ()
+		static void Init ()
 		{
+			if (kTypeIdentifierHint != IntPtr.Zero)
+				return;
+			
 			IntPtr lib = Dlfcn.dlopen (Constants.ImageIOLibrary, 0);
 			kTypeIdentifierHint = Dlfcn.GetIntPtr (lib, "kCGImageSourceTypeIdentifierHint");
 			kShouldCache = Dlfcn.GetIntPtr (lib, "kCGImageSourceShouldCache");
@@ -62,6 +65,8 @@ namespace MonoMac.ImageIO {
 		
 		internal virtual NSMutableDictionary ToDictionary ()
 		{
+			Init ();
+			
 			var dict = new NSMutableDictionary ();
 			IntPtr thandle = CFBoolean.TrueObject.Handle;
 			
@@ -82,9 +87,11 @@ namespace MonoMac.ImageIO {
 		static IntPtr kThumbnailMaxPixelSize;
 		static IntPtr kCreateThumbnailWithTransform;
 
-		
-		static CGImageThumbnailOptions ()
+		static void Init ()
 		{
+			if (kCreateThumbnailWithTransform != IntPtr.Zero)
+				return;
+			
 			IntPtr lib = Dlfcn.dlopen (Constants.ImageIOLibrary, 0);
 
 			kCreateThumbnailFromImageIfAbsent = Dlfcn.GetIntPtr (lib, "kCGImageSourceCreateThumbnailFromImageIfAbsent");
@@ -102,6 +109,8 @@ namespace MonoMac.ImageIO {
 		
 		internal override NSMutableDictionary ToDictionary ()
 		{
+			Init ();
+			
 			var dict = base.ToDictionary ();
 			IntPtr thandle = CFBoolean.TrueObject.Handle;
 
