@@ -1,4 +1,8 @@
 //
+// Authors:
+//   Duane Wandless
+//   Miguel de Icaza
+//
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
 // "Software"), to deal in the Software without restriction, including
@@ -29,9 +33,105 @@ using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 
 namespace MonoMac.ImageIO {
+	public enum CGImageSourceStatus {
+		Complete      = 0,
+		Incomplete    = -1,
+		ReadingHeader = -2,
+		UnknownType   = -3,
+		InvalidData   = -4,
+		UnexpectedEOF = -5,
+	}
+	
+	public class CGImageOptions {
+		static IntPtr kTypeIdentifierHint;
+		static IntPtr kShouldCache;
+		static IntPtr kShouldAllowFloat;
+		
+		static CGImageOptions ()
+		{
+			IntPtr lib = Dlfcn.dlopen (Constants.ImageIOLibrary, 0);
+			kTypeIdentifierHint = Dlfcn.GetIntPtr (lib, "kCGImageSourceTypeIdentifierHint");
+			kShouldCache = Dlfcn.GetIntPtr (lib, "kCGImageSourceShouldCache");
+			kShouldAllowFloat = Dlfcn.GetIntPtr (lib, "kCGImageSourceShouldAllowFloat");
+			Dlfcn.dlclose (lib);
+		}
+
+		public string BestGuessTypeIdentifier { get; set; }
+		public bool ShouldCache { get; set; }
+		public bool ShouldAllowFloat { get; set; }
+		
+		internal virtual NSMutableDictionary ToDictionary ()
+		{
+			var dict = new NSMutableDictionary ();
+			IntPtr thandle = CFBoolean.TrueObject.Handle;
+			
+			if (BestGuessTypeIdentifier != null)
+				dict.LowlevelSetObject (new NSString (BestGuessTypeIdentifier), kTypeIdentifierHint);
+			if (ShouldCache)
+				dict.LowlevelSetObject (thandle, kShouldCache);
+			if (ShouldAllowFloat)
+				dict.LowlevelSetObject (thandle, kShouldAllowFloat);
+
+			return dict;
+		}
+	}
+
+	public class CGImageThumbnailOptions : CGImageOptions {
+		static IntPtr kCreateThumbnailFromImageIfAbsent;
+		static IntPtr kCreateThumbnailFromImageAlways;
+		static IntPtr kThumbnailMaxPixelSize;
+		static IntPtr kCreateThumbnailWithTransform;
+
+		
+		static CGImageThumbnailOptions ()
+		{
+			IntPtr lib = Dlfcn.dlopen (Constants.ImageIOLibrary, 0);
+
+			kCreateThumbnailFromImageIfAbsent = Dlfcn.GetIntPtr (lib, "kCGImageSourceCreateThumbnailFromImageIfAbsent");
+			kCreateThumbnailFromImageAlways = Dlfcn.GetIntPtr (lib, "kCGImageSourceCreateThumbnailFromImageAlways");
+			kThumbnailMaxPixelSize = Dlfcn.GetIntPtr (lib, "kCGImageSourceThumbnailMaxPixelSize");
+			kCreateThumbnailWithTransform = Dlfcn.GetIntPtr (lib, "kCGImageSourceCreateThumbnailWithTransform");
+
+			Dlfcn.dlclose (lib);
+		}
+
+		public bool CreateThumbnailFromImageIfAbsent { get; set; }
+		public bool CreateThumbnailFromImageAlways { get; set; }
+		public int? MaxPixelSize { get; set; }
+		public bool CreateThumbnailWithTransform { get; set; }
+		
+		internal override NSMutableDictionary ToDictionary ()
+		{
+			var dict = base.ToDictionary ();
+			IntPtr thandle = CFBoolean.TrueObject.Handle;
+
+			if (CreateThumbnailFromImageIfAbsent)
+				dict.LowlevelSetObject (thandle, kCreateThumbnailFromImageIfAbsent);
+			if (CreateThumbnailFromImageAlways)
+				dict.LowlevelSetObject (thandle, kCreateThumbnailFromImageAlways);
+			if (MaxPixelSize.HasValue)
+				dict.LowlevelSetObject (new NSNumber (MaxPixelSize.Value), kThumbnailMaxPixelSize);
+			if (CreateThumbnailWithTransform)
+				dict.LowlevelSetObject (thandle, kCreateThumbnailWithTransform);
+			
+			return dict;
+		}
+	}
 	
 	public class CGImageSource : INativeObject, IDisposable
 	{
+		[DllImport (Constants.ImageIOLibrary, EntryPoint="CGImageSourceGetTypeID")]
+		public extern static int GetTypeID ();
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static IntPtr CGImageSourceCopyTypeIdentifiers ();
+
+		public static string [] TypeIdentifiers {
+			get {
+				return NSArray.StringArrayFromHandle (CGImageSourceCopyTypeIdentifiers ());
+			}
+		}
+		
 		internal IntPtr handle;
 
 		// invoked by marshallers
@@ -47,7 +147,7 @@ namespace MonoMac.ImageIO {
 			if (!owns)
 				CFObject.CFRetain (handle);
 		}
-		
+
 		~CGImageSource ()
 		{
 			Dispose (false);
@@ -73,22 +173,161 @@ namespace MonoMac.ImageIO {
 				
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCreateWithURL(IntPtr url, IntPtr options);
-		public static CGImageSource CreateWithURL (NSUrl url, NSDictionary options)
+
+		public static CGImageSource FromUrl (NSUrl url)
+		{
+			return FromUrl (url, null);
+		}
+		
+		public static CGImageSource FromUrl (NSUrl url, CGImageOptions options)
 		{
 			if (url == null)
 				throw new ArgumentNullException ("url");
-			
-			return new CGImageSource (CGImageSourceCreateWithURL (url.Handle, options == null ? IntPtr.Zero : options.Handle));
+
+			var dict = options == null ? null : options.ToDictionary ();
+			var ret = new CGImageSource (CGImageSourceCreateWithURL (url.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
+			dict.Dispose ();
+			return ret;
 		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static IntPtr CGImageSourceCreateWithDataProvider (IntPtr provider, IntPtr options);
+		public static CGImageSource FromDataProvider (CGDataProvider provider)
+		{
+			return FromDataProvider (provider, null);
+		}
+		
+		public static CGImageSource FromDataProvider (CGDataProvider provider, CGImageOptions options)
+		{
+			if (provider == null)
+				throw new ArgumentNullException ("provider");
+
+			var dict = options == null ? null : options.ToDictionary ();
+			var ret = new CGImageSource (CGImageSourceCreateWithDataProvider (provider.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
+			dict.Dispose ();
+			return ret;
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static IntPtr CGImageSourceCreateWithData (IntPtr data, IntPtr options);
+		public static CGImageSource FromData (NSData data)
+		{
+			return FromData (data, null);
+		}
+		
+		public static CGImageSource FromData (NSData data, CGImageOptions options)
+		{
+			if (data == null)
+				throw new ArgumentNullException ("data");
+
+			var dict = options == null ? null : options.ToDictionary ();
+			var ret = new CGImageSource (CGImageSourceCreateWithData (data.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
+			dict.Dispose ();
+			return ret;
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static IntPtr CGImageSourceGetType (IntPtr handle);
+		
+		public string TypeIdentifier {
+			get {
+				return NSString.FromHandle (CGImageSourceGetType (handle));
+			}
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static int CGImageSourceGetCount (IntPtr handle);
+		
+		public int ImageCount {
+			get {
+				return CGImageSourceGetCount (handle);
+			}
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static IntPtr CGImageSourceCopyProperties (IntPtr handle, IntPtr dictOptions);
+		public NSDictionary CopyProperties (NSDictionary dict)
+		{
+			return new NSDictionary (CGImageSourceCopyProperties (handle, dict == null ? IntPtr.Zero : dict.Handle));
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static IntPtr CGImageSourceCopyPropertiesAtIndex (IntPtr handle, int idx, IntPtr dictOptions);
+		public NSDictionary CopyProperties (NSDictionary dict, int imageIndex)
+		{
+			return new NSDictionary (CGImageSourceCopyPropertiesAtIndex (handle, imageIndex, dict == null ? IntPtr.Zero : dict.Handle));
+		}
+		
+		//
+		// TODO: we could introduce a strongly typed CopyProperties to more easily examine properties
+		// instead of a Dictionary like Obj-C does
+		//
+		
 		
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCreateImageAtIndex(IntPtr isrc, int index, IntPtr options);
-		public static CGImage CreateImageAtIndex (CGImageSource isrc, int index, NSDictionary options)
+		public CGImage CreateImage (int index, CGImageOptions options)
 		{
-			if (isrc == null)
-				throw new ArgumentNullException ("isrc");
-			
-			return new CGImage(CGImageSourceCreateImageAtIndex(isrc.Handle, index, options == null ? IntPtr.Zero : options.Handle));
+			var dict = options == null ? null : options.ToDictionary ();
+			var ret = CGImageSourceCreateImageAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
+			dict.Dispose ();
+			return new CGImage (ret, true);
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static IntPtr CGImageSourceCreateThumbnailAtIndex (IntPtr isrc, int index, IntPtr options);
+		public CGImage CreateThumbnail (int index, CGImageThumbnailOptions options)
+		{
+			var dict = options == null ? null : options.ToDictionary ();
+			var ret = CGImageSourceCreateThumbnailAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
+			dict.Dispose ();
+			return new CGImage (ret, true);
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static IntPtr CGImageSourceCreateIncremental (IntPtr options);
+		public static CGImageSource CreateIncremental (CGImageOptions options)
+		{
+			var dict = options == null ? null : options.ToDictionary ();
+			var ret = new CGImageSource (CGImageSourceCreateIncremental (dict == null ? IntPtr.Zero : dict.Handle), true);
+			dict.Dispose ();
+			return ret;
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static void CGImageSourceUpdateData (IntPtr handle, IntPtr data, bool final);
+		
+		public void UpdateData (NSData data, bool final)
+		{
+			if (data == null)
+				throw new ArgumentNullException ("data");
+			CGImageSourceUpdateData (handle, data.Handle, final);
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static void CGImageSourceUpdateDataProvider (IntPtr handle, IntPtr dataProvider);
+		
+		public void UpdateDataProvider (CGDataProvider provider)
+		{
+			if (provider == null)
+				throw new ArgumentNullException ("provider");
+			CGImageSourceUpdateDataProvider (handle, provider.Handle);
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static CGImageSourceStatus CGImageSourceGetStatus (IntPtr handle);
+		
+		public CGImageSourceStatus GetStatus ()
+		{
+			return CGImageSourceGetStatus (handle);
+		}
+
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static CGImageSourceStatus CGImageSourceGetStatusAtIndex (IntPtr handle, int idx);		
+
+		public CGImageSourceStatus GetStatus (int index)
+		{
+			return CGImageSourceGetStatusAtIndex (handle, index);
 		}
 	}
 }
