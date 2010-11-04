@@ -526,6 +526,39 @@ namespace MonoMac.CoreText {
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
+		static extern IntPtr CTFontCreateWithGraphicsFont (IntPtr cgfontRef, float size, ref CGAffineTransform affine, IntPtr attrs);
+
+		[DllImport (Constants.CoreTextLibrary, EntryPoint="CTFontCreateWithGraphicsFont")]
+		static extern IntPtr CTFontCreateWithGraphicsFont2 (IntPtr cgfontRef, float size, IntPtr affine, IntPtr attrs);
+		
+		public CTFont (CGFont font, float size, CGAffineTransform transform, CTFontDescriptor descriptor)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			handle = CTFontCreateWithGraphicsFont (font.Handle, size, ref transform, descriptor == null ? IntPtr.Zero : descriptor.Handle);
+			if (handle == IntPtr.Zero)
+				throw ConstructorError.Unknown (this);
+		}
+
+		public CTFont (CGFont font, float size, CTFontDescriptor descriptor)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			handle = CTFontCreateWithGraphicsFont2 (font.Handle, size, IntPtr.Zero, descriptor == null ? IntPtr.Zero : descriptor.Handle);
+			if (handle == IntPtr.Zero)
+				throw ConstructorError.Unknown (this);
+		}
+
+		public CTFont (CGFont font, float size, CGAffineTransform transform)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			handle = CTFontCreateWithGraphicsFont (font.Handle, size, ref transform, IntPtr.Zero);
+			if (handle == IntPtr.Zero)
+				throw ConstructorError.Unknown (this);
+		}
+		
+		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCreateUIFontForLanguage (CTFontUIFontType uiType, float size, IntPtr language);
 		public CTFont (CTFontUIFontType uiType, float size, string language)
 		{
