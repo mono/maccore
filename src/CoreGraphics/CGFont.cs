@@ -81,8 +81,16 @@ namespace MonoMac.CoreGraphics {
 				handle = IntPtr.Zero;
 			}
 		}
-		//[DllImport (Constants.CoreGraphicsLibrary)]
-		//extern static IntPtr CGFontCreateWithDataProvider(CGDataProviderRef provider);
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGFontCreateWithDataProvider(IntPtr provider);
+
+		public static CGFont CreateFromProvider (CGDataProvider provider)
+		{
+			if (provider == null)
+				throw new ArgumentNullException ("provider");
+			return new CGFont (CGFontCreateWithDataProvider (provider.Handle), true);
+		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGFontCreateWithFontName(IntPtr CFStringRef_name);
