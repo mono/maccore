@@ -92,7 +92,7 @@ namespace MonoMac.CoreData
 		NSEntityDescription EntityForName (string entityName, NSManagedObjectContext context);
 
 		[Static, Export ("insertNewObjectForEntityForName:inManagedObjectContext:")]
-		NSEntityDescription InsertNewObjectForEntityForName (string entityName, NSManagedObjectContext context);
+		NSObject InsertNewObjectForEntityForName (string entityName, NSManagedObjectContext context);
 
 		[Export ("managedObjectModel")]
 		NSManagedObjectModel ManagedObjectModel { get; }
