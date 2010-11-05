@@ -1332,11 +1332,21 @@ public class Generator {
 			if (mai.Type.IsArray){
 				Type etype = mai.Type.GetElementType ();
 				if (etype == typeof (string)){
-					convs.AppendFormat ("\t\t\tvar nsa_{0} = NSArray.FromStrings ({0});\n", pi.Name);
-					disposes.AppendFormat ("\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+					if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
+						convs.AppendFormat ("\t\t\tvar nsa_{0} = {0} == null ? null : NSArray.FromStrings ({0});\n", pi.Name);
+						disposes.AppendFormat ("\t\t\tif (nsa_{0} != null)\n\t\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+					} else {
+						convs.AppendFormat ("\t\t\tvar nsa_{0} = NSArray.FromStrings ({0});\n", pi.Name);
+						disposes.AppendFormat ("\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+					}
 				} else {
-					convs.AppendFormat ("\t\t\tvar nsa_{0} = NSArray.FromNSObjects ({0});\n", pi.Name);
-					disposes.AppendFormat ("\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+					if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
+						convs.AppendFormat ("\t\t\tvar nsa_{0} = {0} == null ? null : NSArray.FromNSObjects ({0});\n", pi.Name);
+						disposes.AppendFormat ("\t\t\tif (nsa_{0} != null)\n\t\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+					} else {
+						convs.AppendFormat ("\t\t\tvar nsa_{0} = NSArray.FromNSObjects ({0});\n", pi.Name);
+						disposes.AppendFormat ("\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+					}
 				}
 			}
 
