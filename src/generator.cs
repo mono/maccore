@@ -625,6 +625,8 @@ public class Generator {
 		if (pi.ParameterType.IsArray){
 			//Type etype = pi.ParameterType.GetElementType ();
 
+			if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
+				return String.Format ("nsa_{0} == null ? IntPtr.Zero : nsa_{0}.Handle", pi.Name);
 			return "nsa_" + pi.Name + ".Handle";
 		}
 
