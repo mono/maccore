@@ -72,6 +72,41 @@ namespace MonoMac.AudioUnit
 		{
 			return FindNextComponent(null, cd);
 		}
+
+		public static AudioComponent FindComponent (AudioTypeOutput output)
+		{
+			return FindComponent (AudioComponentDescription.CreateOutput (output));
+		}
+
+		public static AudioComponent FindComponent (AudioTypeMusicDevice musicDevice )
+		{
+			return FindComponent (AudioComponentDescription.CreateMusicDevice (musicDevice));
+		}
+		
+		public static AudioComponent FindComponent (AudioTypeConverter conveter)
+		{
+			return FindComponent (AudioComponentDescription.CreateConverter (conveter));
+		}
+		
+		public static AudioComponent FindComponent (AudioTypeEffect effect)
+		{
+			return FindComponent (AudioComponentDescription.CreateEffect (effect));
+		}
+		
+		public static AudioComponent FindComponent (AudioTypeMixer mixer)
+		{
+			return FindComponent (AudioComponentDescription.CreateMixer (mixer));
+		}
+		
+		public static AudioComponent FindComponent (AudioTypePanner panner)
+		{
+			return FindComponent (AudioComponentDescription.CreatePanner (panner));
+		}
+		
+		public static AudioComponent FindComponent (AudioTypeGenerator generator)
+		{
+			return FindComponent (AudioComponentDescription.CreateGenerator (generator));
+		}
 		#endregion
 
 		#region IDisposable メンバ (Members)
