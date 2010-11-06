@@ -939,7 +939,7 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (NSObject))]
 	interface CAValueFunction {
-		[Export ("functionWithName:")]
+		[Export ("functionWithName:"), Static]
 		CAValueFunction FromName (string name);
 
 		[Export ("name")]
