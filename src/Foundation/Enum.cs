@@ -237,6 +237,13 @@ namespace MonoMac.Foundation  {
 	public enum NSKeyValueSetMutationKind {
 		UnionSet = 1, MinusSet, IntersectSet, SetSet
 	}
+
+	[Flags]
+	public enum NSEnumerationOptions {
+		SortConcurrent = 1,
+		Reverse = 2
+	}
+	
 #if MONOMAC
 	public enum NSNotificationSuspensionBehavior {
 		Drop = 1,
