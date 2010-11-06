@@ -30,8 +30,9 @@
 using System;
 using System.Text;
 using System.Runtime.InteropServices;
+using MonoMac.AudioToolbox;
 
-namespace MonoMac.AudioToolbox
+namespace MonoMac.AudioUnit
 {
 	public class AUGraph: IDisposable 
 	{
@@ -55,6 +56,14 @@ namespace MonoMac.AudioToolbox
 			if (err != 0)
 				throw new ArgumentException(String.Format("Error code: {0}", err));
 		}
+
+		public AUGraph ()
+		{
+			int err = NewAUGraph  (ref handle);
+			if (err != 0)
+				throw new InvalidOperationException(String.Format("Cannot create new AUGraph. Error code:", err));
+		}
+		
 		#endregion
 			
 		#region Private methods
@@ -87,20 +96,19 @@ namespace MonoMac.AudioToolbox
 		#endregion
 
 		#region Public methods
-		public static AUGraph CreateInstance()
+		public void Open ()
 		{ 
-			var ptr = new IntPtr();
-			int err = NewAUGraph(ref ptr);
-			if (err != 0)
-				throw new InvalidOperationException(String.Format("Cannot create new AUGraph. Error code:", err));
-			
-			err = AUGraphOpen(ptr);
+			int err = AUGraphOpen (handle);
 			if (err != 0)
 				throw new InvalidOperationException(String.Format("Cannot open AUGraph. Error code:", err));
-			
-			return new AUGraph(ptr);
 		}
 
+		public int TryOpen ()
+		{ 
+			int err = AUGraphOpen (handle);
+			return err;
+		}
+		
 		public int AddNode(AudioComponentDescription cd)
 		{
 			int node = 0;

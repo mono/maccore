@@ -31,8 +31,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
+using MonoMac.AudioToolbox;
 
-namespace MonoMac.AudioToolbox
+namespace MonoMac.AudioUnit
 {
 	public class AudioComponent : INativeObject, IDisposable {
 		#region Variables

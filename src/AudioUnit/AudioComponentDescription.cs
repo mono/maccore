@@ -33,8 +33,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+using MonoMac.AudioToolbox;
 
- namespace MonoMac.AudioToolbox
+ namespace MonoMac.AudioUnit
 {
         public enum AudioComponentType {
 		Output = 0x61756f75, //'auou',

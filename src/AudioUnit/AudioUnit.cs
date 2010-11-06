@@ -30,8 +30,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using MonoMac.AudioToolbox;
 
-namespace MonoMac.AudioToolbox
+namespace MonoMac.AudioUnit
 {
 	public enum AudioUnitStatus {
 		NoError = 0,

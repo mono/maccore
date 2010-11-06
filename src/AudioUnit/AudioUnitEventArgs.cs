@@ -30,8 +30,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MonoMac.AudioToolbox;
 
-namespace MonoMac.AudioToolbox
+namespace MonoMac.AudioUnit
 {
     public class AudioUnitEventArgs : EventArgs
     {

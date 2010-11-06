@@ -34,7 +34,7 @@ using System.Runtime.InteropServices;
 
 using MonoMac.AudioToolbox;
 
-namespace MonoMac.AudioToolbox
+namespace MonoMac.AudioUnit
 {
     public class ExtAudioFile : IDisposable
     {
@@ -106,12 +106,12 @@ namespace MonoMac.AudioToolbox
         #endregion
 
         #region Public methods        
-        public static ExtAudioFile OpenURL(MonoMac.CoreFoundation.CFUrl url)
+        public static ExtAudioFile OpenUrl(MonoMac.CoreFoundation.CFUrl url)
         { 
             int err;
             IntPtr ptr = new IntPtr();
             unsafe {                
-                err = ExtAudioFileOpenURL(url.Handle, (IntPtr)(&ptr));
+                err = ExtAudioFileOpenUrl(url.Handle, (IntPtr)(&ptr));
             }            
             if (err != 0)
             {
@@ -124,7 +124,7 @@ namespace MonoMac.AudioToolbox
             
             return new ExtAudioFile(ptr);
         }
-        public static ExtAudioFile CreateWithURL(MonoMac.CoreFoundation.CFUrl url,
+        public static ExtAudioFile CreateWithUrl(MonoMac.CoreFoundation.CFUrl url,
             AudioFileType fileType, 
             AudioStreamBasicDescription inStreamDesc, 
             //AudioChannelLayout channelLayout, 
@@ -133,7 +133,7 @@ namespace MonoMac.AudioToolbox
             int err;
             IntPtr ptr = new IntPtr();
             unsafe {                
-                err = ExtAudioFileCreateWithURL(url.Handle, fileType, ref inStreamDesc, IntPtr.Zero, (uint)flag,
+                err = ExtAudioFileCreateWithUrl(url.Handle, fileType, ref inStreamDesc, IntPtr.Zero, (uint)flag,
                     (IntPtr)(&ptr));
             }            
             if (err != 0)
@@ -195,7 +195,7 @@ namespace MonoMac.AudioToolbox
 
         #region Interop
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileOpenURL")]
-        static extern int ExtAudioFileOpenURL(IntPtr inUrl, IntPtr outExtAudioFile); // caution
+        static extern int ExtAudioFileOpenUrl(IntPtr inUrl, IntPtr outExtAudioFile); // caution
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileRead")]
         static extern int ExtAudioFileRead(IntPtr  inExtAudioFile, ref uint ioNumberFrames, AudioBufferList ioData);
@@ -213,7 +213,7 @@ namespace MonoMac.AudioToolbox
         static extern int ExtAudioFileTell(IntPtr inExtAudioFile, ref long outFrameOffset);
         
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileCreateWithURL")]
-        static extern int ExtAudioFileCreateWithURL(IntPtr inURL,
+        static extern int ExtAudioFileCreateWithUrl(IntPtr inURL,
             [MarshalAs(UnmanagedType.U4)] AudioFileType inFileType,
             ref AudioStreamBasicDescription inStreamDesc,
             IntPtr inChannelLayout, //AudioChannelLayout inChannelLayout, AudioChannelLayout results in compilation error (error code 134.)
