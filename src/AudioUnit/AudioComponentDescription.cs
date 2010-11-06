@@ -49,72 +49,88 @@ using MonoMac.AudioToolbox;
 		Generator=0x6175676e, // 'augn'
 	}
 
-	public enum AudioComponentSubType {
-		OutputGeneric=0x67656e72, // 'genr'
+	public enum AudioTypeOutput {
+		Generic,
 #if MONOMAC
-		OutputHAL=0x6168616c, // 'ahal'
-		OutputDefault=0x64656620, // 'def'
-		OutputSystem=0x73797320, // 'sys'
+		HAL=0x6168616c, // 'ahal'
+		Default=0x64656620, // 'def'
+		System=0x73797320, // 'sys'
 #else
-		OutputRemote=0x72696f63, // 'rioc'
+		Remote=0x72696f63, // 'rioc'
 #endif
+	}
 
+	public enum AudioTypeMusicDevice {
+		None,
 #if MONOMAC
-		MusicDeviceDLSSynth=0x646c7320, // 'dls'
+		DlsSynth=0x646c7320, // 'dls'
 #endif
-			
-		ConverterAU=0x636f6e76, // 'conv'
-#if MONOMAC
-		ConverterVarispeed=0x76617269, // 'vari'
-		ConverterDeferredRenderer=0x64656672, // 'defr'
-		ConverterTimePitch=0x746d7074, // 'tmpt'
-		ConverterSplitter=0x73706c74, // 'splt'
-		ConverterMerger=0x6d657267, // 'merg'
-#else
-		ConverterAUiPodTime=0x6970746d, // 'iptm'
-#endif
+	}
 
-#if MONOMAC
-		EffectDelay=0x64656c79, // 'dely'
-		EffectLowPassFilter=0x6c706173, // 'lpas'
-		EffectHighPassFilter=0x68706173, // 'hpas'
-		EffectBandPassFilter=0x62706173, // 'bpas'
-		EffectHighShelfFilter=0x68736866, // 'hshf'
-		EffectLowShelfFilter=0x6c736866, // 'lshf'
-		EffectParametricEQ=0x706d6571, // 'pmeq'
-		EffectGraphicEQ=0x67726571, // 'greq'
-		EffectPeakLimiter=0x6c6d7472, // 'lmtr'
-		EffectDynamicsProcessor=0x64636d70, // 'dcmp'
-		EffectMultiBandCompressor=0x6d636d70, // 'mcmp'
-		EffectMatrixReverb=0x6d726576, // 'mrev'
-		EffectSampleDelay=0x73646c79, // 'sdly'
-		EffectPitch=0x70697463, // 'pitc'
-		EffectAUFilter=0x66696c74, // 'filt'
-		EffectNetSend=0x6e736e64, // 'nsnd'
-		EffectDistortion=0x64697374, // 'dist'
-		EffectRogerBeep=0x726f6772, // 'rogr'
-#else
-		EffectAUiPodEQ=0x69706571, // 'ipeq'
-#endif
+	public enum AudioTypeConverter {
 			
-		MixerMultiChannel=0x6d636d78, // 'mcmx'
+		AU=0x636f6e76, // 'conv'
 #if MONOMAC
-		MixerStereo=0x736d7872, // 'smxr'
-		Mixer3D=0x33646d78, // '3dmx'
-		MixerMatrix=0x6d786d78, // 'mxmx'
+		Varispeed=0x76617269, // 'vari'
+		DeferredRenderer=0x64656672, // 'defr'
+		TimePitch=0x746d7074, // 'tmpt'
+		Splitter=0x73706c74, // 'splt'
+		Merger=0x6d657267, // 'merg'
 #else
-		Mixer3DEmbedded=0x3364656d, // '3dem'
+		AUiPodTime=0x6970746d, // 'iptm'
 #endif
+	}
 
+	public enum AudioTypeEffect {
 #if MONOMAC
-		PannerSphericalHead=0x73706872, // 'sphr'
-		PannerVector=0x76626173, // 'vbas'
-		PannerSoundField=0x616d6269, // 'ambi'
-		PannerHRTF=0x68727466, // 'hrtf'
-			
-		GeneratorScheduledSoundPlayer=0x7373706c, // 'sspl'
-		GeneratorAudioFilePlayer=0x6166706c, // 'afpl'
-		GeneratorNetReceive=0x6e726376, // 'nrcv'
+		Delay=0x64656c79, // 'dely'
+		LowPassFilter=0x6c706173, // 'lpas'
+		HighPassFilter=0x68706173, // 'hpas'
+		BandPassFilter=0x62706173, // 'bpas'
+		HighShelfFilter=0x68736866, // 'hshf'
+		LowShelfFilter=0x6c736866, // 'lshf'
+		ParametricEQ=0x706d6571, // 'pmeq'
+		GraphicEQ=0x67726571, // 'greq'
+		PeakLimiter=0x6c6d7472, // 'lmtr'
+		DynamicsProcessor=0x64636d70, // 'dcmp'
+		MultiBandCompressor=0x6d636d70, // 'mcmp'
+		MatrixReverb=0x6d726576, // 'mrev'
+		SampleDelay=0x73646c79, // 'sdly'
+		Pitch=0x70697463, // 'pitc'
+		AUFilter=0x66696c74, // 'filt'
+		NetSend=0x6e736e64, // 'nsnd'
+		Distortion=0x64697374, // 'dist'
+		RogerBeep=0x726f6772, // 'rogr'
+#else
+		AUiPodEQ=0x69706571, // 'ipeq'
+#endif
+	}
+
+	public enum AudioTypeMixer {
+		MultiChannel=0x6d636d78, // 'mcmx'
+#if MONOMAC
+		Stereo=0x736d7872, // 'smxr'
+		ThreeD=0x33646d78, // '3dmx'
+		Matrix=0x6d786d78, // 'mxmx'
+#else
+		Embedded3D=0x3364656d, // '3dem'
+#endif
+	}
+
+	public enum AudioTypePanner {
+#if MONOMAC
+		SphericalHead=0x73706872, // 'sphr'
+		Vector=0x76626173, // 'vbas'
+		SoundField=0x616d6269, // 'ambi'
+		rHRTF=0x68727466, // 'hrtf'
+#endif
+	}
+
+	public enum AudioTypeGenerator {
+#if MONOMAC
+		ScheduledSoundPlayer=0x7373706c, // 'sspl'
+		AudioFilePlayer=0x6166706c, // 'afpl'
+		NetReceive=0x6e726376, // 'nrcv'
 #endif
         }
         
@@ -128,7 +144,7 @@ using MonoMac.AudioToolbox;
 		public AudioComponentType ComponentType;
 		
 		[MarshalAs(UnmanagedType.U4)]
-		public AudioComponentSubType ComponentSubType;
+		public int ComponentSubType;
         
 		[MarshalAs(UnmanagedType.U4)] 
 		public AudioComponentManufacturerType ComponentManufacturer;
@@ -138,7 +154,7 @@ using MonoMac.AudioToolbox;
 
 		public AudioComponentDescription () {}
 
-		public AudioComponentDescription (AudioComponentType type, AudioComponentSubType subType)
+		internal AudioComponentDescription (AudioComponentType type, int subType)
 		{
 			ComponentType = type;
 			ComponentSubType = subType;
@@ -147,9 +163,67 @@ using MonoMac.AudioToolbox;
 			//ComponentFlagsMask = 0;
 		}
 
+		public static AudioComponentDescription CreateGeneric (AudioComponentType type, int subType)
+		{
+			return new AudioComponentDescription (type, subType);
+		}
+		
+		public static AudioComponentDescription CreateOutput (AudioTypeOutput outputType)
+		{
+			return new AudioComponentDescription (AudioComponentType.Output, (int) outputType);
+		}
+
+		public static AudioComponentDescription CreateMusicDevice (AudioTypeMusicDevice musicDevice)
+		{
+			return new AudioComponentDescription (AudioComponentType.MusicDevice, (int) musicDevice);
+		}
+
+		public static AudioComponentDescription CreateConverter (AudioTypeConverter converter)
+		{
+			return new AudioComponentDescription (AudioComponentType.FormatConverter, (int) converter);
+		}
+
+		public static AudioComponentDescription CreateEffect (AudioTypeEffect effect)
+		{
+			return new AudioComponentDescription (AudioComponentType.Effect, (int) effect);
+		}
+
+		public static AudioComponentDescription CreateMixer (AudioTypeMixer mixer)
+		{
+			return new AudioComponentDescription (AudioComponentType.Mixer, (int) mixer);
+		}
+
+		public static AudioComponentDescription CreatePanner (AudioTypePanner panner)
+		{
+			return new AudioComponentDescription (AudioComponentType.Panner, (int) panner);
+		}
+
+		public static AudioComponentDescription CreateGenerator (AudioTypeGenerator generator)
+		{
+			return new AudioComponentDescription (AudioComponentType.Generator, (int) generator);
+		}
+
+		static string fmt = "[componetType={0}, subType={2}]";
 		public override string ToString ()
 		{
-			return string.Format ("[componetType={0}, subType={2}]", ComponentType, ComponentSubType);
+			switch (ComponentType){
+			case AudioComponentType.Output:
+				return String.Format (fmt, ComponentType, (AudioTypeOutput) ComponentSubType);
+			case AudioComponentType.MusicDevice:
+				return String.Format (fmt, ComponentType, (AudioTypeMusicDevice) ComponentSubType);
+			case AudioComponentType.FormatConverter:
+				return String.Format (fmt, ComponentType, (AudioTypeConverter) ComponentSubType);
+			case AudioComponentType.Effect:
+				return String.Format (fmt, ComponentType, (AudioTypeEffect) ComponentSubType);
+			case AudioComponentType.Mixer:
+				return String.Format (fmt, ComponentType, (AudioTypeMixer) ComponentSubType);
+			case AudioComponentType.Panner:
+				return String.Format (fmt, ComponentType, (AudioTypePanner) ComponentSubType);
+			case AudioComponentType.Generator:
+				return String.Format (fmt, ComponentType, (AudioTypeGenerator) ComponentSubType);
+			default:
+				return String.Format (fmt, ComponentType, ComponentSubType);
+			}
 		}
 	}
 }
