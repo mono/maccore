@@ -1786,7 +1786,7 @@ public class Generator {
 					if (!field_pi.PropertyType.IsValueType)
 						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
 
-					print ("public static {0} {1} {{", fieldTypeName, field_pi.Name);
+					print ("{0} static {1} {2} {{", HasAttribute (field_pi, typeof (InternalAttribute)) ? "internal" : "public", fieldTypeName, field_pi.Name);
 					indent++;
 					print ("get {");
 					indent++;
