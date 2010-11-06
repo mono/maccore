@@ -167,7 +167,7 @@ namespace MonoMac.AudioUnit
             
             return frame;
         }
-        public uint Read(uint numberFrames, AudioBufferList data)
+        public int Read(int numberFrames, AudioBufferList data)
         {            
             int err = ExtAudioFileRead(_extAudioFile, ref numberFrames, data);
             if (err != 0)
@@ -177,7 +177,7 @@ namespace MonoMac.AudioUnit
 
             return numberFrames;
         }
-        public void WriteAsync(uint numberFrames, AudioBufferList data)
+        public void WriteAsync(int numberFrames, AudioBufferList data)
         {
             int err = ExtAudioFileWriteAsync(_extAudioFile, numberFrames, data);
             if (err != 0)
@@ -198,10 +198,10 @@ namespace MonoMac.AudioUnit
         static extern int ExtAudioFileOpenUrl(IntPtr inUrl, IntPtr outExtAudioFile); // caution
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileRead")]
-        static extern int ExtAudioFileRead(IntPtr  inExtAudioFile, ref uint ioNumberFrames, AudioBufferList ioData);
+        static extern int ExtAudioFileRead(IntPtr  inExtAudioFile, ref int ioNumberFrames, AudioBufferList ioData);
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileWriteAsync")]
-        static extern int ExtAudioFileWriteAsync(IntPtr inExtAudioFile, uint inNumberFrames, AudioBufferList ioData);
+        static extern int ExtAudioFileWriteAsync(IntPtr inExtAudioFile, int inNumberFrames, AudioBufferList ioData);
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileDispose")]
         static extern int ExtAudioFileDispose(IntPtr inExtAudioFile);
