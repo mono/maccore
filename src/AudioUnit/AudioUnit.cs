@@ -132,21 +132,34 @@ namespace MonoMac.AudioUnit
 		//public event EventHandler<AudioUnitEventArgs> InputCallback;
 		public bool IsPlaying { get { return _isPlaying; } }
 
-		public AudioUnit (IntPtr handle)
+		internal AudioUnit (IntPtr ptr)
 		{
-			this.handle = handle;
+			handle = ptr;
+		}
+		
+		public AudioUnit (AudioComponent component)
+		{
+			if (component == null)
+				throw new ArgumentNullException ("component");
+			if (component.Handle == null)
+				throw new ObjectDisposedException ("component");
+			
+			int err = AudioComponentInstanceNew (component.handle, out handle);
+			if (err != 0)
+				throw new AudioUnitException (err);
+			
 			_isPlaying = false;
 			
 			gcHandle = GCHandle.Alloc(this);
 			var callbackStruct = new AURenderCallbackStrct();
 			callbackStruct.inputProc = renderCallback; // setting callback function            
 			callbackStruct.inputProcRefCon = GCHandle.ToIntPtr(gcHandle); // a pointer that passed to the renderCallback (IntPtr inRefCon) 
-			int err = AudioUnitSetProperty(handle,
-						       AudioUnitPropertyIDType.SetRenderCallback,
-						       AudioUnitScopeType.Input,
-						       0, // 0 == speaker                
-						       callbackStruct,
-						       (uint)Marshal.SizeOf(callbackStruct));
+			err = AudioUnitSetProperty(handle,
+						   AudioUnitPropertyIDType.SetRenderCallback,
+						   AudioUnitScopeType.Input,
+						   0, // 0 == speaker                
+						   callbackStruct,
+						   (uint)Marshal.SizeOf(callbackStruct));
 			if (err != 0)
 				throw new AudioUnitException (err);
 		}
@@ -218,24 +231,16 @@ namespace MonoMac.AudioUnit
 				throw new AudioUnitException (err);
 		}
 			
-		public static AudioUnit CreateInstance(AudioComponent cmp)
+		public int Initialize ()
 		{
-			IntPtr handle;
-			int err = AudioComponentInstanceNew(cmp.handle, out handle);
-			if (err != 0)
-				throw new AudioUnitException (err);
-			
-			if (handle != IntPtr.Zero)
-				return new AudioUnit (handle);
-			else
-				return null;
+			return AudioUnitInitialize(handle);
 		}
 
-		public void Initialize ()
+		public int Uninitialize ()
 		{
-			AudioUnitInitialize(handle);
+			return AudioUnitUnInitialize (handle);
 		}
-		
+
 		public void Start()
 		{
 			if (! _isPlaying) {
@@ -287,11 +292,15 @@ namespace MonoMac.AudioUnit
 			GC.SuppressFinalize (this);
 		}
 		
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioComponentInstanceDispose")]
+		static extern int AudioComponentInstanceDispose(IntPtr inInstance);
+
 		public void Dispose (bool disposing)
 		{
 			if (handle != IntPtr.Zero){
 				Stop ();
-				AudioUnitUnInitialize(handle);
+				AudioUnitUnInitialize (handle);
+				AudioComponentInstanceDispose (handle);
 				gcHandle.Free();
 				handle = IntPtr.Zero;
 			}
@@ -317,20 +326,28 @@ namespace MonoMac.AudioUnit
 
 		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioComponentInstanceNew")]
 		static extern int AudioComponentInstanceNew(IntPtr inComponent, out IntPtr inDesc);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioComponentInstanceNew")]
+		static extern IntPtr AudioComponentInstanceGetComponent (IntPtr inComponent);
+		public AudioComponent Component {
+			get {
+				return new AudioComponent (AudioComponentInstanceGetComponent (handle));
+			}
+		}
 		
-		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioUnitInitialize")]
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 		static extern int AudioUnitInitialize(IntPtr inUnit);
 		
-		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioUnitUnInitialize")]
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 		static extern int AudioUnitUnInitialize(IntPtr inUnit);
 
-		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioOutputUnitStart")]
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 		static extern int AudioOutputUnitStart(IntPtr ci);
 
-		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioOutputUnitStop")]
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 		static extern int AudioOutputUnitStop(IntPtr ci);
 
-		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioUnitRender")]
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 		static extern int AudioUnitRender(IntPtr inUnit,
 						  ref AudioUnitRenderActionFlags ioActionFlags,
 						  ref AudioTimeStamp inTimeStamp,

@@ -50,13 +50,14 @@ using MonoMac.AudioToolbox;
 	}
 
 	public enum AudioTypeOutput {
-		Generic,
+		Generic = 0x67656e72, // 'genr'
 #if MONOMAC
 		HAL=0x6168616c, // 'ahal'
 		Default=0x64656620, // 'def'
 		System=0x73797320, // 'sys'
 #else
 		Remote=0x72696f63, // 'rioc'
+		VoiceProcessingIO = 0x7670696f // 'vpio'
 #endif
 	}
 

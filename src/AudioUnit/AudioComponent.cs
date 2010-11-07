@@ -32,27 +32,26 @@ using System.Text;
 using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.AudioToolbox;
+using MonoMac.CoreFoundation;
 
 namespace MonoMac.AudioUnit
 {
-	public class AudioComponent : INativeObject, IDisposable {
-		#region Variables
+	public class AudioComponent : INativeObject {
 		internal IntPtr handle;
-		#endregion
 
-		#region Properties
 		public IntPtr Handle { get { return handle; } }
-		#endregion
 
-		#region Constructor
-		private AudioComponent(IntPtr handle)
+		internal AudioComponent(IntPtr handle)
 		{ 
 			this.handle = handle;
 		}
-		#endregion
-			
-		#region public methods
-		public static AudioComponent FindNextComponent(AudioComponent cmp, AudioComponentDescription cd)
+
+		public AudioUnit CreateAudioUnit ()
+		{
+			return new AudioUnit (this);
+		}
+		
+		public static AudioComponent FindNextComponent (AudioComponent cmp, AudioComponentDescription cd)
 		{
 			// Getting component hanlder
 			IntPtr handle;
@@ -67,7 +66,7 @@ namespace MonoMac.AudioUnit
 			else
 				return null;
 		}
-		
+
 		public static AudioComponent FindComponent (AudioComponentDescription cd)
 		{
 			return FindNextComponent(null, cd);
@@ -107,35 +106,54 @@ namespace MonoMac.AudioUnit
 		{
 			return FindComponent (AudioComponentDescription.CreateGenerator (generator));
 		}
-		#endregion
 
-		#region IDisposable メンバ (Members)
-		public void Dispose()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
-		{			
-			if (handle != IntPtr.Zero){
-				AudioComponentInstanceDispose(handle);
-				handle = IntPtr.Zero;
-			}
-		}
-
-		~AudioComponent ()
-		{
-			Dispose (false);
-		}
-		#endregion
-
-		#region Inteop
 		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioComponentFindNext")]
 		static extern IntPtr AudioComponentFindNext(IntPtr inComponent, AudioComponentDescription inDesc);
 
-		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioComponentInstanceDispose")]
-		static extern int AudioComponentInstanceDispose(IntPtr inInstance);
-		#endregion
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern int AudioComponentCopyName (IntPtr component, out IntPtr cfstr);
+		
+		public string Name {
+			get {
+				IntPtr r;
+				if (AudioComponentCopyName (handle, out r) == 0)
+					return CFString.FetchString (r);
+				return null;
+			}
+		}
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern int AudioComponentGetDescription (IntPtr component, out AudioComponentDescription desc);
+		public AudioComponentDescription Description {
+			get {
+				AudioComponentDescription desc;
+
+				if (AudioComponentGetDescription (handle, out desc) == 0)
+					return desc;
+				return null;
+			}
+		}
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern int AudioComponentCount (AudioComponentDescription desc);
+		static int CountMatches (AudioComponentDescription desc)
+		{
+			if (desc == null)
+				throw new ArgumentNullException ("desc");
+			return AudioComponentCount (desc);
+		}
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern int AudioComponentGetVersion (IntPtr component, out int version);
+
+		public Version Version {
+			get {
+				int ret;
+				if (AudioComponentGetVersion (handle, out ret) == 0)
+					return new Version (ret >> 16, (ret >> 8) & 0xff, ret & 0xff);
+
+				return null;
+			}
+		}
     }
 }
