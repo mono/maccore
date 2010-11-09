@@ -2789,19 +2789,25 @@ namespace MonoMac.Foundation
 		[Export ("isEqualToValue:")]
 		bool IsEqualTo (NSValue value);
 	
-		[Export ("CGPointValue")]
-		System.Drawing.PointF PointFValue { get; }
+#if MONOMAC
+		[Export ("valueWithRect:"), Static]
+		NSValue FromRectangleF (System.Drawing.RectangleF rect);
 
-		[Export ("CGRectValue")]
+		[Export ("valueWithSize:")][Static]
+		NSValue FromSizeF (System.Drawing.SizeF size);
+
+		[Export ("valueWithPoint:")][Static]
+		NSValue FromPointF (System.Drawing.PointF point);
+
+		[Export ("rectValue")]
 		System.Drawing.RectangleF RectangleFValue { get; }
-		
-		[Export ("CGSizeValue")]
+
+		[Export ("sizeValue")]
 		System.Drawing.SizeF SizeFValue { get; }
 
-		[Export ("CATransform3DValue")]
-		MonoMac.CoreAnimation.CATransform3D CATransform3DValue { get; }
-
-#if !MONOMAC
+		[Export ("pointValue")]
+		System.Drawing.PointF PointFValue { get; }
+#else
 		[Export ("CGAffineTransformValue")]
 		MonoMac.CoreGraphics.CGAffineTransform CGAffineTransformValue { get; }
 		
@@ -2813,18 +2819,31 @@ namespace MonoMac.Foundation
 
 		[Export ("valueWithUIEdgeInsets:")][Static]
 		NSValue FromUIEdgeInsets (MonoMac.UIKit.UIEdgeInsets insets);
-#endif
-		[Export ("valueWithCGPoint:")][Static]
-		NSValue FromPointF (System.Drawing.PointF point);
-		
+
 		[Export ("valueWithCGRect:")][Static]
 		NSValue FromRectangleF (System.Drawing.RectangleF rect);
-		
+
+		[Export ("CGRectValue")]
+		System.Drawing.RectangleF RectangleFValue { get; }
+
 		[Export ("valueWithCGSize:")][Static]
 		NSValue FromSizeF (System.Drawing.SizeF size);
 
+		[Export ("CGSizeValue")]
+		System.Drawing.SizeF SizeFValue { get; }
+
+		[Export ("CGPointValue")]
+		System.Drawing.PointF PointFValue { get; }
+
+		[Export ("valueWithCGPoint:")][Static]
+		NSValue FromPointF (System.Drawing.PointF point);
+		
 		[Export ("valueWithCATransform3D:")][Static]
 		NSValue FromCATransform3D (MonoMac.CoreAnimation.CATransform3D transform);
+
+		[Export ("CATransform3DValue")]
+		MonoMac.CoreAnimation.CATransform3D CATransform3DValue { get; }
+#endif
 	}
 	
 	[BaseType (typeof (NSValue))]
