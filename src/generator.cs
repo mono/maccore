@@ -58,6 +58,73 @@ using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
 #endif
 
+public static class ReflectionExtensions {
+	static Type GetBaseType (Type type) {
+		object [] btype = type.GetCustomAttributes (typeof (BaseTypeAttribute), true);
+		BaseTypeAttribute bta = btype.Length > 0 ? ((BaseTypeAttribute) btype [0]) : null;
+		Type base_type = bta != null ?  bta.BaseType : typeof (object);
+
+		return base_type;
+	}
+
+	public static List <PropertyInfo> GatherProperties (this Type type) {
+		List <PropertyInfo> properties = new List <PropertyInfo> (type.GetProperties ());
+		Type parent_type = GetBaseType (type);
+
+		if (parent_type != typeof (NSObject)) {
+			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
+				properties.AddRange (parent_type.GetProperties ());
+			}
+	                parent_type = GetBaseType (parent_type);
+		}
+
+		return properties;
+	}
+
+	public static List <PropertyInfo> GatherProperties (this Type type, BindingFlags flags) {
+		List <PropertyInfo> properties = new List <PropertyInfo> (type.GetProperties (flags));
+		Type parent_type = GetBaseType (type);
+
+		if (parent_type != typeof (NSObject)) {
+			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
+				properties.AddRange (parent_type.GetProperties (flags));
+			}
+	                parent_type = GetBaseType (parent_type);
+		}
+
+		return properties;
+	}
+
+	public static List <MethodInfo> GatherMethods (this Type type) {
+		List <MethodInfo> methods = new List <MethodInfo> (type.GetMethods ());
+		Type parent_type = GetBaseType (type);
+
+		if (parent_type != typeof (NSObject)) {
+			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
+				methods.AddRange (parent_type.GetMethods ());
+			}
+	                parent_type = GetBaseType (parent_type);
+		}
+
+		return methods;
+
+	}
+
+	public static List <MethodInfo> GatherMethods (this Type type, BindingFlags flags) {
+		List <MethodInfo> methods = new List <MethodInfo> (type.GetMethods (flags));
+		Type parent_type = GetBaseType (type);
+
+		if (parent_type != typeof (NSObject)) {
+			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
+				methods.AddRange (parent_type.GetMethods (flags));
+			}
+	                parent_type = GetBaseType (parent_type);
+		}
+
+		return methods;
+	}
+}
+
 public class RetainListAttribute : Attribute {
 	public RetainListAttribute (bool doadd, string name)
 	{
@@ -916,7 +983,7 @@ public class Generator {
 
 			var tselectors = new List<string> ();
 			
-			foreach (var pi in t.GetProperties ()){
+			foreach (var pi in t.GatherProperties ()){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
@@ -937,7 +1004,7 @@ public class Generator {
 				if (HasAttribute (pi, typeof (StaticAttribute)))
 					need_static [t] = true;
 
-				bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute));
+				bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == t;
 				
 				if (pi.CanRead){
 					MethodInfo getter = pi.GetGetMethod ();
@@ -958,7 +1025,7 @@ public class Generator {
 				}
 			}
 			
-			foreach (var mi in t.GetMethods (BindingFlags.Instance | BindingFlags.Public)){
+			foreach (var mi in t.GatherMethods (BindingFlags.Instance | BindingFlags.Public)){
 				// Skip properties
 				if (mi.IsSpecialName)
 					continue;
@@ -981,7 +1048,7 @@ public class Generator {
 						continue;
 					} else if (attr is FactoryAttribute){
 						continue;
-					} else  if (attr is AbstractAttribute){
+					} else  if (attr is AbstractAttribute && mi.DeclaringType == t){
 						need_abstract [t] = true;
 						continue;
 					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute)
@@ -1004,11 +1071,11 @@ public class Generator {
 				DeclareInvoker (mi);
 			}
 
-			foreach (var pi in t.GetProperties (BindingFlags.Instance | BindingFlags.Public)){
+			foreach (var pi in t.GatherProperties (BindingFlags.Instance | BindingFlags.Public)){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
-				if (HasAttribute (pi, typeof (AbstractAttribute)))
+				if (HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == t)
 					need_abstract [t] = true;
 			}
 			
@@ -1562,7 +1629,7 @@ public class Generator {
 			}
 			
 			indent = 2;
-			foreach (var mi in type.GetMethods (BindingFlags.Public | BindingFlags.Instance)){
+			foreach (var mi in type.GatherMethods (BindingFlags.Public | BindingFlags.Instance)){
 				if (mi.IsSpecialName)
 					continue;
 
@@ -1614,9 +1681,9 @@ public class Generator {
 				if (is_static)
 					virtual_method = false;
 
-				bool is_abstract = HasAttribute (mi, typeof (AbstractAttribute));
+				bool is_abstract = HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
 				bool is_public = !HasAttribute (mi, typeof (InternalAttribute));
-				bool is_override = HasAttribute (mi, typeof (OverrideAttribute));
+				bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || mi.DeclaringType != type;
 				bool is_new = HasAttribute (mi, typeof (NewAttribute));
 				bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
 				bool is_unsafe = false;
@@ -1647,7 +1714,7 @@ public class Generator {
 			}
 
 			var field_exports = new List<PropertyInfo> ();
-			foreach (var pi in type.GetProperties ()){
+			foreach (var pi in type.GatherProperties ()){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
@@ -1659,9 +1726,9 @@ public class Generator {
 				string wrap;
 				var export = GetExportAttribute (pi, out wrap);
 				bool is_static = HasAttribute (pi, typeof (StaticAttribute));
-				bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute));
+				bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
 				bool is_public = !HasAttribute (pi, typeof (InternalAttribute));
-				bool is_override = HasAttribute (pi, typeof (OverrideAttribute));
+				bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || pi.DeclaringType != type;
 				bool is_new = HasAttribute (pi, typeof (NewAttribute));
 				bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
 				bool is_unsafe = false;
