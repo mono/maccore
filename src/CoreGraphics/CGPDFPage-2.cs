@@ -87,6 +87,14 @@ namespace MonoMac.CoreGraphics {
 			return CGPDFPageGetDrawingTransform (handle, box, rect, rotate, preserveAspectRatio ? 1 : 0);
 		}
 
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFPageGetDictionary (IntPtr pageHandle);
+
+		public CGPDFDictionary Dictionary {
+			get {
+				return new CGPDFDictionary (handle);
+			}
+		}
 	}
 }
 

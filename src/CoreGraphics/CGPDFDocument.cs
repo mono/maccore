@@ -114,7 +114,8 @@ namespace MonoMac.CoreGraphics {
 				return CGPDFDocumentGetNumberOfPages (handle);
 			}
 		}
-		
+
+#if !MINIMAL
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGPDFDocumentGetPage (IntPtr handle, int page);
 		
@@ -122,7 +123,7 @@ namespace MonoMac.CoreGraphics {
 		{
 			return new CGPDFPage (this, CGPDFDocumentGetPage (handle, page));
 		}
-		
+#endif
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPDFDocumentGetVersion (IntPtr handle, out int major, out int minor);
 

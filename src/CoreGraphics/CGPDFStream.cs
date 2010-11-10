@@ -1,9 +1,9 @@
 // 
-// CGPDFPage.cs: Implements the managed CGPDFPage
+// CGPDFStream.cs: Implements the managed CGPDFStream binding
 //
-// Authors: Mono Team
+// Authors: Miguel de Icaza
 //     
-// Copyright 2009 Novell, Inc
+// Copyright 2010 Novell, Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,40 +26,42 @@
 //
 using System;
 using System.Runtime.InteropServices;
-
-using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
+using MonoMac.ObjCRuntime;
+using System.Drawing;
+using MonoMac.CoreFoundation;
 
 namespace MonoMac.CoreGraphics {
-
-	public partial class CGPDFPage : INativeObject, IDisposable {
+	public class CGPDFStream : INativeObject {
 		internal IntPtr handle;
-		
-		~CGPDFPage ()
-		{
-			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
 
 		public IntPtr Handle {
 			get { return handle; }
 		}
 	
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPDFPageRetain (IntPtr handle);
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPDFPageRelease (IntPtr handle);
-		
-		protected virtual void Dispose (bool disposing)
+		internal CGPDFStream (IntPtr handle)
 		{
-			if (handle != IntPtr.Zero){
-				CGPDFPageRelease (handle);
-				handle = IntPtr.Zero;
+			this.handle = handle;
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFStreamGetDictionary (IntPtr handle);
+		
+		public CGPDFDictionary Dictionary {
+			get {
+				return new CGPDFDictionary (CGPDFStreamGetDictionary (handle));
+			}
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFStreamCopyData (IntPtr handle);
+		
+		public NSData Data {
+			get {
+				IntPtr obj = CGPDFStreamCopyData (handle);
+				var ret = new NSData (obj);
+				CFObject.CFRelease (obj);
+				return ret;
 			}
 		}
 	}
