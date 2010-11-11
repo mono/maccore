@@ -1,9 +1,10 @@
-// 
-// CGPDFPage.cs: Implements the managed CGPDFPage
 //
-// Authors: Mono Team
-//     
-// Copyright 2009 Novell, Inc
+// Extension methods for the RectangelF class useful on OSX.
+//
+// Authors:
+//   Miguel de Icaza
+//
+// Copyright 2010, Novell, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -24,43 +25,39 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+//
 using System;
 using System.Runtime.InteropServices;
+using MonoMac;
+namespace System.Drawing {
 
-using MonoMac.ObjCRuntime;
-using MonoMac.Foundation;
-
-namespace MonoMac.CoreGraphics {
-
-	public partial class CGPDFPage : INativeObject, IDisposable {
-		internal IntPtr handle;
-		
-		~CGPDFPage ()
-		{
-			Dispose (false);
+	public static class RectangleFExt {
+		public enum Edge {
+			MinX, MinY, MaxX, MaxY
 		}
 		
-		public void Dispose ()
+		[DllImport (Constants.FoundationLibrary)]
+		extern static RectangleF NSIntegralRect (RectangleF input);
+
+		public static RectangleF IntegralRect (this RectangleF rect)
 		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
+			return NSIntegralRect (rect);
 		}
 
-		public IntPtr Handle {
-			get { return handle; }
-		}
-	
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPDFPageRetain (IntPtr handle);
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPDFPageRelease (IntPtr handle);
-		
-		protected virtual void Dispose (bool disposing)
+		[DllImport (Constants.FoundationLibrary)]
+		extern static RectangleF NSInsetRect (RectangleF input, float dx, float dy);
+
+		public static RectangleF Inset (this RectangleF rect, float dx, float dy)
 		{
-			if (handle != IntPtr.Zero){
-				CGPDFPageRelease (handle);
-				handle = IntPtr.Zero;
-			}
+			return NSInsetRect (rect, dx, dy);
+		}
+
+		[DllImport (Constants.FoundationLibrary)]
+		extern static void NSDivideRect (RectangleF source, out RectangleF slice, out RectangleF rem, float amount, Edge edge);
+		
+		public static void DivideRect (this RectangleF rect, out RectangleF slice, out RectangleF rem, float amount, Edge edge)
+		{
+			NSDivideRect (rect, out slice, out rem, amount, edge);
 		}
 	}
 }

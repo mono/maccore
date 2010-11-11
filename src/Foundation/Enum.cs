@@ -258,4 +258,13 @@ namespace MonoMac.Foundation  {
 		PostToAllSessions = (1 << 1),
 	}
 #endif
+
+	public enum NSStreamEvent : uint {
+		None = 0,
+		OpenCompleted = 1 << 0,
+		HasBytesAvailable = 1 << 1,
+		HasSpaceAvailable = 1 << 2,
+		ErrorOccurred = 1 << 3,
+		EndEncountered = 1 << 4
+	}
 }
