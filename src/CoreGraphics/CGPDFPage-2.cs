@@ -90,11 +90,13 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGPDFPageGetDictionary (IntPtr pageHandle);
 
+#if !COREBUILD
 		public CGPDFDictionary Dictionary {
 			get {
 				return new CGPDFDictionary (handle);
 			}
 		}
+#endif
 	}
 }
 
