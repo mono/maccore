@@ -1845,7 +1845,7 @@ namespace MonoMac.Foundation
 		string SuggestedFilename { get; }
 	}
 
-	[BaseType (typeof (NSObject))]
+	[BaseType (typeof (NSObject), Delegates=new string [] { "WeakDelegate" }, Events=new Type [] { typeof (NSStreamDelegate)} )]
 	public interface NSStream {
 		[Export ("open")]
 		void Open ();
@@ -1853,8 +1853,11 @@ namespace MonoMac.Foundation
 		[Export ("close")]
 		void Close ();
 	
-		[Export ("delegate")]
-		NSObject Delegate { get; set; }
+		[Export ("delegate", ArgumentSemantic.Assign), NullAllowed]
+		NSObject WeakDelegate { get; set; }
+
+		[Wrap ("WeakDelegate")]
+		NSStreamDelegate Delegate { get; set; }
 
 		[Export ("propertyForKey:")]
 		NSObject PropertyForKey (string  key);
@@ -1878,6 +1881,13 @@ namespace MonoMac.Foundation
 		[Field ("NSStreamNetworkServiceTypeVoIP")]
 		NSString NetworkServiceTypeVoIP { get; }
 #endif
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Model]
+	public interface NSStreamDelegate {
+		[Export ("stream:handleEvent:"), EventArgs ("NSStream"), EventName ("OnEvent")]
+		void HandleEvent (NSStream theStream, NSStreamEvent streamEvent);
 	}
 
 	[BaseType (typeof (NSObject)), Bind ("NSString")]
