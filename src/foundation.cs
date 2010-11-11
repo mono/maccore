@@ -1870,6 +1870,11 @@ namespace MonoMac.Foundation
 	
 		[Export ("streamError")]
 		NSError Error { get; }
+
+#if !MONOMAC
+		[Field ("NSStreamNetworkServiceTypeVoIP")]
+		NSString NetworkServiceTypeVoIP { get; }
+#endif
 	}
 
 	[BaseType (typeof (NSObject)), Bind ("NSString")]
