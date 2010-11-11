@@ -1847,6 +1847,9 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	public interface NSStream {
+		[Export ("open")]
+		void Open ();
+
 		[Export ("close")]
 		void Close ();
 	
