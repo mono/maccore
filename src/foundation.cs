@@ -2582,7 +2582,7 @@ namespace MonoMac.Foundation
 		bool GetStreams (IntPtr ptrToInputStorage, IntPtr ptrToOutputStorage);
 		
 		[Export ("TXTRecordData")]
-		bool TxtRecordData { get; set; }
+		NSData TxtRecordData { get; set; }
 
 		[Export ("startMonitoring")]
 		void StartMonitoring ();
