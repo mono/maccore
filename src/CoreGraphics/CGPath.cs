@@ -159,11 +159,22 @@ namespace MonoMac.CoreGraphics {
 		public void MoveToPoint (float x, float y)
 		{
 			CGPathMoveToPoint (handle, IntPtr.Zero, x, y);
+
 		}
 
+		public void MoveToPoint (PointF point)
+		{
+			CGPathMoveToPoint (handle, IntPtr.Zero, point.X, point.Y);
+		}
+		
 		public void MoveToPoint (CGAffineTransform transform, float x, float y)
 		{
 			CGPathMoveToPoint (handle, ref transform, x, y);
+		}
+
+		public void MoveToPoint (CGAffineTransform transform, PointF point)
+		{
+			CGPathMoveToPoint (handle, ref transform, point.X, point.Y);
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -175,11 +186,21 @@ namespace MonoMac.CoreGraphics {
 			CGPathAddLineToPoint (handle, IntPtr.Zero, x, y);
 		}
 
-		public void CGPathAddLineToPoint (CGAffineTransform transform, float x, float y)
+		public void AddLineToPoint (PointF point)
+		{
+			CGPathAddLineToPoint (handle, IntPtr.Zero, point.X, point.Y);
+		}
+		
+		public void AddLineToPoint (CGAffineTransform transform, float x, float y)
 		{
 			CGPathAddLineToPoint (handle, ref transform, x, y);
 		}
 
+		public void AddLineToPoint (CGAffineTransform transform, PointF point)
+		{
+			CGPathAddLineToPoint (handle, ref transform, point.X, point.Y);
+		}
+		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPathAddQuadCurveToPoint(IntPtr path, ref CGAffineTransform m, float cpx, float cpy, float x, float y);
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -200,6 +221,12 @@ namespace MonoMac.CoreGraphics {
 		{
 			CGPathAddCurveToPoint (handle, ref transform, cp1x, cp1y, cp2x, cp2y, x, y);
 		}
+
+		public void AddCurveToPoint (CGAffineTransform transform, PointF cp1, PointF cp2, PointF point)
+		{
+			CGPathAddCurveToPoint (handle, ref transform, cp1.X, cp1.Y, cp2.X, cp2.Y, point.X, point.Y);
+		}
+		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPathAddCurveToPoint(IntPtr path, IntPtr zero, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
 		public void AddCurveToPoint (float cp1x, float cp1y, float cp2x, float cp2y, float x, float y)
@@ -207,6 +234,11 @@ namespace MonoMac.CoreGraphics {
 			CGPathAddCurveToPoint (handle, IntPtr.Zero, cp1x, cp1y, cp2x, cp2y, x, y);
 		}
 			
+		public void AddCurveToPoint (PointF cp1, PointF cp2, PointF point)
+		{
+			CGPathAddCurveToPoint (handle, IntPtr.Zero, cp1.X, cp1.Y, cp2.X, cp2.Y, point.X, point.Y);
+		}
+		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPathCloseSubpath(IntPtr path);
 		public void CloseSubpath ()
