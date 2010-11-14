@@ -170,7 +170,7 @@ namespace MonoMac.CoreGraphics {
 		extern static void CGPathAddLineToPoint(IntPtr path, ref CGAffineTransform m, float x, float y);
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPathAddLineToPoint(IntPtr path, IntPtr m, float x, float y);
-		public void CGPathAddLineToPoint (float x, float y)
+		public void AddLineToPoint (float x, float y)
 		{
 			CGPathAddLineToPoint (handle, IntPtr.Zero, x, y);
 		}
