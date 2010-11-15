@@ -59,6 +59,12 @@ namespace MonoMac.Foundation
 
 		[Export ("setValue:forKey:")]
 		void SetValueForKey (NSObject value, NSString key);
+
+		[Export ("writeToFile:atomically:")]
+                bool WriteToFile (string path, bool useAuxiliaryFile);
+
+		[Export ("arrayWithContentsOfFile:")][Static]
+                NSArray FromFile (string path);
 	}
 
 	[Since (3,2)]
