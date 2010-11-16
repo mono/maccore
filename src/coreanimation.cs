@@ -502,13 +502,25 @@ namespace MonoMac.CoreAnimation {
 	[BaseType (typeof (CALayer))]
 	interface CAScrollLayer {
 		[Export ("scrollMode")]
-		string scrollMode { get; set;  }
+		NSString ScrollMode { get; set;  }
 
 		[Export ("scrollToPoint:")]
 		void ScrollToPoint (PointF p);
 
 		[Export ("scrollToRect:")]
 		void ScrollToRect (RectangleF r);
+
+		[Field ("kCAScrollNone")]
+		NSString ScrollNone { get; }
+
+		[Field ("kCAScrollVertically")]
+		NSString ScrollVertically { get; }
+
+		[Field ("kCAScrollHorizontally")]
+		NSString ScrollHorizontally { get; }
+
+		[Field ("kCAScrollBoth")]
+		NSString ScrollBoth { get; }
 	}
 	
 	[BaseType (typeof (CALayer))]
