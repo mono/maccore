@@ -3553,7 +3553,7 @@ namespace MonoMac.Foundation
 	}
 
 #if MONOMAC
-	[BaseType (typeof (NSObject))]
+	[BaseType (typeof (NSObject), Name="NSURLDownload")]
 	interface NSUrlDownload {
 		[Static, Export ("canResumeDownloadDecodedWithEncodingMIMEType:")]
 		bool CanResumeDownloadDecodedWithEncodingMimeType (string mimeType);

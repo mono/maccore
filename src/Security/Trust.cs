@@ -31,8 +31,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 
 namespace MonoMac.Security {
-
-	public class SecTrust : NSObject {
+	public class SecTrust {
 		[DllImport (Constants.SecurityLibrary, EntryPoint="SecTrustGetTypeID")]
 		public extern static int GetTypeID ();
 	}

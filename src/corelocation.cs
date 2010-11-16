@@ -19,6 +19,7 @@ using System.Drawing;
 
 namespace MonoMac.CoreLocation {
 
+#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	interface CLHeading {
 		[Export ("magneticHeading")]
@@ -46,6 +47,7 @@ namespace MonoMac.CoreLocation {
 		string Description ();
 	
 	}
+#endif
 	
 	[BaseType (typeof (NSObject))]
 	interface CLLocation {
@@ -161,9 +163,11 @@ namespace MonoMac.CoreLocation {
 		[Export ("headingOrientation")]
 		CLDeviceOrientation HeadingOrientation { get; set; }
 
+#if !MONOMAC
 		[Export ("heading")]
 		[Since (4,0)]
 		CLHeading Heading { get; }
+#endif
 
 		[Export ("maximumRegionMonitoringDistance")]
 		[Since (4,0)]
@@ -181,6 +185,7 @@ namespace MonoMac.CoreLocation {
 		[Export ("stopMonitoringSignificantLocationChanges")]
 		void StopMonitoringSignificantLocationChanges ();
 
+#if !MONOMAC
 		[Since (4,0)]
 		[Export ("startMonitoringForRegion:desiredAccuracy:")]
 		void StartMonitoring (CLRegion region, double desiredAccuracy);
@@ -188,6 +193,7 @@ namespace MonoMac.CoreLocation {
 		[Since (4,0)]
 		[Export ("stopMonitoringForRegion:")]
 		void StopMonitoring (CLRegion region);
+#endif
 
 		[Since (4,2)]
 		[Export ("authorizationStatus")][Static]
@@ -200,8 +206,10 @@ namespace MonoMac.CoreLocation {
 		[Export ("locationManager:didUpdateToLocation:fromLocation:"), EventArgs ("CLLocationUpdated")]
 		void UpdatedLocation (CLLocationManager  manager, CLLocation newLocation, CLLocation oldLocation);
 	
+#if !MONOMAC
 		[Export ("locationManager:didUpdateHeading:"), EventArgs ("CLHeadingUpdated")]
 		void UpdatedHeading (CLLocationManager  manager, CLHeading newHeading);
+#endif
 	
 		[Export ("locationManagerShouldDisplayHeadingCalibration:"), EventArgs ("CLLocationManagerEventArgs"), DefaultValue (true)]
 		bool ShouldDisplayHeadingCalibration (CLLocationManager manager);
@@ -209,6 +217,7 @@ namespace MonoMac.CoreLocation {
 		[Export ("locationManager:didFailWithError:"), EventArgs ("NSError")]
 		void Failed (CLLocationManager manager, NSError error);
 
+#if !MONOMAC
 		[Since (4,0)]
 		[Export ("locationManager:didEnterRegion:"), EventArgs ("CLRegion")]
 		void RegionEntered (CLLocationManager manager, CLRegion region);
@@ -220,12 +229,14 @@ namespace MonoMac.CoreLocation {
 		[Since (4,0)]
 		[Export ("locationManager:monitoringDidFailForRegion:withError:"), EventArgs ("CLRegionError")]
 		void MonitoringFailed (CLLocationManager manager, CLRegion region, NSError error);
+#endif
 
 		[Since (4,2)]
 		[Export ("locationManager:didChangeAuthorizationStatus:"), EventArgs ("CLAuthroziationChanged")]
 		void AuthorizationChanged (CLLocationManager manager, CLAuthorizationStatus status);
 	}
 
+#if !MONOMAC
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	interface CLRegion {
@@ -244,5 +255,6 @@ namespace MonoMac.CoreLocation {
 		[Export ("containsCoordinate:")]
 		bool Contains (CLLocationCoordinate2D coordinate);
 	}
+#endif
 }
 

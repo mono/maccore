@@ -69,6 +69,7 @@ namespace MonoMac.CoreAnimation {
 	}		
 #endif
 
+#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	interface CADisplayLink {
 		[Export ("displayLinkWithTarget:selector:")][Static]
@@ -92,6 +93,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("frameInterval")]
 		int FrameInterval { get; set;  }
 	}
+#endif
 
 	[BaseType (typeof (NSObject))]
 	interface CALayer {
@@ -635,12 +637,14 @@ namespace MonoMac.CoreAnimation {
 		CAAction ActionForLAyer (CALayer layer, string eventKey);
 	}
 	
+#if !MONOMAC
 	[BaseType (typeof (CALayer))]
 	interface CAEAGLLayer {
 		// From the interface  IEAGLDrawable
 		[Export ("drawableProperties", ArgumentSemantic.Copy)]
 		NSDictionary DrawableProperties { get; set; }
 	}
+#endif
 
 	[BaseType (typeof (NSObject))]
 	[Model]

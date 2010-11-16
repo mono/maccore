@@ -754,7 +754,7 @@ namespace MonoMac.Security {
 			set {
 				if (value == null)
 					throw new ArgumentNullException ("value");
-				SetValue (value, SecItem.MatchPolicy);
+				SetValue (value.Handle, SecItem.MatchPolicy);
 			}
 		}
 

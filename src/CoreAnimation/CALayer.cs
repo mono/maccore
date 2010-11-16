@@ -40,6 +40,7 @@ namespace MonoMac.CoreAnimation {
 		}
 	}
 
+#if !MONOMAC
 	public partial class CADisplayLink {
 		public static CADisplayLink Create (NSAction action)
 		{
@@ -47,6 +48,7 @@ namespace MonoMac.CoreAnimation {
 			return Create (d, NSActionDispatcher.Selector);
 		}
 	}
+#endif
 
 	public partial class CAAnimation {
 		[Obsolete ("Use BeginTime instead")]

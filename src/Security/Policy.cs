@@ -31,10 +31,56 @@ using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 
 namespace MonoMac.Security {
+	public class SecPolicy : INativeObject, IDisposable {
+		IntPtr handle;
 
-	public class SecPolicy : NSObject {
-		internal SecPolicy (IntPtr handle) : base (handle) {}
-		
+		internal SecPolicy (IntPtr handle)
+		{
+			if (handle == IntPtr.Zero)
+				throw new Exception ("Invalid parameters to context creation");
+
+			CFRetain (handle);
+			this.handle = handle;
+		}
+
+		[Preserve (Conditional=true)]
+		internal SecPolicy (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CFRetain (handle);
+
+			this.handle = handle;
+		}
+
+		~SecPolicy ()
+		{
+			Dispose (false);
+		}
+
+		public void Dispose ()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		public IntPtr Handle {
+			get { return handle; }
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static void CFRelease (IntPtr handle);
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static void CFRetain (IntPtr handle);
+
+		protected virtual void Dispose (bool disposing)
+		{
+			if (handle != IntPtr.Zero){
+				CFRelease (handle);
+				handle = IntPtr.Zero;
+			}
+		}
+
 		[DllImport (Constants.SecurityLibrary, EntryPoint="SecPolicyGetTypeID")]
 		public extern static int GetTypeID ();
 
@@ -44,7 +90,7 @@ namespace MonoMac.Security {
 				return b == null;
 			else if (b == null)
 				return false;
-			
+
 			return a.Handle == b.Handle;
 		}
 
