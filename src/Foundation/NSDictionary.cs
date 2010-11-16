@@ -28,7 +28,6 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	public partial class NSDictionary : IDictionary, IDictionary<NSObject, NSObject> {
-
 		internal bool ContainsKeyValuePair (KeyValuePair<NSObject, NSObject> pair)
 		{
 			NSObject value;

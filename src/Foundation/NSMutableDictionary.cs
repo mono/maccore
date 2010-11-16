@@ -11,7 +11,17 @@ namespace MonoMac.Foundation {
 		{
 			if (objects.Length != keys.Length)
 				throw new ArgumentException ("objects and keys arrays have different sizes");
-			return FromObjectsAndKeys (objects, keys, objects.Length);
+			return FromObjectsAndKeysInternal (objects, keys);
+		}
+
+		public static NSMutableDictionary FromObjectsAndKeys (NSObject [] objects, NSObject [] keys, int count)
+		{
+			if (objects.Length != keys.Length)
+				throw new ArgumentException ("objects and keys arrays have different sizes");
+			if (count < 1 || objects.Length < count || keys.Length < count)
+				throw new ArgumentException ("count");
+			
+			return FromObjectsAndKeysInternal (objects, keys);
 		}
 		
 		#region ICollection<KeyValuePair<NSObject, NSObject>>
