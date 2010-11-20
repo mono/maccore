@@ -706,6 +706,9 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("compatibleTrackForCompositionTrack:")]
 		AVAssetTrack CompatibleTrack (AVCompositionTrack forCompositionTrack);
+
+		[Field ("AVURLAssetPreferPreciseDurationAndTimingKey")]
+		NSString PreferPreciseDurationAndTimingKey { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
