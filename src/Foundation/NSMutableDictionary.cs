@@ -198,8 +198,8 @@ namespace MonoMac.Foundation {
 			SetObject (value, key);
 		}
 
-#if false
 		static readonly NSObject marker = new NSObject ();
+#if false
 
 		public bool ContainsKey (NSObject key)
 		{
