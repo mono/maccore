@@ -28,6 +28,23 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	public partial class NSDictionary : IDictionary, IDictionary<NSObject, NSObject> {
+		public static NSDictionary FromObjectsAndKeys (NSObject [] objects, NSObject [] keys)
+		{
+			if (objects.Length != keys.Length)
+				throw new ArgumentException ("objects and keys arrays have different sizes");
+			return FromObjectsAndKeysInternal (objects, keys);
+		}
+
+		public static NSDictionary FromObjectsAndKeys (NSObject [] objects, NSObject [] keys, int count)
+		{
+			if (objects.Length != keys.Length)
+				throw new ArgumentException ("objects and keys arrays have different sizes");
+			if (count < 1 || objects.Length < count || keys.Length < count)
+				throw new ArgumentException ("count");
+			
+			return FromObjectsAndKeysInternal (objects, keys);
+		}
+
 		internal bool ContainsKeyValuePair (KeyValuePair<NSObject, NSObject> pair)
 		{
 			NSObject value;
