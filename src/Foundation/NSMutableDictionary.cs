@@ -198,6 +198,7 @@ namespace MonoMac.Foundation {
 			SetObject (value, key);
 		}
 
+#if false
 		static readonly NSObject marker = new NSObject ();
 
 		public bool ContainsKey (NSObject key)
@@ -208,6 +209,7 @@ namespace MonoMac.Foundation {
 			var values = ObjectsForKeys (keys, marker);
 			return object.ReferenceEquals (marker, values [0]);
 		}
+#endif
 
 		public bool Remove (NSObject key)
 		{
