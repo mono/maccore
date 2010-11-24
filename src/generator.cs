@@ -50,12 +50,14 @@ using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
+using MonoMac.CoreVideo;
 #else
 using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
 using MonoTouch.CoreFoundation;
 using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
+using MonoTouch.CoreVideo;
 #endif
 
 public static class ReflectionExtensions {
@@ -958,6 +960,8 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CFRunLoop), "IntPtr", "{0}.Handle", "new CFRunLoop ("));
 		marshal_types.Add (new MarshalType (typeof (CGColorSpace), "IntPtr", "{0}.Handle", "new CGColorSpace ("));
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
+		marshal_types.Add (new MarshalType (typeof (CVImageBuffer), "IntPtr", "{0}.Handle", "new CVImageBuffer ("));
+		marshal_types.Add (new MarshalType (typeof (CGLayer), "IntPtr", "{0}.Handle", "new CGLayer ("));
 #if !MONOMAC
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));
 #endif
