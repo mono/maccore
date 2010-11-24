@@ -735,6 +735,15 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSData))]
 	public interface NSMutableData {
+		[Static, Export ("dataWithCapacity:")]
+		NSMutableData FromCapacity (int capacity);
+
+		[Static, Export ("dataWithLength:")]
+		NSMutableData FromLength (int length);
+		
+		[Static, Export ("data")]
+		NSMutableData Create ();
+		
 		[Export ("setLength:")]
 		void SetLength (uint len);
 

@@ -21,6 +21,35 @@ namespace MonoMac.Foundation {
 			}
 		}
 
+		public void AppendBytes (byte [] bytes)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			
+			unsafe {
+				fixed (byte *p = &bytes[0]){
+					AppendBytes ((IntPtr) p, (uint) bytes.Length);
+				}
+			}
+		}
+
+		public void AppendBytes (byte [] bytes, int start, int len)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+
+			if (start < 0 || start > bytes.Length)
+				throw new ArgumentException ("start");
+			if (start+len > bytes.Length)
+				throw new ArgumentException ("len");
+			
+			unsafe {
+				fixed (byte *p = &bytes[start]){
+					AppendBytes ((IntPtr) p, (uint) len);
+				}
+			}
+		}
+
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
 			IntPtr source = Bytes;
