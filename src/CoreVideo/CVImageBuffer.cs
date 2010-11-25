@@ -161,13 +161,13 @@ namespace MonoMac.CoreVideo {
 			Dispose (false);
 		}
 		
-		public void Dispose ()
+		new public void Dispose ()
 		{
 			Dispose (true);
 			GC.SuppressFinalize (this);
 		}
 
-		public IntPtr Handle {
+		new public IntPtr Handle {
 			get { return handle; }
 		}
 	
@@ -177,7 +177,7 @@ namespace MonoMac.CoreVideo {
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static void CVBufferRetain (IntPtr handle);
 		
-		protected virtual void Dispose (bool disposing)
+		protected override void Dispose (bool disposing)
 		{
 			if (handle != IntPtr.Zero){
 				CVBufferRelease (handle);

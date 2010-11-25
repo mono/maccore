@@ -60,7 +60,7 @@ namespace MonoMac.ObjCRuntime {
 			return dlsym (handle, symbol);
 		}
 
-#if !GENERATOR
+#if !GENERATOR && !MONOMAC_BOOTSTRAP
 		public static NSNumber GetNSNumber (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);
