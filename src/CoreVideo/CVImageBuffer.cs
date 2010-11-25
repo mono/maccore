@@ -25,6 +25,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
@@ -32,6 +33,7 @@ using System.Drawing;
 
 namespace MonoMac.CoreVideo {
 
+	[StructLayout (LayoutKind.Sequential)]
 	public class CVImageBuffer : CVBuffer {
 		internal CVImageBuffer (IntPtr handle) : base (handle)
 		{

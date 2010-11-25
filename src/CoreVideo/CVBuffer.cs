@@ -32,6 +32,7 @@ using System.Drawing;
 
 namespace MonoMac.CoreVideo {
 
+	[StructLayout (LayoutKind.Sequential)]
 	public class CVBuffer : INativeObject, IDisposable {
 		IntPtr handle;
 		internal CVBuffer (IntPtr handle)
