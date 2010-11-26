@@ -876,10 +876,10 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	public interface NSError {
 		[Static, Export ("errorWithDomain:code:userInfo:")]
-		NSError FromDomain (NSString domain, int code, NSDictionary userInfo);
+		NSError FromDomain (NSString domain, int code, [NullAllowed] NSDictionary userInfo);
 
 		[Export ("initWithDomain:code:userInfo:")]
-		IntPtr Constructor (NSString domain, int code, NSDictionary userInfo);
+		IntPtr Constructor (NSString domain, int code, [NullAllowed] NSDictionary userInfo);
 		
 		[Export ("domain")]
 		string Domain { get; }
