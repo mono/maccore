@@ -875,6 +875,12 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	public interface NSError {
+		[Static, Export ("errorWithDomain:code:userInfo:")]
+		NSError FromDomain (NSString domain, int code, NSDictionary userInfo);
+
+		[Export ("initWithDomain:code:userInfo:")]
+		IntPtr Constructor (NSString domain, int code, NSDictionary userInfo);
+		
 		[Export ("domain")]
 		string Domain { get; }
 
@@ -886,6 +892,45 @@ namespace MonoMac.Foundation
 
 		[Export ("localizedDescription")]
 		string LocalizedDescription { get; }
+
+		[Field ("NSCocoaErrorDomain")]
+		NSString CocoaErrorDomain { get;}
+		[Field ("NSPOSIXErrorDomain")]
+		NSString PosixErrorDomain { get; }
+		[Field ("NSOSStatusErrorDomain")]
+		NSString OsStatusErrorDomain { get; }
+		[Field ("NSMachErrorDomain")]
+		NSString MachErrorDomain { get; }
+
+		[Field ("NSUnderlyingErrorKey")]
+		NSString UnderlyingErrorKey { get; }
+
+		[Field ("NSLocalizedDescriptionKey")]
+		NSString LocalizedDescriptionKey { get; }
+
+		[Field ("NSLocalizedFailureReasonErrorKey")]
+		NSString LocalizedFailureReasonErrorKey { get; }
+
+		[Field ("NSLocalizedRecoverySuggestionErrorKey")]
+		NSString LocalizedRecoverySuggestionErrorKey { get; }
+
+		[Field ("NSLocalizedRecoveryOptionsErrorKey")]
+		NSString LocalizedRecoveryOptionsErrorKey { get; }
+
+		[Field ("NSRecoveryAttempterErrorKey")]
+		NSString RecoveryAttempterErrorKey { get; }
+
+		[Field ("NSHelpAnchorErrorKey")]
+		NSString HelpAnchorErrorKey { get; }
+
+		[Field ("NSStringEncodingErrorKey")]
+		NSString StringEncodingErrorKey { get; }
+
+		[Field ("NSURLErrorKey")]
+		NSString UrlErrorKey { get; }
+
+		[Field ("NSFilePathErrorKey")]
+		NSString FilePathErrorKey { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
