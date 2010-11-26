@@ -37,6 +37,7 @@ namespace MonoMac.Foundation {
 	}
 
 	public partial class NSError : NSObject {
+#if !COREBUILD
 		public static NSError FromDomain (NSString domain, int code)
 		{
 			return FromDomain (domain, code, null);
@@ -45,7 +46,6 @@ namespace MonoMac.Foundation {
 		public NSError (NSString domain, int code) : this (domain, code, null)
 		{
 		}
-#if !COREBUILD
 		public override string ToString ()
 		{
 			return LocalizedDescription;
