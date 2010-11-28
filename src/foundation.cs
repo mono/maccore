@@ -1091,19 +1091,19 @@ namespace MonoMac.Foundation
 		NSRunLoop Main { get; }
 
 		[Export ("currentMode")]
-		string CurrentMode { get; }
+		NSString CurrentMode { get; }
 
 		[Export ("getCFRunLoop")]
 		CFRunLoop GetCFRunLoop ();
 
 		[Export ("addTimer:forMode:")]
-		void AddTimer (NSTimer timer, string forMode);
+		void AddTimer (NSTimer timer, NSString forMode);
 
 		[Export ("limitDateForMode:")]
-		NSDate LimitDateForMode (string mode);
+		NSDate LimitDateForMode (NSString mode);
 
 		[Export ("acceptInputForMode:beforeDate:")]
-		void AcceptInputForMode (string mode, NSDate limitDate);
+		void AcceptInputForMode (NSString mode, NSDate limitDate);
 
 		[Export ("run")]
 		void Run ();
@@ -1117,7 +1117,16 @@ namespace MonoMac.Foundation
 		[Field ("NSRunLoopCommonModes")]
 		NSString NSRunLoopCommonModes { get; }
 
-		// TODO :: Additional RunLoop should be defined in NSConnect and NSApplication (NSConnectionReplyMode, NSModalPanelRunLoopMode, NSEventTrackingRunLoopMode)
+#if MONOMAC
+		[Field ("NSConnectionReplyMode")]
+		NSString NSRunLoopConnectionReplyMode { get; }
+
+		[Field ("NSModalPanelRunLoopMode", "AppKit")]
+		NSString NSRunLoopModalPanelMode { get; }
+
+		[Field ("NSEventTrackingRunLoopMode")]
+		NSString NSRunLoopEventTracking { get; }
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]
