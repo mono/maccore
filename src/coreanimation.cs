@@ -458,7 +458,7 @@ namespace MonoMac.CoreAnimation {
 	[BaseType (typeof (CALayer))]
 	interface CATiledLayer {
 		[Static][Export ("fadeDuration")]
-		double FadeDuration { get; ]
+		double FadeDuration { get; }
 
 		[Export ("levelsOfDetail")]
 		int LevelsOfDetail { get; set; }
