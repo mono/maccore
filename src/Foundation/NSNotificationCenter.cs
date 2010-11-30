@@ -31,7 +31,13 @@ namespace MonoMac.Foundation {
 		static Selector postSelector = new Selector ("post:");
 		List <NSObject> __mt_ObserverList_var = new List <NSObject> ();
 
+		[Obsolete ("Use AddObserver(NSSstring, Action<NSNotification>, NSObject)")]
 		public NSObject AddObserver (string aName, Action<NSNotification> notify, NSObject fromObject)
+		{
+			return AddObserver (new NSString (aName), notify, fromObject);
+		}
+		
+		public NSObject AddObserver (NSString aName, Action<NSNotification> notify, NSObject fromObject)
 		{
 			if (notify == null)
 				throw new ArgumentNullException ("notify");
@@ -43,9 +49,29 @@ namespace MonoMac.Foundation {
 			return proxy;
 		}
 
+		public NSObject AddObserver (NSString aName, Action<NSNotification> notify)
+		{
+			return AddObserver (aName, notify, null);
+		}
+
+		[Obsolete ("Use AddObserver(NSSstring, Action<NSNotification>) instead")]
 		public NSObject AddObserver (string aName, Action<NSNotification> notify)
 		{
 			return AddObserver (aName, notify, null);
+		}
+
+		[Obsolete ("Use AddObserver(NSObject, Selector, NSString, NSObject) instead")]
+		public void AddObserver (NSObject observer, Selector aSelector, string aname, NSObject anObject)
+		{
+			AddObserver (observer, aSelector, new NSString (aname), anObject);
+		}
+
+		public void RemoveObservers (IEnumerable<NSObject> keys)
+		{
+			if (keys == null)
+				return;
+			foreach (var k in keys)
+				RemoveObserver (k);
 		}
 	}
 		
