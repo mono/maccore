@@ -3453,6 +3453,8 @@ namespace MonoMac.Foundation
 		[Export ("removeItemAtPath:error:")]
 		bool Remove (string path, out NSError error);
 
+#if DEPRECATED
+		// These are not available on iOS, and deprecated on OSX.
 		[Export ("linkPath:toPath:handler:")]
 		bool LinkPath (string src, string dest, IntPtr handler);
 
@@ -3464,7 +3466,7 @@ namespace MonoMac.Foundation
 
 		[Export ("removeFileAtPath:handler:")]
 		bool RemoveFileAtPath (string path, IntPtr handler);
-
+#endif
 		[Export ("currentDirectoryPath")]
 		string CurrentDirectory { get; [Bind ("changeCurrentDirectoryPath:")] set; }
 
