@@ -246,9 +246,9 @@ namespace MonoMac.CoreData
 		string[] RelationshipKeyPathsForPrefetching { get; set; }
 
 	}
+
 	[BaseType (typeof (NSObject))]
 	interface NSManagedObject {
-
 		[Export ("initWithEntity:insertIntoManagedObjectContext:")]
 		IntPtr Constructor (NSEntityDescription entity, NSManagedObjectContext context);
 

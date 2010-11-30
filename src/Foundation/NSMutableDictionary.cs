@@ -199,17 +199,6 @@ namespace MonoMac.Foundation {
 		}
 
 		static readonly NSObject marker = new NSObject ();
-#if false
-
-		public bool ContainsKey (NSObject key)
-		{
-			if (key == null)
-				throw new ArgumentNullException ("key");
-			var keys   = NSArray.FromNSObjects (new [] {key});
-			var values = ObjectsForKeys (keys, marker);
-			return object.ReferenceEquals (marker, values [0]);
-		}
-#endif
 
 		public bool Remove (NSObject key)
 		{

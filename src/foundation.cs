@@ -384,6 +384,64 @@ namespace MonoMac.Foundation
 		IntPtr DecodeBytes (string key, IntPtr length_ptr);
 	}
 	
+	[BaseType (typeof (NSPredicate))]
+	interface NSComparisonPredicate {
+		[Static, Export ("predicateWithLeftExpression:rightExpression:modifier:type:options:")]
+		NSPredicate Create (NSExpression leftExpression, NSExpression rightExpression, NSComparisonPredicateModifier comparisonModifier, NSPredicateOperatorType operatorType, NSComparisonPredicateOptions comparisonOptions);
+
+		[Static, Export ("predicateWithLeftExpression:rightExpression:customSelector:")]
+		NSPredicate FromSelector (NSExpression leftExpression, NSExpression rightExpression, Selector selector);
+
+		[Export ("initWithLeftExpression:rightExpression:modifier:type:options:")]
+		IntPtr Constructor (NSExpression leftExpression, NSExpression rightExpression, NSComparisonPredicateModifier comparisonModifier, NSPredicateOperatorType operatorType, NSComparisonPredicateOptions comparisonOptions);
+		
+		[Export ("initWithLeftExpression:rightExpression:customSelector:")]
+		IntPtr Constructor (NSExpression leftExpression, NSExpression rightExpression, Selector selector);
+
+		[Export ("predicateOperatorType")]
+		NSPredicateOperatorType PredicateOperatorType { get; }
+
+		[Export ("comparisonPredicateModifier")]
+		NSComparisonPredicateModifier ComparisonPredicateModifier { get; }
+
+		[Export ("leftExpression")]
+		NSExpression LeftExpression { get; }
+
+		[Export ("rightExpression")]
+		NSExpression RightExpression { get; }
+
+		[Export ("customSelector")]
+		Selector CustomSelector { get; }
+
+		[Export ("options")]
+		NSComparisonPredicateOptions Options { get; }
+	}
+
+	[BaseType (typeof (NSPredicate))]
+	interface NSCompoundPredicate {
+		[Export ("initWithType:subpredicates:")]
+		IntPtr Constructor (NSCompoundPredicateType type, NSPredicate[] subpredicates);
+
+		[Export ("compoundPredicateType")]
+		NSCompoundPredicateType Type { get; }
+
+		[Export ("subpredicates")]
+		NSPredicate[] Subpredicates { get; } 
+
+		[Static]
+		[Export ("andPredicateWithSubpredicates:")]
+		NSPredicate CreateAndPredicate (NSPredicate[] subpredicates);
+
+		[Static]
+		[Export ("orPredicateWithSubpredicates:")]
+		NSPredicate CreateOrPredicate (NSPredicate [] subpredicates);
+
+		[Static]
+		[Export ("notPredicateWithSubpredicate:")]
+		NSPredicate CreateNotPredicate (NSPredicate predicate);
+
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSData {
 		[Export ("dataWithContentsOfURL:")]
@@ -683,6 +741,159 @@ namespace MonoMac.Foundation
 		[Export ("classForClassName:")]
 		Class GetClass (string codedName);
 	}
+
+#if MONOMAC
+	[BaseType (typeof (NSObject), Delegates=new string [] { "Delegate" }, Events=new Type [] { typeof (NSMetadataQueryDelegate)})]
+	interface NSMetadataQuery {
+		[Export ("startQuery")]
+		bool StartQuery ();
+
+		[Export ("stopQuery")]
+		void StopQuery ();
+
+		[Export ("isStarted")]
+		bool IsStarted { get; }
+
+		[Export ("isGathering")]
+		bool IsGathering { get; }
+
+		[Export ("isStopped")]
+		bool IsStopped { get; }
+
+		[Export ("disableUpdates")]
+		void DisableUpdates ();
+
+		[Export ("enableUpdates")]
+		void EnableUpdates ();
+
+		[Export ("resultCount")]
+		int ResultCount { get; }
+
+		[Export ("resultAtIndex:")]
+		NSObject ResultAtIndex (int idx);
+
+		[Export ("results")]
+		NSMetadataItem[] Results { get; }
+
+		[Export ("indexOfResult:")]
+		int IndexOfResult (NSObject result);
+
+		[Export ("valueLists")]
+		NSDictionary ValueLists { get; }
+
+		[Export ("groupedResults")]
+		NSObject [] GroupedResults { get; }
+
+		[Export ("valueOfAttribute:forResultAtIndex:")]
+		NSObject ValueOfAttribute (string attribyteName, int atIndex);
+
+		[Export ("delegate", ArgumentSemantic.Assign), NullAllowed]
+		NSMetadataQueryDelegate WeakDelegate { get; set; }
+
+		[Wrap ("WeakDelegate")]
+		NSMetadataQueryDelegate Delegate { get; set; }
+		
+		[Export ("predicate")]
+		NSPredicate Predicate { get; set; }
+
+		[Export ("sortDescriptors")]
+		NSSortDescriptor[] SortDescriptors { get; set; }
+
+		[Export ("valueListAttributes")]
+		NSObject[] ValueListAttributes { get; set; }
+
+		[Export ("groupingAttributes")]
+		NSArray GroupingAttributes { get; set; }
+
+		[Export ("notificationBatchingInterval")]
+		double NotificationBatchingInterval { get; set; }
+
+		[Export ("searchScopes")]
+		NSObject [] SearchScopes { get; set; }
+		
+		// There is no info associated with these notifications
+		[Field ("NSMetadataQueryDidStartGatheringNotification")]
+		NSString DidStartGatheringNotification { get; }
+	
+		[Field ("NSMetadataQueryGatheringProgressNotification")]
+		NSString GatheringProgressNotification { get; }
+		
+		[Field ("NSMetadataQueryDidFinishGatheringNotification")]
+		NSString DidFinishGatheringNotification { get; }
+		
+		[Field ("NSMetadataQueryDidUpdateNotification")]
+		NSString DidUpdateNotification { get; }
+		
+		[Field ("NSMetadataQueryResultContentRelevanceAttribute")]
+		NSString ResultContentRelevanceAttribute { get; }
+		
+		// Scope constants for defined search locations
+		[Field ("NSMetadataQueryUserHomeScope")]
+		NSString UserHomeScope { get; }
+		
+		[Field ("NSMetadataQueryLocalComputerScope")]
+		NSString LocalComputerScope { get; }
+		
+		[Field ("NSMetadataQueryNetworkScope")]
+		NSString QueryNetworkScope { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface NSMetadataQueryDelegate {
+		[Export ("metadataQuery:replacementObjectForResultObject:"), EventArgs ("NSMetadataQueryObject"), DefaultValue(null)]
+		NSObject ReplacementObjectForResultObject (NSMetadataQuery query, NSMetadataItem result);
+
+		[Export ("metadataQuery:replacementValueForAttribute:value:"), EventArgs ("NSMetadataQueryValue"), DefaultValue(null)]
+		NSObject ReplacementValueForAttributevalue (NSMetadataQuery query, string attributeName, NSObject value);
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface NSMetadataItem {
+		[Export ("valueForAttribute:")]
+		NSObject ValueForAttribute (string key);
+
+		[Export ("valuesForAttributes:")]
+		NSDictionary ValuesForAttributes (NSArray keys);
+
+		[Export ("attributes")]
+		NSObject [] Attributes { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface NSMetadataQueryAttributeValueTuple {
+		[Export ("attribute")]
+		string Attribute { get; }
+
+		[Export ("value")]
+		NSObject Value { get; }
+
+		[Export ("count")]
+		int Count { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface NSMetadataQueryResultGroup {
+		[Export ("attribute")]
+		string Attribute { get; }
+
+		[Export ("value")]
+		NSObject Value { get; }
+
+		[Export ("subgroups")]
+		NSObject [] Subgroups { get; }
+
+		[Export ("resultCount")]
+		int ResultCount { get; }
+
+		[Export ("resultAtIndex:")]
+		NSObject ResultAtIndex (uint idx);
+
+		[Export ("results")]
+		NSObject [] Results { get; }
+
+	}
+#endif
 
 	[Since (3,2)]
 	[BaseType (typeof (NSAttributedString))]
@@ -3303,13 +3514,6 @@ namespace MonoMac.Foundation
 		uint ActiveProcessorCount { get; }
 	}
 
-	[BaseType (typeof (NSObject))]
-	[Since (4,0)]
-	interface NSPredicate {
-		[Export ("evaluateWithObject:")]
-		bool EvaluateWithObject (NSObject obj);
-	}
-
 	[BaseType (typeof (NSMutableData))]
 	[Since (4,0)]
 	interface NSPurgeableData {
@@ -3650,6 +3854,34 @@ namespace MonoMac.Foundation
 #endif
 	}
 
+	delegate bool NSPredicateEvaluator (NSObject evaluatedObject, NSDictionary bindings);
+	
+	[BaseType (typeof (NSObject))]
+	[Since (4,0)]
+	interface NSPredicate {
+		[Static]
+		[Export ("predicateWithFormat:argumentArray:")]
+		NSPredicate FromFormat (string predicateFormat, NSObject[] arguments);
+
+		[Static, Export ("predicateWithValue:")]
+		NSPredicate FromValue (bool value);
+
+		[Static, Export ("predicateWithBlock:")]
+		NSPredicate FromExpression (NSPredicateEvaluator evaluator);
+
+		[Export ("predicateFormat")]
+		string PredicateFormat { get; }
+
+		[Export ("predicateWithSubstitutionVariables:")]
+		NSPredicate PredicateWithSubstitutionVariables (NSDictionary substitutionVariables);
+
+		[Export ("evaluateWithObject:")]
+		bool EvaluateWithObject (NSObject obj);
+
+		[Export ("evaluateWithObject:substitutionVariables:")]
+		bool EvaluateWithObject (NSObject obj, NSDictionary substitutionVariables);
+	}
+
 #if MONOMAC
 	[BaseType (typeof (NSObject), Name="NSURLDownload")]
 	interface NSUrlDownload {
@@ -3720,5 +3952,6 @@ namespace MonoMac.Foundation
 		void FailedWithError(NSUrlDownload download, NSError error);
 	}
 #endif
+
 }
 

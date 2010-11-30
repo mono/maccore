@@ -267,4 +267,39 @@ namespace MonoMac.Foundation  {
 		ErrorOccurred = 1 << 3,
 		EndEncountered = 1 << 4
 	}
+	
+	public enum NSComparisonPredicateModifier {
+		Direct,
+		All,
+		Any
+	}
+
+	public enum NSPredicateOperatorType {
+		LessThan,
+		LessThanOrEqualTo,
+		GreaterThan,
+		GreaterThanOrEqualTo,
+		EqualTo,
+		NotEqualTo,
+		Matches,
+		Like,
+		BeginsWith,
+		EndsWith,
+		In,
+		CustomSelector,
+		Contains,
+		Between
+	}
+
+	[Flags]
+	public enum NSComparisonPredicateOptions {
+		CaseInsensitive=0x01,
+		DiacriticInsensitive=0x02
+	}	
+	
+	public enum NSCompoundPredicateType {
+		Not,
+		And,
+		Or
+	}	
 }
