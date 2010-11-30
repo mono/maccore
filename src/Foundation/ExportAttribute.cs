@@ -28,6 +28,7 @@
 //
 //
 using System;
+using System.Reflection;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
@@ -57,5 +58,19 @@ namespace MonoMac.Foundation {
 			get { return this.semantic; }
 			set { this.semantic = value; }
 		}
+
+#if MONOMAC
+		public ExportAttribute ToGetter (PropertyInfo prop) {
+			if (string.IsNullOrEmpty (Selector))
+				Selector = prop.Name;
+			return new ExportAttribute (selector, semantic);
+		}
+
+		public ExportAttribute ToSetter (PropertyInfo prop) {
+			if (string.IsNullOrEmpty (Selector))
+				Selector = prop.Name;
+			return new ExportAttribute (string.Format ("set{0}{1}:", char.ToUpper (selector [0]), selector.Substring (1)), semantic); 
+		}
+#endif
 	}
 }
