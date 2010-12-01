@@ -961,7 +961,7 @@ namespace MonoMac.Foundation
 		[Export ("mutableBytes")]
 		IntPtr MutableBytes { get; }
 
-		[Export ("initWithCapacity:")]
+		[Export ("initWithLength:")]
 		IntPtr Constructor (uint len);
 
 		[Export ("appendData:")]
