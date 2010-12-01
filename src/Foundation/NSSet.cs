@@ -39,6 +39,10 @@ namespace MonoMac.Foundation {
 	public partial class NSSet {
 		static IntPtr selSetWithArray = Selector.sel_registerName ("setWithArray:");
 
+		public NSSet (NSObject [] objs) : this (NSArray.FromNSObjects (objs))
+		{
+		}
+		
 		public T [] ToArray<T> () where T : NSObject
 		{
 			IntPtr nsarr = _AllObjects ();
