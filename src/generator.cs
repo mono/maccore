@@ -1612,7 +1612,7 @@ public class Generator {
 			print ("");
 
 			if (!is_static_class){
-				print ("\t\tstatic IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", objc_type_name);
+				print ("\t\tstatic IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
 				if (!is_model && !external) {
 					print ("\t\tpublic {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
 				}
