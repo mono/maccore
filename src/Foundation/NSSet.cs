@@ -42,6 +42,10 @@ namespace MonoMac.Foundation {
 		public NSSet (NSObject [] objs) : this (NSArray.FromNSObjects (objs))
 		{
 		}
+
+		public NSSet (string [] strings) : this (NSArray.FromStrings (strings))
+		{
+		}
 		
 		public T [] ToArray<T> () where T : NSObject
 		{
