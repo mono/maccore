@@ -111,7 +111,7 @@ namespace MonoMac.CoreGraphics {
 	}
 
 	public class CGContext : INativeObject, IDisposable {
-		IntPtr handle;
+		internal IntPtr handle;
 
 		internal CGContext (IntPtr handle)
 		{
@@ -122,6 +122,10 @@ namespace MonoMac.CoreGraphics {
 			this.handle = handle;
 		}
 
+		internal CGContext ()
+		{
+		}
+		
 		[Preserve (Conditional=true)]
 		internal CGContext (IntPtr handle, bool owns)
 		{
@@ -135,7 +139,7 @@ namespace MonoMac.CoreGraphics {
 		{
 			Dispose (false);
 		}
-		
+
 		public void Dispose ()
 		{
 			Dispose (true);
