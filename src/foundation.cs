@@ -1927,6 +1927,27 @@ namespace MonoMac.Foundation
 
 		[Export ("redoMenuTitleForUndoActionName:")]
 		string RedoMenuTitleForUndoActionName (string name);
+
+		[Field ("NSUndoManagerCheckpointNotification")]
+		NSString CheckpointNotification { get; }
+
+		[Field ("NSUndoManagerDidOpenUndoGroupNotification")]
+		NSString DidOpenUndoGroupNotification { get; }
+
+		[Field ("NSUndoManagerDidRedoChangeNotification")]
+		NSString DidRedoChangeNotification { get; }
+
+		[Field ("NSUndoManagerDidUndoChangeNotification")]
+		NSString DidUndoChangeNotification { get; }
+
+		[Field ("NSUndoManagerWillCloseUndoGroupNotification")]
+		NSString WillCloseUndoGroupNotification { get; }
+
+		[Field ("NSUndoManagerWillRedoChangeNotification")]
+		NSString WillRedoChangeNotification { get; }
+
+		[Field ("NSUndoManagerWillUndoChangeNotification")]
+		NSString WillUndoChangeNotification { get; }
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLProtectionSpace")]
