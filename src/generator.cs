@@ -71,10 +71,23 @@ public static class ReflectionExtensions {
 	public static List <PropertyInfo> GatherProperties (this Type type) {
 		List <PropertyInfo> properties = new List <PropertyInfo> (type.GetProperties ());
 		Type parent_type = GetBaseType (type);
+		string owrap;
+		string nwrap;
 
 		if (parent_type != typeof (NSObject)) {
 			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
-				properties.AddRange (parent_type.GetProperties ());
+				foreach (PropertyInfo pinfo in parent_type.GetProperties ()) {
+					bool toadd = true;
+					var modelea = Generator.GetExportAttribute (pinfo, out nwrap);
+					foreach (PropertyInfo exists in properties) {
+						var origea = Generator.GetExportAttribute (exists, out owrap);
+						if (origea.Selector == modelea.Selector)
+							toadd = false;
+					}
+
+					if (toadd)
+						properties.Add (pinfo);
+				}
 			}
 	                parent_type = GetBaseType (parent_type);
 		}
@@ -85,10 +98,23 @@ public static class ReflectionExtensions {
 	public static List <PropertyInfo> GatherProperties (this Type type, BindingFlags flags) {
 		List <PropertyInfo> properties = new List <PropertyInfo> (type.GetProperties (flags));
 		Type parent_type = GetBaseType (type);
+		string owrap;
+		string nwrap;
 
 		if (parent_type != typeof (NSObject)) {
 			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
-				properties.AddRange (parent_type.GetProperties (flags));
+				foreach (PropertyInfo pinfo in parent_type.GetProperties (flags)) {
+					bool toadd = true;
+					var modelea = Generator.GetExportAttribute (pinfo, out nwrap);
+					foreach (PropertyInfo exists in properties) {
+						var origea = Generator.GetExportAttribute (exists, out owrap);
+						if (origea.Selector == modelea.Selector)
+							toadd = false;
+					}
+
+					if (toadd)
+						properties.Add (pinfo);
+				}
 			}
 	                parent_type = GetBaseType (parent_type);
 		}
@@ -916,7 +942,7 @@ public class Generator {
 	//
 	// Either we have an [Export] attribute, or we have a [Wrap] one
 	//
-	ExportAttribute GetExportAttribute (PropertyInfo pi, out string wrap)
+	public static ExportAttribute GetExportAttribute (PropertyInfo pi, out string wrap)
 	{
 		wrap = null;
 		object [] attrs = pi.GetCustomAttributes (typeof (ExportAttribute), true);
