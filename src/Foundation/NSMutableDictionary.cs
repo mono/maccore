@@ -232,7 +232,15 @@ namespace MonoMac.Foundation {
 				return ObjectForKey (key);
 			}
 			set {
-				SetObject (value, key);
+				if (key == null)
+					throw new ArgumentNullException ("key");
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				if (IsDirectBinding) {
+					MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selSetObjectForKey, value.Handle, key.Handle);
+				} else {
+					MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selSetObjectForKey, value.Handle, key.Handle);
+				}
 			}
 		}
 
