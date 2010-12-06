@@ -34,7 +34,6 @@ using MonoMac;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
-using MonoMac.OpenGLES;
 
 namespace MonoMac.AddressBook {
 
