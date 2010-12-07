@@ -44,11 +44,16 @@ namespace MonoMac.Foundation {
 			}
 			return indexes.ToArray();
 		}
-		public NSIndexSet FromArray (uint[] items)
+		public static NSIndexSet FromArray (uint[] items)
 		{
 			if (items == null)
 				return new NSIndexSet ();
-			return  new NSMutableIndexSet().FromArray(items);
+			var indexSet = new NSMutableIndexSet();
+			foreach(var index in items)
+			{
+				indexSet.Add(index);	
+			}
+			return indexSet;
 		}
 	}
 		
