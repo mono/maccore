@@ -1026,11 +1026,11 @@ namespace MonoMac.Foundation
 
 		[Export ("dictionaryWithObjects:forKeys:count:")]
 		[Static, New, Internal]
-		NSDictionary FromObjectsAndKeysInternal (NSObject [] objects, NSObject [] Keys, int count);
+		NSDictionary FromObjectsAndKeysInternal (NSArray objects, NSArray keys, int count);
 
 		[Export ("dictionaryWithObjects:forKeys:")]
 		[Static, New, Internal]
-		NSDictionary FromObjectsAndKeysInternal (NSObject [] objects, NSObject [] Keys);
+		NSDictionary FromObjectsAndKeysInternal (NSArray objects, NSArray keys);
 
 		[Export ("initWithDictionary:")]
 		IntPtr Constructor (NSDictionary other);
@@ -2055,11 +2055,11 @@ namespace MonoMac.Foundation
 
 		[Export ("dictionaryWithObjects:forKeys:count:")]
 		[Static, Internal]
-		NSMutableDictionary FromObjectsAndKeysInternalCount (NSObject [] objects, NSObject [] Keys, int count);
+		NSMutableDictionary FromObjectsAndKeysInternalCount (NSArray objects, NSArray keys, int count);
 
 		[Export ("dictionaryWithObjects:forKeys:")]
 		[Static, Internal]
-		NSMutableDictionary FromObjectsAndKeysInternal (NSObject [] objects, NSObject [] Keys);
+		NSMutableDictionary FromObjectsAndKeysInternal (NSArray objects, NSArray Keys);
 		
 		[Export ("initWithDictionary:")]
 		IntPtr Constructor (NSDictionary other);

@@ -31,8 +31,12 @@ namespace MonoMac.Foundation {
 		{
 			if (obj == null)
 				return NSNull.Null;
+			var t = obj.GetType ();
+			if (t == typeof (NSObject))
+				return (NSObject) obj;
+			
 			NSObject val;
-			switch (Type.GetTypeCode (obj.GetType ())){
+			switch (Type.GetTypeCode (t)){
 			case TypeCode.Boolean:
 				return new NSNumber ((bool) obj);
 			case TypeCode.Char:
@@ -60,7 +64,6 @@ namespace MonoMac.Foundation {
 			case TypeCode.String:
 				return new NSString ((string) obj);
 			default:
-				var t = obj.GetType ();
 				if (t == typeof (IntPtr))
 					return NSValue.ValueFromPointer ((IntPtr) obj);
 

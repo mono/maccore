@@ -32,7 +32,26 @@ namespace MonoMac.Foundation {
 		{
 			if (objects.Length != keys.Length)
 				throw new ArgumentException ("objects and keys arrays have different sizes");
-			return FromObjectsAndKeysInternal (objects, keys);
+			
+			var no = NSArray.FromNSObjects (objects);
+			var nk = NSArray.FromNSObjects (keys);
+			var r = FromObjectsAndKeysInternal (no, nk);
+			no.Dispose ();
+			nk.Dispose ();
+			return r;
+		}
+
+		public static NSDictionary FromObjectsAndKeys (object [] objects, object [] keys)
+		{
+			if (objects.Length != keys.Length)
+				throw new ArgumentException ("objects and keys arrays have different sizes");
+			
+			var no = NSArray.FromObjects (objects);
+			var nk = NSArray.FromObjects (keys);
+			var r = FromObjectsAndKeysInternal (no, nk);
+			no.Dispose ();
+			nk.Dispose ();
+			return r;
 		}
 
 		public static NSDictionary FromObjectsAndKeys (NSObject [] objects, NSObject [] keys, int count)
@@ -42,9 +61,29 @@ namespace MonoMac.Foundation {
 			if (count < 1 || objects.Length < count || keys.Length < count)
 				throw new ArgumentException ("count");
 			
-			return FromObjectsAndKeysInternal (objects, keys);
+			var no = NSArray.FromNSObjects (objects);
+			var nk = NSArray.FromNSObjects (keys);
+			var r = FromObjectsAndKeysInternal (no, nk);
+			no.Dispose ();
+			nk.Dispose ();
+			return r;
 		}
 
+		public static NSDictionary FromObjectsAndKeys (object [] objects, object [] keys, int count)
+		{
+			if (objects.Length != keys.Length)
+				throw new ArgumentException ("objects and keys arrays have different sizes");
+			if (count < 1 || objects.Length < count || keys.Length < count)
+				throw new ArgumentException ("count");
+			
+			var no = NSArray.FromObjects (objects);
+			var nk = NSArray.FromObjects (keys);
+			var r = FromObjectsAndKeysInternal (no, nk);
+			no.Dispose ();
+			nk.Dispose ();
+			return r;
+		}
+		
 		internal bool ContainsKeyValuePair (KeyValuePair<NSObject, NSObject> pair)
 		{
 			NSObject value;
