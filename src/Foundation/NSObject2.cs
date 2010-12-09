@@ -2,8 +2,14 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Drawing;
 
 using MonoMac.ObjCRuntime;
+#if !MONOMAC
+using MonoTouch.UIKit;
+using MonoTouch.CoreAnimation;
+#endif
+using MonoMac.CoreGraphics;
 
 namespace MonoMac.Foundation {
 
@@ -26,7 +32,7 @@ namespace MonoMac.Foundation {
 			if (obj == null)
 				return NSNull.Null;
 			NSObject val;
-			switch (Type.GetTypeCode (obj)){
+			switch (Type.GetTypeCode (obj.GetType ())){
 			case TypeCode.Boolean:
 				return new NSNumber ((bool) obj);
 			case TypeCode.Char:
