@@ -48,6 +48,19 @@ namespace MonoMac.Foundation {
 			return FromNSObjects (_items);
 		}
 
+		public static NSArray FromObjects (params object [] items)
+		{
+			if (items == null)
+				return new NSArray (true);
+			NSObject [] nsoa = new NSObject [items.Length];
+			for (int i = 0; i < items.Length; i++){
+				var k = NSObject.FromObject (items [i]);
+				if (k == null)
+					throw new Exception (String.Format ("Do not know how to marshal object of type {0} to an NSObject", k.GetType ());
+				nsoa [i] = k;
+			}
+		}
+		
 		internal static NSArray FromNSObjects (IList<NSObject> items)
 		{
 			if (items == null)

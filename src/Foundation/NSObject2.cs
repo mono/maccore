@@ -20,5 +20,60 @@ namespace MonoMac.Foundation {
                                 Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, selAwakeFromNib, coder.Handle);
                         }
 		}
+
+		public static NSObject FromObject (object obj)
+		{
+			if (obj == null)
+				return NSNull.Null;
+			NSObject val;
+			switch (Type.GetTypeCode (obj)){
+			case TypeCode.Boolean:
+				return new NSNumber ((bool) obj);
+			case TypeCode.Char:
+				return new NSNumber ((ushort) (char) obj);
+			case TypeCode.SByte:
+				return new NSNumber ((sbyte) obj);
+			case TypeCode.Byte:
+				return new NSNumber ((byte) obj);
+			case TypeCode.Int16:
+				return new NSNumber ((short) obj);
+			case TypeCode.UInt16:
+				return new NSNumber ((ushort) obj);
+			case TypeCode.Int32:
+				return new NSNumber ((int) obj);
+			case TypeCode.UInt32:
+				return new NSNumber ((uint) obj);
+			case TypeCode.Int64:
+				return new NSNumber ((long) obj);
+			case TypeCode.UInt64:
+				return new NSNumber ((ulong) obj);
+			case TypeCode.Single:
+				return new NSNumber ((float) obj);
+			case TypeCode.Double:
+				return new NSNumber ((double) obj);
+			case TypeCode.String:
+				return new NSString ((string) obj);
+			default:
+				var t = obj.GetType ();
+				if (t == typeof (IntPtr))
+					return NSValue.ValueFromPointer ((IntPtr) obj);
+
+				if (t == typeof (SizeF))
+					return NSValue.FromSizeF ((SizeF) obj);
+				else if (t == typeof (RectangleF))
+					return NSValue.FromRectangleF ((RectangleF) obj);
+				else if (t == typeof (PointF))
+					return NSValue.FromPointF ((PointF) obj);
+#if !MONOMAC
+				if (t == typeof (CGAffineTransform))
+					return NSValue.FromCGAffineTransform ((CGAffineTransform) obj);
+				else if (t == typeof (UIEdgeInsets))
+					return NSValue.FromUIEdgeInsets ((UIEdgeInsets) obj);
+				else if (t == typeof (CATransform3D))
+					return NSValue.FromCATransform3D ((CATransform3D) obj);
+#endif
+				return null;
+			}
+		}
 	}
 }
