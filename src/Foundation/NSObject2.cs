@@ -32,7 +32,7 @@ namespace MonoMac.Foundation {
 			if (obj == null)
 				return NSNull.Null;
 			var t = obj.GetType ();
-			if (t == typeof (NSObject))
+			if (t == typeof (NSObject) || t.IsSubclassOf (typeof (NSObject)))
 				return (NSObject) obj;
 			
 			NSObject val;
