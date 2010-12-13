@@ -181,5 +181,13 @@ namespace MonoMac.CoreGraphics {
 		{
 			return CGRectApplyAffineTransform (rect, this);
 		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		public extern static CGAffineTransform CGAffineTransformInvert (CGAffineTransform t);
+
+		public CGAffineTransform Invert ()
+		{
+			return CGAffineTransformInvert (this);
+		}
 	}
 }
