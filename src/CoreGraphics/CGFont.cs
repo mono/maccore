@@ -271,5 +271,8 @@ namespace MonoMac.CoreGraphics {
 #if TODO
 		ToCTFont() overloads where attributes is CTFontDescriptorRef
 #endif // TODO
+
+		[DllImport (Constants.CoreTextLibrary, EntryPoint="CGFontGetTypeID")]
+		public extern static int GetTypeID ();
 	}
 }

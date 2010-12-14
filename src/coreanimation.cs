@@ -580,6 +580,9 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("fontSize")]
 		float FontSize { get; set; }
+
+		[Export ("font"), Internal]
+		IntPtr _Font { get; set; }
 		
 		[Export ("foregroundColor")]
 		CGColor ForegroundColor { get; set; }

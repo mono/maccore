@@ -1094,5 +1094,8 @@ namespace MonoMac.CoreText {
 		{
 			return FullName;
 		}
+
+		[DllImport (Constants.CoreTextLibrary, EntryPoint="CTFontGetTypeID")]
+		public extern static int GetTypeID ();
 	}
 }
