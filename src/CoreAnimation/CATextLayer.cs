@@ -41,6 +41,35 @@ using MonoMac.AppKit;
 namespace MonoMac.CoreAnimation {
 
 	public partial class CATextLayer {
+		public void SetFont (string fontName)
+		{
+			if (fontName == null)
+				throw new ArgumentNullException ("fontName");
+		}
+		
+		public void SetFont (CGFont font)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			_Font = font.Handle;
+		}
+
+		public void SetFont (CTFont font)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			_Font = font.Handle;
+		}
+
+#if MONOMAC
+		public void SetFont (NSFont font)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			_Font = font.Handle;
+		}
+#endif
+
 		public object WeakFont {
 			get {
 				var handle = _Font;
