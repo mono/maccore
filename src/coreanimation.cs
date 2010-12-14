@@ -69,7 +69,45 @@ namespace MonoMac.CoreAnimation {
 	}		
 #endif
 
-#if !MONOMAC
+#if MONOMAC
+	[BaseType (typeof (NSObject))]
+	interface CAConstraintLayoutManager {
+		[Static]
+		[Export ("layoutManager")]
+		CAConstraintLayoutManager LayoutManager { get; }
+	}
+	
+	[BaseType (typeof (NSObject))]
+	interface CAConstraint {
+		[Export ("attribute")]
+		CAConstraintAttribute Attribute { get;  }
+
+		[Export ("sourceName")]
+		string SourceName { get;  }
+
+		[Export ("sourceAttribute")]
+		CAConstraintAttribute SourceAttribute { get;  }
+
+		[Export ("scale")]
+		float Scale { get;  }
+
+		[Static]
+		[Export ("constraintWithAttribute:relativeTo:attribute:scale:offset:")]
+		CAConstraint Create (CAConstraintAttribute attribute, string relativeToSource, CAConstraintAttribute srcAttr, float scale, float offset);
+
+		[Static]
+		[Export ("constraintWithAttribute:relativeTo:attribute:offset:")]
+		CAConstraint Create (CAConstraintAttribute attribute, string relativeToSource, CAConstraintAttribute srcAttr, float offset);
+
+		[Static]
+		[Export ("constraintWithAttribute:relativeTo:attribute:")]
+		CAConstraint Create (CAConstraintAttribute attribute, string relativeToSource, CAConstraintAttribute srcAttribute);
+
+		[Export ("initWithAttribute:relativeTo:attribute:scale:offset:")]
+		IntPtr Constructor (CAConstraintAttribute attribute, string relativeToSource, CAConstraintAttribute srcAttr, float scale, float offset);
+	}
+	
+#else
 	[BaseType (typeof (NSObject))]
 	interface CADisplayLink {
 		[Export ("displayLinkWithTarget:selector:")][Static]
@@ -440,6 +478,12 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("resizeWithOldSuperlayerSize:")]
 		void Resize (SizeF oldSuperlayerSize);
+		
+		[Export ("constraints")]
+		CAConstraint[] Constraints { get; set;  }
+
+		[Export ("addConstraint:")]
+		void AddConstraint (CAConstraint c);
 #else
 		[Since (3,2)]
 		[Export ("shouldRasterize")]
@@ -998,5 +1042,6 @@ namespace MonoMac.CoreAnimation {
 		NSString TranslateZ { get; }
 		
 	}
+	
 }
 

@@ -57,6 +57,16 @@ namespace MonoMac.CoreAnimation {
 		HeightSizable = 1 << 4,
 		MaxYMargin   = 1 << 5
 	}
+
+	public enum CAConstraintAttribute {
+		MinX,
+		MidX,
+		MaxX,
+		Width,
+		MinY,
+		MidY,
+		MaxY,
+		Height,
+	};
 #endif
-	
 }
