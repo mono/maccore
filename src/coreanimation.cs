@@ -248,7 +248,10 @@ namespace MonoMac.CoreAnimation {
 		[Export ("contents", ArgumentSemantic.Retain)]
 		CGImage Contents { get; set; }
 
-#if !MONOMAC
+#if MONOMAC
+		[Export ("layoutManager")]
+		NSObject LayoutManager { get; set; }
+#else
 		[Export ("contentsScale")]
 		float ContentsScale { get; set; }
 #endif
