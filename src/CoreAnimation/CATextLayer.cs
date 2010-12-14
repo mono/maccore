@@ -45,6 +45,8 @@ namespace MonoMac.CoreAnimation {
 		{
 			if (fontName == null)
 				throw new ArgumentNullException ("fontName");
+			using (var nss = new NSString (fontName))
+				_Font = nss.Handle;
 		}
 		
 		public void SetFont (CGFont font)
