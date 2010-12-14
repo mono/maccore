@@ -41,7 +41,7 @@ using MonoMac.AppKit;
 namespace MonoMac.CoreAnimation {
 
 	public partial class CATextLayer {
-		public object Font {
+		public object WeakFont {
 			get {
 				var handle = _Font;
 				int type = CFType.GetTypeID (handle);
