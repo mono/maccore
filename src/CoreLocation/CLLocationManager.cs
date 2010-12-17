@@ -59,6 +59,7 @@ namespace MonoMac.CoreLocation {
 			}
 		}
 
+#if !MONOMAC
 		public static bool HeadingAvailable {
 			get {
 				if (use_static_variants) {
@@ -70,5 +71,6 @@ namespace MonoMac.CoreLocation {
 				}
 			}
 		}
+#endif
 	}
 }

@@ -119,7 +119,12 @@ namespace MonoMac.CoreLocation {
 	
 		[Export ("stopUpdatingLocation")]
 		void StopUpdatingLocation ();
-	
+
+		[Since (4,0)]
+		[Export ("locationServicesEnabled"), Static, Internal]
+		bool _LocationServicesEnabledStatic { get; }
+
+#if !MONOMAC
 		[Export ("headingFilter", ArgumentSemantic.Assign)]
 		double HeadingFilter { get; set;  }
 	
@@ -138,10 +143,6 @@ namespace MonoMac.CoreLocation {
 		[Since (3,2)]
 		[Export ("purpose", ArgumentSemantic.Copy)]
 		string Purpose { get; set; }
-
-		[Since (4,0)]
-		[Export ("locationServicesEnabled"), Static, Internal]
-		bool _LocationServicesEnabledStatic { get; }
 
 		[Since (4,0)]
 		[Export ("headingAvailable"), Static, Internal]
@@ -163,11 +164,9 @@ namespace MonoMac.CoreLocation {
 		[Export ("headingOrientation")]
 		CLDeviceOrientation HeadingOrientation { get; set; }
 
-#if !MONOMAC
 		[Export ("heading")]
 		[Since (4,0)]
 		CLHeading Heading { get; }
-#endif
 
 		[Export ("maximumRegionMonitoringDistance")]
 		[Since (4,0)]
@@ -185,7 +184,6 @@ namespace MonoMac.CoreLocation {
 		[Export ("stopMonitoringSignificantLocationChanges")]
 		void StopMonitoringSignificantLocationChanges ();
 
-#if !MONOMAC
 		[Since (4,0)]
 		[Export ("startMonitoringForRegion:desiredAccuracy:")]
 		void StartMonitoring (CLRegion region, double desiredAccuracy);
@@ -193,11 +191,11 @@ namespace MonoMac.CoreLocation {
 		[Since (4,0)]
 		[Export ("stopMonitoringForRegion:")]
 		void StopMonitoring (CLRegion region);
-#endif
 
 		[Since (4,2)]
 		[Export ("authorizationStatus")][Static]
 		CLAuthorizationStatus Status { get; }
+#endif
 	}
 	
 	[BaseType (typeof (NSObject))]
