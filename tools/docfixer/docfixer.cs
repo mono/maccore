@@ -72,6 +72,9 @@ public partial class DocGenerator {
 		"{0}/iPhone/Reference/{2}_Class/{2}.html",
 		"{0}/iPhone/Reference/{2}_Class/Reference/Reference.html", 		// UILocalReference
 
+		// AppKit-style
+		"{0}/{1}/Reference/{3}/Classes/{2}_Class/Reference/Reference.html",
+		"{0}/{1}/Reference/{3}/Classes/{2}_Class/Reference/{2}.html",
 		// Audit these two: is it index.html?
 		//"{0}/{1}/Reference/{2}ProtocolReference/index.html"
 	};
@@ -109,6 +112,22 @@ public partial class DocGenerator {
 			alt2 = "CAEGLLayer";
 		if (t.Name == "UIActionSheetDelegate")
 			alt2 = "UIModalViewDelegate";
+		if (fx == "AppKit"){
+			fx = "Cocoa";
+			alt = "ApplicationKit";
+		}
+		if (fx == "CoreImage"){
+			fx = "GraphicsImaging";
+			alt = "QuartzCoreFramework";
+		}
+		if (fx == "QTKit"){
+			fx = "QuickTime";
+			alt = "QTKitFramework";
+		}
+		if (fx == "WebKit"){
+			fx = "Cocoa";
+			alt = "WebKit";
+		}
 		
 		foreach (string pattern in patterns){
 			string path = String.Format (pattern, DocBase, fx, t.Name, alt, alt2, t.Name.Substring (2));
@@ -141,10 +160,10 @@ public partial class DocGenerator {
 		}
 
 		Console.WriteLine ("NOT FOUND: {0}", t);
-#if DEBUG
+#if true
 	    	Console.WriteLine ("DocBase: {0}", DocBase);
 		foreach (string pattern in patterns){
-			string path = String.Format (pattern, DocBase, fx, t.Name, alt, alt2, t.Name.Substring (2));
+			string path = String.Format (pattern, "", fx, t.Name, alt, alt2, t.Name.Substring (2));
 			Console.WriteLine ("    Tried: {0}", path);
 		}
 #endif
@@ -524,15 +543,9 @@ public partial class DocGenerator {
 		return false;
 	}
 
-	static Type last_type;
-	
 	public static void ReportProblem (Type t, string docpath, string selector, string key)
 	{
-		if (last_type != t){
-			Console.WriteLine (t);
-			last_type = t;
-		}
-		
+		Console.WriteLine (t);
 		Console.WriteLine ("    Error: did not find selector \"{0}\"", selector);
 		Console.WriteLine ("     File: {0}", docpath);
 		Console.WriteLine ("      key: {0}", key);
@@ -754,7 +767,11 @@ public partial class DocGenerator {
 	
 	public static object ExtractSummary (XElement member)
 	{
-		return HtmlToMdoc (member.ElementsAfterSelf ("p").First ());
+		try {
+			return HtmlToMdoc (member.ElementsAfterSelf ("p").First ());
+		} catch {
+			return null;
+		}
 	}
 
 	static XElement GetMemberDocEnd (XElement member)
