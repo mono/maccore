@@ -19,7 +19,7 @@ namespace MonoMac.Foundation {
 			return r;
 		}
 
-		public static NSDictionary FromObjectsAndKeys (object [] objects, object [] keys)
+		public static NSMutableDictionary FromObjectsAndKeys (object [] objects, object [] keys)
 		{
 			if (objects.Length != keys.Length)
 				throw new ArgumentException ("objects and keys arrays have different sizes");
@@ -47,7 +47,7 @@ namespace MonoMac.Foundation {
 			return r;
 		}
 		
-		public static NSDictionary FromObjectsAndKeys (object [] objects, object [] keys, int count)
+		public static NSMutableDictionary FromObjectsAndKeys (object [] objects, object [] keys, int count)
 		{
 			if (objects.Length != keys.Length)
 				throw new ArgumentException ("objects and keys arrays have different sizes");
@@ -144,7 +144,7 @@ namespace MonoMac.Foundation {
 		class ShimEnumerator : IDictionaryEnumerator, IEnumerator {
 			IEnumerator<KeyValuePair<NSObject, NSObject>> e;
 
-			public ShimEnumerator (NSDictionary host)
+			public ShimEnumerator (NSMutableDictionary host)
 			{
 				e = host.GetEnumerator ();
 			}
