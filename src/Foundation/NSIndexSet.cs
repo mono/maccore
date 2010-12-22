@@ -31,8 +31,23 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 	
-	
-	public partial class NSIndexSet {
+	public partial class NSIndexSet : IEnumerable, IEnumerable<uint> {
+
+		IEnumerator IEnumerable.GetEnumerator ()
+		{
+			for (uint i = this.FirstIndex; i <= this.LastIndex;) {
+				yield return i;
+				i = this.IndexGreaterThan (i);
+			}
+		}
+
+		public IEnumerator<uint> GetEnumerator ()
+		{
+			for (uint i = this.FirstIndex; i <= this.LastIndex;) {
+				yield return i;
+				i = this.IndexGreaterThan (i);
+			}
+		}
 		
 		public uint[] ToArray ()
 		{
