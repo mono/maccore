@@ -1,3 +1,9 @@
+//
+// docfixer
+//
+// TODO:
+//   Remove <h2...> Overview</h2> from merged docs
+//   
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -872,11 +878,33 @@ public partial class DocGenerator {
 		//Console.WriteLine ("Opened {0}", appledocpath);
 		var appledocs = LoadAppleDocumentation (appledocpath);
 
+		
 		var typeRemarks = xmldoc.Element ("Type").Element ("Docs").Element ("remarks");
-		if (typeRemarks != null) {
+		var typeSummary = xmldoc.Element ("Type").Element ("Docs").Element ("summary");
+		
+		if (typeRemarks != null || (quick_summaries && typeSummary != null)) {
 			if (typeRemarks.Value == "To be added.")
 				typeRemarks.Value = "";
-			typeRemarks.Add (ExtractTypeOverview (appledocs));
+			var overview = ExtractTypeOverview (appledocs);
+			typeRemarks.Add (overview);
+			if (overview != null && quick_summaries){ // && typeSummary.Value == "To be added."){
+				Console.WriteLine ("Got: {0} on {1}", overview.GetType (), t);
+				foreach (var x in (System.Collections.IEnumerable) overview){
+					var xe = x as XElement;
+					if (xe == null)
+						continue;
+
+					if (xe.Name == "para"){
+						var value = xe.Value;
+						var dot = value.IndexOf ('.');
+						if (dot == -1)
+							typeSummary.Value = value;
+						else
+							typeSummary.Value = value.Substring (0, dot+1);
+						break;
+					}
+				}
+			}
 		}
 
 		var flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public;
@@ -1096,16 +1124,38 @@ public partial class DocGenerator {
 
 	static string assembly_dir;
 
+	// If true, it extracts the first sentence from the remarks and sticks it in the summary.
+	static bool quick_summaries;
+
+	static void Help ()
+	{
+		Console.WriteLine ("Usage is: docfixer [--summary] path-to-files");
+	}
+	
 	public static int Main (string [] args)
 	{
-		if (args.Length != 1){
-			Console.WriteLine ("Usage is: docfixer path-to-files");
+		string dir = null;
+		
+		for (int i = 0; i < args.Length; i++){
+			var arg = args [i];
+			if (arg == "-h" || arg == "--help"){
+				Help ();
+				return 0;
+			}
+			if (arg == "--summary"){
+				quick_summaries = true;
+				continue;
+			}
+			dir = arg;
+		}
+		
+		if (dir == null){
+			Help ();
 			return 1;
 		}
 
 		var debug = Environment.GetEnvironmentVariable ("DOCFIXER");
 
-		var dir = args [0];
 		if (File.Exists (Path.Combine (dir, "en"))){
 			Console.WriteLine ("The directory does not seem to be the root for documentation (missing en directory)");
 			return 1;
