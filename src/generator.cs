@@ -316,6 +316,25 @@ public class EventArgsAttribute : Attribute {
 	public bool FullName { get; set; }
 }
 
+//
+// Used to specify the delegate type that will be created when
+// the generator creates the delegate properties on the host
+// class that holds events
+//
+// example:
+// interface SomeDelegate {
+//     [Export ("foo"), DelegateName ("GetBoolean"), DefaultValue (false)]
+//     bool Confirm (Some source);
+//
+public class DelegateNameAttribute : Attribute {
+	public DelegateNameAttribute (string s)
+	{
+		Name = s;
+	}
+
+	public string Name { get; set; }
+}
+
 public class EventNameAttribute : Attribute {
 	public EventNameAttribute (string s)
 	{
@@ -2247,6 +2266,7 @@ public class Generator {
 		
 		return ea.EvtName;
 	}
+
 	string GetEventArgName (MethodInfo mi)
 	{
 		if (mi.GetParameters ().Length == 1)
@@ -2270,11 +2290,17 @@ public class Generator {
 
 	string GetDelegateName (MethodInfo mi)
 	{
-		var a = GetAttribute (mi, typeof (EventArgsAttribute));
+		
+		var a = GetAttribute (mi, typeof (DelegateNameAttribute));
+		if (a != null)
+			return ((DelegateNameAttribute) a).Name;
+		
+		a = GetAttribute (mi, typeof (EventArgsAttribute));
 		if (a == null){
 			Console.WriteLine ("The delegate method {0}.{1} is missing the [EventArgs] attribute", mi.DeclaringType.FullName, mi.Name);
 			Environment.Exit (1);
 		}
+		Console.WriteLine ("WARNING: Using the deprecated EventArgs for a delegate signature, please use DelegateName instead");
 		return ((EventArgsAttribute) a).ArgName;
 	}
 	
