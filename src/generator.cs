@@ -2300,7 +2300,7 @@ public class Generator {
 			Console.WriteLine ("The delegate method {0}.{1} is missing the [EventArgs] attribute", mi.DeclaringType.FullName, mi.Name);
 			Environment.Exit (1);
 		}
-		Console.WriteLine ("WARNING: Using the deprecated EventArgs for a delegate signature, please use DelegateName instead");
+		Console.WriteLine ("WARNING: Using the deprecated EventArgs for a delegate signature in {0}.{1}, please use DelegateName instead", mi.DeclaringType.FullName, mi.Name);
 		return ((EventArgsAttribute) a).ArgName;
 	}
 	
