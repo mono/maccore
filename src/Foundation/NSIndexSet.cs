@@ -69,6 +69,27 @@ namespace MonoMac.Foundation {
 				indexSet.Add (index);	
 			return indexSet;
 		}
+
+		public static NSIndexSet FromArray (int[] items)
+		{
+			if (items == null)
+				return new NSIndexSet ();
+			
+			var indexSet = new NSMutableIndexSet();
+			foreach (var index in items){
+				if (index < 0)
+					throw new ArgumentException ("One of the items values is negative");
+				indexSet.Add ((uint) index);
+			}
+			return indexSet;
+		}
+		
+		public NSIndexSet (int value) : this ((uint) value)
+		{
+			if (value < 0)
+				throw new ArgumentException ("value must be positive");
+			// init done by the base ctor
+		}
 	}
 		
 }
