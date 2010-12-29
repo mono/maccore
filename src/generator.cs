@@ -2294,10 +2294,14 @@ public class Generator {
 		var a = GetAttribute (mi, typeof (DelegateNameAttribute));
 		if (a != null)
 			return ((DelegateNameAttribute) a).Name;
-		
+
+		a = GetAttribute (mi, typeof (DelegateNameAttribute));
+		if (a != null)
+			return ((DelegateNameAttribute) a).Name;
 		a = GetAttribute (mi, typeof (EventArgsAttribute));
 		if (a == null){
 			Console.WriteLine ("The delegate method {0}.{1} is missing the [EventArgs] attribute", mi.DeclaringType.FullName, mi.Name);
+			throw new Exception ();
 			Environment.Exit (1);
 		}
 		Console.WriteLine ("WARNING: Using the deprecated EventArgs for a delegate signature in {0}.{1}, please use DelegateName instead", mi.DeclaringType.FullName, mi.Name);
