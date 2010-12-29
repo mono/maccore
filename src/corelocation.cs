@@ -209,7 +209,7 @@ namespace MonoMac.CoreLocation {
 		void UpdatedHeading (CLLocationManager  manager, CLHeading newHeading);
 #endif
 	
-		[Export ("locationManagerShouldDisplayHeadingCalibration:"), EventArgs ("CLLocationManagerEventArgs"), DefaultValue (true)]
+		[Export ("locationManagerShouldDisplayHeadingCalibration:"), DelegateName ("CLLocationManagerEventArgs"), DefaultValue (true)]
 		bool ShouldDisplayHeadingCalibration (CLLocationManager manager);
 	
 		[Export ("locationManager:didFailWithError:"), EventArgs ("NSError")]

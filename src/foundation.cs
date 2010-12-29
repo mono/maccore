@@ -650,7 +650,7 @@ namespace MonoMac.Foundation
 		[Export ("archiverDidFinish:")]
 		void Finished (NSKeyedArchiver archiver);
 		
-		[Export ("archiver:willEncodeObject:"), EventArgs ("NSEncodeHook"), DefaultValue (null)]
+		[Export ("archiver:willEncodeObject:"), DelegateName ("NSEncodeHook"), DefaultValue (null)]
 		NSObject WillEncode (NSKeyedArchiver archiver, NSObject obj);
 		
 		[Export ("archiverWillFinish:")]
@@ -663,13 +663,13 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	[Model]
 	public interface NSKeyedUnarchiverDelegate {
-		[Export ("unarchiver:didDecodeObject:"), EventArgs ("NSDecoderCallback"), DefaultValue (null)]
+		[Export ("unarchiver:didDecodeObject:"), DelegateName ("NSDecoderCallback"), DefaultValue (null)]
 		NSObject DecodedObject (NSKeyedUnarchiver unarchiver, NSObject obj);
 		
 		[Export ("unarchiverDidFinish:")]
 		void Finished (NSKeyedUnarchiver unarchiver);
 		
-		[Export ("unarchiver:cannotDecodeObjectOfClassName:originalClasses:"), EventArgs ("NSDecoderHandler"), DefaultValue (null)]
+		[Export ("unarchiver:cannotDecodeObjectOfClassName:originalClasses:"), DelegateName ("NSDecoderHandler"), DefaultValue (null)]
 		Class CannotDecodeClass (NSKeyedUnarchiver unarchiver, string klass, string [] classes);
 		
 		[Export ("unarchiverWillFinish:")]
@@ -841,10 +841,10 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	[Model]
 	interface NSMetadataQueryDelegate {
-		[Export ("metadataQuery:replacementObjectForResultObject:"), EventArgs ("NSMetadataQueryObject"), DefaultValue(null)]
+		[Export ("metadataQuery:replacementObjectForResultObject:"), DelegateName ("NSMetadataQueryObject"), DefaultValue(null)]
 		NSObject ReplacementObjectForResultObject (NSMetadataQuery query, NSMetadataItem result);
 
-		[Export ("metadataQuery:replacementValueForAttribute:value:"), EventArgs ("NSMetadataQueryValue"), DefaultValue(null)]
+		[Export ("metadataQuery:replacementValueForAttribute:value:"), DelegateName ("NSMetadataQueryValue"), DefaultValue(null)]
 		NSObject ReplacementValueForAttributevalue (NSMetadataQuery query, string attributeName, NSObject value);
 	}
 
