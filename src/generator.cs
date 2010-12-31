@@ -2300,7 +2300,7 @@ public class Generator {
 			return ((DelegateNameAttribute) a).Name;
 		a = GetAttribute (mi, typeof (EventArgsAttribute));
 		if (a == null){
-			Console.WriteLine ("The delegate method {0}.{1} is missing the [EventArgs] attribute", mi.DeclaringType.FullName, mi.Name);
+			Console.WriteLine ("The delegate method {0}.{1} is missing the [DelegateName] attribute (or EventArgs)", mi.DeclaringType.FullName, mi.Name);
 			throw new Exception ();
 			Environment.Exit (1);
 		}
