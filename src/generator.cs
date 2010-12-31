@@ -1258,15 +1258,11 @@ public class Generator {
 
 			// Format nicely the type, as succinctly as possible
 			Type parType = pi.ParameterType;
-			if (parType.IsByRef && parType.GetElementType ().IsValueType){
-				sb.Append ("out ");
+			if (parType.IsByRef){
+				string reftype = HasAttribute (pi, typeof (OutAttribute)) ? "out " : "ref ";
+				sb.Append (reftype);
 				parType = parType.GetElementType ();
-			} 
-			else if (parType.IsByRef && parType.GetElementType ().IsValueType == false){
-				sb.Append ("out ");
-				parType = parType.GetElementType ();
-			}
-		
+			}		
 			sb.Append (FormatType (mi.DeclaringType, parType));
 			sb.Append (" ");
 			sb.Append (pi.Name);
@@ -2035,10 +2031,27 @@ public class Generator {
 							} else
 								eaname = "<NOTREACHED>";
 							
-							print ("if ({0} != null)", PascalCase (mi.Name));
-							print ("	{1} ({0}, {2});",
-							       sender, PascalCase (mi.Name),
-							       pars.Length == minPars ? "EventArgs.Empty" : String.Format ("new {0} ({1})", eaname, RenderArgs (pars.Skip (minPars))));
+							print ("if ({0} != null){{", PascalCase (mi.Name));
+							indent++;
+							string eventArgs;
+							if (pars.Length == minPars)
+								eventArgs = "EventArgs.Empty";
+							else {
+								print ("var args = new {0} ({1});", eaname, RenderArgs (pars.Skip (minPars), true));
+								eventArgs = "args";
+							}
+							
+							print ("{0} ({1}, {2});", PascalCase (mi.Name), sender, eventArgs);
+							if (pars.Length != minPars && MustPullValuesBack (pars.Skip (minPars))){
+								foreach (var par in pars.Skip (minPars)){
+									if (!par.ParameterType.IsByRef)
+										continue;
+
+									print ("{0} = args.{1};", par.Name, GetPublicParameterName (par));
+								}
+							}
+							indent--;
+							print ("}");
 						} else {
 							var delname = GetDelegateName (mi);
 
@@ -2183,7 +2196,7 @@ public class Generator {
 				var pars = eventArgTypes [eaclass];
 
 				print ("public partial class {0} : EventArgs {{", eaclass); indent++;
-				print ("public {0} ({1})", eaclass, RenderParameterDecl (pars.Skip (1)));
+				print ("public {0} ({1})", eaclass, RenderParameterDecl (pars.Skip (1), true));
 				print ("{");
 				indent++;
 				foreach (var p in pars.Skip (minPars)){
@@ -2194,7 +2207,9 @@ public class Generator {
 				
 				// Now print the properties
 				foreach (var p in pars.Skip (minPars)){
-					print ("public {0} {1} {{ get; set; }}", RenderType (p.ParameterType), GetPublicParameterName (p));
+					var bareType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType () : p.ParameterType;
+
+					print ("public {0} {1} {{ get; set; }}", RenderType (bareType), GetPublicParameterName (p));
 				}
 				indent--; print ("}\n");
 			}
@@ -2224,11 +2239,12 @@ public class Generator {
 	//
 	// Support for the automatic delegate/event generation
 	//
-	string RenderParameterDecl (IEnumerable<ParameterInfo> pi)
+	string RenderParameterDecl (IEnumerable<ParameterInfo> pi, bool removeRefTypes = false)
 	{
-		return String.Join (", ", pi.Select (p => 
-					(p.ParameterType.IsByRef ? (p.IsOut ? "out " : "ref ") + RenderType (p.ParameterType.GetElementType ())
-					: RenderType (p.ParameterType)) + " " + p.Name).ToArray ());
+		return String.Join (", ", pi.Select (p =>
+			(p.ParameterType.IsByRef ? (removeRefTypes ? "" : (p.IsOut ? "out " : "ref ")) + RenderType (p.ParameterType.GetElementType ())
+			 		         : RenderType (p.ParameterType)) + " " + p.Name).ToArray ());
+						     
 	}
 
 	string GetPublicParameterName (ParameterInfo pi)
@@ -2241,11 +2257,16 @@ public class Generator {
 		return CamelCase (a.EvtName);
 	}
 	
-	string RenderArgs (IEnumerable<ParameterInfo> pi)
+	string RenderArgs (IEnumerable<ParameterInfo> pi, bool removeRefTypes = false)
 	{
-		return String.Join (", ", pi.Select (p => (p.ParameterType.IsByRef ? (p.IsOut ? "out " : "ref ") : "")+ p.Name).ToArray ());
+		return String.Join (", ", pi.Select (p => (p.ParameterType.IsByRef ? (removeRefTypes ? "" : (p.IsOut ? "out " : "ref ")) : "")+ p.Name).ToArray ());
 	}
 
+	bool MustPullValuesBack (IEnumerable<ParameterInfo> parameters)
+	{
+		return parameters.Any (pi => pi.ParameterType.IsByRef);
+	}
+	
 	string CamelCase (string ins)
 	{
 		return Char.ToUpper (ins [0]) + ins.Substring (1);
