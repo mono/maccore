@@ -2239,7 +2239,12 @@ public class Generator {
 	//
 	// Support for the automatic delegate/event generation
 	//
-	string RenderParameterDecl (IEnumerable<ParameterInfo> pi, bool removeRefTypes = false)
+	string RenderParameterDecl (IEnumerable<ParameterInfo> pi)
+	{
+		return RenderParameterDecl (pi, false);
+	}
+	
+	string RenderParameterDecl (IEnumerable<ParameterInfo> pi, bool removeRefTypes)
 	{
 		return String.Join (", ", pi.Select (p =>
 			(p.ParameterType.IsByRef ? (removeRefTypes ? "" : (p.IsOut ? "out " : "ref ")) + RenderType (p.ParameterType.GetElementType ())
@@ -2257,7 +2262,12 @@ public class Generator {
 		return CamelCase (a.EvtName);
 	}
 	
-	string RenderArgs (IEnumerable<ParameterInfo> pi, bool removeRefTypes = false)
+	string RenderArgs (IEnumerable<ParameterInfo> pi)
+	{
+		return RenderArgs (pi, false);
+	}
+	
+	string RenderArgs (IEnumerable<ParameterInfo> pi, bool removeRefTypes)
 	{
 		return String.Join (", ", pi.Select (p => (p.ParameterType.IsByRef ? (removeRefTypes ? "" : (p.IsOut ? "out " : "ref ")) : "")+ p.Name).ToArray ());
 	}
