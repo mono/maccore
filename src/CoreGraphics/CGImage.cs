@@ -90,7 +90,7 @@ namespace MonoMac.CoreGraphics {
 		internal IntPtr handle;
 
 		// invoked by marshallers
-		internal CGImage (IntPtr handle)
+		public CGImage (IntPtr handle)
 			: this (handle, false)
 		{
 			this.handle = handle;
