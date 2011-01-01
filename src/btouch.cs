@@ -33,7 +33,7 @@ using Mono.Options;
 
 class BindingTouch {
 #if MONOMAC
-	static string baselibdll = "monomac.dll";
+	static string baselibdll = "MonoMac.dll";
 	static string RootNS = "MonoMac";
 	static Type CoreObject = typeof (MonoMac.Foundation.NSObject);
 	static string tool_name = "bmac";
@@ -70,6 +70,7 @@ class BindingTouch {
 		bool pmode = true;
 		List<string> sources;
 		var references = new List<string> ();
+		var libs = new List<string> ();
 		var core_sources = new List<string> ();
 		var defines = new List<string> ();
 		bool binding_third_party = true;
@@ -87,6 +88,7 @@ class BindingTouch {
 			{ "unsafe", "Sets the unsafe flag for the build", v=> unsafef = true },
 			{ "core", "Use this to build monomac.dll", v => binding_third_party = false },
 			{ "r=", "Adds a reference", v => references.Add (v) },
+			{ "lib=", "Adds the directory to the search path for the compiler", v => libs.Add (v) },
 			{ "d=", "Defines a symbol", v => defines.Add (v) },
 			{ "s=", "Adds a source file required to build the API", v => core_sources.Add (v) },
 			{ "v", "Sets verbose mode", v => verbose = true },
@@ -116,19 +118,20 @@ class BindingTouch {
 
 		if (outfile == null)
 			outfile = Path.GetFileNameWithoutExtension (sources [0]) + ".dll";
-				
-		string refs = references.Count > 0 ? "-r:" + String.Join (" -r:", references.ToArray ()) : "";
+
+		string refs = (references.Count > 0 ? "-r:" + String.Join (" -r:", references.ToArray ()) : "");
+		string paths = (libs.Count > 0 ? "-lib:" + String.Join (" -lib:", libs.ToArray ()) : "");
 			
 		try {
 			var api_file = sources [0];
 			var tmpass = Path.Combine (tmpdir, "temp.dll");
 
 			// -nowarn:436 is to avoid conflicts in definitions between core.dll and the sources
-			var cargs = String.Format ("-unsafe -target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7}",
+			var cargs = String.Format ("-unsafe -target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7} {8}",
 						   string.Join (" ", sources.ToArray ()),
 						   tmpass, Environment.GetCommandLineArgs ()[0],
 						   string.Join (" ", core_sources.ToArray ()), refs, unsafef ? "-unsafe" : "",
-						   baselibdll, string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()));
+						   baselibdll, string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()), paths);
 
 			var si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,

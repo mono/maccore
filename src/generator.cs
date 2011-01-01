@@ -964,6 +964,15 @@ public class Generator {
 	public static ExportAttribute GetExportAttribute (PropertyInfo pi, out string wrap)
 	{
 		wrap = null;
+#if debug
+		object [] jattrs = pi.GetCustomAttributes (true);
+		Console.WriteLine ("On: {0}", pi);
+		foreach (var x in jattrs){
+			Console.WriteLine ("    -> {0} ", x);
+			Console.WriteLine ("   On: {0} ", x.GetType ().Assembly);
+			Console.WriteLine ("   Ex: {0}", typeof (ExportAttribute).Assembly);
+		}
+#endif
 		object [] attrs = pi.GetCustomAttributes (typeof (ExportAttribute), true);
 		if (attrs.Length == 0){
 			attrs = pi.GetCustomAttributes (typeof (WrapAttribute), true);
@@ -1052,7 +1061,7 @@ public class Generator {
 					if (attrs.Length != 0)
 						continue;
 					
-					Console.WriteLine ("Error: no [Export] attribute on property {0}.{1}", pi.DeclaringType, pi);
+					Console.WriteLine ("Error: no [Export] attribute on property {0}.{1}", pi.DeclaringType, pi.Name);
 					Environment.Exit (1);
 				}
 				if (HasAttribute (pi, typeof (StaticAttribute)))
