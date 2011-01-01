@@ -81,7 +81,7 @@ namespace MonoMac.CoreGraphics {
 		//
 		// For use by marshallrs
 		//
-		internal CGPath (IntPtr handle)
+		public CGPath (IntPtr handle)
 		{
 			CGPathRetain (handle);
 			this.handle = handle;

@@ -44,7 +44,7 @@ namespace MonoMac.CoreGraphics {
 		//
 		// Never call from this class, so we need to take a ref
 		//
-		internal CGColor (IntPtr handle)
+		public CGColor (IntPtr handle)
 		{
 			this.handle = handle;
 			CGColorRetain (handle);
