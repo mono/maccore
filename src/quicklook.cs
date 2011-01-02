@@ -93,7 +93,7 @@ namespace MonoMac.QuickLook {
 		[Export ("previewControllerDidDismiss:")]
 		void DidDismiss (QLPreviewController controller);
 
-		[Export ("previewController:shouldOpenURL:forPreviewItem:"), EventArgs ("QLOpenUrl"), DefaultValue (false)]
+		[Export ("previewController:shouldOpenURL:forPreviewItem:"), DelegateName ("QLOpenUrl"), DefaultValue (false)]
 		bool ShouldOpenUrl (QLPreviewController controller, NSUrl url, QLPreviewItem item);
 	}
 
