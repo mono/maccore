@@ -38,7 +38,7 @@ namespace MonoMac.CoreGraphics {
 		IntPtr buffer;
 		
 		// invoked by marshallers
-		internal CGDataProvider (IntPtr handle)
+		public CGDataProvider (IntPtr handle)
 			: this (handle, false)
 		{
 			this.handle = handle;

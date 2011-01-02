@@ -52,7 +52,8 @@ namespace MonoMac.CoreGraphics {
 	public class CGPattern : INativeObject, IDisposable {
 		internal IntPtr handle;
 
-		internal CGPattern (IntPtr handle)
+		/* invoked by marshallers */
+		public CGPattern (IntPtr handle)
 		{
 			this.handle = handle;
 			CGPatternRetain (this.handle);

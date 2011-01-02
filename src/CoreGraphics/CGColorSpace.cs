@@ -58,7 +58,7 @@ namespace MonoMac.CoreGraphics {
 		public static CGColorSpace Null = new CGColorSpace (IntPtr.Zero);
 
 		// Invoked by the marshallers, we need to take a ref
-		internal CGColorSpace (IntPtr handle)
+		public CGColorSpace (IntPtr handle)
 		{
 			this.handle = handle;
 			CGColorSpaceRetain (handle);

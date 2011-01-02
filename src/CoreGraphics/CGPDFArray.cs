@@ -38,8 +38,9 @@ namespace MonoMac.CoreGraphics {
 		public IntPtr Handle {
 			get { return handle; }
 		}
-	
-		internal CGPDFArray (IntPtr handle)
+
+		/* invoked by marshallers */
+		public CGPDFArray (IntPtr handle)
 		{
 			this.handle = handle;
 		}

@@ -64,7 +64,8 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 
-		internal CGPDFDocument (IntPtr handle)
+		/* invoked by marshallers */
+		public CGPDFDocument (IntPtr handle)
 		{
 			this.handle = handle;
 			CGPDFDocumentRetain (handle);

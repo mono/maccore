@@ -113,7 +113,7 @@ namespace MonoMac.CoreGraphics {
 	public class CGContext : INativeObject, IDisposable {
 		internal IntPtr handle;
 
-		internal CGContext (IntPtr handle)
+		public CGContext (IntPtr handle)
 		{
 			if (handle == IntPtr.Zero)
 				throw new Exception ("Invalid parameters to context creation");

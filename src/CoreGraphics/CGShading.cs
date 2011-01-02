@@ -36,7 +36,8 @@ namespace MonoMac.CoreGraphics {
 	public class CGShading : INativeObject, IDisposable {
 		internal IntPtr handle;
 
-		internal CGShading (IntPtr handle)
+		/* invoked by marshallers */
+		public CGShading (IntPtr handle)
 		{
 			this.handle = handle;
 			CGShadingRetain (handle);
