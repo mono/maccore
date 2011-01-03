@@ -2001,7 +2001,7 @@ public class Generator {
 						print ("public _{0} () {{}}\n", dtype.Name);
 						
 
-					foreach (var mi in dtype.GetMethods ()){
+					foreach (var mi in dtype.GatherMethods ()){
 						if (HasAttribute (mi, typeof (AlphaAttribute)) && Alpha == false)
 							continue;
 
@@ -2105,7 +2105,7 @@ public class Generator {
 				
 				// Now add the instance vars and event handlers
 				foreach (var dtype in bta.Events){
-					foreach (var mi in dtype.GetMethods ()){
+					foreach (var mi in dtype.GatherMethods ()){
 						if (HasAttribute (mi, typeof (AlphaAttribute)) && Alpha == false)
 							continue;
 
