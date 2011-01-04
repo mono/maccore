@@ -1372,6 +1372,9 @@ public class Generator {
 				} else if (mai.Type == typeof (string) && !mai.PlainString){
 					cast_a = "NSString.FromHandle (";
 					cast_b = ")";
+				} else if (mi.ReturnType.IsSubclassOf (typeof (Delegate))){
+					cast_a = "(BlockLiteral *)";
+					cast_b = "";
 				} else if (LookupMarshal (mai.Type, out mt)){
 					cast_a = mt.CreateFromRet;
 					cast_b = ")";
@@ -1559,11 +1562,16 @@ public class Generator {
 			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
 			(HasAttribute (mi, typeof (FactoryAttribute))) ||
 			(assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ())))) ||
+			(mi.ReturnType.IsSubclassOf (typeof (Delegate))) ||
 			(mi.Name != "Constructor" && byRefPostProcessing.Length > 0 && mi.ReturnType != typeof (void));
 		
 
-		if (use_temp_return)
-			print ("{0} ret;", FormatType (mi.DeclaringType, mi.ReturnType)); //  = new {0} ();"
+		if (use_temp_return) {
+			if (mi.ReturnType.IsSubclassOf (typeof (Delegate)))
+				print ("BlockLiteral *ret;");
+			else
+				print ("{0} ret;", FormatType (mi.DeclaringType, mi.ReturnType)); //  = new {0} ();"
+		}
 		
 		bool needs_temp = use_temp_return || disposes.Length > 0;
 		if (virtual_method || mi.Name == "Constructor"){
@@ -1603,8 +1611,13 @@ public class Generator {
 			print ("ret.Release (); // Release implicit ref taken by GetNSObject");
 		if (byRefPostProcessing.Length > 0)
 			print (byRefPostProcessing.ToString ());
-		if (use_temp_return)
-			print ("return ret;");
+		if (use_temp_return) {
+			if (mi.ReturnType.IsSubclassOf (typeof (Delegate))) {
+				print ("return ({0}) (ret->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (ret->global_handle).Target : GCHandle.FromIntPtr (ret->local_handle).Target);", FormatType (mi.DeclaringType, mi.ReturnType));
+			} else {
+				print ("return ret;");
+			}
+		}
 
 		indent--;
 	}
