@@ -181,6 +181,12 @@ namespace MonoMac.CoreGraphics {
 		extern static void CGPathAddLineToPoint(IntPtr path, ref CGAffineTransform m, float x, float y);
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPathAddLineToPoint(IntPtr path, IntPtr m, float x, float y);
+
+		[Obsolete("Use AddLineToPoint instead")]
+		public void CGPathAddLineToPoint (float x, float y)
+		{
+			AddLineToPoint (x, y);
+		}
 		public void AddLineToPoint (float x, float y)
 		{
 			CGPathAddLineToPoint (handle, IntPtr.Zero, x, y);
@@ -191,6 +197,12 @@ namespace MonoMac.CoreGraphics {
 			CGPathAddLineToPoint (handle, IntPtr.Zero, point.X, point.Y);
 		}
 		
+		[Obsolete("Use AddLineToPoint instead")]
+		public void CGPathAddLineToPoint (CGAffineTransform transform, float x, float y)
+		{
+			AddLineToPoint (transform, x, y);
+		}
+
 		public void AddLineToPoint (CGAffineTransform transform, float x, float y)
 		{
 			CGPathAddLineToPoint (handle, ref transform, x, y);
