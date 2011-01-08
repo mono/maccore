@@ -365,11 +365,11 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		unsafe extern static AudioQueueStatus AudioQueueEnqueueBuffer (
+		extern static AudioQueueStatus AudioQueueEnqueueBuffer (
 			IntPtr AQ,
 			IntPtr audioQueueBuffer,
 			int nPackets,
-			AudioStreamPacketDescription *desc);
+			IntPtr desc);
 		public AudioQueueStatus EnqueueBuffer (IntPtr audioQueueBuffer, int bytes, AudioStreamPacketDescription [] desc)
 		{
 			if (audioQueueBuffer == IntPtr.Zero)
@@ -378,10 +378,10 @@ namespace MonoMac.AudioToolbox {
 			unsafe {
 				Marshal.WriteInt32 (audioQueueBuffer, 8, bytes);
 				if (desc == null)
-					return AudioQueueEnqueueBuffer (handle, audioQueueBuffer, 0, null);
+					return AudioQueueEnqueueBuffer (handle, audioQueueBuffer, 0, IntPtr.Zero);
 				else {
 					fixed (AudioStreamPacketDescription *pdesc = &desc [0]){
-						return AudioQueueEnqueueBuffer (handle, audioQueueBuffer, desc.Length, pdesc);
+						return AudioQueueEnqueueBuffer (handle, audioQueueBuffer, desc.Length, (IntPtr) pdesc);
 					}
 				}
 			}
