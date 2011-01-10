@@ -114,8 +114,6 @@ class DocumentGeneratedCode {
 				return;
 			
 			var section = DocGenerator.ExtractSection (mdoc);
-			foreach (var o in (System.Collections.IEnumerable)section)
-				Console.WriteLine (o);
 			summary.Value = "";
 			summary.Add (section);
 		}

@@ -1094,9 +1094,11 @@ public partial class DocGenerator {
 
 	public static IEnumerable<XElement> GetAppleDocumentationSources (Type t)
 	{
-		yield return LoadAppleDocumentation (GetAppleDocFor (t));
+		var path = GetAppleDocFor (t);
+		if (path != null)
+			yield return LoadAppleDocumentation (path);
 		while ((t = t.BaseType) != typeof (object) && t != null) {
-			var path = GetAppleDocFor (t);
+			path = GetAppleDocFor (t);
 			if (path != null)
 				yield return LoadAppleDocumentation (path);
 		}
