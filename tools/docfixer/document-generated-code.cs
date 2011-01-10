@@ -110,14 +110,27 @@ class DocumentGeneratedCode {
 		var remarks = field.XPathSelectElement ("Docs/remarks");
 
 		if (mergeAppledocs){
-			if (returnType.Value == "MonoMac.Foundation.NSString" && pi.Name.EndsWith ("Notification")){
+			if (returnType.Value == "MonoMac.Foundation.NSString" && export.EndsWith ("Notification")){
 				var mdoc = DocGenerator.GetAppleMemberDocs (t, export);
-				if (mdoc == null)
+				if (mdoc == null){
+					Console.WriteLine ("Failed to load docs for {0} - {1}", t.Name, export);
 					return;
-				
+				}
+
 				var section = DocGenerator.ExtractSection (mdoc);
+
+				//
+				// Make this pretty, the first paragraph we turn into the summary,
+				// the rest we put in the remarks section
+				//
 				summary.Value = "";
 				summary.Add (section);
+
+				var skipOne = summary.Nodes ().Skip (2).ToArray ();
+				remarks.Value = "";
+				remarks.Add (skipOne);
+				foreach (var n in skipOne)
+					n.Remove ();
 			}
 		}
 	}
@@ -154,7 +167,6 @@ class DocumentGeneratedCode {
 		if (xmldoc == null)
 			return;
 		
-		Console.WriteLine ("Processing: {0}", t);
 		foreach (var pi in t.GatherProperties ()){
 			if (pi.GetCustomAttributes (typeof (FieldAttribute), true).Length > 0){
 				ProcessField (t, xmldoc, pi);
@@ -173,14 +185,18 @@ class DocumentGeneratedCode {
 		string lib = null;
 		var debug = Environment.GetEnvironmentVariable ("DOCFIXER");
 
+		DocGenerator.DebugDocs = false;
+		
 		for (int i = 0; i < args.Length; i++){
 			var arg = args [i];
 			if (arg == "-h" || arg == "--help"){
 				Help ();
 				return 0;
 			}
-			if (arg == "--appledocs")
+			if (arg == "--appledocs"){
 				mergeAppledocs = true;
+				continue;
+			}
 			
 			if (lib == null)
 				lib = arg;
@@ -209,6 +225,7 @@ class DocumentGeneratedCode {
 				ProcessNSO (t, (BaseTypeAttribute) btas [0]);
 		}
 
+		Console.WriteLine ("saving");
 		SaveDocs ();
 		
 		return 0;

@@ -19,7 +19,8 @@ using HtmlAgilityPack;
 
 public partial class DocGenerator {
 	static string DocBase = GetMostRecentDocBase ();
-
+	public static bool DebugDocs;
+	
 	//
 	// {0} is the DocBase
 	// {1} is the framework name (Cocoa, GraphicsImaging, etc) without the MonoTouch/MonoMac prefix.
@@ -166,13 +167,14 @@ public partial class DocGenerator {
 		}
 
 		Console.WriteLine ("NOT FOUND: {0}", t);
-#if true
-	    	Console.WriteLine ("DocBase: {0}", DocBase);
-		foreach (string pattern in patterns){
-			string path = String.Format (pattern, "", fx, t.Name, alt, alt2, t.Name.Substring (2));
-			Console.WriteLine ("    Tried: {0}", path);
+
+		if (DebugDocs){
+			Console.WriteLine ("DocBase: {0}", DocBase);
+			foreach (string pattern in patterns){
+				string path = String.Format (pattern, "", fx, t.Name, alt, alt2, t.Name.Substring (2));
+				Console.WriteLine ("    Tried: {0}", path);
+			}
 		}
-#endif
 		return null;
 	}
 
