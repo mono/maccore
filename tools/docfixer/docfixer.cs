@@ -898,7 +898,6 @@ public partial class DocGenerator {
 			var overview = ExtractTypeOverview (appledocs);
 			typeRemarks.Add (overview);
 			if (overview != null && quick_summaries){ // && typeSummary.Value == "To be added."){
-				Console.WriteLine ("Got: {0} on {1}", overview.GetType (), t);
 				foreach (var x in (System.Collections.IEnumerable) overview){
 					var xe = x as XElement;
 					if (xe == null)
@@ -1024,9 +1023,6 @@ public partial class DocGenerator {
 					remarksNode.Value = "";
 				remarksNode.Add (remarks);
 			}
-		}
-		foreach (var prop in t.GetProperties (flags)) {
-			Console.WriteLine ("Got Prop: {0}", prop);
 		}
 
 		var s = new XmlWriterSettings ();
@@ -1201,7 +1197,6 @@ public partial class DocGenerator {
 					ProcessNSO (t);
 				} catch {
 					Console.WriteLine ("Problem with {0}", t.FullName);
-					throw;
 				}
 			}
 		}

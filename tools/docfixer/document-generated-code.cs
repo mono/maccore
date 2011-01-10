@@ -32,12 +32,13 @@ class DocumentGeneratedCode {
 
 	static void Help ()
 	{
-		Console.WriteLine ("Usage is: document-generated-code temp.dll path-to-documentation");
+		Console.WriteLine ("Usage is: document-generated-code [--appledocs] temp.dll path-to-documentation");
 	}
 
 	static string assembly_dir;
 	static Assembly assembly;
-
+	static bool mergeAppledocs;
+	
 	static string GetMdocPath (Type t)
 	{
 		return string.Format ("{0}/{1}/{2}.xml", assembly_dir, t.Namespace, t.Name);
@@ -79,8 +80,10 @@ class DocumentGeneratedCode {
 				Encoding = new UTF8Encoding (false),
 				OmitXmlDeclaration = true
 			};
-			using (var xmlw = XmlWriter.Create (xmldocpath, xmlSettings)){
+			using (var output = File.CreateText (xmldocpath)){
+				var xmlw = XmlWriter.Create (output, xmlSettings);
 				xmldoc.Save (xmlw);
+				output.WriteLine ();
 			}
 		}
 	}
@@ -103,23 +106,49 @@ class DocumentGeneratedCode {
 			return;
 		}
 		var returnType = field.XPathSelectElement ("ReturnValue/ReturnType");
-		Console.WriteLine (" {0} {1} -> {2}", t, pi.Name, returnType.Value);
 		var summary = field.XPathSelectElement ("Docs/summary");
 		var remarks = field.XPathSelectElement ("Docs/remarks");
 
-		// Notifications should be handled in docfixer
-		if (returnType.Value == "MonoMac.Foundation.NSString" && pi.Name.EndsWith ("Notification")){
-			var mdoc = DocGenerator.GetAppleMemberDocs (t, export);
-			if (mdoc == null)
-				return;
-			
-			var section = DocGenerator.ExtractSection (mdoc);
-			summary.Value = "";
-			summary.Add (section);
+		if (mergeAppledocs){
+			if (returnType.Value == "MonoMac.Foundation.NSString" && pi.Name.EndsWith ("Notification")){
+				var mdoc = DocGenerator.GetAppleMemberDocs (t, export);
+				if (mdoc == null)
+					return;
+				
+				var section = DocGenerator.ExtractSection (mdoc);
+				summary.Value = "";
+				summary.Add (section);
+			}
+		}
+	}
+
+	public static void PopulateEvents (XDocument xmldoc, BaseTypeAttribute bta, Type t)
+	{
+		for (int i = 0; i < bta.Events.Length; i++){
+			var delType = bta.Events [i];
+			var evtName = bta.Delegates [i];
+			foreach (var mi in delType.GatherMethods ()){
+				var method = xmldoc.XPathSelectElement ("Type/Members/Member[@MemberName='" + mi.Name + "']");
+				if (method == null){
+					Console.WriteLine ("Documentation not up to date for {0}, member {1} was not found", delType, mi.Name);
+					continue;
+				}
+				var summary = method.XPathSelectElement ("Docs/summary");
+				var remarks = method.XPathSelectElement ("Docs/remarks");
+				var returnType = method.XPathSelectElement ("ReturnValue/ReturnType");
+
+				if (mi.ReturnType == typeof (void)){
+					summary.Value = "Event raised by the object.";
+					remarks.Value = "If you assign a value to this event, this will reset the value for the " + evtName + " property to an internal handler that maps delegates to events.";
+				} else {
+					summary.Value = "Delegate invoked by the object to get a value.";
+					remarks.Value = "You assign a function, delegate or anonymous method to this property to return a value to the object.   If you assign a value to this property, it this will reset the value for the " + evtName + " property to an internal handler that maps delegates to events.";
+				}
+			}
 		}
 	}
 	
-	public static void ProcessNSO (Type t)
+	public static void ProcessNSO (Type t, BaseTypeAttribute bta)
 	{
 		var xmldoc = GetDoc (t);
 		if (xmldoc == null)
@@ -127,8 +156,14 @@ class DocumentGeneratedCode {
 		
 		Console.WriteLine ("Processing: {0}", t);
 		foreach (var pi in t.GatherProperties ()){
-			if (pi.GetCustomAttributes (typeof (FieldAttribute), true).Length > 0)
+			if (pi.GetCustomAttributes (typeof (FieldAttribute), true).Length > 0){
 				ProcessField (t, xmldoc, pi);
+				continue;
+			}
+		}
+
+		if (bta.Events != null){
+			PopulateEvents (xmldoc, bta, t);
 		}
 	}
 			
@@ -144,6 +179,9 @@ class DocumentGeneratedCode {
 				Help ();
 				return 0;
 			}
+			if (arg == "--appledocs")
+				mergeAppledocs = true;
+			
 			if (lib == null)
 				lib = arg;
 			else
@@ -165,9 +203,10 @@ class DocumentGeneratedCode {
 		foreach (Type t in assembly.GetTypes ()){
 			if (debug != null && t.FullName != debug)
 				continue;
-			
-			if (t.GetCustomAttributes (typeof (BaseTypeAttribute), true).Length > 0)
-				ProcessNSO (t);
+
+			var btas = t.GetCustomAttributes (typeof (BaseTypeAttribute), true);
+			if (btas.Length > 0)
+				ProcessNSO (t, (BaseTypeAttribute) btas [0]);
 		}
 
 		SaveDocs ();
