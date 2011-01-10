@@ -559,6 +559,7 @@ public partial class DocGenerator {
 	}
 
 	static Dictionary<string, Func<XElement, bool, object>> HtmlToMdocElementMapping = new Dictionary<string, Func<XElement, bool, object>> {
+		{ "section",(e, i) => new [] {new XElement ("para", HtmlToMdoc ((XElement)e.FirstNode))}.Concat (HtmlToMdoc (e.Nodes ().Skip (1), i)) },
 		{ "a",      (e, i) => ConvertLink (e, i) },
 		{ "code",   (e, i) => ConvertCode (e, i) },
 		{ "div",    (e, i) => HtmlToMdoc (e.Nodes (), i) },
@@ -780,6 +781,15 @@ public partial class DocGenerator {
 		}
 	}
 
+	public static object ExtractSection (XElement member)
+	{
+		try {
+			return HtmlToMdoc (member.ElementsAfterSelf ("section").First ());
+		} catch {
+			return null;
+		}
+	}
+	
 	static XElement GetMemberDocEnd (XElement member)
 	{
 		return FirstInDocument (
@@ -1015,14 +1025,18 @@ public partial class DocGenerator {
 				remarksNode.Add (remarks);
 			}
 		}
-			
+		foreach (var prop in t.GetProperties (flags)) {
+			Console.WriteLine ("Got Prop: {0}", prop);
+		}
 
 		var s = new XmlWriterSettings ();
 		s.Indent = true;
 		s.Encoding = new UTF8Encoding (false);
 		s.OmitXmlDeclaration = true;
-		using (var xmlw = XmlWriter.Create (xmldocpath, s)){
+		using (var output = File.CreateText (xmldocpath)){
+			var xmlw = XmlWriter.Create (output, s);
 			xmldoc.Save (xmlw);
+			output.WriteLine ();
 		}
 	}
 
@@ -1060,7 +1074,7 @@ public partial class DocGenerator {
 		}
 	}
 
-	static XElement GetAppleMemberDocs(Type t, string selector)
+	public static XElement GetAppleMemberDocs(Type t, string selector)
 	{
 		foreach (var appledocs in GetAppleDocumentationSources (t)) {
 			var mDoc = appledocs.Descendants ("h3").Where (e => e.Value == selector).FirstOrDefault ();
@@ -1078,10 +1092,10 @@ public partial class DocGenerator {
 		return null;
 	}
 
-	static IEnumerable<XElement> GetAppleDocumentationSources (Type t)
+	public static IEnumerable<XElement> GetAppleDocumentationSources (Type t)
 	{
 		yield return LoadAppleDocumentation (GetAppleDocFor (t));
-		while ((t = t.BaseType) != typeof (object)) {
+		while ((t = t.BaseType) != typeof (object) && t != null) {
 			var path = GetAppleDocFor (t);
 			if (path != null)
 				yield return LoadAppleDocumentation (path);
@@ -1090,7 +1104,7 @@ public partial class DocGenerator {
 
 	static Dictionary<string, XElement> loadedAppleDocs = new Dictionary<string, XElement> ();
 
-	static XElement LoadAppleDocumentation (string path)
+	public static XElement LoadAppleDocumentation (string path)
 	{
 		XElement appledocs;
 		if (loadedAppleDocs.TryGetValue (path, out appledocs))
@@ -1157,7 +1171,7 @@ public partial class DocGenerator {
 		var debug = Environment.GetEnvironmentVariable ("DOCFIXER");
 
 		if (File.Exists (Path.Combine (dir, "en"))){
-			Console.WriteLine ("The directory does not seem to be the root for documentation (missing en directory)");
+			Console.WriteLine ("The directory does not seem to be the root for documentation (missing `en' directory)");
 			return 1;
 		}
 		assembly_dir = Path.Combine (dir, "en");
