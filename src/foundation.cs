@@ -105,6 +105,12 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSAttributedString other);
 
 #if MONOMAC
+		[Export("size")]
+		SizeF Size { get; }
+#endif
+
+
+#if MONOMAC
 		[Field ("NSFontAttributeName", "AppKit")]
 #else
 		[Field ("NSFontAttributeName")]
