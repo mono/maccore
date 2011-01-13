@@ -42,7 +42,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreAnimation {
 
 #if false
-	interface CAMediaTiming {
+	public interface CAMediaTiming {
 		[Export ("beginTime")]
 		double CFTimeInterval { get; set; }
 	
@@ -71,14 +71,14 @@ namespace MonoMac.CoreAnimation {
 
 #if MONOMAC
 	[BaseType (typeof (NSObject))]
-	interface CAConstraintLayoutManager {
+	public interface CAConstraintLayoutManager {
 		[Static]
 		[Export ("layoutManager")]
 		CAConstraintLayoutManager LayoutManager { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
-	interface CAConstraint {
+	public interface CAConstraint {
 		[Export ("attribute")]
 		CAConstraintAttribute Attribute { get;  }
 
@@ -109,7 +109,7 @@ namespace MonoMac.CoreAnimation {
 	
 #else
 	[BaseType (typeof (NSObject))]
-	interface CADisplayLink {
+	public interface CADisplayLink {
 		[Export ("displayLinkWithTarget:selector:")][Static]
 		CADisplayLink Create (NSObject target, Selector sel);
 	
@@ -134,7 +134,7 @@ namespace MonoMac.CoreAnimation {
 #endif
 
 	[BaseType (typeof (NSObject))]
-	interface CALayer {
+	public interface CALayer {
 		[Export ("layer")][Static]
 		CALayer Create ();
 
@@ -503,7 +503,7 @@ namespace MonoMac.CoreAnimation {
 	}
 
 	[BaseType (typeof (CALayer))]
-	interface CATiledLayer {
+	public interface CATiledLayer {
 		[Static][Export ("fadeDuration")]
 		double FadeDuration { get; }
 
@@ -518,7 +518,7 @@ namespace MonoMac.CoreAnimation {
 	}
 
 	[BaseType (typeof (CALayer))]
-	interface CAReplicatorLayer {
+	public interface CAReplicatorLayer {
 		[Export ("instanceCount")]
 		int InstanceCount { get; set; }
 
@@ -549,7 +549,7 @@ namespace MonoMac.CoreAnimation {
 
 
 	[BaseType (typeof (CALayer))]
-	interface CAScrollLayer {
+	public interface CAScrollLayer {
 		[Export ("scrollMode")]
 		NSString ScrollMode { get; set;  }
 
@@ -573,7 +573,7 @@ namespace MonoMac.CoreAnimation {
 	}
 	
 	[BaseType (typeof (CALayer))]
-	interface CAShapeLayer {
+	public interface CAShapeLayer {
 		[Export ("path")]
 		CGPath Path { get; set; }
 
@@ -614,14 +614,14 @@ namespace MonoMac.CoreAnimation {
 	}
 
 	[BaseType (typeof (CALayer))]
-	interface CATransformLayer {
+	public interface CATransformLayer {
 		[Export ("hitTest:")]
 		CALayer HitTest (PointF thePoint);
 	}
 
 	[Since (3,2)]
 	[BaseType (typeof (CALayer))]
-	interface CATextLayer {
+	public interface CATextLayer {
 		[Export ("string", ArgumentSemantic.Copy)]
 		string String { get; set; }
 
@@ -673,7 +673,7 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface CALayerDelegate {
+	public interface CALayerDelegate {
 		[Export ("displayLayer:")]
 		void DisplayLayer (CALayer layer);
 
@@ -689,7 +689,7 @@ namespace MonoMac.CoreAnimation {
 	
 #if !MONOMAC
 	[BaseType (typeof (CALayer))]
-	interface CAEAGLLayer {
+	public interface CAEAGLLayer {
 		// From the interface  IEAGLDrawable
 		[Export ("drawableProperties", ArgumentSemantic.Copy)]
 		NSDictionary DrawableProperties { get; set; }
@@ -698,13 +698,13 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface CAAction {
+	public interface CAAction {
 		[Export ("runActionForKey:object:arguments:")]
 		void RunAction (string eventKey, NSObject obj, NSDictionary arguments);
 	}
 	
 	[BaseType (typeof (NSObject), Delegates=new string [] {"WeakDelegate"}, Events=new Type [] { typeof (CAAnimationDelegate)})]
-	interface CAAnimation {
+	public interface CAAnimation {
 		[Export ("animation"), Static]
 		CAAnimation CreateAnimation ();
 	
@@ -788,7 +788,7 @@ namespace MonoMac.CoreAnimation {
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface CAAnimationDelegate {
+	public interface CAAnimationDelegate {
 		[Export ("animationDidStart:")]
 		void AnimationStarted (CAAnimation anim);
 	
@@ -798,7 +798,7 @@ namespace MonoMac.CoreAnimation {
 	}
 	
 	[BaseType (typeof (CAAnimation))]
-	interface CAPropertyAnimation {
+	public interface CAPropertyAnimation {
 		[Static]
 		[Export ("animationWithKeyPath:")]
 		CAPropertyAnimation FromKeyPath (string path);
@@ -818,7 +818,7 @@ namespace MonoMac.CoreAnimation {
 	}
 	
 	[BaseType (typeof (CAPropertyAnimation))]
-	interface CABasicAnimation {
+	public interface CABasicAnimation {
 		[Static, New, Export ("animationWithKeyPath:")]
 		CABasicAnimation FromKeyPath (string path);
 
@@ -833,7 +833,7 @@ namespace MonoMac.CoreAnimation {
 	}
 	
 	[BaseType (typeof (CAPropertyAnimation), Name="CAKeyframeAnimation")]
-	interface CAKeyFrameAnimation {
+	public interface CAKeyFrameAnimation {
 		[Static, New, Export ("animationWithKeyPath:")]
 		CAPropertyAnimation FromKeyPath (string path);
 
@@ -866,7 +866,7 @@ namespace MonoMac.CoreAnimation {
 	}
 	
 	[BaseType (typeof (CAAnimation))]
-	interface CATransition {
+	public interface CATransition {
 		[Export ("animation"), Static, New]
 		CATransition CreateAnimation ();
 
@@ -887,7 +887,7 @@ namespace MonoMac.CoreAnimation {
 	}
 	
 	[BaseType (typeof (NSObject))]
-	interface CATransaction {
+	public interface CATransaction {
 		[Static]
 		[Export ("begin")]
 		void Begin ();
@@ -946,7 +946,7 @@ namespace MonoMac.CoreAnimation {
 	}
 
 	[BaseType (typeof (CAAnimation))]
-	interface CAAnimationGroup {
+	public interface CAAnimationGroup {
 		[Export ("animations", ArgumentSemantic.Copy)]
 		CAAnimation [] Animations { get; set; }
 
@@ -955,7 +955,7 @@ namespace MonoMac.CoreAnimation {
 	}
 
 	[BaseType (typeof (CALayer))]
-	interface CAGradientLayer {
+	public interface CAGradientLayer {
 		[Export ("colors", ArgumentSemantic.Copy)][Internal]
 		IntPtr _Colors { get; set;  }
 	
@@ -976,7 +976,7 @@ namespace MonoMac.CoreAnimation {
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface CAMediaTimingFunction {
+	public interface CAMediaTimingFunction {
 		[Export ("functionWithName:")][Static]
 		CAMediaTimingFunction FromName (string  name);
 	
@@ -1004,7 +1004,7 @@ namespace MonoMac.CoreAnimation {
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface CAValueFunction {
+	public interface CAValueFunction {
 		[Export ("functionWithName:"), Static]
 		CAValueFunction FromName (string name);
 

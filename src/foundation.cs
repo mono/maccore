@@ -33,7 +33,9 @@ using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 using MonoMac.CoreGraphics;
 
-#if !MONOMAC
+#if MONOMAC
+using MonoMac.AppKit;
+#else
 using MonoMac.CoreLocation;
 using MonoMac.UIKit;
 #endif
@@ -147,7 +149,7 @@ namespace MonoMac.Foundation
 		   Delegates=new string [] { "WeakDelegate" },
 		   Events=new Type [] { typeof (NSCacheDelegate)} )]
 	[Since (4,0)]
-	interface NSCache {
+	public interface NSCache {
 		[Export ("objectForKey:")]
 		NSObject ObjectForKey (NSObject key);
 
@@ -185,7 +187,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface NSCacheDelegate {
+	public interface NSCacheDelegate {
 		[Export ("cache:willEvictObject:"), EventArgs ("NSObject")]
 		void WillEvictObject (NSCache cache, NSObject obj);
 	}
@@ -391,7 +393,7 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSPredicate))]
-	interface NSComparisonPredicate {
+	public interface NSComparisonPredicate {
 		[Static, Export ("predicateWithLeftExpression:rightExpression:modifier:type:options:")]
 		NSPredicate Create (NSExpression leftExpression, NSExpression rightExpression, NSComparisonPredicateModifier comparisonModifier, NSPredicateOperatorType operatorType, NSComparisonPredicateOptions comparisonOptions);
 
@@ -424,7 +426,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSPredicate))]
-	interface NSCompoundPredicate {
+	public interface NSCompoundPredicate {
 		[Export ("initWithType:subpredicates:")]
 		IntPtr Constructor (NSCompoundPredicateType type, NSPredicate[] subpredicates);
 
@@ -478,7 +480,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSDateComponents {
+	public interface NSDateComponents {
 		[Since (4,0)]
 		[Export ("timeZone")]
 		NSTimeZone TimeZone { get; set; }
@@ -528,7 +530,7 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSFormatter))]
-	interface NSDateFormatter {
+	public interface NSDateFormatter {
 		[Export ("stringFromDate:")]
 		string ToString (NSDate date);
 
@@ -637,7 +639,7 @@ namespace MonoMac.Foundation
 	
 	//@interface NSFormatter : NSObject <NSCopying, NSCoding>
 	[BaseType (typeof (NSObject))]
-	interface NSFormatter {
+	public interface NSFormatter {
 		[Export ("stringForObjectValue:")]
 		string StringFor (NSObject value);
 
@@ -750,7 +752,7 @@ namespace MonoMac.Foundation
 
 #if MONOMAC
 	[BaseType (typeof (NSObject), Delegates=new string [] { "Delegate" }, Events=new Type [] { typeof (NSMetadataQueryDelegate)})]
-	interface NSMetadataQuery {
+	public interface NSMetadataQuery {
 		[Export ("startQuery")]
 		bool StartQuery ();
 
@@ -846,7 +848,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface NSMetadataQueryDelegate {
+	public interface NSMetadataQueryDelegate {
 		[Export ("metadataQuery:replacementObjectForResultObject:"), DelegateName ("NSMetadataQueryObject"), DefaultValue(null)]
 		NSObject ReplacementObjectForResultObject (NSMetadataQuery query, NSMetadataItem result);
 
@@ -855,7 +857,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSMetadataItem {
+	public interface NSMetadataItem {
 		[Export ("valueForAttribute:")]
 		NSObject ValueForAttribute (string key);
 
@@ -867,7 +869,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSMetadataQueryAttributeValueTuple {
+	public interface NSMetadataQueryAttributeValueTuple {
 		[Export ("attribute")]
 		string Attribute { get; }
 
@@ -879,7 +881,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSMetadataQueryResultGroup {
+	public interface NSMetadataQueryResultGroup {
 		[Export ("attribute")]
 		string Attribute { get; }
 
@@ -1165,10 +1167,10 @@ namespace MonoMac.Foundation
 		NSNumber[] CallStackReturnAddresses { get; }
 	}
 
-	delegate void NSExpressionHandler (NSObject evaluatedObject, NSExpression [] expressions, NSMutableDictionary context);
+	public delegate void NSExpressionHandler (NSObject evaluatedObject, NSExpression [] expressions, NSMutableDictionary context);
 	
 	[BaseType (typeof (NSObject))]
-	interface NSExpression {
+	public interface NSExpression {
 
 		[Static, Export ("expressionForConstantValue:")]
 		NSExpression FromConstant (NSObject obj);
@@ -1380,7 +1382,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSSortDescriptor {
+	public interface NSSortDescriptor {
 		[Export ("initWithKey:ascending:")]
 		IntPtr Constructor (string key, bool ascending);
 
@@ -2214,7 +2216,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject)), Bind ("NSString")]
-	interface NSString2 {
+	public interface NSString2 {
 #if MONOMAC
 		[Bind ("sizeWithAttributes:")]
 		SizeF StringSize (NSDictionary attributedStringAttributes);
@@ -2403,7 +2405,7 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
-	interface NSOperation {
+	public interface NSOperation {
 		[Export ("start")]
 		void Start ();
 
@@ -2450,7 +2452,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSOperation))]
 	[Since (4,0)]
-	interface NSBlockOperation {
+	public interface NSBlockOperation {
 		[Static]
 		[Export ("blockOperationWithBlock:")]
 		NSBlockOperation Create (NSAction method);
@@ -2464,7 +2466,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
-	interface NSOperationQueue {
+	public interface NSOperationQueue {
 		[Export ("addOperation:")]
 		void AddOperation (NSOperation op);
 
@@ -2875,7 +2877,7 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject), Delegates=new string [] { "WeakDelegate" }, Events=new Type [] { typeof (NSNetServiceDelegate)})]
-	interface NSNetService {
+	public interface NSNetService {
 		[Export ("initWithDomain:type:name:port:")]
 		IntPtr Constructor (string domain, string type, string name, int port);
 
@@ -2948,7 +2950,7 @@ namespace MonoMac.Foundation
 	}
 
 	[Model, BaseType (typeof (NSObject))]
-	interface NSNetServiceDelegate {
+	public interface NSNetServiceDelegate {
 		[Export ("netServiceWillPublish:")]
 		void WillPublish (NSNetService sender);
 
@@ -2977,7 +2979,7 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject),
 		   Delegates=new string [] {"WeakDelegate"},
 		   Events=new Type [] {typeof (NSNetServiceBrowserDelegate)})]
-	interface NSNetServiceBrowser {
+	public interface NSNetServiceBrowser {
 		[Export ("delegate", ArgumentSemantic.Assign), NullAllowed]
 		NSObject WeakDelegate { get; set; }
 
@@ -3005,7 +3007,7 @@ namespace MonoMac.Foundation
 	}
 
 	[Model, BaseType (typeof (NSObject))]
-	interface NSNetServiceBrowserDelegate {
+	public interface NSNetServiceBrowserDelegate {
 		[Export ("netServiceBrowserWillSearch:")]
 		void SearchStarted (NSNetServiceBrowser sender);
 		
@@ -3029,7 +3031,7 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject))]
-	interface NSNotification {
+	public interface NSNotification {
 		[Export ("name")]
 		string Name { get; }
 
@@ -3047,7 +3049,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSNotificationCenter {
+	public interface NSNotificationCenter {
 		[Static][Export ("defaultCenter")]
 		NSNotificationCenter DefaultCenter { get; }
 	
@@ -3076,7 +3078,7 @@ namespace MonoMac.Foundation
 
 #if MONOMAC
 	[BaseType (typeof (NSNotificationCenter))]
-	interface NSDistributedNotificationCenter {
+	public interface NSDistributedNotificationCenter {
 		[Static]
 		[Export ("defaultCenter")]
 		NSObject DefaultCenter { get; }
@@ -3112,7 +3114,7 @@ namespace MonoMac.Foundation
 #endif
 	
 	[BaseType (typeof (NSObject))]
-	interface NSNotificationQueue {
+	public interface NSNotificationQueue {
 		[Static]
 		[Export ("defaultQueue")]
 		NSObject DefaultQueue { get; }
@@ -3130,10 +3132,10 @@ namespace MonoMac.Foundation
 		void DequeueNotificationsMatchingcoalesceMask (NSNotification notification, NSNotificationCoalescing coalesceMask);
 	}
 
-	delegate void NSNotificationHandler (NSNotification notification);
+	public delegate void NSNotificationHandler (NSNotification notification);
 	
 	[BaseType (typeof (NSObject))]
-	interface NSValue {
+	public interface NSValue {
 		[Export ("getValue:")]
 		void StoreValueAtAddress (IntPtr value);
 
@@ -3555,12 +3557,12 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSMutableData))]
 	[Since (4,0)]
-	interface NSPurgeableData {
+	public interface NSPurgeableData {
 		
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSFileManager {
+	public interface NSFileManager {
 		[Field("NSFileType")]
 		NSString NSFileType { get; }
 
@@ -3764,7 +3766,7 @@ namespace MonoMac.Foundation
 
 	[BaseType(typeof(NSObject))]
 	[Model]
-	interface NSFileManagerDelegate {
+	public interface NSFileManagerDelegate {
 		[Export("fileManager:shouldCopyItemAtPath:toPath:")]
 		bool ShouldCopyItemAtPath(NSFileManager fm, NSString srcPath, NSString dstPath);
 
@@ -3827,7 +3829,7 @@ namespace MonoMac.Foundation
 	}
     
 	[BaseType (typeof (NSEnumerator))]
-	interface NSDirectoryEnumerator {
+	public interface NSDirectoryEnumerator {
 		[Export ("fileAttributes")]
 		NSDictionary FileAttributes { get; }
 
@@ -3893,11 +3895,11 @@ namespace MonoMac.Foundation
 #endif
 	}
 
-	delegate bool NSPredicateEvaluator (NSObject evaluatedObject, NSDictionary bindings);
+	public delegate bool NSPredicateEvaluator (NSObject evaluatedObject, NSDictionary bindings);
 	
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
-	interface NSPredicate {
+	public interface NSPredicate {
 		[Static]
 		[Export ("predicateWithFormat:argumentArray:")]
 		NSPredicate FromFormat (string predicateFormat, NSObject[] arguments);
@@ -3923,7 +3925,7 @@ namespace MonoMac.Foundation
 
 #if MONOMAC
 	[BaseType (typeof (NSObject), Name="NSURLDownload")]
-	interface NSUrlDownload {
+	public interface NSUrlDownload {
 		[Static, Export ("canResumeDownloadDecodedWithEncodingMIMEType:")]
 		bool CanResumeDownloadDecodedWithEncodingMimeType (string mimeType);
 
@@ -3951,7 +3953,7 @@ namespace MonoMac.Foundation
 
     	[BaseType (typeof (NSObject))]
     	[Model]
-	interface NSUrlDownloadDelegate {
+	public interface NSUrlDownloadDelegate {
 		[Export ("downloadDidBegin:")]
 		void DownloadBegan (NSUrlDownload download);
 

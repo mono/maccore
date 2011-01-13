@@ -5,7 +5,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreData
 {
 	[BaseType (typeof (NSPersistentStore))]
-	interface NSAtomicStore {
+	public interface NSAtomicStore {
 
 		[Export ("initWithPersistentStoreCoordinator:configurationName:URL:options:")]
 		IntPtr Constructor (NSPersistentStoreCoordinator coordinator, string configurationName, NSUrl url, NSDictionary options);
@@ -45,7 +45,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSAtomicStoreCacheNode {
+	public interface NSAtomicStoreCacheNode {
 
 		[Export ("initWithObjectID:")]
 		IntPtr Constructor (NSManagedObjectID moid);
@@ -64,7 +64,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSPropertyDescription))]
-	interface NSAttributeDescription {
+	public interface NSAttributeDescription {
 
 		[Export ("attributeType")]
 		NSAttributeType AttributeType { get; set; }
@@ -86,7 +86,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSEntityDescription {
+	public interface NSEntityDescription {
 
 		[Static, Export ("entityForName:inManagedObjectContext:")]
 		NSEntityDescription EntityForName (string entityName, NSManagedObjectContext context);
@@ -144,7 +144,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSEntityMapping {
+	public interface NSEntityMapping {
 
 		[Export ("name")]
 		string Name { get; set; }
@@ -181,7 +181,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSEntityMigrationPolicy {
+	public interface NSEntityMigrationPolicy {
 
 		[Export ("beginEntityMapping:manager:error:")]
 		bool BeginEntityMapping (NSEntityMapping mapping, NSMigrationManager manager, out NSError error);
@@ -206,14 +206,14 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSPropertyDescription))]
-	interface NSFetchedPropertyDescription {
+	public interface NSFetchedPropertyDescription {
 
 		[Export ("fetchRequest")]
 		NSFetchRequest FetchRequest { get; set; }
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSFetchRequest {
+	public interface NSFetchRequest {
 
 		[Export ("entity")]
 		NSEntityDescription Entity { get; set; }
@@ -248,7 +248,7 @@ namespace MonoMac.CoreData
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSManagedObject {
+	public interface NSManagedObject {
 		[Export ("initWithEntity:insertIntoManagedObjectContext:")]
 		IntPtr Constructor (NSEntityDescription entity, NSManagedObjectContext context);
 
@@ -347,7 +347,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSManagedObjectContext {
+	public interface NSManagedObjectContext {
 
 		[Export ("persistentStoreCoordinator")]
 		NSPersistentStoreCoordinator PersistentStoreCoordinator { get; set; }
@@ -446,7 +446,7 @@ namespace MonoMac.CoreData
 		void MergeChangesFromContextDidSaveNotification (NSNotification notification);
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSManagedObjectID {
+	public interface NSManagedObjectID {
 
 		[Export ("entity")]
 		NSEntityDescription Entity { get; }
@@ -462,7 +462,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSManagedObjectModel {
+	public interface NSManagedObjectModel {
 
 		[Static, Export ("mergedModelFromBundles:")]
 		NSManagedObjectModel MergedModelFromBundles (NSBundle[] bundles);
@@ -522,7 +522,7 @@ namespace MonoMac.CoreData
 		NSDictionary EntityVersionHashesByName { get; }
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSMappingModel {
+	public interface NSMappingModel {
 
 		[Static, Export ("mappingModelFromBundles:forSourceModel:destinationModel:")]
 		NSMappingModel MappingModelFromBundles (NSBundle[] bundles, NSManagedObjectModel sourceModel, NSManagedObjectModel destinationModel);
@@ -538,7 +538,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSMigrationManager {
+	public interface NSMigrationManager {
 
 		[Export ("initWithSourceModel:destinationModel:")]
 		IntPtr Constructor (NSManagedObjectModel sourceModel, NSManagedObjectModel destinationModel);
@@ -593,7 +593,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSPersistentStore {
+	public interface NSPersistentStore {
 
 		[Static, Export ("metadataForPersistentStoreWithURL:error:")]
 		NSDictionary MetadataForPersistentStoreWithUrl (NSUrl url, out NSError error);
@@ -636,7 +636,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSPersistentStoreCoordinator {
+	public interface NSPersistentStoreCoordinator {
 
 		[Static, Export ("registeredStoreTypes")]
 		NSDictionary RegisteredStoreTypes { get; }
@@ -701,7 +701,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSPropertyDescription {
+	public interface NSPropertyDescription {
 
 		[Export ("entity")]
 		NSEntityDescription Entity { get; }
@@ -737,7 +737,7 @@ namespace MonoMac.CoreData
 		string VersionHashModifier { get; set; }
 	}
 	[BaseType (typeof (NSObject))]
-	interface NSPropertyMapping {
+	public interface NSPropertyMapping {
 
 		[Export ("name")]
 		string Name { get; set; }
@@ -750,7 +750,7 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSPropertyDescription))]
-	interface NSRelationshipDescription {
+	public interface NSRelationshipDescription {
 
 		[Export ("destinationEntity")]
 		NSEntityDescription DestinationEntity { get; set; }
