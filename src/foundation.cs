@@ -1608,7 +1608,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (string path);
 
 		[Export ("initWithString:relativeToURL:")]
-		IntPtr Constructor (string path, string relativeToUrl);
+		IntPtr Constructor (string path, string relativeToUrl);		
 
 		[Export ("URLWithString:")][Static]
 		NSUrl FromString (string s);
@@ -1666,6 +1666,18 @@ namespace MonoMac.Foundation
 
 		[Export ("standardizedURL")]
 		NSUrl StandardizedUrl { get; }
+		
+#if MONOMAC
+
+		/* These methods come from NURL_AppKitAdditions */
+
+		[Export ("URLFromPasteboard:")][Static]
+		NSUrl FromPasteboard (NSPasteboard pasteboard);
+
+		[Export ("writeToPasteboard:")]
+		void WriteToPasteboard (NSPasteboard pasteboard);
+		
+#endif
 		
 		//[Export ("port")]
 		//NSNumber Port { get;}
