@@ -1667,7 +1667,7 @@ namespace MonoMac.Foundation
 		[Export ("standardizedURL")]
 		NSUrl StandardizedUrl { get; }
 		
-#if MONOMAC
+#if MONOMAC && !MONOMAC_BOOTSTRAP
 
 		/* These methods come from NURL_AppKitAdditions */
 
