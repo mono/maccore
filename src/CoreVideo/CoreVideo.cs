@@ -102,4 +102,17 @@ namespace MonoMac.CoreVideo {
 	public enum CVOptionFlags {
 		None = 0,
 	}
+
+	public struct CVTimeStamp {
+		public UInt32	Version;
+		public Int32 	VideoTimeScale;
+		public Int64 	VideoTime;
+		public UInt64 	HostTime;
+		public double 	RateScalar;
+		public Int64 	VideoRefreshPeriod;
+		public double 	SMPTETime;
+		public UInt64 	Flags;
+		public UInt64 	Reserved;
+	}
+	
 }

@@ -32,6 +32,7 @@ using System;
 using System.Drawing;
 #if MONOMAC
 using MonoMac.AppKit;
+using MonoMac.CoreVideo;
 #else
 using MonoMac.UIKit;
 #endif
@@ -784,6 +785,23 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCATransitionFromBottom")]
 		NSString TransitionFromBottom { get; }
+		
+		/* 'calculationMode' strings. */
+		[Field ("kCAAnimationLinear")]
+		NSString AnimationLinear { get; }
+				
+		[Field ("kCAAnimationDiscrete")]
+		NSString AnimationDescrete { get; }
+		
+		[Field ("kCAAnimationPaced")]
+		NSString AnimationPaced { get; }
+		
+		/* 'rotationMode' strings. */
+		[Field ("kCAAnimationRotateAuto")]
+		NSString RotateModeAuto { get; }
+
+		[Field ("kCAAnimationRotateAutoReverse")]
+		NSString RotateModeAutoReverse { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -1045,6 +1063,32 @@ namespace MonoMac.CoreAnimation {
 		NSString TranslateZ { get; }
 		
 	}
-	
+
+#if MONOMAC
+	[BaseType (typeof (CALayer))]
+	interface CAOpenGLLayer {
+		[Export ("asynchronous")]
+		bool Asynchronous { [Bind ("isAsynchronous")]get; set; }	
+
+		[Export ("canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
+		bool CanDrawInCGLContext (NSOpenGLContext ctx, NSOpenGLPixelFormat pf, double t, CVTimeStamp ts);
+
+		[Export ("drawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
+		void DrawInCGLContext (NSOpenGLContext ctx, NSOpenGLPixelFormat pf, double t, CVTimeStamp ts);
+
+		[Export ("copyCGLPixelFormatForDisplayMask:")]
+		NSOpenGLPixelFormat CopyCGLPixelFormatForDisplayMask (UInt32 mask);
+
+		[Export ("releaseCGLPixelFormat:")]
+		void Release (NSOpenGLPixelFormat pf);
+
+		[Export ("copyCGLContextForPixelFormat:")]
+		NSOpenGLContext CopyContext (NSOpenGLPixelFormat pf);
+
+		[Export ("releaseCGLContext:")]
+		void Release (NSOpenGLContext ctx);
+
+	}	
+#endif
 }
 
