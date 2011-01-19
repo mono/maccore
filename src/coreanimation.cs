@@ -630,6 +630,12 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCALineCapSquare")]
 		NSString CapSquare { get; }
+
+		[Field ("kCAFillRuleNonZero")]
+		NSString FillRuleNonZero { get; }
+
+		[Field ("kCAFillRuleEvenOdd")]
+		NSString FilLRuleEvenOdd { get; }
 	}
 
 	[BaseType (typeof (CALayer))]
