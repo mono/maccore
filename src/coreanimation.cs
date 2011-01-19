@@ -582,10 +582,10 @@ namespace MonoMac.CoreAnimation {
 		CGColor FillColor { get; set; }
 
 		[Export ("fillRule", ArgumentSemantic.Copy)]
-		string FillRule { get; set; }
+		NSString FillRule { get; set; }
 
 		[Export ("lineCap", ArgumentSemantic.Copy)]
-		string LineCap { get; set; }
+		NSString LineCap { get; set; }
 
 		[Export ("lineDashPattern", ArgumentSemantic.Copy)]
 		NSNumber [] LineDashPattern { get; set; }
@@ -594,7 +594,7 @@ namespace MonoMac.CoreAnimation {
 		float LineDashPhase { get; set; }
 
 		[Export ("lineJoin", ArgumentSemantic.Copy)]
-		string LineJoin { get; set; }
+		NSString LineJoin { get; set; }
 
 		[Export ("lineWidth")]
 		float LineWidth { get; set; }
@@ -612,6 +612,24 @@ namespace MonoMac.CoreAnimation {
 		[Since (4,2)]
 		[Export ("strokeEnd")]
 		float StrokeEnd { get; set; }
+
+		[Field ("kCALineJoinMiter")]
+		NSString JoinMiter { get; }
+
+		[Field ("kCALineJoinRound")]
+		NSString JoinRound { get; }
+
+		[Field ("kCALineJoinBevel")]
+		NSString JoinBevel { get; }
+
+		[Field ("kCALineCapButt")]
+		NSString CapButt { get; }
+
+		[Field ("kCALineCapRound")]
+		NSString CapRound { get; }
+
+		[Field ("kCALineCapSquare")]
+		NSString CapSquare { get; }
 	}
 
 	[BaseType (typeof (CALayer))]
