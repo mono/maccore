@@ -33,6 +33,7 @@ using System.Drawing;
 #if MONOMAC
 using MonoMac.AppKit;
 using MonoMac.CoreVideo;
+using MonoMac.CoreImage;
 #else
 using MonoMac.UIKit;
 #endif
@@ -488,6 +489,10 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("addConstraint:")]
 		void AddConstraint (CAConstraint c);
+
+		[Export ("filters")]
+		CIFilter [] Filters { get; }
+
 #else
 		[Since (3,2)]
 		[Export ("shouldRasterize")]
