@@ -491,7 +491,7 @@ namespace MonoMac.CoreAnimation {
 		void AddConstraint (CAConstraint c);
 
 		[Export ("filters")]
-		CIFilter [] Filters { get; }
+		CIFilter [] Filters { get; set; }
 
 #else
 		[Since (3,2)]
