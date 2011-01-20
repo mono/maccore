@@ -490,7 +490,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("addConstraint:")]
 		void AddConstraint (CAConstraint c);
 
-		[Export ("filters")]
+		[Export ("filters"), NullAllowed]
 		CIFilter [] Filters { get; set; }
 
 #else
