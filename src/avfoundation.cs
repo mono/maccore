@@ -997,7 +997,7 @@ namespace MonoMac.AVFoundation {
 		IntPtr Constructor (AVAsset asset, string presetName);
 
 		[Export ("exportAsynchronouslyWithCompletionHandler:")]
-		void ExportAsynchronously (AVErrorHandler errorHandler);
+		void ExportAsynchronously (AVCompletionHandler handler);
 
 		[Export ("cancelExport")]
 		void CancelExport ();
@@ -1594,7 +1594,7 @@ namespace MonoMac.AVFoundation {
 		AVCaptureDevicePosition Position { get; }
 	}
 
-	public delegate void AVErrorHandler (NSError error);
+	public delegate void AVCompletionHandler ();
 	public delegate void AVCaptureCompletionHandler (MonoMac.CoreMedia.CMSampleBuffer imageDataSampleBuffer, NSError error);
 
 	[Since (4,0)]
