@@ -158,8 +158,11 @@ namespace MonoMac.AVFoundation {
 		InvalidCompositionTrackSegmentSourceDuration = -11827,
 		MaximumStillImageCaptureRequestsExceeded = 11830,
 		NoImageAtTime = -11832,
+		DecoderNotFound = -11833,
+		EncoderNotFound = -11834,
+		ContentIsNotAuthorized = -11836,
 #if !MONOMAC
-		MediaServicesWereReset = -11820,			
+		MediaServicesWereReset = -11820,
 #endif
 	}
 

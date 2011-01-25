@@ -471,6 +471,30 @@ namespace MonoMac.AVFoundation {
 		[Since (4,2)]
 		[Export ("hasProtectedContent")]
 		bool ProtectedContent { get; }
+
+		[Since (4,3)]
+		[Export ("availableChapterLocales")]
+		NSLocale [] AvailableChapterLocales { get; }
+
+		[Since (4,3)]
+		[Export ("chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:")]
+		AVMetadataItem [] ChapterMetadataGroups (NSLocale forLocale, [NullAllowed] AVMetadataItem [] commonKeys);
+
+		[Since (4,3)]
+		[Export ("isPlayable")]
+		bool Playable { get; }
+
+		[Since (4,3)]
+		[Export ("isExportable")]
+		bool Exportable { get; }
+
+		[Since (4,3)]
+		[Export ("isReadable")]
+		bool Readable { get; }
+
+		[Since (4,3)]
+		[Export ("isComposable")]
+		bool Composable { get; }
 	}
 
 	[Since (4,1)]
@@ -631,6 +655,9 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("finishWriting")]
 		bool FinishWriting ();
+
+		[Export ("movieTimeScale")]
+		int MovieTimeScale { get; set; }
 	}
 
 	[Since (4,1)]
@@ -668,6 +695,9 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("markAsFinished")]
 		void MarkAsFinished ();
+
+		[Export ("mediaTimeScale")]
+		int MediaTimeScale { get; set; }
 	}
 
 	[Since (4,1)]
@@ -832,6 +862,12 @@ namespace MonoMac.AVFoundation {
 		[Since (4,2)]
 		[Export ("duration")]
 		CMTime Duration { get; }
+
+                [Export ("statusOfValueForKey:error:")]
+                AVKeyValueStatus StatusOfValueForKeyerror (string key, IntPtr outError);
+
+                [Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
+                void LoadValuesAsynchronously (string [] keys, NSAction handler);
 	}
 
 	[Since (4,0)]
@@ -1659,6 +1695,28 @@ namespace MonoMac.AVFoundation {
 		AVPlayerStatus Status { get; }
 	}
 
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	interface AVTimedMetadataGroup {
+		[Export ("timeRange")]
+		CMTimeRange TimeRange { get;  }
+
+		[Export ("items")]
+		AVMetadataItem [] Items { get;  }
+
+		[Export ("initWithItems:timeRange:")]
+		IntPtr Constructor (AVMetadataItem [] items, CMTimeRange timeRange);
+	}
+
+	[BaseType (typeof (AVTimedMetadataGroup))]
+	interface AVMutableTimedMetadataGroup {
+		[Export ("items")]
+		AVMetadataItem [] Items { get; set;  }
+
+		[Export ("timeRange")]
+		CMTimeRange Timerange { get; set; }
+	}
+
 	delegate void AVTimeHandler (CMTime time);
 
 	[Since (4,0)]
@@ -1737,7 +1795,127 @@ namespace MonoMac.AVFoundation {
 		bool SeekToDate (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter);
 
 		[Export ("error")]
-		NSError Error { get; }	
+		NSError Error { get; }
+
+		[Field ("AVPlayerItemDidPlayToEndTimeNotification")]
+		NSString DidPLayToEndTimeNotification { get; }
+
+		[Since (4,3)]
+		[Field ("AVPlayerItemFailedToPlayToEndTimeNotification")]
+		NSString ItemFailedToPlayToEndTimeNotification { get; }
+
+		[Since (4,3)]
+		[Field ("AVPlayerItemFailedToPlayToEndTimeErrorKey")]
+		NSString ItemFailedToPlayToEndTimeErrorKey { get; }
+
+		[Since (4,3)]
+		[Export ("accessLog")]
+		AVPlayerItemAccessLog AccessLog { get; }
+
+		[Since (4,3)]
+		[Export ("errorLog")]
+		AVPlayerItemErrorLog ErrorLog { get; }
+
+		[Since (4,3)]
+		[Export ("currentDate")]
+		NSDate CurrentDate { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	public interface AVPlayerItemAccessLog {
+		[Export ("events")]
+		AVPlayerItemAccessLogEvent [] Events { get; }
+
+		[Export ("extendedLogDataStringEncoding")]
+		NSStringEncoding ExtendedLogDataStringEncoding { get; }
+
+		[Export ("extendedLogData")]
+		NSData ExtendedLogData { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	public interface AVPlayerItemErrorLog {
+		[Export ("events")]
+		AVPlayerItemErrorLogEvent [] Events { get; }
+
+		[Export ("extendedLogDataStringEncoding")]
+		NSStringEncoding ExtendedLogDataStringEncoding { get; }
+
+		[Export ("extendedLogData")]
+		NSData ExtendedLogData { get; }
+	}
+	
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	public interface AVPlayerItemAccessLogEvent {
+		[Export ("numberOfSegmentsDownloaded")]
+		int SegmentedDownloadedCount { get; }
+
+		[Export ("playbackStartDate")]
+		NSData PlaybackStartDate { get; }
+
+		[Export ("URI")]
+		string Uri { get; }
+
+		[Export ("serverAddress")]
+		string ServerAddress { get; }
+
+		[Export ("numberOfServerAddressChanges")]
+		int ServerAddressChangeCount { get; }
+
+		[Export ("playbackSessionID")]
+		string PlaybackSessionID { get; }
+
+		[Export ("playbackStartOffset")]
+		double PlaybackStartOffset { get; }
+
+		[Export ("segmentsDownloadedDuration")]
+		double SegmentsDownloadedDuration { get; }
+
+		[Export ("durationWatched")]
+		double DurationWatched { get; }
+
+		[Export ("numberOfStalls")]
+		int StallCount { get; }
+
+		[Export ("numberOfBytesTransferred")]
+		long BytesTransferred { get; }
+
+		[Export ("observedBitrate")]
+		double ObservedBitrate { get; }
+
+		[Export ("indicatedBitrate")]
+		double IndicatedBitrate { get; }
+
+		[Export ("numberOfDroppedVideoFrames")]
+		int DroppedVideoFrameCount { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	public interface AVPlayerItemErrorLogEvent {
+		[Export ("date")]
+		NSDate Date { get; }
+
+		[Export ("URI")]
+		string Uri { get; }
+
+		[Export ("serverAddress")]
+		string ServerAddress { get; }
+
+		[Export ("playbackSessionID")]
+		string PlaybackSessionID { get; }
+
+		[Export ("errorStatusCode")]
+		int ErrorStatusCode { get; }
+
+		[Export ("errorDomain")]
+		string ErrorDomain { get; }
+
+		[Export ("errorComment")]
+		string ErrorComment { get; }
 	}
 
 	[Since (4,0)]
