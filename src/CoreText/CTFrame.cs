@@ -57,7 +57,11 @@ namespace MonoMac.CoreText {
 		public static readonly NSString PathFillRule;
 		[Since (4,2)]
 		public static readonly NSString PathWidth;
-
+		[Since (4,3)]
+		public static readonly NSString ClippingPaths;
+		[Since (4,3)]
+		public static readonly NSString PathClippingPath;
+		
 		static CTFrameAttributeKey ()
 		{
 			var handle = Dlfcn.dlopen (Constants.CoreTextLibrary, 0);
@@ -67,6 +71,8 @@ namespace MonoMac.CoreText {
 				Progression = Dlfcn.GetStringConstant (handle, "kCTFrameProgressionAttributeName");
 				PathFillRule = Dlfcn.GetStringConstant (handle, "kCTFramePathFillRuleAttributeName");
 				PathWidth = Dlfcn.GetStringConstant (handle, "kCTFramePathWidthAttributeName");
+				ClippingPaths = Dlfcn.GetStringConstant (handle, "kCTFrameClippingPathsAttributeName");
+				PathClippingPath = Dlfcn.GetStringConstant (handle, "kCTFramePathClippingPathAttributeName");
 			}
 			finally {
 				Dlfcn.dlclose (handle);

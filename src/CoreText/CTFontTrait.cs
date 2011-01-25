@@ -69,6 +69,7 @@ namespace MonoMac.CoreText {
 		MonoSpace   = (1 << 10),
 		Vertical    = (1 << 11),
 		UIOptimized = (1 << 12),
+		ColorGlyphs = (1 << 13)
 	}
 
 	[Since (3,2)]
