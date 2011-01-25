@@ -101,6 +101,7 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
+
 		internal static int SlowGetInt32 (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
@@ -128,7 +129,14 @@ namespace MonoMac.ObjCRuntime {
 		internal static double SlowGetDouble (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
-	
+			if (handle == IntPtr.Zero)
+				return 0;
+			try {
+				return GetDouble (handle, symbol);
+			} finally {
+				dlclose (handle);
+			}
+		}
 
 		internal static NSString SlowGetStringConstant (string lib, string symbol)
 		{
