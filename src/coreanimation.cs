@@ -33,6 +33,7 @@ using System.Drawing;
 #if MONOMAC
 using MonoMac.AppKit;
 using MonoMac.CoreVideo;
+using MonoMac.CoreImage;
 #else
 using MonoMac.UIKit;
 #endif
