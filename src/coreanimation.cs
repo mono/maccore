@@ -488,6 +488,9 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("addConstraint:")]
 		void AddConstraint (CAConstraint c);
+
+		[Export ("filter")]
+		CIFilter [] Filters { get; set; }
 #else
 		[Since (3,2)]
 		[Export ("shouldRasterize")]
