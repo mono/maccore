@@ -44,6 +44,9 @@ namespace MonoMac.ObjCRuntime {
 		[DllImport (Constants.SystemLibrary)]
 		static extern IntPtr dlsym (IntPtr handle, string symbol);
 
+		[DllImport (Constants.SystemLibrary)]
+		public static extern string dlerror ();
+
 		public static NSString GetStringConstant (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);
