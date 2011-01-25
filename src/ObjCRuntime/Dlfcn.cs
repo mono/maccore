@@ -33,7 +33,7 @@ using MonoMac.Foundation;
 
 namespace MonoMac.ObjCRuntime {
 	
-	static class Dlfcn {
+	public static class Dlfcn {
 
 		[DllImport (Constants.SystemLibrary)]
 		public static extern int dlclose (IntPtr handle);
@@ -101,8 +101,7 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
-
-		public static int SlowGetInt32 (string lib, string symbol)
+		internal static int SlowGetInt32 (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
 			if (handle == IntPtr.Zero)
@@ -114,7 +113,7 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
-		public static IntPtr SlowGetIntPtr (string lib, string symbol)
+		internal static IntPtr SlowGetIntPtr (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
 			if (handle == IntPtr.Zero)
@@ -126,19 +125,12 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
-		public static double SlowGetDouble (string lib, string symbol)
+		internal static double SlowGetDouble (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
-			if (handle == IntPtr.Zero)
-				return 0;
-			try {
-				return GetDouble (handle, symbol);
-			} finally {
-				dlclose (handle);
-			}
-		}
+	
 
-		public static NSString SlowGetStringConstant (string lib, string symbol)
+		internal static NSString SlowGetStringConstant (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
 			if (handle == IntPtr.Zero)
