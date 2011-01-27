@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace MonoMac.Foundation {
 	public enum NSRunLoopMode {
@@ -74,6 +75,16 @@ namespace MonoMac.Foundation {
 		public void AcceptInputForMode (NSRunLoopMode mode, NSDate limitDate)
 		{
 			AcceptInputForMode (FromEnum (mode), limitDate);
+		}
+
+		public void Stop ()
+		{
+			GetCFRunLoop ().Stop ();
+		}
+
+		public void WakeUp ()
+		{
+			GetCFRunLoop ().WakeUp ();
 		}
 	}
 }
