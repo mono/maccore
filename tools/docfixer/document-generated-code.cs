@@ -184,7 +184,8 @@ class DocumentGeneratedCode {
 		string dir = null;
 		string lib = null;
 		var debug = Environment.GetEnvironmentVariable ("DOCFIXER");
-
+		bool debugDoc = false;
+		
 		DocGenerator.DebugDocs = false;
 		
 		for (int i = 0; i < args.Length; i++){
@@ -195,6 +196,11 @@ class DocumentGeneratedCode {
 			}
 			if (arg == "--appledocs"){
 				mergeAppledocs = true;
+				continue;
+			}
+			if (arg == "--debugdoc"){
+				DocGenerator.DebugDocs = true;
+				debugDoc = true;
 				continue;
 			}
 			
@@ -217,6 +223,15 @@ class DocumentGeneratedCode {
 		assembly = Assembly.LoadFrom (lib);
 
 		foreach (Type t in assembly.GetTypes ()){
+			if (debugDoc){
+				string str = DocGenerator.GetAppleDocFor (t);
+				if (str == null){
+					Console.WriteLine ("Could not find docs for {0}", t);
+				}
+				
+				continue;
+			}
+			
 			if (debug != null && t.FullName != debug)
 				continue;
 

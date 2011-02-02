@@ -44,6 +44,7 @@ public partial class DocGenerator {
 		"{0}/{1}/Reference/{2}_Protocol/Introduction/Introduction.html",
 		"{0}/{1}/Reference/{2}_Protocol/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}_Protocol/Reference/{2}.html",
+		"{0}/{1}/Reference/{2}_Protocol/Reference.html",
 		"{0}/{1}/Reference/{2}_Protocol/{2}/{2}.html",
 		"{0}/{1}/Reference/{4}_Protocol/{2}/{2}.html",                              // UIModalViewDelegate_Protocol/UIActionSheetDelegate/UIActionSheetDelegate.html
 		"{0}/{1}/Reference/Foundation/Classes/{2}_Class/{2}.html",
@@ -127,6 +128,10 @@ public partial class DocGenerator {
 			fx = "GraphicsImaging";
 			alt = "QuartzCoreFramework";
 		}
+		if (fx == "ImageKit"){
+			fx = "Quartz";
+			alt = "QuartzCoreFramework";
+		}
 		if (fx == "QTKit"){
 			fx = "QuickTime";
 			alt = "QTKitFramework";
@@ -167,7 +172,6 @@ public partial class DocGenerator {
 		}
 
 		Console.WriteLine ("NOT FOUND: {0}", t);
-
 		if (DebugDocs){
 			Console.WriteLine ("DocBase: {0}", DocBase);
 			foreach (string pattern in patterns){
