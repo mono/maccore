@@ -3994,5 +3994,98 @@ namespace MonoMac.Foundation
 	}
 #endif
 
+	[BaseType (typeof (NSObject), Name="NSURLProtocolClient")]
+	[Model]
+	interface NSUrlProtocolClient {
+		[Abstract]
+		[Export ("UrlProtocol:wasRedirectedToRequest:redirectResponse:"), EventArgs ("NSUrlProtocolRedirect")]
+		void Redirected (NSUrlProtocol protocol, NSUrlRequest redirectedToEequest, NSUrlResponse redirectResponse);
+
+		[Abstract]
+		[Export ("UrlProtocol:cachedResponseIsValid:"), EventArgs ("NSUrlProtocolCachedResponse")]
+		void CachedResponseIsValid (NSUrlProtocol protocol, NSCachedUrlResponse cachedResponse);
+
+		[Abstract]
+		[Export ("UrlProtocol:didReceiveResponse:cacheStoragePolicy:"), EventArgs ("NSUrlProtocolResponse")]
+		void ReceivedResponse (NSUrlProtocol protocol, NSUrlResponse response, NSUrlCacheStoragePolicy policy);
+
+		[Abstract]
+		[Export ("UrlProtocol:didLoadData:"), EventArgs ("NSUrlProtocolData")]
+		void DataLoaded (NSUrlProtocol protocol, NSData data);
+
+		[Abstract]
+		[Export ("UrlProtocolDidFinishLoading:")]
+		void FinishedLoading (NSUrlProtocol protocol);
+
+		[Abstract]
+		[Export ("UrlProtocol:didFailWithError:"), EventArgs ("NSUrlProtocolError")]
+		void FailedWithError (NSUrlProtocol protocol, NSError error);
+
+		[Abstract]
+		[Export ("UrlProtocol:didReceiveAuthenticationChallenge:"), EventArgs ("NSUrlProtocolChallenge")]
+		void ReceivedAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge);
+
+		[Abstract]
+		[Export ("UrlProtocol:didCancelAuthenticationChallenge:"), EventArgs ("NSUrlProtocolChallenge")]
+		void CancelledAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge);
+	}
+
+	[BaseType (typeof (NSObject),
+		   Delegates=new string [] {"WeakClient"},
+		   Events=new Type [] {typeof (NSUrlProtocolClient)})]
+	interface NSUrlProtocol {
+		[Export ("initWithRequest:cachedResponse:client:")]
+		IntPtr Constructor (NSUrlRequest request, NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
+
+		[Export ("client")]
+		NSObject WeakClient { get; set; }
+
+		[Wrap ("WeakClient")]
+		NSUrlProtocolClient Client { get; set; }
+
+		[Export ("request")]
+		NSUrlRequest Request { get; }
+
+		[Export ("cachedResponse")]
+		NSCachedUrlResponse CachedResponse { get; }
+
+		[Export ("canInitWithRequest:")]
+		bool CanInitWithRequest (NSUrlRequest request);
+
+		[Static]
+		[Export ("canonicalRequestForRequest:")]
+		NSUrlRequest GetCanonicalRequest (NSUrlRequest forRequest);
+
+		[Static]
+		[Export ("requestIsCacheEquivalent:toRequest:")]
+		bool IsRequestCacheEquivalent (NSUrlRequest first, NSUrlRequest second);
+
+		[Export ("startLoading")]
+		void StartLoading ();
+
+		[Export ("stopLoading")]
+		void StopLoading ();
+
+		[Static]
+		[Export ("propertyForKey:inRequest:")]
+		NSObject GetProperty (string key, NSUrlRequest inRequest);
+
+		[Static]
+		[Export ("setProperty:forKey:inRequest:")]
+		void SetProperty ([NullAllowed] NSObject value, string key, NSMutableUrlRequest inRequest);
+
+		[Static]
+		[Export ("removePropertyForKey:inRequest:")]
+		void RemoveProperty (string propertyKey, NSMutableUrlRequest request);
+
+		[Static]
+		[Export ("registerClass:")]
+		bool RegisterClass (Class protocolClass);
+
+		[Static]
+		[Export ("unregisterClass:")]
+		void UnregisterClass (Class protocolClass);
+	}
+
 }
 
