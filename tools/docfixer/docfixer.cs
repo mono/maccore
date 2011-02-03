@@ -29,7 +29,10 @@ public partial class DocGenerator {
 	// {4} is the second alternate name
 	// {5} is the typename with 2 letters removed from the front (UIView -> View)
 	static string [] patterns = {
+		"{0}/{1}/Reference/{2}_Ref/Introduction/Introduction.html",
+		"{0}/{1}/Reference/{2}/Introduction/Introduction.html",
 		"{0}/{1}/Reference/{2}_Class/{2}/{2}.html",
+		"{0}/{1}/Reference/{2}_Class/{2}.html",
 		"{0}/{1}/Reference/{2}Request_Class/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}_Class/{2}ClassReference/{2}ClassReference.html",
 		"{0}/{1}/Reference/{2}_Class/Reference/Reference.html",
@@ -38,9 +41,7 @@ public partial class DocGenerator {
 		"{0}/{1}/Reference/{2}_Class/Reference.html",
 		"{0}/{1}/Reference/{2}_ClassRef/Reference/{2}.html",
 		"{0}/{1}/Reference/{2}_ClassRef/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}_ClassRef/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}ClassRef/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}ClassRef/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}_Protocol/Introduction/Introduction.html",
 		"{0}/{1}/Reference/{2}_Protocol/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}_Protocol/Reference/{2}.html",
@@ -50,41 +51,50 @@ public partial class DocGenerator {
 		"{0}/{1}/Reference/Foundation/Classes/{2}_Class/{2}.html",
 		"{0}/{1}/Reference/Foundation/Classes/{2}_Class/Reference/{2}.html",
 		"{0}/{1}/Reference/Foundation/Classes/{2}_Class/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Class/Introduction/Introduction.html",
-		"{0}/{4}/Reference/{2}_Class/Introduction/Introduction.html",
-		"{0}/{3}/Reference/{2}_Class/{2}/{2}.html",
-		"{0}/{3}/Reference/{2}_Class/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}_Class/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}_Class/{4}/{4}.html",
-		"{0}/{3}/Reference/{2}_ClassRef/Reference/Reference.html",
-		"{0}/{4}/Reference/{2}ClassRef/Reference/Reference.html",
+		"{0}/{1}/Reference/{2}_Class/Introduction/Introduction.html",
 		"{0}/{1}/Reference/{2}Ref/Reference/Reference.html",
-		"{0}/{4}/Reference/{2}Ref/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}ClassRef/{2}ClassReference/{2}ClassReference.html",
 		"{0}/{1}/Reference/{2}_ClassReference/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}_Reference/Reference/Reference.html",                 // SKProduct_Reference/Reference/Reference.html
 		"{0}/{1}/Reference/{2}/Reference/Reference.html",                           // SKProductsRequest/Reference/Reference.html
-		"{0}/{3}/Reference/{2}/Reference/Reference.html",                           // NetworkingInternet/Reference/CTCall/Reference/Reference.html
-		"{0}/{4}/Reference/{2}/Reference/Reference.html",
 
 		"{0}/{1}/Reference/{2}_Ref/Reference/Reference.html",                       // GameKit/Reference/GKLeaderboard_Ref/Reference/Reference.html
 		
 
 		"{0}/{1}/Reference/{2}ClassReference/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}ProtocolReference/Reference/Reference.html",
+		"{0}/{1}/Reference/{4}_Protocol/{1}/{1}.html",
+		"{0}/{1}/Reference/{3}/Protocols/{2}_Protocol/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}_ProtocolReference/Reference/Reference.html",
 		"{0}/{1}/Reference/{2}_Protocol/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}_Protocol_iPhoneOS/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}_Protocol/Reference/Reference.html",
-		"{0}/{1}/Reference/{4}_Protocol/{1}/{1}.html",
 		"{0}/iPhone/Reference/{2}_Class/{2}.html",
 		"{0}/iPhone/Reference/{2}_Class/Reference/Reference.html", 		// UILocalReference
 
 		// AppKit-style
 		"{0}/{1}/Reference/{3}/Classes/{2}_Class/Reference/Reference.html",
 		"{0}/{1}/Reference/{3}/Classes/{2}_Class/Reference/{2}.html",
-		// Audit these two: is it index.html?
-		//"{0}/{1}/Reference/{2}ProtocolReference/index.html"
+		"{0}/{1}/Reference/{3}/{2}_h/Classes/{2}/index.html",
+		"{0}/{3}/Reference/{2}_Protocol_iPhoneOS/Reference/Reference.html",
+		"{0}/{3}/Reference/{2}/Reference/Reference.html",
+		"{0}/{3}/Reference/{2}_Protocol/Reference/Reference.html",
+		"{0}/{3}/Reference/{2}_Class/{2}/{2}.html",
+		"{0}/{3}/Reference/{2}_ClassRef/Reference/Reference.html",
+		"{0}/{3}/Reference/{2}_Class/Reference/Reference.html",
+		"{0}/{3}/Reference/{2}ClassRef/Reference/Reference.html",
+		"{0}/{3}/Reference/{2}_Class/{4}/{4}.html",
+		"{0}/{3}/Reference/{2}_ClassRef/Reference/Reference.html",
+		"{0}/{4}/Reference/{2}/Reference/Reference.html",
+		"{0}/{4}/Reference/{2}/{2}_Reference.html",
+		"{0}/{4}/Reference/{2}_Protocol/Reference/Reference.html",
+		"{0}/{4}/Reference/{2}_Class/Introduction/Introduction.html",
+		"{0}/{4}/Reference/{2}_Class/{2}/{2}_Reference.html",
+		"{0}/{4}/Reference/{2}_Class/{2}_Reference.html",
+		"{0}/{4}/Reference/{2}_Class/{2}_Ref.html",
+		"{0}/{4}/Reference/{2}ClassRef/Reference/Reference.html",
+		"{0}/{4}/Reference/{2}_Class/Reference/Reference.html",
+		"{0}/{4}/Reference/{2}Ref/Reference/Reference.html",
+		"{0}/{4}/Reference/{2}_Protocol/{2}_Reference.html"
 	};
 
 	static Type export_attribute_type;
@@ -97,6 +107,10 @@ public partial class DocGenerator {
 		if (fx.StartsWith (BaseNamespace))
 			fx = fx.Substring (BaseNamespace.Length+1);
 
+		if (fx == "CoreWlan"){
+			fx = "Networking";
+			alt = "CoreWLanFrameworkRef";
+		}
 		if (fx == "Foundation")
 			fx = "Cocoa";
 		if (fx == "CoreAnimation"){
@@ -123,6 +137,7 @@ public partial class DocGenerator {
 		if (fx == "AppKit"){
 			fx = "Cocoa";
 			alt = "ApplicationKit";
+			alt2 = "AppKit";
 		}
 		if (fx == "CoreImage"){
 			fx = "GraphicsImaging";
@@ -130,6 +145,7 @@ public partial class DocGenerator {
 		}
 		if (fx == "ImageKit"){
 			fx = "Quartz";
+		        alt2 = "GraphicsImaging";
 			alt = "QuartzCoreFramework";
 		}
 		if (fx == "QTKit"){
@@ -139,6 +155,10 @@ public partial class DocGenerator {
 		if (fx == "WebKit"){
 			fx = "Cocoa";
 			alt = "WebKit";
+		}
+		if (fx == "PdfKit"){
+			fx = "GraphicsImaging";
+			alt = "QuartzFramework";
 		}
 		
 		foreach (string pattern in patterns){
