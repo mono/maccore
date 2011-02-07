@@ -125,14 +125,16 @@ namespace MonoMac.Foundation
 		[Field ("NSParagraphStyleAttributeName")]
 #endif
 		NSString ParagraphStyleAttributeName { get; }
-
+                
 #if MONOMAC
 		[Field ("NSForegroundColorAttributeName", "AppKit")]
 #else
 		[Field ("NSForegroundColorAttributeName")]
 #endif
-		NSString ForegroundColorAttributeName { get; }
-
+                NSString ForegroundColorAttributeName { get; }
+                
+                [Field ("NSLigatureAttributeName", "AppKit")]
+                NSString LigatureAttributeName { get; } 
 #if MONOMAC
 		[Export ("initWithData:options:documentAttributes:error:")]
 		IntPtr Constructor (NSData data, NSDictionary options, out NSDictionary docAttributes, out NSError error);
