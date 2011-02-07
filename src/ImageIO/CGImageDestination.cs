@@ -137,7 +137,8 @@ namespace MonoMac.ImageIO {
 
 			var dict = options == null ? null : options.ToDictionary ();
 			var ret = new CGImageDestination (CGImageDestinationCreateWithData (data.Handle, new NSString (typeIdentifier).Handle, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle));
-			dict.Dispose ();
+                        if (dict != null)
+                                dict.Dispose ();
 			return ret;
 		}
 
@@ -158,7 +159,8 @@ namespace MonoMac.ImageIO {
 
 			var dict = options == null ? null : options.ToDictionary ();
 			var ret = new CGImageDestination (CGImageDestinationCreateWithURL (url.Handle, new NSString (typeIdentifier).Handle, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle));
-			dict.Dispose ();
+                        if (dict != null)
+			        dict.Dispose ();
 			return ret;
 		}
 
@@ -194,12 +196,13 @@ namespace MonoMac.ImageIO {
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
-		extern static void CGImageDestinationFinalize (IntPtr handle);
+		extern static bool CGImageDestinationFinalize (IntPtr handle);
 
-		public void Close ()
+		public bool Close ()
 		{
-			CGImageDestinationFinalize (handle);
+			var success = CGImageDestinationFinalize (handle);
 			Dispose ();
+                        return success;
 		}
 	}
 }
