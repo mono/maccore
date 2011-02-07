@@ -128,7 +128,7 @@ class BindingTouch {
 
 			// -nowarn:436 is to avoid conflicts in definitions between core.dll and the sources
 			var cargs = String.Format ("-unsafe -target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7} {8}",
-						   string.Join (" ", sources [0]),
+						   sources [0],
 						   tmpass, Environment.GetCommandLineArgs ()[0],
 						   string.Join (" ", core_sources.ToArray ()), refs, unsafef ? "-unsafe" : "",
 						   baselibdll, string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()), paths);
