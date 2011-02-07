@@ -162,6 +162,7 @@ namespace MonoMac.AVFoundation {
 		EncoderNotFound = -11834,
 		ContentIsNotAuthorized = -11836,
 #if !MONOMAC
+		DeviceIsNotAvailableInBackground = -11837,
 		MediaServicesWereReset = -11820,
 #endif
 	}
