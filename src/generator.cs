@@ -258,6 +258,10 @@ public class TargetAttribute : Attribute {
 	public TargetAttribute () {}
 }
 
+public class ProxyAttribute : Attribute {
+	public ProxyAttribute () {}
+}
+
 public class StaticAttribute : Attribute {
 	public StaticAttribute () {}
 }
@@ -811,26 +815,11 @@ public class Generator {
 		return GetAttribute (mi, typeof (BindAttribute)) as BindAttribute;
 	}
 	
-	public bool HasAttribute (PropertyInfo pi, Type t)
+	public bool HasAttribute (ICustomAttributeProvider i, Type t)
 	{
-		return pi.GetCustomAttributes (t, true).Length > 0;
+		return i.GetCustomAttributes (t, true).Length > 0;
 	}
 
-	public bool HasAttribute (Type queryType, Type t)
-	{
-		return queryType.GetCustomAttributes (t, true).Length > 0;
-	}
-	
-	public bool HasAttribute (MethodInfo mi, Type t)
-	{
-		return mi.GetCustomAttributes (t, true).Length > 0;
-	}
-
-	public bool HasAttribute (ParameterInfo pi, Type t)
-	{
-		return pi.GetCustomAttributes (t, true).Length > 0;
-	}
-	
 	public bool IsTarget (ParameterInfo pi)
 	{
 		return HasAttribute (pi, typeof (TargetAttribute)); 
@@ -1564,6 +1553,7 @@ public class Generator {
 			(HasAttribute (mi, typeof (FactoryAttribute))) ||
 			(assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ())))) ||
 			(mi.ReturnType.IsSubclassOf (typeof (Delegate))) ||
+			(HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ProxyAttribute))) ||
 			(mi.Name != "Constructor" && byRefPostProcessing.Length > 0 && mi.ReturnType != typeof (void));
 		
 
@@ -1613,6 +1603,9 @@ public class Generator {
 		if (byRefPostProcessing.Length > 0)
 			print (byRefPostProcessing.ToString ());
 		if (use_temp_return) {
+			if (HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ProxyAttribute)))
+				print ("ret.SetAsProxy ();");
+
 			if (mi.ReturnType.IsSubclassOf (typeof (Delegate))) {
 				print ("return ({0}) (ret->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (ret->global_handle).Target : GCHandle.FromIntPtr (ret->local_handle).Target);", FormatType (mi.DeclaringType, mi.ReturnType));
 			} else {
