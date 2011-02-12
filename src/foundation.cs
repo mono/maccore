@@ -3624,10 +3624,10 @@ namespace MonoMac.Foundation
 		NSString ExtensionHidden { get; }
 
 		[Field("NSFileHFSCreatorCode")]
-		NSString HFSCreatorCode { get; }
+		NSString HfsCreatorCode { get; }
 
 		[Field("NSFileHFSTypeCode")]
-		NSString HFSTypeCode { get; }
+		NSString HfsTypeCode { get; }
 
 		[Field("NSFileImmutable")]
 		NSString Immutable { get; }
@@ -3680,8 +3680,8 @@ namespace MonoMac.Foundation
 		[Export ("subpathsOfDirectoryAtPath:error:")]
 		string[] GetDirectoryContentRecursive (string path, out NSError error);
 
-		[Export ("attributesOfItemAtPath:error:")]
-		NSDictionary GetAttributes (string path, out NSError error);
+		[Export ("attributesOfItemAtPath:error:")][Internal]
+		NSDictionary _GetAttributes (string path, out NSError error);
 
 		[Export ("attributesOfFileSystemForPath:error:")]
 		NSDictionary GetFileSystemAttributes (string path, out NSError error);
@@ -3879,10 +3879,10 @@ namespace MonoMac.Foundation
 		bool FileExtensionHidden ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileHFSCreatorCode")]
-		uint FileHFSCreatorCode ([Target] NSDictionary fileAttributes);
+		uint FileHfsCreatorCode ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileHFSTypeCode")]
-		uint FileHFSTypeCode ([Target] NSDictionary fileAttributes);
+		uint FileHfsTypeCode ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileIsImmutable")]
 		bool FileIsImmutable ([Target] NSDictionary fileAttributes);
