@@ -641,6 +641,13 @@ public class Generator {
 				invoke.AppendFormat ("({1}) Runtime.GetNSObject ({0})", pi.Name, pi.ParameterType);
 				continue;
 			}
+
+			if (pi.ParameterType.IsSubclassOf (typeof (INativeObject))){
+				pars.AppendFormat ("IntPtr {0}", pi.Name);
+				invoke.AppendFormat ("new {0} ({1})", pi.ParameterType, pi.Name);
+				continue;
+			}
+
 			if (pi.ParameterType.IsByRef){
 				var nt = pi.ParameterType.GetElementType ();
 				if (nt.IsValueType){
