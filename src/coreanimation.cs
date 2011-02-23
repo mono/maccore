@@ -1100,19 +1100,19 @@ namespace MonoMac.CoreAnimation {
 		bool Asynchronous { [Bind ("isAsynchronous")]get; set; }	
 
 		[Export ("canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
-		bool CanDrawInCGLContext (CGLContext glContext, NSOpenGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
+		bool CanDrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
 
 		[Export ("drawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
-		void DrawInCGLContext (CGLContext glContext, NSOpenGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
+		void DrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
 
 		[Export ("copyCGLPixelFormatForDisplayMask:")]
-		NSOpenGLPixelFormat CopyCGLPixelFormatForDisplayMask (UInt32 mask);
+		CGLPixelFormat CopyCGLPixelFormatForDisplayMask (UInt32 mask);
 
 		[Export ("releaseCGLPixelFormat:")]
-		void Release (NSOpenGLPixelFormat pixelFormat);
+		void Release (CGLPixelFormat pixelFormat);
 
 		[Export ("copyCGLContextForPixelFormat:")]
-		CGLContext CopyContext (NSOpenGLPixelFormat pixelFormat);
+		CGLContext CopyContext (CGLPixelFormat pixelFormat);
 
 		[Export ("releaseCGLContext:")]
 		void Release (CGLContext glContext);
