@@ -51,6 +51,7 @@ using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreVideo;
+using MonoMac.OpenGL;
 #else
 using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
@@ -1016,6 +1017,7 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CGColorSpace), "IntPtr", "{0}.Handle", "new CGColorSpace ("));
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
 #if MONOMAC
+		marshal_types.Add (new MarshalType (typeof (CGLContext), "IntPtr", "{0}.Handle", "new CGLContext ("));
 		marshal_types.Add (new MarshalType (typeof (CVImageBuffer), "IntPtr", "{0}.Handle", "new CVImageBuffer ("));
 #endif
 		marshal_types.Add (new MarshalType (typeof (CGLayer), "IntPtr", "{0}.Handle", "new CGLayer ("));
@@ -1296,7 +1298,8 @@ public class Generator {
 		"MonoMac.CoreAnimation",
 		"MonoMac.CoreLocation", 
 		"MonoMac.QTKit",
-		"MonoMac.CoreVideo",		
+		"MonoMac.CoreVideo",
+		"MonoMac.OpenGL",
 #else
 		"MonoTouch",
 		"MonoTouch.CoreFoundation",

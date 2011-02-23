@@ -34,6 +34,7 @@ using System.Drawing;
 using MonoMac.AppKit;
 using MonoMac.CoreVideo;
 using MonoMac.CoreImage;
+using MonoMac.OpenGL;
 #else
 using MonoMac.UIKit;
 #endif
@@ -1099,22 +1100,22 @@ namespace MonoMac.CoreAnimation {
 		bool Asynchronous { [Bind ("isAsynchronous")]get; set; }	
 
 		[Export ("canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
-		bool CanDrawInCGLContext (NSOpenGLContext ctx, NSOpenGLPixelFormat pf, double t, CVTimeStamp ts);
+		bool CanDrawInCGLContext (CGLContext glContext, NSOpenGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
 
 		[Export ("drawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
-		void DrawInCGLContext (NSOpenGLContext ctx, NSOpenGLPixelFormat pf, double t, CVTimeStamp ts);
+		void DrawInCGLContext (CGLContext glContext, NSOpenGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
 
 		[Export ("copyCGLPixelFormatForDisplayMask:")]
 		NSOpenGLPixelFormat CopyCGLPixelFormatForDisplayMask (UInt32 mask);
 
 		[Export ("releaseCGLPixelFormat:")]
-		void Release (NSOpenGLPixelFormat pf);
+		void Release (NSOpenGLPixelFormat pixelFormat);
 
 		[Export ("copyCGLContextForPixelFormat:")]
-		NSOpenGLContext CopyContext (NSOpenGLPixelFormat pf);
+		CGLContext CopyContext (NSOpenGLPixelFormat pixelFormat);
 
 		[Export ("releaseCGLContext:")]
-		void Release (NSOpenGLContext ctx);
+		void Release (CGLContext glContext);
 
 	}	
 #endif
