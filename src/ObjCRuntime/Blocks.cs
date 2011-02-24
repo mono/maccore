@@ -35,8 +35,8 @@ namespace MonoMac.ObjCRuntime {
 
 	[StructLayout (LayoutKind.Sequential)]
 	public struct BlockDescriptor {
-		public int reserved;
-		public int size;
+		public IntPtr reserved;
+		public IntPtr size;
 		public IntPtr copy_helper;
 		public IntPtr dispose;
 
@@ -62,7 +62,7 @@ namespace MonoMac.ObjCRuntime {
 			BlockDescriptor d = new BlockDescriptor ();
 			d.copy_helper = copy_helper_ptr;
 			d.dispose = dispose_helper_ptr;
-			d.size = Marshal.SizeOf (typeof (IntPtr))*4 + Marshal.SizeOf (typeof (int))*3;
+			d.size = (IntPtr) (Marshal.SizeOf (typeof (IntPtr))*5 + Marshal.SizeOf (typeof (int))*2);
 
 			return d;
 		}	
