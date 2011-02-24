@@ -548,6 +548,8 @@ public class Generator {
 			return "byte";
 		if (t == typeof (float))
 			return "float";
+		if (t == typeof (bool))
+			return "bool";
 
 		return t.Name;
 	}
