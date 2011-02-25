@@ -2697,14 +2697,14 @@ namespace MonoMac.Foundation
 		string PathForResourceAbsolute (string name, [NullAllowed]string ofType, string bundleDirectory);
 		
 		[Export ("pathForResource:ofType:")]
-		string PathForResource (string name, string ofType);
+		string PathForResource (string name, [NullAllowed]string ofType);
 
 		// TODO: this conflicts with the above with our generator.
 		//[Export ("pathForResource:ofType:inDirectory:")]
 		//string PathForResource (string name, string ofType, string subpath);
 		
 		[Export ("pathForResource:ofType:inDirectory:forLocalization:")]
-		string PathForResource (string name, string ofType, string subpath, string localizationName);
+		string PathForResource (string name, [NullAllowed]string ofType, string subpath, string localizationName);
 
 		[Export ("localizedStringForKey:value:table:")]
 		string LocalizedString (string key, string value, string table);
