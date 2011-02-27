@@ -181,4 +181,10 @@ namespace MonoMac.CoreVideo {
 		Type60        = 6,
 		Type5994      = 7
 	}
+
+	public struct CVFillExtendedPixelsCallBackData {
+		int Version;
+		IntPtr FillCallBack;
+		IntPtr UserInfo;
+	} 
 }
