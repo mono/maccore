@@ -1,9 +1,28 @@
 // 
-// CoreVideo.cs: 
+// CoreVideo.cs
 //
 // Authors: Mono Team
 //     
-// Copyright 2010 Novell, Inc
+// Copyright 2011 Novell, Inc
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
 using System.Drawing;
@@ -105,15 +124,61 @@ namespace MonoMac.CoreVideo {
 	}
 
 	public struct CVTimeStamp {
-		public UInt32	Version;
-		public Int32 	VideoTimeScale;
-		public Int64 	VideoTime;
-		public UInt64 	HostTime;
-		public double 	RateScalar;
-		public Int64 	VideoRefreshPeriod;
-		public double 	SMPTETime;
-		public UInt64 	Flags;
-		public UInt64 	Reserved;
+		public UInt32		Version;
+		public Int32 		VideoTimeScale;
+		public Int64 		VideoTime;
+		public UInt64 		HostTime;
+		public double 		RateScalar;
+		public Int64 		VideoRefreshPeriod;
+		public CVSMPTETime 	SMPTETime;
+		public UInt64 		Flags;
+		public UInt64 		Reserved;
 	}
 	
+	public struct CVSMPTETime {
+		public Int16	Subframes;
+		public Int16	SubframeDivisor;
+		public UInt32	Counter;
+		public UInt32	Type;
+		public UInt32	Flags;
+		public Int16	Hours;
+		public Int16	Minutes;
+		public Int16	Seconds;
+		public Int16	Frames;
+	}
+
+	[Flags]
+	public enum CVTimeFlags {
+		IsIndefinite = 1 << 0
+	}
+
+	[Flags]
+	public enum CVTimeStampFlags {
+		VideoTimeValid              = (1 << 0),
+		HostTimeValid               = (1 << 1),
+		SMPTETimeValid              = (1 << 2),
+		VideoRefreshPeriodValid     = (1 << 3),
+		RateScalarValid             = (1 << 4),
+		TopField                    = (1 << 16),
+		BottomField                 = (1 << 17),
+		VideoHostTimeValid          = (VideoTimeValid | HostTimeValid),
+		IsInterlaced                = (TopField | BottomField)
+	}	
+
+	[Flags]
+	public enum CVSMPTETimeFlags {
+		Valid     = (1 << 0),
+		Running   = (1 << 1)
+	}
+
+	public enum CVSMPTETimeType {
+		Type24        = 0,
+		Type25        = 1,
+		Type30Drop    = 2,
+		Type30        = 3,
+		Type2997      = 4,
+		Type2997Drop  = 5,
+		Type60        = 6,
+		Type5994      = 7
+	}
 }
