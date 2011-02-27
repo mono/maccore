@@ -119,7 +119,7 @@ namespace MonoMac.CoreVideo {
 		CV4444AYpCbCr16  = 0x79343136,
 	}
 
-	public enum CVOptionFlags {
+	public enum CVOptionFlags : long {
 		None = 0,
 	}
 
@@ -134,7 +134,7 @@ namespace MonoMac.CoreVideo {
 		public UInt64 		Flags;
 		public UInt64 		Reserved;
 	}
-	
+        
 	public struct CVSMPTETime {
 		public Int16	Subframes;
 		public Int16	SubframeDivisor;
