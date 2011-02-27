@@ -107,7 +107,7 @@ namespace MonoMac.CoreVideo {
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static IntPtr CVPixelFormatDescriptionCreateWithPixelFormatType (IntPtr allocator, int pixelFormat);
 		public static NSDictionary Create (int pixelFormat) {
-			return Runtime.GetNSObject (CVPixelFormatDescriptionCreateWithPixelFormatType (IntPtr.Zero, pixelFormat);
+			return (NSDictionary) Runtime.GetNSObject (CVPixelFormatDescriptionCreateWithPixelFormatType (IntPtr.Zero, pixelFormat));
 		}
 
 		[DllImport (Constants.CoreVideoLibrary)]
