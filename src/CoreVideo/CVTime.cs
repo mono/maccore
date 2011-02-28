@@ -36,13 +36,20 @@ namespace MonoMac.CoreVideo {
 		public Int64 TimeScale;
 		public Int32 Flags;
 
-		/* FIXME:
-		 * 
-		 * These are global constant structures, so we need to extend Dlfcn to handle this.
-		 *
-		 * const CVTime kCVZeroTime;
-		 * const CVTime kCVIndefiniteTime;
-		 */
+		static IntPtr CoreVideo_libraryHandle = Dlfcn.dlopen (Constants.CoreVideoLibrary, 0);
+
+		public static CVTime ZeroTime {
+			get {
+				return (CVTime) Marshal.PtrToStructure (Dlfcn.GetIndirect (CoreVideo_libraryHandle, "kCVZeroTime"), typeof (CVTime));
+			}
+		}
+
+		public static CVTime IndefiniteTime {
+			get {
+				return (CVTime) Marshal.PtrToStructure (Dlfcn.GetIndirect (CoreVideo_libraryHandle, "kCVIndefiniteTime"), typeof (CVTime));
+			}
+		}
+
                 public override bool Equals (object other)
                 {
                         if (!(other is CVTime))
