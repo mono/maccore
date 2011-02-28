@@ -115,7 +115,5 @@ namespace MonoMac.CoreVideo {
 		public static void Register (NSDictionary description, int pixelFormat) {
 			CVPixelFormatDescriptionRegisterDescriptionWithPixelFormatType (description.Handle, pixelFormat);
 		}
-
-		public delegate bool CVFillExtendedPixelsCallBack (IntPtr pixelBuffer, IntPtr refCon);
 	}
 }

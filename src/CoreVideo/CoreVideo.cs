@@ -184,7 +184,9 @@ namespace MonoMac.CoreVideo {
 
 	public struct CVFillExtendedPixelsCallBackData {
 		int Version;
-		IntPtr FillCallBack;
+		CVFillExtendedPixelsCallBack FillCallBack;
 		IntPtr UserInfo;
 	} 
+
+	public delegate bool CVFillExtendedPixelsCallBack (IntPtr pixelBuffer, IntPtr refCon);
 }
