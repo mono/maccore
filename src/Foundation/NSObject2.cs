@@ -35,7 +35,6 @@ namespace MonoMac.Foundation {
 			if (t == typeof (NSObject) || t.IsSubclassOf (typeof (NSObject)))
 				return (NSObject) obj;
 			
-			NSObject val;
 			switch (Type.GetTypeCode (t)){
 			case TypeCode.Boolean:
 				return new NSNumber ((bool) obj);
