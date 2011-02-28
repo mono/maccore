@@ -141,7 +141,7 @@ namespace MonoMac.AudioUnit
 		{
 			if (component == null)
 				throw new ArgumentNullException ("component");
-			if (component.Handle == null)
+			if (component.Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("component");
 			
 			int err = AudioComponentInstanceNew (component.handle, out handle);

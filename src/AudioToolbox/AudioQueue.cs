@@ -790,7 +790,7 @@ namespace MonoMac.AudioToolbox {
 					int size = DeviceChannels * sizeof (AudioQueueLevelMeterState);
 					int n;
 					var buffer = GetProperty (AudioQueueProperty.CurrentLevelMeter, out n);
-					if (buffer == null)
+					if (buffer == IntPtr.Zero)
 						return new AudioQueueLevelMeterState [0];
 					var ret = new AudioQueueLevelMeterState [n];
 					AudioQueueLevelMeterState *ptr = (AudioQueueLevelMeterState *) buffer;
@@ -807,7 +807,7 @@ namespace MonoMac.AudioToolbox {
 					int size = DeviceChannels * sizeof (AudioQueueLevelMeterState);
 					int n;
 					var buffer = GetProperty (AudioQueueProperty.CurrentLevelMeterDB, out n);
-					if (buffer == null)
+					if (buffer == IntPtr.Zero)
 						return new AudioQueueLevelMeterState [0];
 					var ret = new AudioQueueLevelMeterState [n];
 					AudioQueueLevelMeterState *ptr = (AudioQueueLevelMeterState *) buffer;
