@@ -133,7 +133,11 @@ namespace MonoMac.Foundation
 #endif
                 NSString ForegroundColorAttributeName { get; }
                 
+#if MONOMAC
                 [Field ("NSLigatureAttributeName", "AppKit")]
+#else
+                [Field ("NSLigatureAttributeName")]
+#endif
                 NSString LigatureAttributeName { get; } 
 #if MONOMAC
 		[Export ("initWithData:options:documentAttributes:error:")]
