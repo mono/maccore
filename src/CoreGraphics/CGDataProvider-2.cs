@@ -40,7 +40,11 @@ namespace MonoMac.CoreGraphics {
 
 		public NSData CopyData ()
 		{
-			return new NSData (CGDataProviderCopyData (handle));
+			var provider = CGDataProviderCopyData (handle);
+			var data = new NSData (provider);
+
+			CGDataProviderRelease (provider);
+			return data;
 		}
 	}
 }
