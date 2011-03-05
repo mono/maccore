@@ -90,5 +90,15 @@ namespace MonoMac.CoreGraphics {
 
 			handle = CGGradientCreateWithColorComponents (colorspace.handle, components, locations, components.Length / (colorspace.Components+1));
 		}
+
+		public CGGradient (CGColorSpace colorspace, float [] components)
+		{
+			if (colorspace == null)
+				throw new ArgumentNullException ("colorspace");
+			if (components == null)
+				throw new ArgumentNullException ("components");
+
+			handle = CGGradientCreateWithColorComponents (colorspace.handle, components, null, components.Length / (colorspace.Components+1));
+		}
 	}
 }
