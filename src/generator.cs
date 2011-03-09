@@ -1118,8 +1118,9 @@ public class Generator {
 						continue;
 					} else if (attr is FactoryAttribute){
 						continue;
-					} else  if (attr is AbstractAttribute && mi.DeclaringType == t){
-						need_abstract [t] = true;
+					} else  if (attr is AbstractAttribute){
+						if (mi.DeclaringType == t)
+							need_abstract [t] = true;
 						continue;
 					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute)
 						continue;
