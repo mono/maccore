@@ -147,6 +147,8 @@ namespace MonoMac.CoreVideo {
 			this.handle = handle;
 		}
 
+		internal CVImageBuffer () {}
+		
 		[Preserve (Conditional=true)]
 		internal CVImageBuffer (IntPtr handle, bool owns)
 		{
