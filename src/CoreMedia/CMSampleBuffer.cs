@@ -10,6 +10,9 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
+#if !COREBUILD
+using MonoMac.CoreVideo;
+#endif
 
 namespace MonoMac.CoreMedia {
 
@@ -21,9 +24,7 @@ namespace MonoMac.CoreMedia {
 		{
 			this.handle = handle;
 		}
-		
-		//[DllImport(Constants.CoreMediaLibrary)]
-		
+
 		~CMSampleBuffer ()
 		{
 			Dispose (false);
@@ -49,5 +50,21 @@ namespace MonoMac.CoreMedia {
 				handle = IntPtr.Zero;
 			}
 		}
+#if !COREBUILD
+		[DllImport(Constants.CoreMediaLibrary)]
+		extern static IntPtr CMSampleBufferGetImageBuffer (IntPtr handle);
+
+		public CVImageBuffer GetImageBuffer ()
+		{
+			IntPtr ib = CMSampleBufferGetImageBuffer (handle);
+			if (ib == null)
+				return null;
+
+			var ibt = CFType.GetTypeID (ib);
+			if (ibt == CVPixelBuffer.CVImageBufferType)
+				return new CVPixelBuffer (ib, false);
+			return new CVImageBuffer (ib, false);
+		}
+#endif
 	}
 }
