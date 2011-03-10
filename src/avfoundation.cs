@@ -590,13 +590,13 @@ namespace MonoMac.AVFoundation {
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
-		AVAssetReaderVideoCompositionOutput FromTracks (AVAssetTrack [] videoTracks, NSDictionary videoSettings);
+		AVAssetReaderVideoCompositionOutput WeakFromTracks (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
 
 		[Export ("initWithVideoTracks:videoSettings:")]
 		IntPtr Constructor (AVAssetTrack [] videoTracks, NSDictionary videoSettings);
 
 		[Export ("videoSettings")]
-		NSDictionary VideoSettings { get; }
+		NSDictionary WeakVideoSettings { get; }
 	}
 
 	[Since (4,1)]
@@ -1459,8 +1459,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("sampleBufferCallbackQueue")]
 		IntPtr SampleBufferCallbackQueue { get;  }
 
-		[Export ("videoSettings")]
-		NSDictionary VideoSettings { get; set;  }
+		[Export ("videoSettings"), NullAllowed]
+		NSDictionary WeakVideoSettings { get; set;  }
 
 		[Export ("minFrameDuration")]
 		CMTime MinFrameDuration { get; set;  }

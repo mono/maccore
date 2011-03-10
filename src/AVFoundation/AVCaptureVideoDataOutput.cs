@@ -29,13 +29,50 @@ using System;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
+using MonoMac.CoreVideo;
 
 namespace MonoMac.AVFoundation {
+
+	public partial class AVVideoSettings {
+		public AVVideoSettings ()
+		{
+		}
+
+		public AVVideoSettings (CVPixelFormatType formatType)
+		{
+			PixelFormat = formatType;
+		}
+		
+		public CVPixelFormatType? PixelFormat { get; set; }
+		
+		public NSDictionary ToDictionary ()
+		{
+			if (!PixelFormat.HasValue)
+				return null;
+
+			return NSDictionary.FromObjectAndKey (new NSNumber ((int) PixelFormat.Value), CVPixelBuffer.PixelFormatTypeKey);
+		}
+	}
+	
 	public partial class AVCaptureVideoDataOutput {
 		public void SetSampleBufferDelegateAndQueue (AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, DispatchQueue queue)
 		{
 			SetSampleBufferDelegatequeue (sampleBufferDelegate, queue == null ? IntPtr.Zero : queue.Handle);
 		}
-		
+
+		public AVVideoSettings VideoSettings {
+			set {
+				WeakVideoSettings = value == null ? null : value.ToDictionary ();
+			}
+			get {
+				var dict = WeakVideoSettings;
+				NSObject val;
+				if (dict.TryGetValue (CVPixelBuffer.PixelFormatTypeKey, out val) && val is NSNumber){
+					var number = val as NSNumber;
+					return new AVVideoSettings ((CVPixelFormatType) number.Int32Value);
+				}
+				return new AVVideoSettings ();
+			}
+		}
 	}
 }

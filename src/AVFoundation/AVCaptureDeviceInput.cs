@@ -39,6 +39,12 @@ namespace MonoMac.AVFoundation {
 			return FromDevice (device, out error);
 		}
 
+		static public AVCaptureDeviceInput FromDevice (AVCaptureDevice device)
+		{
+			NSError error;
+			return FromDevice (device, out error);
+		}
+		
 		static NSError globalerr;
 		
 		[Obsolete ("Use AVCaptureDeviceInput (AVCaptureDevice, ref NSError) instead")]
