@@ -50,11 +50,21 @@ namespace MonoMac.CoreGraphics {
 		{
 		}
 
+		public CGBitmapContext (IntPtr data, int width, int height, int bitsPerComponent, int bytesPerRow, CGColorSpace colorSpace, CGBitmapFlags bitmapInfo)
+			: base (CGBitmapContextCreate (data, (UIntPtr) width, (UIntPtr) height, (UIntPtr) bitsPerComponent, (UIntPtr) bytesPerRow, colorSpace.handle, (uint) bitmapInfo), true)
+		{
+		}
+
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGBitmapContextCreate (byte [] data, UIntPtr width, UIntPtr height, UIntPtr bitsPerComponent, 
 				UIntPtr bytesPerRow, IntPtr colorSpace, uint bitmapInfo);
 
 		public CGBitmapContext (byte [] data, int width, int height, int bitsPerComponent, int bytesPerRow, CGColorSpace colorSpace, CGImageAlphaInfo bitmapInfo)
+			: base (CGBitmapContextCreate (data, (UIntPtr) width, (UIntPtr) height, (UIntPtr) bitsPerComponent, (UIntPtr) bytesPerRow, colorSpace.handle, (uint) bitmapInfo), true)
+		{
+		}
+
+		public CGBitmapContext (byte [] data, int width, int height, int bitsPerComponent, int bytesPerRow, CGColorSpace colorSpace, CGBitmapFlags bitmapInfo)
 			: base (CGBitmapContextCreate (data, (UIntPtr) width, (UIntPtr) height, (UIntPtr) bitsPerComponent, (UIntPtr) bytesPerRow, colorSpace.handle, (uint) bitmapInfo), true)
 		{
 		}
