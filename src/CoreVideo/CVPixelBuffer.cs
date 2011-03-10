@@ -15,7 +15,7 @@ using MonoMac.Foundation;
 namespace MonoMac.CoreVideo {
 
 	[Since (4,0)]
-	public class CVPixelBuffer : CVBuffer, INativeObject, IDisposable {
+	public class CVPixelBuffer : CVImageBuffer, INativeObject, IDisposable {
 		public static readonly NSString PixelFormatTypeKey;
 		public static readonly NSString MemoryAllocatorKey;
 		public static readonly NSString WidthKey;
@@ -31,7 +31,11 @@ namespace MonoMac.CoreVideo {
 		public static readonly NSString IOSurfacePropertiesKey;
 		public static readonly NSString PlaneAlignmentKey;
 
-
+		public static readonly int CVImageBufferType;
+		
+		[DllImport (Constants.CoreVideoLibrary)]
+		extern static int CVPixelBufferGetTypeID ();
+		
 		static CVPixelBuffer ()
 		{
 			var handle = Dlfcn.dlopen (Constants.CoreVideoLibrary, 0);
@@ -52,6 +56,7 @@ namespace MonoMac.CoreVideo {
 				OpenGLCompatibilityKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferOpenGLCompatibilityKey");
 				IOSurfacePropertiesKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferIOSurfacePropertiesKey");
 				PlaneAlignmentKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferPlaneAlignmentKey");
+				CVImageBufferType = CVPixelBufferGetTypeID ();
 			}
 			finally {
 				Dlfcn.dlclose (handle);
@@ -60,22 +65,13 @@ namespace MonoMac.CoreVideo {
 
 		IntPtr handle;
 
-		internal CVPixelBuffer (IntPtr handle)
+		internal CVPixelBuffer (IntPtr handle) : base (handle)
 		{
-			if (handle == IntPtr.Zero)
-				throw new Exception ("Invalid parameters to context creation");
-
-			CVBufferRetain (handle);
-			this.handle = handle;
 		}
 
 		[Preserve (Conditional=true)]
-		internal CVPixelBuffer (IntPtr handle, bool owns)
+		internal CVPixelBuffer (IntPtr handle, bool owns) : base (handle, owns)
 		{
-			if (!owns)
-				CVBufferRetain (handle);
-
-			this.handle = handle;
 		}
 
 		~CVPixelBuffer ()
