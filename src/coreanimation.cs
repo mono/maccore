@@ -640,7 +640,7 @@ namespace MonoMac.CoreAnimation {
 		NSString FillRuleNonZero { get; }
 
 		[Field ("kCAFillRuleEvenOdd")]
-		NSString FilLRuleEvenOdd { get; }
+		NSString FillRuleEvenOdd { get; }
 	}
 
 	[BaseType (typeof (CALayer))]
