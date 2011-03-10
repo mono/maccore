@@ -15,10 +15,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-//
+// 
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-//
+// 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -48,28 +48,28 @@ namespace MonoMac.CoreAnimation {
 	public interface CAMediaTiming {
 		[Export ("beginTime")]
 		double CFTimeInterval { get; set; }
-
+	
 		[Export ("duration")]
 		double Duration { get; set; }
-
+	
 		[Export ("speed")]
 		float Speed { get; set; }
-
+	
 		[Export ("timeOffset")]
 		double TimeOffset { get; set; }
-
+	
 		[Export ("repeatCount")]
 		float RepeatCount { get; set; }
-
+	
 		[Export ("repeatDuration")]
 		double RepeatDuration { get; set; }
-
+	
 		[Export ("autoreverses")]
 		bool AutoReverses { get;set; }
-
+	
 		[Export ("fillMode")]
 		string FillMode { get; set; }
-	}
+	}		
 #endif
 
 #if MONOMAC
@@ -79,7 +79,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("layoutManager")]
 		CAConstraintLayoutManager LayoutManager { get; }
 	}
-
+	
 	[BaseType (typeof (NSObject))]
 	public interface CAConstraint {
 		[Export ("attribute")]
@@ -109,28 +109,28 @@ namespace MonoMac.CoreAnimation {
 		[Export ("initWithAttribute:relativeTo:attribute:scale:offset:")]
 		IntPtr Constructor (CAConstraintAttribute attribute, string relativeToSource, CAConstraintAttribute srcAttr, float scale, float offset);
 	}
-
+	
 #else
 	[BaseType (typeof (NSObject))]
 	public interface CADisplayLink {
 		[Export ("displayLinkWithTarget:selector:")][Static]
 		CADisplayLink Create (NSObject target, Selector sel);
-
+	
 		[Export ("addToRunLoop:forMode:")]
 		void AddToRunLoop (NSRunLoop runloop, string mode);
-
+	
 		[Export ("removeFromRunLoop:forMode:")]
 		void RemoveFromRunLoop (NSRunLoop runloop, string  mode);
-
+	
 		[Export ("invalidate")]
 		void Invalidate ();
-
+	
 		[Export ("timestamp")]
 		double Timestamp { get; }
-
+	
 		[Export ("paused")]
 		bool Paused { [Bind ("isPaused")] get; set; }
-
+	
 		[Export ("frameInterval")]
 		int FrameInterval { get; set;  }
 	}
@@ -160,13 +160,13 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("zPosition")]
 		float ZPosition { get; set; }
-
+		
 		[Export ("anchorPoint")]
 		PointF AnchorPoint { get; set; }
 
 		[Export ("anchorPointZ")]
 		float AnchorPointZ { get; set; }
-
+		
 		[Export ("position")]
 		PointF Position { get; set; }
 
@@ -180,7 +180,7 @@ namespace MonoMac.CoreAnimation {
 		RectangleF Frame { get; set; }
 
 		[Export ("hidden")] // Setter needs setHidden instead
-		bool Hidden { [Bind ("isHidden")] get; set; }
+		bool Hidden { [Bind ("isHidden")] get; set; }  
 
 		[Export ("doubleSided")]  // Setter needs setDoubleSided
 		bool DoubleSided { [Bind ("isDoubleSided")] get; set; }
@@ -199,7 +199,7 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("sublayers", ArgumentSemantic.Copy)]
 		CALayer [] Sublayers { get; set; }
-
+		
 		[Export ("addSublayer:")][PostGet ("Sublayers")]
 		void AddSublayer (CALayer layer);
 
@@ -208,7 +208,7 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("insertSublayer:below:")][PostGet ("Sublayers")]
 		void InsertSublayerBelow (CALayer layer, CALayer sibling);
-
+		
 		[Export ("insertSublayer:above:")][PostGet ("Sublayers")]
 		void InsertSublayerAbove (CALayer layer, CALayer sibling);
 
@@ -226,19 +226,19 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("convertPoint:fromLayer:")]
 		PointF ConvertPointFromLayer (PointF point, CALayer layer);
-
+		
 		[Export ("convertPoint:toLayer:")]
 		PointF ConvertPointToLayer (PointF point, CALayer layer);
-
+		
 		[Export ("convertRect:fromLayer:")]
 		RectangleF ConvertRectfromLayer (RectangleF rect, CALayer layer);
-
+		
 		[Export ("convertRect:toLayer:")]
 		RectangleF ConvertRectToLayer (RectangleF rect, CALayer layer);
 
 		[Export ("convertTime:fromLayer:")]
 		double ConvertTimeFromLayer (double rect, [NullAllowed] CALayer layer);
-
+		
 		[Export ("convertTime:toLayer:")]
 		double ConvertTimeToLayer (double t, CALayer layer);
 
@@ -270,7 +270,7 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("minificationFilter", ArgumentSemantic.Copy)]
 		string MinificationFilter { get; set; }
-
+		
 		[Export ("magnificationFilter", ArgumentSemantic.Copy)]
 		string MagnificationFilter { get; set; }
 
@@ -347,7 +347,7 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("addAnimation:forKey:")]
 		void AddAnimation (CAAnimation animation, [NullAllowed] string key);
-
+		
 		[Export ("removeAllAnimations")]
 		void RemoveAllAnimations ();
 
@@ -368,31 +368,31 @@ namespace MonoMac.CoreAnimation {
 
 		[Wrap ("WeakDelegate")]
 		CALayerDelegate Delegate { get; set; }
-
+		
 		//
 		// From CAMediaTiming
 		//
 		[Export ("beginTime")]
 		double BeginTime { get; set; }
-
+	
 		[Export ("duration")]
 		double Duration { get; set; }
-
+	
 		[Export ("speed")]
 		float Speed { get; set; }
-
+	
 		[Export ("timeOffset")]
 		double TimeOffset { get; set; }
-
+	
 		[Export ("repeatCount")]
 		float RepeatCount { get; set; }
-
+	
 		[Export ("repeatDuration")]
 		double RepeatDuration { get; set; }
-
+	
 		[Export ("autoreverses")]
 		bool AutoReverses { get;set; }
-
+	
 		[Export ("fillMode")]
 		string FillMode { get; set; }
 
@@ -413,7 +413,7 @@ namespace MonoMac.CoreAnimation {
 		float ShadowRadius { get; set; }
 
 		[Field ("kCATransition")]
-		NSString Transition { get; }
+		NSString Transition { get; } 
 
 		[Field ("kCAGravityCenter")]
 		NSString GravityCenter { get; }
@@ -484,7 +484,7 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("resizeWithOldSuperlayerSize:")]
 		void Resize (SizeF oldSuperlayerSize);
-
+		
 		[Export ("constraints")]
 		CAConstraint[] Constraints { get; set;  }
 
@@ -577,7 +577,7 @@ namespace MonoMac.CoreAnimation {
 		[Field ("kCAScrollBoth")]
 		NSString ScrollBoth { get; }
 	}
-
+	
 	[BaseType (typeof (CALayer))]
 	public interface CAShapeLayer {
 		[Export ("path")]
@@ -640,7 +640,7 @@ namespace MonoMac.CoreAnimation {
 		NSString FillRuleNonZero { get; }
 
 		[Field ("kCAFillRuleEvenOdd")]
-		NSString FillRuleEvenOdd { get; }
+		NSString FilLRuleEvenOdd { get; }
 	}
 
 	[BaseType (typeof (CALayer))]
@@ -660,7 +660,7 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("font"), Internal]
 		IntPtr _Font { get; set; }
-
+		
 		[Export ("foregroundColor")]
 		CGColor ForegroundColor { get; set; }
 
@@ -675,28 +675,28 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCATruncationNone")]
 		NSString TruncationNone { get; }
-
+		
 		[Field ("kCATruncationStart")]
 		NSString TruncantionStart { get; }
-
+		
 		[Field ("kCATruncationEnd")]
 		NSString TruncantionEnd { get; }
-
+		
 		[Field ("kCATruncationMiddle")]
 		NSString TruncantionMiddle { get; }
-
+		
 		[Field ("kCAAlignmentNatural")]
 		NSString AlignmentNatural { get; }
-
+		
 		[Field ("kCAAlignmentLeft")]
 		NSString AlignmentLeft { get; }
-
+		
 		[Field ("kCAAlignmentRight")]
 		NSString AlignmentRight { get; }
-
+		
 		[Field ("kCAAlignmentCenter")]
 		NSString AlignmentCenter { get; }
-
+		
 		[Field ("kCAAlignmentJustified")]
 		NSString AlignmentJustified { get; }
 	}
@@ -716,7 +716,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("actionForLayer:forKey:"), EventArgs ("CALayerDelegateAction"), DefaultValue (null)]
 		CAAction ActionForLAyer (CALayer layer, string eventKey);
 	}
-
+	
 #if !MONOMAC
 	[BaseType (typeof (CALayer))]
 	public interface CAEAGLLayer {
@@ -732,31 +732,31 @@ namespace MonoMac.CoreAnimation {
 		[Export ("runActionForKey:object:arguments:")]
 		void RunAction (string eventKey, NSObject obj, NSDictionary arguments);
 	}
-
+	
 	[BaseType (typeof (NSObject), Delegates=new string [] {"WeakDelegate"}, Events=new Type [] { typeof (CAAnimationDelegate)})]
 	public interface CAAnimation {
 		[Export ("animation"), Static]
 		CAAnimation CreateAnimation ();
-
+	
 		[Static]
 		[Export ("defaultValueForKey:")]
 		NSObject DefaultValue (string key);
-
+	
 		[Export ("timingFunction", ArgumentSemantic.Retain)]
 		CAMediaTimingFunction TimingFunction { get; set; }
-
+	
 		[Wrap ("WeakDelegate")]
 		CAAnimationDelegate Delegate { get; set; }
-
+	
 		[Export ("delegate", ArgumentSemantic.Retain)][NullAllowed]
 		NSObject WeakDelegate { get; set; }
-
+	
 		[Export ("removedOnCompletion")]
 		bool RemovedOnCompletion { [Bind ("isRemovedOnCompletion")] get; set; }
 
 		[Export ("willChangeValueForKey:")]
 		void WillChangeValueForKey (string key);
-
+	
 		[Export ("didChangeValueForKey:")]
 		void DidChangeValueForKey (string key);
 
@@ -769,43 +769,43 @@ namespace MonoMac.CoreAnimation {
 		//
 		[Export ("beginTime")]
 		double BeginTime { get; set; }
-
+	
 		[Export ("duration")]
 		double Duration { get; set; }
-
+	
 		[Export ("speed")]
 		float Speed { get; set; }
-
+	
 		[Export ("timeOffset")]
 		double TimeOffset { get; set; }
-
+	
 		[Export ("repeatCount")]
 		float RepeatCount { get; set; }
-
+	
 		[Export ("repeatDuration")]
 		double RepeatDuration { get; set; }
-
+	
 		[Export ("autoreverses")]
 		bool AutoReverses { get;set; }
-
+	
 		[Export ("fillMode")]
 		string FillMode { get; set; }
 
 		[Field ("kCATransitionFade")]
 		NSString TransitionFade { get; }
-
+		
 		[Field ("kCATransitionMoveIn")]
 		NSString TransitionMoveIn { get; }
 
 		[Field ("kCATransitionPush")]
 		NSString TransitionPush { get; }
-
+		
 		[Field ("kCATransitionReveal")]
 		NSString TransitionReveal { get; }
-
+		
 		[Field ("kCATransitionFromRight")]
 		NSString TransitionFromRight { get; }
-
+		
 		[Field ("kCATransitionFromLeft")]
 		NSString TransitionFromLeft { get; }
 
@@ -814,17 +814,17 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCATransitionFromBottom")]
 		NSString TransitionFromBottom { get; }
-
+		
 		/* 'calculationMode' strings. */
 		[Field ("kCAAnimationLinear")]
 		NSString AnimationLinear { get; }
-
+				
 		[Field ("kCAAnimationDiscrete")]
 		NSString AnimationDescrete { get; }
-
+		
 		[Field ("kCAAnimationPaced")]
 		NSString AnimationPaced { get; }
-
+		
 		/* 'rotationMode' strings. */
 		[Field ("kCAAnimationRotateAuto")]
 		NSString RotateModeAuto { get; }
@@ -832,38 +832,38 @@ namespace MonoMac.CoreAnimation {
 		[Field ("kCAAnimationRotateAutoReverse")]
 		NSString RotateModeAutoReverse { get; }
 	}
-
+	
 	[BaseType (typeof (NSObject))]
 	[Model]
 	public interface CAAnimationDelegate {
 		[Export ("animationDidStart:")]
 		void AnimationStarted (CAAnimation anim);
-
+	
 		[Export ("animationDidStop:finished:"), EventArgs ("CAAnimationState")]
 		void AnimationStopped (CAAnimation anim, bool finished);
-
+	
 	}
-
+	
 	[BaseType (typeof (CAAnimation))]
 	public interface CAPropertyAnimation {
 		[Static]
 		[Export ("animationWithKeyPath:")]
 		CAPropertyAnimation FromKeyPath (string path);
-
+	
 		[Export ("keyPath", ArgumentSemantic.Copy)]
 		string KeyPath { get; set; }
-
+	
 		[Export ("additive")]
 		bool Additive { [Bind ("isAdditive")] get; set; }
-
+	
 		[Export ("cumulative")]
 		bool Cumulative { [Bind ("isCumulative")] get; set; }
-
+	
 		[Export ("valueFunction", ArgumentSemantic.Retain)]
 		CAValueFunction ValueFunction { get; set; }
-
+	
 	}
-
+	
 	[BaseType (typeof (CAPropertyAnimation))]
 	public interface CABasicAnimation {
 		[Static, New, Export ("animationWithKeyPath:")]
@@ -871,14 +871,14 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("fromValue", ArgumentSemantic.Retain)][NullAllowed]
 		NSObject From { get; set; }
-
+	
 		[Export ("toValue", ArgumentSemantic.Retain)][NullAllowed]
 		NSObject To { get; set; }
-
+	
 		[Export ("byValue", ArgumentSemantic.Retain)][NullAllowed]
 		NSObject By { get; set; }
 	}
-
+	
 	[BaseType (typeof (CAPropertyAnimation), Name="CAKeyframeAnimation")]
 	public interface CAKeyFrameAnimation {
 		[Static, New, Export ("animationWithKeyPath:")]
@@ -886,19 +886,19 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("values", ArgumentSemantic.Copy)]
 		NSObject [] Values { get; set; }
-
+	
 		[Export ("path")][Internal]
 		IntPtr _Path { get; set; }
-
+	
 		[Export ("keyTimes", ArgumentSemantic.Copy)][NullAllowed]
 		NSNumber [] KeyTimes { get; set; }
-
+	
 		[Export ("timingFunctions", ArgumentSemantic.Copy)]
 		CAMediaTimingFunction [] TimingFunctions { get; set; }
-
+	
 		[Export ("calculationMode", ArgumentSemantic.Copy)]
 		string CalculationMode { get; set; }
-
+	
 		[Export ("rotationMode", ArgumentSemantic.Copy)][NullAllowed]
 		string RotationMode { get; set; }
 
@@ -907,11 +907,11 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCAAnimationDiscrete")]
 		NSString CalculationDiscrete { get; }
-
+		
 		[Field ("kCAAnimationDiscrete")]
 		NSString CalculationPaced { get; }
 	}
-
+	
 	[BaseType (typeof (CAAnimation))]
 	public interface CATransition {
 		[Export ("animation"), Static, New]
@@ -919,58 +919,58 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("type", ArgumentSemantic.Copy)]
 		string Type { get; set; }
-
+	
 		[Export ("subtype", ArgumentSemantic.Copy)]
 		string Subtype { get; set; }
-
+	
 		[Export ("startProgress")]
 		float StartProgress { get; set; }
-
+	
 		[Export ("endProgress")]
 		float EndProgress { get; set; }
-
+	
 		[Export ("filter", ArgumentSemantic.Retain)][NullAllowed]
 		NSObject filter { get; set; }
 	}
-
+	
 	[BaseType (typeof (NSObject))]
 	public interface CATransaction {
 		[Static]
 		[Export ("begin")]
 		void Begin ();
-
+	
 		[Static]
 		[Export ("commit")]
 		void Commit ();
-
+	
 		[Static]
 		[Export ("flush")]
 		void Flush ();
-
+	
 		[Static]
 		[Export ("lock")]
 		void Lock ();
-
+	
 		[Static]
 		[Export ("unlock")]
 		void Unlock ();
-
+	
 		[Static]
 		[Export ("animationDuration")]
 		double AnimationDuration { get; set; }
-
+	
 		[Static]
 		[Export ("animationTimingFunction")]
 		CAMediaTimingFunction AnimationTimingFunction { get; set; }
-
+	
 		[Static]
 		[Export ("disableActions")]
 		bool DisableActions { get; set; }
-
+	
 		[Static]
 		[Export ("valueForKey:")]
 		NSObject ValueForKey (NSString key);
-
+	
 		[Static]
 		[Export ("setValue:forKey:")]
 		void SetValueForKey (NSObject anObject, NSString key);
@@ -981,13 +981,13 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCATransactionAnimationDuration")]
 		NSString AnimationDurationKey { get; }
-
+		
 		[Field ("kCATransactionDisableActions")]
 		NSString DisableActionsKey { get; }
-
+		
 		[Field ("kCATransactionAnimationTimingFunction")]
 		NSString TimingFunctionKey { get; }
-
+		
 		[Field ("kCATransactionCompletionBlock")]
 		NSString CompletionBlockKey { get; }
 	}
@@ -1005,16 +1005,16 @@ namespace MonoMac.CoreAnimation {
 	public interface CAGradientLayer {
 		[Export ("colors", ArgumentSemantic.Copy)][Internal]
 		IntPtr _Colors { get; set;  }
-
+	
 		[Export ("locations", ArgumentSemantic.Copy)]
 		NSNumber [] Locations { get; set;  }
-
+	
 		[Export ("startPoint")]
 		PointF StartPoint { get; set;  }
 
 		[Export ("endPoint")]
 		PointF EndPoint { get; set;  }
-
+	
 		[Export ("type", ArgumentSemantic.Copy)]
 		string Type { get; set;  }
 
@@ -1026,26 +1026,26 @@ namespace MonoMac.CoreAnimation {
 	public interface CAMediaTimingFunction {
 		[Export ("functionWithName:")][Static]
 		CAMediaTimingFunction FromName (string  name);
-
+	
 		[Static]
 		[Export ("functionWithControlPoints::::")]
 		CAMediaTimingFunction FromControlPoints (float c1x, float c1y, float c2x, float c2y);
-
+	
 		[Export ("initWithControlPoints::::")]
 		IntPtr Constructor (float c1x, float c1y, float c2x, float c2y);
-
+	
 		//[Export ("getControlPointAtIndex:values:")]
 		//void getControlPointAtIndex:values: (size_t idx, float[2] ptr);
-
+	
 		[Field("kCAMediaTimingFunctionLinear")]
 		NSString Linear { get; }
-
+		
 		[Field("kCAMediaTimingFunctionEaseIn")]
 		NSString EaseIn { get; }
-
+		
 		[Field("kCAMediaTimingFunctionEaseOut")]
 		NSString EaseOut { get; }
-
+		
 		[Field("kCAMediaTimingFunctionEaseInEaseOut")]
 		NSString EaseInEaseOut { get; }
 	}
@@ -1060,44 +1060,44 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCAValueFunctionRotateX")]
 		NSString RotateX { get; }
-
+		
 		[Field ("kCAValueFunctionRotateY")]
 		NSString RotateY { get; }
-
+		
 		[Field ("kCAValueFunctionRotateZ")]
 		NSString RotateZ { get; }
-
+		
 		[Field ("kCAValueFunctionScale")]
 		NSString Scale { get; }
-
+		
 		[Field ("kCAValueFunctionScaleX")]
 		NSString ScaleX { get; }
-
+		
 		[Field ("kCAValueFunctionScaleY")]
 		NSString ScaleY { get; }
-
+		
 		[Field ("kCAValueFunctionScaleZ")]
 		NSString ScaleZ { get; }
-
+		
 		[Field ("kCAValueFunctionTranslate")]
 		NSString Translate { get; }
-
+		
 		[Field ("kCAValueFunctionTranslateX")]
 		NSString TranslateX { get; }
-
+		
 		[Field ("kCAValueFunctionTranslateY")]
 		NSString TranslateY { get; }
-
+		
 		[Field ("kCAValueFunctionTranslateZ")]
 		NSString TranslateZ { get; }
-
+		
 	}
 
 #if MONOMAC
 	[BaseType (typeof (CALayer))]
 	interface CAOpenGLLayer {
 		[Export ("asynchronous")]
-		bool Asynchronous { [Bind ("isAsynchronous")]get; set; }
+		bool Asynchronous { [Bind ("isAsynchronous")]get; set; }	
 
 		[Export ("canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
 		bool CanDrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
@@ -1117,7 +1117,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("releaseCGLContext:")]
 		void Release (CGLContext glContext);
 
-	}
+	}	
 #endif
 }
 
