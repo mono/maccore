@@ -1349,7 +1349,7 @@ namespace MonoMac.Foundation
 		[Field ("NSModalPanelRunLoopMode", "AppKit")]
 		NSString NSRunLoopModalPanelMode { get; }
 
-		[Field ("NSEventTrackingRunLoopMode"), "AppKit"]
+		[Field ("NSEventTrackingRunLoopMode", "AppKit")]
 		NSString NSRunLoopEventTracking { get; }
 #endif
 	}
