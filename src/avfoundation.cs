@@ -1469,7 +1469,7 @@ namespace MonoMac.AVFoundation {
 		bool AlwaysDiscardsLateVideoFrames { get; set;  }
 
 		[Export ("setSampleBufferDelegate:queue:")]
-		void SetSampleBufferDelegatequeue (AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
+		void SetSampleBufferDelegatequeue ([NullAllowed] AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
 	}
 
 	[BaseType (typeof (NSObject))]
