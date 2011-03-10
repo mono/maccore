@@ -91,12 +91,15 @@ namespace MonoMac.CoreFoundation {
 
 		public static bool operator == (DispatchObject a, DispatchObject b)
 		{
-			if (a == null){
-				if (b == null)
+			var oa = a as object;
+			var ob = b as object;
+			
+			if (oa == null){
+				if (ob == null)
 					return true;
 				return false;
 			} else {
-				if (b == null)
+				if (ob == null)
 					return false;
 				return a.handle == b.handle;
 			}
@@ -104,12 +107,15 @@ namespace MonoMac.CoreFoundation {
 
 		public static bool operator != (DispatchObject a, DispatchObject b)
 		{
-			if (a == null){
-				if (b == null)
+			var oa = a as object;
+			var ob = b as object;
+			
+			if (oa == null){
+				if (ob == null)
 					return false;
 				return true;
 			} else {
-				if (b == null)
+				if (ob == null)
 					return true;
 				return a.handle != b.handle;
 			}
@@ -117,10 +123,10 @@ namespace MonoMac.CoreFoundation {
 
 		public override bool Equals (object other)
 		{
-			var od = other as DispatchQueue;
-			if (od == null)
+			if (other == null)
 				return false;
-
+			
+			var od = other as DispatchQueue;
 			return od.handle == handle;
 		}
 

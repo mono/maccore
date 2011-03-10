@@ -86,9 +86,9 @@ namespace MonoMac.Security {
 
 		public static bool operator == (SecPolicy a, SecPolicy b)
 		{
-			if (a == null)
-				return b == null;
-			else if (b == null)
+			if (((object)a) == null)
+				return ((object)b) == null;
+			else if ((object)b == null)
 				return false;
 
 			return a.Handle == b.Handle;
@@ -96,9 +96,9 @@ namespace MonoMac.Security {
 
 		public static bool operator != (SecPolicy a, SecPolicy b)
 		{
-			if (a == null)
-				return b != null;
-			else if (b == null)
+			if (((object)a) == null)
+				return ((object)b) != null;
+			else if (((object)b) == null)
 				return true;
 			return a.Handle != b.Handle;
 		}
