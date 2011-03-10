@@ -1404,13 +1404,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("device")]
 		AVCaptureDevice Device { get;  }
 
-		// TODO: binding of error
 		[Static, Export ("deviceInputWithDevice:error:")]
-		AVCaptureDeviceInput FromDevice (AVCaptureDevice device, IntPtr ptrToHandleToError);
+		AVCaptureDeviceInput FromDevice (AVCaptureDevice device, out NSError error);
 
-		// TODO: binding of error
 		[Export ("initWithDevice:error:")]
-		IntPtr Constructor (AVCaptureDevice device, IntPtr ptrToHandleToError);
+		IntPtr Constructor (AVCaptureDevice device, out NSError error);
 
 	}
 
