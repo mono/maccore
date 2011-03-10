@@ -1295,6 +1295,42 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("stopRunning")]
 		void StopRunning ();
+
+		[Field ("AVCaptureSessionPresetPhoto")]
+		NSString PresetPhoto { get; }
+		
+		[Field ("AVCaptureSessionPresetHigh")]
+		NSString PresetHigh { get; }
+		
+		[Field ("AVCaptureSessionPresetMedium")]
+		NSString PresetMedium { get; }
+		
+		[Field ("AVCaptureSessionPresetLow")]
+		NSString PresetLow { get; }
+		
+		[Field ("AVCaptureSessionPreset640x480")]
+		NSString Preset640x480 { get; }
+		
+		[Field ("AVCaptureSessionPreset1280x720")]
+		NSString Preset1280x720 { get; }
+
+		[Field ("AVCaptureSessionRuntimeErrorNotification")]
+		NSString RuntimeErrorNotification { get; }
+		
+		[Field ("AVCaptureSessionErrorKey")]
+		NSString ErrorKey { get; }
+		
+		[Field ("AVCaptureSessionDidStartRunningNotification")]
+		NSString DidStartRunningNotification { get; }
+		
+		[Field ("AVCaptureSessionDidStopRunningNotification")]
+		NSString DidStopRunningNotification { get; }
+		
+		[Field ("AVCaptureSessionWasInterruptedNotification")]
+		NSString WasInterruptedNotification { get; }
+		
+		[Field ("AVCaptureSessionInterruptionEndedNotification")]
+		NSString InterruptionEndedNotification { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
