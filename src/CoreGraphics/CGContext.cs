@@ -132,6 +132,9 @@ namespace MonoMac.CoreGraphics {
 			if (!owns)
 				CGContextRetain (handle);
 
+			if (handle == IntPtr.Zero)
+				throw new Exception ("Invalid handle");
+			
 			this.handle = handle;
 		}
 

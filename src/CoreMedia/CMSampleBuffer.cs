@@ -57,7 +57,7 @@ namespace MonoMac.CoreMedia {
 		public CVImageBuffer GetImageBuffer ()
 		{
 			IntPtr ib = CMSampleBufferGetImageBuffer (handle);
-			if (ib == null)
+			if (ib == IntPtr.Zero)
 				return null;
 
 			var ibt = CFType.GetTypeID (ib);

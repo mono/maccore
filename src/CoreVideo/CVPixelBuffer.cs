@@ -15,7 +15,7 @@ using MonoMac.Foundation;
 namespace MonoMac.CoreVideo {
 
 	[Since (4,0)]
-	public class CVPixelBuffer : CVImageBuffer, INativeObject, IDisposable {
+	public class CVPixelBuffer : CVImageBuffer {
 		public static readonly NSString PixelFormatTypeKey;
 		public static readonly NSString MemoryAllocatorKey;
 		public static readonly NSString WidthKey;
@@ -63,8 +63,6 @@ namespace MonoMac.CoreVideo {
 			}
 		}
 
-		IntPtr handle;
-
 		internal CVPixelBuffer (IntPtr handle) : base (handle)
 		{
 		}
@@ -72,35 +70,6 @@ namespace MonoMac.CoreVideo {
 		[Preserve (Conditional=true)]
 		internal CVPixelBuffer (IntPtr handle, bool owns) : base (handle, owns)
 		{
-		}
-
-		~CVPixelBuffer ()
-		{
-			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-	
-		[DllImport (Constants.CoreVideoLibrary)]
-		extern static void CVBufferRelease (IntPtr handle);
-		
-		[DllImport (Constants.CoreVideoLibrary)]
-		extern static void CVBufferRetain (IntPtr handle);
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CVBufferRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		[DllImport (Constants.CoreVideoLibrary)]
