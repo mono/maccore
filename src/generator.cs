@@ -176,6 +176,7 @@ public class RetainAttribute : Attribute {
 	public string WrapName { get; set; }
 }
 
+[AttributeUsage(AttributeTargets.All, AllowMultiple=true)]
 public class PostGetAttribute : Attribute {
 	public PostGetAttribute (string name)
 	{
@@ -1608,9 +1609,11 @@ public class Generator {
 			print ("{0} = ret;", assign);
 		if (has_postget) {
 			PostGetAttribute [] attr = (PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true);
-			print ("#pragma warning disable 168");
-			print ("var postget = {0};", attr [0].MethodName);
-			print ("#pragma warning restore 168");
+			for (int i = 0; i < attr.Length; i++) {
+				print ("#pragma warning disable 168");
+				print ("var postget{0} = {1};", i, attr [i].MethodName);
+				print ("#pragma warning restore 168");
+			}
 		}
 		if (HasAttribute (mi, typeof (FactoryAttribute)))
 			print ("ret.Release (); // Release implicit ref taken by GetNSObject");

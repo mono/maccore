@@ -1457,7 +1457,7 @@ namespace MonoMac.AVFoundation {
 		AVCaptureVideoDataOutputSampleBufferDelegate SampleBufferDelegate { get; }
 
 		[Export ("sampleBufferCallbackQueue")]
-		IntPtr SampleBufferCallbackQueue { get;  }
+		DispatchQueue SampleBufferCallbackQueue { get;  }
 
 		[Export ("videoSettings"), NullAllowed]
 		NSDictionary WeakVideoSettings { get; set;  }
@@ -1470,6 +1470,7 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("setSampleBufferDelegate:queue:")]
 		[PostGet ("SampleBufferDelegate")]
+		[PostGet ("SampleBufferCallbackQueue")]
 		void SetSampleBufferDelegatequeue ([NullAllowed] AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
 	}
 
