@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 #if !COREBUILD
 using MonoMac.CoreVideo;
 #endif
@@ -25,6 +26,7 @@ namespace MonoMac.CoreMedia {
 			this.handle = handle;
 		}
 
+		[Preserve (Conditional=true)]
 		internal CMSampleBuffer (IntPtr handle, bool owns)
 		{
 			if (!owns)
