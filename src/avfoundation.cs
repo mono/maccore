@@ -1249,7 +1249,7 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (NSObject))]
 	interface AVCaptureSession {
 		[Export ("sessionPreset")]
-		string SessionPreset { get; set;  }
+		NSString SessionPreset { get; set;  }
 
 		[Export ("inputs")]
 		AVCaptureInput [] Inputs { get;  }
@@ -1264,7 +1264,7 @@ namespace MonoMac.AVFoundation {
 		bool Interrupted { [Bind ("isInterrupted")] get;  }
 
 		[Export ("canSetSessionPreset:")]
-		bool CanSetSessionPreset (string preset);
+		bool CanSetSessionPreset (NSString preset);
 
 		[Export ("canAddInput:")]
 		bool CanAddInput (AVCaptureInput input);
@@ -1469,6 +1469,7 @@ namespace MonoMac.AVFoundation {
 		bool AlwaysDiscardsLateVideoFrames { get; set;  }
 
 		[Export ("setSampleBufferDelegate:queue:")]
+		[PostGet ("SampleBufferDelegate")]
 		void SetSampleBufferDelegatequeue ([NullAllowed] AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
 	}
 
