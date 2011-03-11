@@ -25,6 +25,14 @@ namespace MonoMac.CoreMedia {
 			this.handle = handle;
 		}
 
+		internal CMSampleBuffer (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CFObject.CFRetain (handle);
+
+			this.handle = handle;
+		}
+		
 		~CMSampleBuffer ()
 		{
 			Dispose (false);
@@ -40,9 +48,6 @@ namespace MonoMac.CoreMedia {
 			get { return handle; }
 		}
 	
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPatternRelease (IntPtr handle);
-		
 		protected virtual void Dispose (bool disposing)
 		{
 			if (handle != IntPtr.Zero){
