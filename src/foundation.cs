@@ -3760,6 +3760,47 @@ namespace MonoMac.Foundation
 		[Export ("createFileAtPath:contents:attributes:")]
 		bool CreateFile (string path, NSData data, NSDictionary attr);
 
+		[Since (4,0)]
+		[Export ("contentsOfDirectoryAtURL:includingPropertiesForKeys:options:error:")]
+		NSUrl[] GetDirectoryContent (NSUrl url, NSArray properties, NSDirectoryEnumerationOptions options, out NSError error);
+
+		[Since (4,0)]
+		[Export ("copyItemAtURL:toURL:error:")]
+		bool Copy (NSUrl srcUrl, NSUrl dstUrl, out NSError error);
+
+		[Since (4,0)]
+		[Export ("moveItemAtURL:toURL:error:")]
+		bool Move (NSUrl srcUrl, NSUrl dstUrl, out NSError error);
+
+		[Since (4,0)]
+		[Export ("linkItemAtURL:toURL:error:")]
+		bool Link (NSUrl srcUrl, NSUrl dstUrl, out NSError error);
+
+		[Since (4,0)]
+		[Export ("removeItemAtURL:error:")]
+		bool Remove (NSUrl url, out NSError error);
+
+		[Since (4,0)]
+		[Export ("enumeratorAtURL:includingPropertiesForKeys:options:errorHandler:")]
+		NSDirectoryEnumerator GetEnumerator (NSUrl url, NSArray properties, NSDirectoryEnumerationOptions options, out NSError error);
+
+		[Since (4,0)]
+		[Export ("URLForDirectory:inDomain:appropriateForURL:create:error:")]
+		NSUrl GetUrl (NSSearchPathDirectory directory, NSSearchPathDomain domain, NSUrl url, bool shouldCreate, out NSError error);
+
+		[Since (4,0)]
+		[Export ("URLsForDirectory:inDomains:")]
+		NSUrl[] GetUrls (NSSearchPathDirectory directory, NSSearchPathDomain domains);
+
+		[Since (4,0)]
+		[Export ("replaceItemAtURL:withItemAtURL:backupItemName:options:resultingItemURL:error:")]
+		bool Replace (NSUrl originalItem, NSUrl newItem, string backupItemName, NSFileManagerItemReplacementOptions options, out NSUrl resultingURL, out NSError error);
+
+		[Since (4,0)]
+		[Export ("mountedVolumeURLsIncludingResourceValuesForKeys:options:")]
+		NSUrl[] GetMountedVolumes(NSArray properties, NSVolumeEnumerationOptions options);
+
+		// Methods to convert paths to/from C strings for passing to system calls - Not implemented
 		////- (const char *)fileSystemRepresentationWithPath:(NSString *)path;
 		//[Export ("fileSystemRepresentationWithPath:")]
 		//const char FileSystemRepresentationWithPath (string path);

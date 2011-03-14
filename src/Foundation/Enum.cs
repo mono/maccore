@@ -302,4 +302,68 @@ namespace MonoMac.Foundation  {
 		And,
 		Or
 	}	
+
+	[Since (4,0)]
+	[Flags]
+	public enum NSVolumeEnumerationOptions {
+		None                     = 0,
+		// skip                  = 1 << 0,
+		SkipHiddenVolumes        = 1 << 1,
+		ProduceFileReferenceUrls = 1 << 2,
+	}
+
+	[Since (4,0)]
+	[Flags]
+	public enum NSDirectoryEnumerationOptions {
+		SkipsNone                    = 0,
+		SkipsSubdirectoryDescendants = 1 << 0,
+		SkipsPackageDescendants      = 1 << 1,
+		SkipsHiddenFiles             = 1 << 2,
+	}
+
+	[Since (4,0)]
+	[Flags]
+	public enum NSFileManagerItemReplacementOptions {
+		None                      = 0,
+		UsingNewMetadataOnly      = 1 << 0,
+		WithoutDeletingBackupItem = 1 << 1,
+	}
+
+	public enum NSSearchPathDirectory {
+		ApplicationDirectory = 1,
+		DemoApplicationDirectory,
+		DeveloperApplicationDirectory,
+		AdminApplicationDirectory,
+		LibraryDirectory,
+		DeveloperDirectory,
+		UserDirectory,
+		DocumentationDirectory,
+		DocumentDirectory,
+		CoreServiceDirectory,
+		AutosavedInformationDirectory = 11,
+		DesktopDirectory = 12,
+		CachesDirectory = 13,
+		ApplicationSupportDirectory = 14,
+		DownloadsDirectory = 15,
+		InputMethodsDirectory = 16,
+		MoviesDirectory = 17,
+		MusicDirectory = 18,
+		PicturesDirectory = 19,
+		PrinterDescriptionDirectory = 20,
+		SharedPublicDirectory = 21,
+		PreferencePanesDirectory = 22,
+		ItemReplacementDirectory = 99,
+		AllApplicationsDirectory = 100,
+		AllLibrariesDirectory = 101
+	}
+
+	[Flags]
+	public enum NSSearchPathDomain {
+		None    = 0,
+		User    = 1 << 0,
+		Local   = 1 << 1,
+		Network = 1 << 2,
+		System  = 1 << 3,
+		All     = 0x0ffff,
+	}
 }
