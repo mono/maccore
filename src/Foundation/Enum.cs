@@ -366,4 +366,12 @@ namespace MonoMac.Foundation  {
 		System  = 1 << 3,
 		All     = 0x0ffff,
 	}
+
+	public enum NSRoundingMode {
+		Plain, Down, Up, Bankers
+	}
+
+	public enum NSCalculationError {
+		None, PrecisionLoss, Underflow, Overflow, DivideByZero
+	}
 }
