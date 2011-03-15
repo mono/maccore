@@ -3265,6 +3265,9 @@ namespace MonoMac.Foundation
 	
 		[Export ("doubleValue")]
 		double DoubleValue { get; }
+
+		//[Export ("decimalValue")]
+		//NSDecimal NSDecimalValue { get; }
 	
 		[Export ("boolValue")]
 		bool BoolValue { get; }

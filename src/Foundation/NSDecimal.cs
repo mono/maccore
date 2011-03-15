@@ -64,11 +64,13 @@ namespace MonoMac.Foundation {
 		[DllImport (Constants.FoundationLibrary, EntryPoint="NSDecimalMultiplyByPowerOf10")]
 		static extern IntPtr NSDecimalString (ref NSDecimal value, IntPtr locale);
 
-		public string ToString ()
+#if !COREBUILD
+		public override string ToString ()
 		{
-			return new NSString (NSDecimalString (ref this, IntPtr.Zero));
+			//return new NSString (NSDecimalString (ref this, NSLocale.CurrentLocale.Handle));
+			return String.Format ("{0}:{1}{2}{3}{4}{5}{6}{7}{8}", fields, m1, m2, m3, m4, m5, m6, m7, m8);
 		}
-
+#endif
 		public static NSDecimal operator + (NSDecimal left, NSDecimal right)
 		{
 			NSDecimal result;
