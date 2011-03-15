@@ -3266,8 +3266,8 @@ namespace MonoMac.Foundation
 		[Export ("doubleValue")]
 		double DoubleValue { get; }
 
-		//[Export ("decimalValue")]
-		//NSDecimal NSDecimalValue { get; }
+		[Export ("decimalValue")]
+		NSDecimal NSDecimalValue { get; }
 	
 		[Export ("boolValue")]
 		bool BoolValue { get; }
@@ -3351,7 +3351,7 @@ namespace MonoMac.Foundation
 		[Static]
 		[Export ("numberWithUnsignedInt:")]
 		NSNumber FromUInt32 (uint value);
-	
+
 		//[Static]
 		//[Export ("numberWithLong:")]
 		//NSNumber * numberWithLong: (long value);
@@ -3388,8 +3388,8 @@ namespace MonoMac.Foundation
 		[Export ("initWithMantissa:exponent:isNegative:")]
 		IntPtr Constructor (long mantissa, short exponent, bool isNegative);
 		
-		//[Export ("initWithDecimal:")]
-		//IntPtr Constructor (NSDecimal dec);
+		[Export ("initWithDecimal:")]
+		IntPtr Constructor (NSDecimal dec);
 
 		[Export ("initWithString:")]
 		IntPtr Constructor (string numberValue);
@@ -3400,8 +3400,8 @@ namespace MonoMac.Foundation
 		[Export ("descriptionWithLocale:")]
 		string DescriptionWithLocale (NSLocale locale);
 
-		//[Export ("decimalValue")]
-		//NSDecimal NSDecimalValue { get; }
+		[Export ("decimalValue")]
+		NSDecimal NSDecimalValue { get; }
 
 		[Export ("zero")][Static]
 		NSDecimalNumber Zero { get; }

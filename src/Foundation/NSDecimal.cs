@@ -113,5 +113,17 @@ namespace MonoMac.Foundation {
 			return Compare (ref left, ref right) != NSComparisonResult.Same;
 		}
 
+#if !COREBUILD
+		public static implicit operator NSDecimal (int value)
+		{
+			return new NSNumber (value).NSDecimalValue;
+		}
+
+		public static explicit operator int (NSDecimal value)
+		{
+			return new NSDecimalNumber (value).Int32Value;
+		}
+
+#endif
 	}
 }
