@@ -148,6 +148,16 @@ namespace MonoMac.Foundation
 
 		[Export ("initWithHTML:baseURL:documentAttributes:")]
 		IntPtr Constructor (NSData htmlData, NSUrl baseUrl, out NSDictionary docAttributes);
+		
+		[Export ("drawAtPoint:")]
+		void DrawString (PointF point);
+		
+		[Export ("drawInRect:")]
+		void DrawString (RectangleF rect);
+		
+		[Export ("drawWithRect:options:")]
+		void DrawString (RectangleF rect, NSStringDrawingOptions options);
+		
 #endif
 	}
 
@@ -2226,6 +2236,18 @@ namespace MonoMac.Foundation
 #if MONOMAC
 		[Bind ("sizeWithAttributes:")]
 		SizeF StringSize (NSDictionary attributedStringAttributes);
+		
+		[Bind ("boundingRectWithSize:options:attributes:")]
+		SizeF BoundingRectWithSize (SizeF size, NSStringDrawingOptions options, NSDictionary attributes);
+		
+		[Bind ("drawAtPoint:withAttributes:")]
+		void DrawString (PointF point, NSDictionary attributes);
+		
+		[Bind ("drawInRect:withAttributes:")]
+		void DrawString (RectangleF rect, NSDictionary attributes);
+		
+		[Bind ("drawWithRect:options:attributes:")]
+		void DrawString (RectangleF rect, NSStringDrawingOptions options, NSDictionary attributes);
 #else
 		[Bind ("sizeWithFont:")]
 		SizeF StringSize (UIFont font);
