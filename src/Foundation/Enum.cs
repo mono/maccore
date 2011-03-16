@@ -374,4 +374,14 @@ namespace MonoMac.Foundation  {
 	public enum NSCalculationError {
 		None, PrecisionLoss, Underflow, Overflow, DivideByZero
 	}
+	
+	public enum NSStringDrawingOptions : uint {
+		UsesLineFragmentOrigin = (1 << 0),
+		UsesFontLeading = (1 << 1),
+		DisableScreenFontSubstitution = (1 << 2),
+		UsesDeviceMetrics = (1 << 3),
+		OneShot = (1 << 4),
+		TruncatesLastVisibleLine = (1 << 5)
+	}		
+	
 }
