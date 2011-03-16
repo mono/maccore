@@ -1180,7 +1180,7 @@ namespace MonoMac.CoreAnimation {
 		CGColor Color { get; set;  }
 
 		[Export ("redSpeed")]
-		float redSpeed { get; set;  }
+		float RedSpeed { get; set;  }
 
 		[Export ("greenSpeed")]
 		float GreenSpeed { get; set;  }
@@ -1213,7 +1213,7 @@ namespace MonoMac.CoreAnimation {
 		CAEmitterCell[] Cells { get; set;  }
 
 		[Export ("style")]
-		NSDictionary style { get; set;  }
+		NSDictionary Style { get; set;  }
 		
 		[Static]
 		[Export ("emitterCell")]
