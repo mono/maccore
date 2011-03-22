@@ -1,19 +1,19 @@
 using System.Runtime.InteropServices;
 using System;
-using System.Foundation;
+using MonoMac.Foundation;
 
-namespace MonoTouch.ObjCRuntime {
+namespace MonoMac.ObjCRuntime {
 
-	public struct NSStringStruct {
+	public unsafe struct NSStringStruct {
 		public IntPtr ClassPtr;
-		public int Flags
+		public int Flags;
 		public char *UnicodePtr;
-		public int Lenght;
+		public int Length;
 
 		// The class pointer that we picked at runtime
 		public readonly static IntPtr ReferencePtr;
 		
-		public static NSStringStruct ()
+		static NSStringStruct ()
 		{
 			using (var k = new NSString (""))
 				ReferencePtr = Marshal.ReadIntPtr (k.Handle);
