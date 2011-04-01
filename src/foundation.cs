@@ -132,7 +132,14 @@ namespace MonoMac.Foundation
 		[Field ("NSForegroundColorAttributeName")]
 #endif
                 NSString ForegroundColorAttributeName { get; }
-                
+
+#if MONOMAC
+		[Field ("NSBackgroundColorAttributeName", "AppKit")]
+#else
+		[Field ("NSBackgroundColorAttributeName")]
+#endif
+		NSString BackgroundColorAttributeName { get; }
+		
 #if MONOMAC
                 [Field ("NSLigatureAttributeName", "AppKit")]
 #else
