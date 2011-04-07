@@ -1345,6 +1345,9 @@ namespace MonoMac.Foundation
 
 		[Export ("runUntilDate:")]
 		void RunUntil (NSDate date);
+
+		[Export ("runMode:beforeDate:")]
+		void RunUntil (NSString runLoopMode, NSDate limitdate);
 		
 		[Field ("NSDefaultRunLoopMode")]
 		NSString NSDefaultRunLoopMode { get; }
