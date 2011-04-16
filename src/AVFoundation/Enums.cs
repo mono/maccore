@@ -37,7 +37,7 @@ namespace MonoMac.AVFoundation {
 
 	public static class AVAudioSettings {
 
-		public static readonly NSString AVFormatKey = new NSString ("AVFormatKey");
+		public static readonly NSString AVFormatIDKey = new NSString ("AVFormatIDKey");
 		public static readonly NSString AVSampleRateKey = new NSString ("AVSampleRateKey");
 		public static readonly NSString AVNumberOfChannelsKey = new NSString ("AVNumberOfChannelsKey");
 
