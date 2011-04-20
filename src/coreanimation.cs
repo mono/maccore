@@ -510,6 +510,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CATiledLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+		
 		[Static][Export ("fadeDuration")]
 		double FadeDuration { get; }
 
@@ -525,6 +528,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CAReplicatorLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("instanceCount")]
 		int InstanceCount { get; set; }
 
@@ -556,6 +562,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CAScrollLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("scrollMode")]
 		NSString ScrollMode { get; set;  }
 
@@ -580,6 +589,9 @@ namespace MonoMac.CoreAnimation {
 	
 	[BaseType (typeof (CALayer))]
 	public interface CAShapeLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("path")]
 		CGPath Path { get; set; }
 
@@ -645,6 +657,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CATransformLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("hitTest:")]
 		CALayer HitTest (PointF thePoint);
 	}
@@ -652,6 +667,9 @@ namespace MonoMac.CoreAnimation {
 	[Since (3,2)]
 	[BaseType (typeof (CALayer))]
 	public interface CATextLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("string", ArgumentSemantic.Copy)]
 		string String { get; set; }
 
@@ -720,6 +738,9 @@ namespace MonoMac.CoreAnimation {
 #if !MONOMAC
 	[BaseType (typeof (CALayer))]
 	public interface CAEAGLLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		// From the interface  IEAGLDrawable
 		[Export ("drawableProperties", ArgumentSemantic.Copy)]
 		NSDictionary DrawableProperties { get; set; }
@@ -1003,6 +1024,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CAGradientLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("colors", ArgumentSemantic.Copy)][Internal]
 		IntPtr _Colors { get; set;  }
 	
@@ -1096,6 +1120,9 @@ namespace MonoMac.CoreAnimation {
 #if MONOMAC
 	[BaseType (typeof (CALayer))]
 	interface CAOpenGLLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("asynchronous")]
 		bool Asynchronous { [Bind ("isAsynchronous")]get; set; }	
 
@@ -1230,6 +1257,9 @@ namespace MonoMac.CoreAnimation {
 	
 	[BaseType (typeof (CALayer))]
 	interface CAEmitterLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("emitterCells")]
 		CAEmitterCell[] Cells { get; set;  }
 

@@ -383,5 +383,27 @@ namespace MonoMac.Foundation  {
 		OneShot = (1 << 4),
 		TruncatesLastVisibleLine = (1 << 5)
 	}		
-	
+
+	public enum NSNumberFormatterStyle {
+		None = 0,
+		Decimal = 1,
+		Currency = 2,
+		Percent = 3,
+		Scientific = 4,
+		SpellOut = 5
+	}
+
+	public enum NSNumberFormatterBehavior {
+		Default = 0,
+		Version_10_0 = 1000,
+		Version_10_4 = 1040
+	}
+
+	public enum NSNumberFormatterPadPosition {
+		BeforePrefix, AfterPrefix, BeforeSuffix, AfterSuffix
+	}
+
+	public enum NSNumberFormatterRoundingMode {
+		Ceiling, Floor, Down, Up, HalfEven, HalfDown, HalfUp
+	}
 }

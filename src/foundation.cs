@@ -1305,7 +1305,7 @@ namespace MonoMac.Foundation
 		string [] ISOCurrencyCodes { get; }
 
 		[Export ("ISOCountryCodes")][Static]
-		string ISOCountryCodes { get; }
+		string [] ISOCountryCodes { get; }
 
 		[Export ("commonISOCurrencyCodes")][Static]
 		string [] CommonISOCurrencyCodes { get; }
@@ -1352,6 +1352,9 @@ namespace MonoMac.Foundation
 
 		[Export ("runUntilDate:")]
 		void RunUntil (NSDate date);
+
+		[Export ("runMode:beforeDate:")]
+		bool RunUntil (NSString runLoopMode, NSDate limitdate);
 		
 		[Field ("NSDefaultRunLoopMode")]
 		NSString NSDefaultRunLoopMode { get; }
@@ -3408,8 +3411,192 @@ namespace MonoMac.Foundation
 		[Static]
 		[Export ("numberWithBool:")]
 		NSNumber FromBoolean (bool value);
+	}
 
-		
+
+	[BaseType (typeof (NSFormatter))]
+	interface NSNumberFormatter {
+		[Export ("stringFromNumber:")]
+		string StringFromNumber (NSNumber number);
+
+		[Export ("numberFromString:")]
+		NSNumber NumberFromString (string text);
+
+		[Export ("localizedStringFromNumber:numberStyle:")]
+		string LocalizedStringFromNumbernumberStyle (NSNumber num, NSNumberFormatterStyle nstyle);
+
+		//Detected properties
+		[Export ("numberStyle")]
+		NSNumberFormatterStyle NumberStyle { get; set; }
+
+		[Export ("locale")]
+		NSLocale Locale { get; set; }
+
+		[Export ("generatesDecimalNumbers")]
+		bool GeneratesDecimalNumbers { get; set; }
+
+		[Export ("formatterBehavior")]
+		NSNumberFormatterBehavior FormatterBehavior { get; set; }
+
+		[Static]
+		[Export ("defaultFormatterBehavior")]
+		NSNumberFormatterBehavior DefaultFormatterBehavior { get; set; }
+
+		[Export ("negativeFormat")]
+		string NegativeFormat { get; set; }
+
+		[Export ("textAttributesForNegativeValues")]
+		NSDictionary TextAttributesForNegativeValues { get; set; }
+
+		[Export ("positiveFormat")]
+		string PositiveFormat { get; set; }
+
+		[Export ("textAttributesForPositiveValues")]
+		NSDictionary TextAttributesForPositiveValues { get; set; }
+
+		[Export ("allowsFloats")]
+		bool AllowsFloats { get; set; }
+
+		[Export ("decimalSeparator")]
+		string DecimalSeparator { get; set; }
+
+		[Export ("alwaysShowsDecimalSeparator")]
+		bool AlwaysShowsDecimalSeparator { get; set; }
+
+		[Export ("currencyDecimalSeparator")]
+		string CurrencyDecimalSeparator { get; set; }
+
+		[Export ("usesGroupingSeparator")]
+		bool UsesGroupingSeparator { get; set; }
+
+		[Export ("groupingSeparator")]
+		string GroupingSeparator { get; set; }
+
+		[Export ("zeroSymbol")]
+		string ZeroSymbol { get; set; }
+
+		[Export ("textAttributesForZero")]
+		NSDictionary TextAttributesForZero { get; set; }
+
+		[Export ("nilSymbol")]
+		string NilSymbol { get; set; }
+
+		[Export ("textAttributesForNil")]
+		NSDictionary TextAttributesForNil { get; set; }
+
+		[Export ("notANumberSymbol")]
+		string NotANumberSymbol { get; set; }
+
+		[Export ("textAttributesForNotANumber")]
+		NSDictionary TextAttributesForNotANumber { get; set; }
+
+		[Export ("positiveInfinitySymbol")]
+		string PositiveInfinitySymbol { get; set; }
+
+		[Export ("textAttributesForPositiveInfinity")]
+		NSDictionary TextAttributesForPositiveInfinity { get; set; }
+
+		[Export ("negativeInfinitySymbol")]
+		string NegativeInfinitySymbol { get; set; }
+
+		[Export ("textAttributesForNegativeInfinity")]
+		NSDictionary TextAttributesForNegativeInfinity { get; set; }
+
+		[Export ("positivePrefix")]
+		string PositivePrefix { get; set; }
+
+		[Export ("positiveSuffix")]
+		string PositiveSuffix { get; set; }
+
+		[Export ("negativePrefix")]
+		string NegativePrefix { get; set; }
+
+		[Export ("negativeSuffix")]
+		string NegativeSuffix { get; set; }
+
+		[Export ("currencyCode")]
+		string CurrencyCode { get; set; }
+
+		[Export ("currencySymbol")]
+		string CurrencySymbol { get; set; }
+
+		[Export ("internationalCurrencySymbol")]
+		string InternationalCurrencySymbol { get; set; }
+
+		[Export ("percentSymbol")]
+		string PercentSymbol { get; set; }
+
+		[Export ("perMillSymbol")]
+		string PerMillSymbol { get; set; }
+
+		[Export ("minusSign")]
+		string MinusSign { get; set; }
+
+		[Export ("plusSign")]
+		string PlusSign { get; set; }
+
+		[Export ("exponentSymbol")]
+		string ExponentSymbol { get; set; }
+
+		[Export ("groupingSize")]
+		uint GroupingSize { get; set; }
+
+		[Export ("secondaryGroupingSize")]
+		uint SecondaryGroupingSize { get; set; }
+
+		[Export ("multiplier")]
+		NSNumber Multiplier { get; set; }
+
+		[Export ("formatWidth")]
+		uint FormatWidth { get; set; }
+
+		[Export ("paddingCharacter")]
+		string PaddingCharacter { get; set; }
+
+		[Export ("paddingPosition")]
+		NSNumberFormatterPadPosition PaddingPosition { get; set; }
+
+		[Export ("roundingMode")]
+		NSNumberFormatterRoundingMode RoundingMode { get; set; }
+
+		[Export ("roundingIncrement")]
+		NSNumber RoundingIncrement { get; set; }
+
+		[Export ("minimumIntegerDigits")]
+		int MinimumIntegerDigits { get; set; }
+
+		[Export ("maximumIntegerDigits")]
+		int MaximumIntegerDigits { get; set; }
+
+		[Export ("minimumFractionDigits")]
+		int MinimumFractionDigits { get; set; }
+
+		[Export ("maximumFractionDigits")]
+		int MaximumFractionDigits { get; set; }
+
+		[Export ("minimum")]
+		NSNumber Minimum { get; set; }
+
+		[Export ("maximum")]
+		NSNumber Maximum { get; set; }
+
+		[Export ("currencyGroupingSeparator")]
+		string CurrencyGroupingSeparator { get; set; }
+
+		[Export ("lenient")]
+		bool Lenient { [Bind ("isLenient")]get; set; }
+
+		[Export ("usesSignificantDigits")]
+		bool UsesSignificantDigits { get; set; }
+
+		[Export ("minimumSignificantDigits")]
+		uint MinimumSignificantDigits { get; set; }
+
+		[Export ("maximumSignificantDigits")]
+		uint MaximumSignificantDigits { get; set; }
+
+		[Export ("partialStringValidationEnabled")]
+		bool PartialStringValidationEnabled { [Bind ("isPartialStringValidationEnabled")]get; set; }
 	}
 
 	[BaseType (typeof (NSNumber))]

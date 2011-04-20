@@ -82,6 +82,26 @@ namespace MonoMac.CoreMedia {
 
 		// TODO: kCMTimeValueKey, TimeScaleKey, TimeEpockKey, TimeFlagsKey
 	}
+	
+	public enum CMMediaType : uint
+	{
+		Video         = 1986618469, // 'vide'
+		Audio         = 1936684398, // 'soun'
+		Muxed         = 1836415096, // 'muxx'
+		Text          = 1952807028, // 'text'
+		ClosedCaption = 1668047728, // 'clcp'
+		Subtitle      = 1935832172, // 'sbtl'
+		TimeCode      = 1953325924, // 'tmcd'
+		TimedMetadata = 1953326452, // 'tmet'
+	}
+	
+	[StructLayout(LayoutKind.Sequential)]
+	struct CMSampleTimingInfo
+	{
+		public CMTime Duration;
+		public CMTime PresentationTimeStamp;
+		public CMTime DecodeTimeStamp;
+	}
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct CMTimeRange {
