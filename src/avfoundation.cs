@@ -912,9 +912,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("segments", ArgumentSemantic.Copy)]
 		AVCompositionTrackSegment [] Segments { get; set; }
 
-		// TODO: binding for out NSError
-		//[Export ("insertTimeRange:ofTrack:atTime:error:")]
-		//bool InsertTimeRange (CMTimeRange timeRange, AVAssetTrack ofTrack, CMTime atTime, out NSError error);
+		[Export ("insertTimeRange:ofTrack:atTime:error:")]
+		bool InsertTimeRange (CMTimeRange timeRange, AVAssetTrack ofTrack, CMTime atTime, out NSError error);
 
 		[Export ("insertEmptyTimeRange:")]
 		void InsertEmptyTimeRange (CMTimeRange timeRange);
@@ -925,9 +924,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("scaleTimeRange:toDuration:")]
 		void ScaleTimeRange (CMTimeRange timeRange, CMTime duration);
 
-		// TODO binding for out NSError
-		//[Export ("validateTrackSegments:error:")]
-		//bool ValidateTrackSegments (AVCompositionTrackSegment [] trackSegments, out NSError error);
+		[Export ("validateTrackSegments:error:")]
+		bool ValidateTrackSegments (AVCompositionTrackSegment [] trackSegments, out NSError error);
 
 		[Export ("extendedLanguageTag")]
 		string ExtendedLanguageTag { get; set; }
@@ -1609,9 +1607,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("hasMediaType:")]
 		bool HasMediaType (string mediaType);
 
-		// TODO: NSError
 		[Export ("lockForConfiguration:")]
-		bool LockForConfiguration (IntPtr ptrToHandleToError);
+		bool LockForConfiguration (out NSError error);
 
 		[Export ("unlockForConfiguration")]
 		void UnlockForConfiguration ();
