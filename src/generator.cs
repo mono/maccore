@@ -71,6 +71,10 @@ public static class ReflectionExtensions {
 
 	public static List <PropertyInfo> GatherProperties (this Type type) {
 		List <PropertyInfo> properties = new List <PropertyInfo> (type.GetProperties ());
+
+		if (Generator.IsBtouch)
+			return properties;
+
 		Type parent_type = GetBaseType (type);
 		string owrap;
 		string nwrap;
@@ -80,6 +84,10 @@ public static class ReflectionExtensions {
 				foreach (PropertyInfo pinfo in parent_type.GetProperties ()) {
 					bool toadd = true;
 					var modelea = Generator.GetExportAttribute (pinfo, out nwrap);
+
+					if (modelea == null)
+						continue;
+
 					foreach (PropertyInfo exists in properties) {
 						var origea = Generator.GetExportAttribute (exists, out owrap);
 						if (origea.Selector == modelea.Selector)
@@ -98,6 +106,10 @@ public static class ReflectionExtensions {
 
 	public static List <PropertyInfo> GatherProperties (this Type type, BindingFlags flags) {
 		List <PropertyInfo> properties = new List <PropertyInfo> (type.GetProperties (flags));
+
+		if (Generator.IsBtouch)
+			return properties;
+
 		Type parent_type = GetBaseType (type);
 		string owrap;
 		string nwrap;
@@ -107,6 +119,10 @@ public static class ReflectionExtensions {
 				foreach (PropertyInfo pinfo in parent_type.GetProperties (flags)) {
 					bool toadd = true;
 					var modelea = Generator.GetExportAttribute (pinfo, out nwrap);
+
+					if (modelea == null)
+						continue;
+
 					foreach (PropertyInfo exists in properties) {
 						var origea = Generator.GetExportAttribute (exists, out owrap);
 						if (origea.Selector == modelea.Selector)
@@ -125,13 +141,18 @@ public static class ReflectionExtensions {
 
 	public static List <MethodInfo> GatherMethods (this Type type) {
 		List <MethodInfo> methods = new List <MethodInfo> (type.GetMethods ());
+
+		if (Generator.IsBtouch)
+			return methods;
+
 		Type parent_type = GetBaseType (type);
 
 		if (parent_type != typeof (NSObject)) {
-			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
-				methods.AddRange (parent_type.GetMethods ());
-			}
-	                parent_type = GetBaseType (parent_type);
+			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false))
+				foreach (MethodInfo minfo in parent_type.GetMethods ())
+					if (minfo.GetCustomAttributes (typeof (ExportAttribute), false).Length > 0)
+						methods.Add (minfo);
+			parent_type = GetBaseType (parent_type);
 		}
 
 		return methods;
@@ -140,13 +161,18 @@ public static class ReflectionExtensions {
 
 	public static List <MethodInfo> GatherMethods (this Type type, BindingFlags flags) {
 		List <MethodInfo> methods = new List <MethodInfo> (type.GetMethods (flags));
+
+		if (Generator.IsBtouch)
+			return methods;
+
 		Type parent_type = GetBaseType (type);
 
 		if (parent_type != typeof (NSObject)) {
-			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
-				methods.AddRange (parent_type.GetMethods (flags));
-			}
-	                parent_type = GetBaseType (parent_type);
+			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false))
+				foreach (MethodInfo minfo in parent_type.GetMethods ())
+					if (minfo.GetCustomAttributes (typeof (ExportAttribute), false).Length > 0)
+						methods.Add (minfo);
+			parent_type = GetBaseType (parent_type);
 		}
 
 		return methods;
@@ -436,6 +462,8 @@ public class TrampolineInfo {
 }
 
 public class Generator {
+	internal static bool IsBtouch;
+
 	Dictionary<Type,IEnumerable<string>> selectors = new Dictionary<Type,IEnumerable<string>> ();
 	Dictionary<Type,bool> need_static = new Dictionary<Type,bool> ();
 	Dictionary<Type,bool> need_abstract = new Dictionary<Type,bool> ();
@@ -453,7 +481,6 @@ public class Generator {
 	Type [] types;
 	bool debug;
 	bool external;
-	bool btouch;
 	StreamWriter sw, m;
 	int indent;
 
@@ -993,7 +1020,7 @@ public class Generator {
 
 	public Generator (bool btouch, bool external, bool debug, Type [] types)
 	{
-		this.btouch = btouch;
+		Generator.IsBtouch = btouch;
 		this.external = external;
 		this.debug = debug;
 		this.types = types;
@@ -1683,7 +1710,7 @@ public class Generator {
 
 			if (!is_model){
 				foreach (var ea in selectors [type]){
-					if (external || btouch)
+					if (external || IsBtouch)
 						print ("\t\tstatic IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 					else
 						print ("\t\tstatic IntPtr {0} = Selector.sel_registerName (\"{1}\");", SelectorField (ea), ea);
