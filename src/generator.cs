@@ -58,6 +58,7 @@ using MonoTouch.Foundation;
 using MonoTouch.CoreFoundation;
 using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
+using MonoTouch.CoreVideo;
 #endif
 
 public static class ReflectionExtensions {
@@ -1051,6 +1052,7 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CGLPixelFormat), "IntPtr", "{0}.Handle", "new CGLPixelFormat ("));
 		marshal_types.Add (new MarshalType (typeof (CVImageBuffer), "IntPtr", "{0}.Handle", "new CVImageBuffer ("));
 #endif
+		marshal_types.Add (new MarshalType (typeof (CVPixelBuffer), "IntPtr", "{0}.Handle", "new CVPixelBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (CGLayer), "IntPtr", "{0}.Handle", "new CGLayer ("));
 #if !MONOMAC
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));

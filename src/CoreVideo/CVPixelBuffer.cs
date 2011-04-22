@@ -72,6 +72,7 @@ namespace MonoMac.CoreVideo {
 		{
 		}
 
+#if !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static CVReturn CVPixelBufferCreate (IntPtr allocator, IntPtr width, IntPtr height, CVPixelFormatType pixelFormatType, IntPtr pixelBufferAttributes, IntPtr pixelBufferOut);
 		public CVPixelBuffer (int width, int height, CVPixelFormatType pixelFormatType, NSDictionary pixelBufferAttributes)
@@ -106,6 +107,7 @@ namespace MonoMac.CoreVideo {
 
 			return dictionary;
 		}
+#endif
 
 		// TODO: CVPixelBufferCreateWithBytes
 		// TODO: CVPixelBufferCreateWithPlanarBytes

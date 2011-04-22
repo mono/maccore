@@ -32,6 +32,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.CoreMedia;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreAnimation;
+using MonoMac.CoreVideo;
 using System;
 using System.Drawing;
 
@@ -718,8 +719,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		IntPtr Constructor (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
 
-		//[Export ("appendPixelBuffer:withPresentationTime:")]
-		//bool AppendPixelBufferwithPresentationTime (CVPixelBufferRef pixelBuffer, CMTime presentationTime);
+		[Export ("appendPixelBuffer:withPresentationTime:")]
+		bool AppendPixelBufferwithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
 	}
 
 	[Since (4,0)]
