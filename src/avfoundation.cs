@@ -720,7 +720,7 @@ namespace MonoMac.AVFoundation {
 		IntPtr Constructor (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
 
 		[Export ("appendPixelBuffer:withPresentationTime:")]
-		bool AppendPixelBufferwithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
+		bool AppendPixelBufferWithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
 	}
 
 	[Since (4,0)]
