@@ -184,7 +184,7 @@ namespace MonoMac.CoreMedia {
 			}
 			else
 			{
-				return new CMBlockBuffer (blockHandle);
+				return new CMBlockBuffer (blockHandle, false);
 			}
 		}
 
@@ -219,7 +219,7 @@ namespace MonoMac.CoreMedia {
 			var descHandle = CMSampleBufferGetFormatDescription (handle);
 			if (descHandle != IntPtr.Zero)
 			{
-				desc = new CMFormatDescription (descHandle);
+				desc = new CMFormatDescription (descHandle, false);
 			}
 			return desc;					
 		}
@@ -328,7 +328,7 @@ namespace MonoMac.CoreMedia {
 			}
 			else
 			{
-				return NSArray.ArrayFromHandle (cfArrayRef, h => new NSMutableDictionary (h));
+				return NSArray.ArrayFromHandle (cfArrayRef, h => (NSMutableDictionary) Runtime.GetNSObject (h));
 			}
 		}
 		
