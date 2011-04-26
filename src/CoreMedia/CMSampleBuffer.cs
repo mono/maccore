@@ -328,7 +328,7 @@ namespace MonoMac.CoreMedia {
 			}
 			else
 			{
-				return NSArray.ArrayFromHandle (cfArrayRef, h => new NSMutableDictionary (h, false));
+				return NSArray.ArrayFromHandle (cfArrayRef, h => (NSMutableDictionary) Runtime.GetNSObject (h));
 			}
 		}
 		

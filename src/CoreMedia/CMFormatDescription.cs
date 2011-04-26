@@ -76,7 +76,7 @@ namespace MonoMac.CoreMedia {
 			}
 			else
 			{
-				return new NSDictionary (cfDictRef, false);
+				return (NSDictionary) Runtime.GetNSObject (cfDictRef);
 			}
 		}
 
