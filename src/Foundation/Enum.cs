@@ -130,6 +130,12 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+	public enum NSDataReadingOptions: uint {
+		   Mapped =   1 << 0,
+		   Uncached = 1 << 1
+	}
+
+	[Flags]
 	public enum NSDataWritingOptions : uint {
 		Atomic = 1,
 

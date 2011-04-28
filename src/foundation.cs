@@ -479,6 +479,10 @@ namespace MonoMac.Foundation
 		[Static]
 		NSData FromUrl (NSUrl url);
 
+		[Export ("dataWithContentsOfURL:options:error:")]
+		[Static]
+		NSData FromUrl (NSUrl url, NSDataReadingOptions mask, out NSError error);
+
 		[Export ("dataWithContentsOfFile:")][Static]
 		NSData FromFile (string path);
 
