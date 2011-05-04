@@ -32,6 +32,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.CoreMedia;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreAnimation;
+using MonoMac.CoreVideo;
 using System;
 using System.Drawing;
 
@@ -718,8 +719,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		IntPtr Constructor (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
 
-		//[Export ("appendPixelBuffer:withPresentationTime:")]
-		//bool AppendPixelBufferwithPresentationTime (CVPixelBufferRef pixelBuffer, CMTime presentationTime);
+		[Export ("appendPixelBuffer:withPresentationTime:")]
+		bool AppendPixelBufferWithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
 	}
 
 	[Since (4,0)]
@@ -912,9 +913,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("segments", ArgumentSemantic.Copy)]
 		AVCompositionTrackSegment [] Segments { get; set; }
 
-		// TODO: binding for out NSError
-		//[Export ("insertTimeRange:ofTrack:atTime:error:")]
-		//bool InsertTimeRange (CMTimeRange timeRange, AVAssetTrack ofTrack, CMTime atTime, out NSError error);
+		[Export ("insertTimeRange:ofTrack:atTime:error:")]
+		bool InsertTimeRange (CMTimeRange timeRange, AVAssetTrack ofTrack, CMTime atTime, out NSError error);
 
 		[Export ("insertEmptyTimeRange:")]
 		void InsertEmptyTimeRange (CMTimeRange timeRange);
@@ -925,9 +925,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("scaleTimeRange:toDuration:")]
 		void ScaleTimeRange (CMTimeRange timeRange, CMTime duration);
 
-		// TODO binding for out NSError
-		//[Export ("validateTrackSegments:error:")]
-		//bool ValidateTrackSegments (AVCompositionTrackSegment [] trackSegments, out NSError error);
+		[Export ("validateTrackSegments:error:")]
+		bool ValidateTrackSegments (AVCompositionTrackSegment [] trackSegments, out NSError error);
 
 		[Export ("extendedLanguageTag")]
 		string ExtendedLanguageTag { get; set; }
@@ -1609,9 +1608,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("hasMediaType:")]
 		bool HasMediaType (string mediaType);
 
-		// TODO: NSError
 		[Export ("lockForConfiguration:")]
-		bool LockForConfiguration (IntPtr ptrToHandleToError);
+		bool LockForConfiguration (out NSError error);
 
 		[Export ("unlockForConfiguration")]
 		void UnlockForConfiguration ();

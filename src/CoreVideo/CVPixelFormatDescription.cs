@@ -96,6 +96,7 @@ namespace MonoMac.CoreVideo {
 			}
 		}
 
+#if !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static IntPtr CVPixelFormatDescriptionArrayCreateWithAllPixelFormatTypes (IntPtr allocator);
 		public static NSDictionary [] AllTypes {
@@ -115,5 +116,6 @@ namespace MonoMac.CoreVideo {
 		public static void Register (NSDictionary description, int pixelFormat) {
 			CVPixelFormatDescriptionRegisterDescriptionWithPixelFormatType (description.Handle, pixelFormat);
 		}
+#endif
 	}
 }

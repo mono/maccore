@@ -63,10 +63,10 @@ namespace MonoMac.Foundation
 		void SetValueForKey (NSObject value, NSString key);
 
 		[Export ("writeToFile:atomically:")]
-                bool WriteToFile (string path, bool useAuxiliaryFile);
+		bool WriteToFile (string path, bool useAuxiliaryFile);
 
 		[Export ("arrayWithContentsOfFile:")][Static]
-                NSArray FromFile (string path);
+		NSArray FromFile (string path);
 	}
 
 	[Since (3,2)]
@@ -125,13 +125,13 @@ namespace MonoMac.Foundation
 		[Field ("NSParagraphStyleAttributeName")]
 #endif
 		NSString ParagraphStyleAttributeName { get; }
-                
+
 #if MONOMAC
 		[Field ("NSForegroundColorAttributeName", "AppKit")]
 #else
 		[Field ("NSForegroundColorAttributeName")]
 #endif
-                NSString ForegroundColorAttributeName { get; }
+		NSString ForegroundColorAttributeName { get; }
 
 #if MONOMAC
 		[Field ("NSBackgroundColorAttributeName", "AppKit")]
@@ -141,11 +141,11 @@ namespace MonoMac.Foundation
 		NSString BackgroundColorAttributeName { get; }
 		
 #if MONOMAC
-                [Field ("NSLigatureAttributeName", "AppKit")]
+		[Field ("NSLigatureAttributeName", "AppKit")]
 #else
-                [Field ("NSLigatureAttributeName")]
+		[Field ("NSLigatureAttributeName")]
 #endif
-                NSString LigatureAttributeName { get; } 
+		NSString LigatureAttributeName { get; } 
 #if MONOMAC
 		[Export ("initWithData:options:documentAttributes:error:")]
 		IntPtr Constructor (NSData data, NSDictionary options, out NSDictionary docAttributes, out NSError error);
@@ -478,6 +478,10 @@ namespace MonoMac.Foundation
 		[Export ("dataWithContentsOfURL:")]
 		[Static]
 		NSData FromUrl (NSUrl url);
+
+		[Export ("dataWithContentsOfURL:options:error:")]
+		[Static]
+		NSData FromUrl (NSUrl url, NSDataReadingOptions mask, out NSError error);
 
 		[Export ("dataWithContentsOfFile:")][Static]
 		NSData FromFile (string path);
