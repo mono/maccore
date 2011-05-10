@@ -88,7 +88,7 @@ namespace MonoMac.Foundation {
 			} catch {
 				len = 8192;
 			}
-			ret = new NSMutableData ((uint) len);
+			ret = NSMutableData.FromCapacity ((int)len);
 			byte [] buffer = new byte [32*1024];
 			int n;
 			try {

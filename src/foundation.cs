@@ -63,10 +63,10 @@ namespace MonoMac.Foundation
 		void SetValueForKey (NSObject value, NSString key);
 
 		[Export ("writeToFile:atomically:")]
-                bool WriteToFile (string path, bool useAuxiliaryFile);
+		bool WriteToFile (string path, bool useAuxiliaryFile);
 
 		[Export ("arrayWithContentsOfFile:")][Static]
-                NSArray FromFile (string path);
+		NSArray FromFile (string path);
 	}
 
 	[Since (3,2)]
@@ -134,6 +134,19 @@ namespace MonoMac.Foundation
 		NSString ForegroundColorAttributeName { get; }
 
 #if MONOMAC
+		[Field ("NSBackgroundColorAttributeName", "AppKit")]
+#else
+		[Field ("NSBackgroundColorAttributeName")]
+#endif
+		NSString BackgroundColorAttributeName { get; }
+		
+#if MONOMAC
+		[Field ("NSLigatureAttributeName", "AppKit")]
+#else
+		[Field ("NSLigatureAttributeName")]
+#endif
+		NSString LigatureAttributeName { get; } 
+#if MONOMAC
 		[Export ("initWithData:options:documentAttributes:error:")]
 		IntPtr Constructor (NSData data, NSDictionary options, out NSDictionary docAttributes, out NSError error);
 
@@ -142,6 +155,16 @@ namespace MonoMac.Foundation
 
 		[Export ("initWithHTML:baseURL:documentAttributes:")]
 		IntPtr Constructor (NSData htmlData, NSUrl baseUrl, out NSDictionary docAttributes);
+		
+		[Export ("drawAtPoint:")]
+		void DrawString (PointF point);
+		
+		[Export ("drawInRect:")]
+		void DrawString (RectangleF rect);
+		
+		[Export ("drawWithRect:options:")]
+		void DrawString (RectangleF rect, NSStringDrawingOptions options);
+		
 #endif
 	}
 
@@ -455,6 +478,10 @@ namespace MonoMac.Foundation
 		[Export ("dataWithContentsOfURL:")]
 		[Static]
 		NSData FromUrl (NSUrl url);
+
+		[Export ("dataWithContentsOfURL:options:error:")]
+		[Static]
+		NSData FromUrl (NSUrl url, NSDataReadingOptions mask, out NSError error);
 
 		[Export ("dataWithContentsOfFile:")][Static]
 		NSData FromFile (string path);
@@ -969,7 +996,7 @@ namespace MonoMac.Foundation
 		[Export ("mutableBytes")]
 		IntPtr MutableBytes { get; }
 
-		[Export ("initWithLength:")]
+		[Export ("initWithCapacity:")]
 		IntPtr Constructor (uint len);
 
 		[Export ("appendData:")]
@@ -1282,7 +1309,7 @@ namespace MonoMac.Foundation
 		string [] ISOCurrencyCodes { get; }
 
 		[Export ("ISOCountryCodes")][Static]
-		string ISOCountryCodes { get; }
+		string [] ISOCountryCodes { get; }
 
 		[Export ("commonISOCurrencyCodes")][Static]
 		string [] CommonISOCurrencyCodes { get; }
@@ -1329,6 +1356,9 @@ namespace MonoMac.Foundation
 
 		[Export ("runUntilDate:")]
 		void RunUntil (NSDate date);
+
+		[Export ("runMode:beforeDate:")]
+		bool RunUntil (NSString runLoopMode, NSDate limitdate);
 		
 		[Field ("NSDefaultRunLoopMode")]
 		NSString NSDefaultRunLoopMode { get; }
@@ -1343,7 +1373,7 @@ namespace MonoMac.Foundation
 		[Field ("NSModalPanelRunLoopMode", "AppKit")]
 		NSString NSRunLoopModalPanelMode { get; }
 
-		[Field ("NSEventTrackingRunLoopMode")]
+		[Field ("NSEventTrackingRunLoopMode", "AppKit")]
 		NSString NSRunLoopEventTracking { get; }
 #endif
 	}
@@ -2220,6 +2250,18 @@ namespace MonoMac.Foundation
 #if MONOMAC
 		[Bind ("sizeWithAttributes:")]
 		SizeF StringSize (NSDictionary attributedStringAttributes);
+		
+		[Bind ("boundingRectWithSize:options:attributes:")]
+		SizeF BoundingRectWithSize (SizeF size, NSStringDrawingOptions options, NSDictionary attributes);
+		
+		[Bind ("drawAtPoint:withAttributes:")]
+		void DrawString (PointF point, NSDictionary attributes);
+		
+		[Bind ("drawInRect:withAttributes:")]
+		void DrawString (RectangleF rect, NSDictionary attributes);
+		
+		[Bind ("drawWithRect:options:attributes:")]
+		void DrawString (RectangleF rect, NSStringDrawingOptions options, NSDictionary attributes);
 #else
 		[Bind ("sizeWithFont:")]
 		SizeF StringSize (UIFont font);
@@ -2688,17 +2730,17 @@ namespace MonoMac.Foundation
 		Class PrincipalClass { get; }
 
 		[Export ("pathForResource:ofType:inDirectory:")][Static]
-		string PathForResourceAbsolute (string name, [NullAllowed]string ofType, string bundleDirectory);
+		string PathForResourceAbsolute (string name, [NullAllowed] string ofType, string bundleDirectory);
 		
 		[Export ("pathForResource:ofType:")]
-		string PathForResource (string name, string ofType);
+		string PathForResource (string name, [NullAllowed] string ofType);
 
 		// TODO: this conflicts with the above with our generator.
 		//[Export ("pathForResource:ofType:inDirectory:")]
 		//string PathForResource (string name, string ofType, string subpath);
 		
 		[Export ("pathForResource:ofType:inDirectory:forLocalization:")]
-		string PathForResource (string name, string ofType, string subpath, string localizationName);
+		string PathForResource (string name, [NullAllowed] string ofType, string subpath, string localizationName);
 
 		[Export ("localizedStringForKey:value:table:")]
 		string LocalizedString (string key, string value, string table);
@@ -3259,6 +3301,9 @@ namespace MonoMac.Foundation
 	
 		[Export ("doubleValue")]
 		double DoubleValue { get; }
+
+		[Export ("decimalValue")]
+		NSDecimal NSDecimalValue { get; }
 	
 		[Export ("boolValue")]
 		bool BoolValue { get; }
@@ -3342,7 +3387,7 @@ namespace MonoMac.Foundation
 		[Static]
 		[Export ("numberWithUnsignedInt:")]
 		NSNumber FromUInt32 (uint value);
-	
+
 		//[Static]
 		//[Export ("numberWithLong:")]
 		//NSNumber * numberWithLong: (long value);
@@ -3370,8 +3415,192 @@ namespace MonoMac.Foundation
 		[Static]
 		[Export ("numberWithBool:")]
 		NSNumber FromBoolean (bool value);
+	}
 
-		
+
+	[BaseType (typeof (NSFormatter))]
+	interface NSNumberFormatter {
+		[Export ("stringFromNumber:")]
+		string StringFromNumber (NSNumber number);
+
+		[Export ("numberFromString:")]
+		NSNumber NumberFromString (string text);
+
+		[Export ("localizedStringFromNumber:numberStyle:")]
+		string LocalizedStringFromNumbernumberStyle (NSNumber num, NSNumberFormatterStyle nstyle);
+
+		//Detected properties
+		[Export ("numberStyle")]
+		NSNumberFormatterStyle NumberStyle { get; set; }
+
+		[Export ("locale")]
+		NSLocale Locale { get; set; }
+
+		[Export ("generatesDecimalNumbers")]
+		bool GeneratesDecimalNumbers { get; set; }
+
+		[Export ("formatterBehavior")]
+		NSNumberFormatterBehavior FormatterBehavior { get; set; }
+
+		[Static]
+		[Export ("defaultFormatterBehavior")]
+		NSNumberFormatterBehavior DefaultFormatterBehavior { get; set; }
+
+		[Export ("negativeFormat")]
+		string NegativeFormat { get; set; }
+
+		[Export ("textAttributesForNegativeValues")]
+		NSDictionary TextAttributesForNegativeValues { get; set; }
+
+		[Export ("positiveFormat")]
+		string PositiveFormat { get; set; }
+
+		[Export ("textAttributesForPositiveValues")]
+		NSDictionary TextAttributesForPositiveValues { get; set; }
+
+		[Export ("allowsFloats")]
+		bool AllowsFloats { get; set; }
+
+		[Export ("decimalSeparator")]
+		string DecimalSeparator { get; set; }
+
+		[Export ("alwaysShowsDecimalSeparator")]
+		bool AlwaysShowsDecimalSeparator { get; set; }
+
+		[Export ("currencyDecimalSeparator")]
+		string CurrencyDecimalSeparator { get; set; }
+
+		[Export ("usesGroupingSeparator")]
+		bool UsesGroupingSeparator { get; set; }
+
+		[Export ("groupingSeparator")]
+		string GroupingSeparator { get; set; }
+
+		[Export ("zeroSymbol")]
+		string ZeroSymbol { get; set; }
+
+		[Export ("textAttributesForZero")]
+		NSDictionary TextAttributesForZero { get; set; }
+
+		[Export ("nilSymbol")]
+		string NilSymbol { get; set; }
+
+		[Export ("textAttributesForNil")]
+		NSDictionary TextAttributesForNil { get; set; }
+
+		[Export ("notANumberSymbol")]
+		string NotANumberSymbol { get; set; }
+
+		[Export ("textAttributesForNotANumber")]
+		NSDictionary TextAttributesForNotANumber { get; set; }
+
+		[Export ("positiveInfinitySymbol")]
+		string PositiveInfinitySymbol { get; set; }
+
+		[Export ("textAttributesForPositiveInfinity")]
+		NSDictionary TextAttributesForPositiveInfinity { get; set; }
+
+		[Export ("negativeInfinitySymbol")]
+		string NegativeInfinitySymbol { get; set; }
+
+		[Export ("textAttributesForNegativeInfinity")]
+		NSDictionary TextAttributesForNegativeInfinity { get; set; }
+
+		[Export ("positivePrefix")]
+		string PositivePrefix { get; set; }
+
+		[Export ("positiveSuffix")]
+		string PositiveSuffix { get; set; }
+
+		[Export ("negativePrefix")]
+		string NegativePrefix { get; set; }
+
+		[Export ("negativeSuffix")]
+		string NegativeSuffix { get; set; }
+
+		[Export ("currencyCode")]
+		string CurrencyCode { get; set; }
+
+		[Export ("currencySymbol")]
+		string CurrencySymbol { get; set; }
+
+		[Export ("internationalCurrencySymbol")]
+		string InternationalCurrencySymbol { get; set; }
+
+		[Export ("percentSymbol")]
+		string PercentSymbol { get; set; }
+
+		[Export ("perMillSymbol")]
+		string PerMillSymbol { get; set; }
+
+		[Export ("minusSign")]
+		string MinusSign { get; set; }
+
+		[Export ("plusSign")]
+		string PlusSign { get; set; }
+
+		[Export ("exponentSymbol")]
+		string ExponentSymbol { get; set; }
+
+		[Export ("groupingSize")]
+		uint GroupingSize { get; set; }
+
+		[Export ("secondaryGroupingSize")]
+		uint SecondaryGroupingSize { get; set; }
+
+		[Export ("multiplier")]
+		NSNumber Multiplier { get; set; }
+
+		[Export ("formatWidth")]
+		uint FormatWidth { get; set; }
+
+		[Export ("paddingCharacter")]
+		string PaddingCharacter { get; set; }
+
+		[Export ("paddingPosition")]
+		NSNumberFormatterPadPosition PaddingPosition { get; set; }
+
+		[Export ("roundingMode")]
+		NSNumberFormatterRoundingMode RoundingMode { get; set; }
+
+		[Export ("roundingIncrement")]
+		NSNumber RoundingIncrement { get; set; }
+
+		[Export ("minimumIntegerDigits")]
+		int MinimumIntegerDigits { get; set; }
+
+		[Export ("maximumIntegerDigits")]
+		int MaximumIntegerDigits { get; set; }
+
+		[Export ("minimumFractionDigits")]
+		int MinimumFractionDigits { get; set; }
+
+		[Export ("maximumFractionDigits")]
+		int MaximumFractionDigits { get; set; }
+
+		[Export ("minimum")]
+		NSNumber Minimum { get; set; }
+
+		[Export ("maximum")]
+		NSNumber Maximum { get; set; }
+
+		[Export ("currencyGroupingSeparator")]
+		string CurrencyGroupingSeparator { get; set; }
+
+		[Export ("lenient")]
+		bool Lenient { [Bind ("isLenient")]get; set; }
+
+		[Export ("usesSignificantDigits")]
+		bool UsesSignificantDigits { get; set; }
+
+		[Export ("minimumSignificantDigits")]
+		uint MinimumSignificantDigits { get; set; }
+
+		[Export ("maximumSignificantDigits")]
+		uint MaximumSignificantDigits { get; set; }
+
+		[Export ("partialStringValidationEnabled")]
+		bool PartialStringValidationEnabled { [Bind ("isPartialStringValidationEnabled")]get; set; }
 	}
 
 	[BaseType (typeof (NSNumber))]
@@ -3379,8 +3608,8 @@ namespace MonoMac.Foundation
 		[Export ("initWithMantissa:exponent:isNegative:")]
 		IntPtr Constructor (long mantissa, short exponent, bool isNegative);
 		
-		//[Export ("initWithDecimal:")]
-		//IntPtr Constructor (NSDecimal dec);
+		[Export ("initWithDecimal:")]
+		IntPtr Constructor (NSDecimal dec);
 
 		[Export ("initWithString:")]
 		IntPtr Constructor (string numberValue);
@@ -3391,8 +3620,8 @@ namespace MonoMac.Foundation
 		[Export ("descriptionWithLocale:")]
 		string DescriptionWithLocale (NSLocale locale);
 
-		//[Export ("decimalValue")]
-		//NSDecimal NSDecimalValue { get; }
+		[Export ("decimalValue")]
+		NSDecimal NSDecimalValue { get; }
 
 		[Export ("zero")][Static]
 		NSDecimalNumber Zero { get; }
@@ -3618,10 +3847,10 @@ namespace MonoMac.Foundation
 		NSString ExtensionHidden { get; }
 
 		[Field("NSFileHFSCreatorCode")]
-		NSString HFSCreatorCode { get; }
+		NSString HfsCreatorCode { get; }
 
 		[Field("NSFileHFSTypeCode")]
-		NSString HFSTypeCode { get; }
+		NSString HfsTypeCode { get; }
 
 		[Field("NSFileImmutable")]
 		NSString Immutable { get; }
@@ -3674,8 +3903,8 @@ namespace MonoMac.Foundation
 		[Export ("subpathsOfDirectoryAtPath:error:")]
 		string[] GetDirectoryContentRecursive (string path, out NSError error);
 
-		[Export ("attributesOfItemAtPath:error:")]
-		NSDictionary GetAttributes (string path, out NSError error);
+		[Export ("attributesOfItemAtPath:error:")][Internal]
+		NSDictionary _GetAttributes (string path, out NSError error);
 
 		[Export ("attributesOfFileSystemForPath:error:")]
 		NSDictionary GetFileSystemAttributes (string path, out NSError error);
@@ -3754,6 +3983,47 @@ namespace MonoMac.Foundation
 		[Export ("createFileAtPath:contents:attributes:")]
 		bool CreateFile (string path, NSData data, NSDictionary attr);
 
+		[Since (4,0)]
+		[Export ("contentsOfDirectoryAtURL:includingPropertiesForKeys:options:error:")]
+		NSUrl[] GetDirectoryContent (NSUrl url, NSArray properties, NSDirectoryEnumerationOptions options, out NSError error);
+
+		[Since (4,0)]
+		[Export ("copyItemAtURL:toURL:error:")]
+		bool Copy (NSUrl srcUrl, NSUrl dstUrl, out NSError error);
+
+		[Since (4,0)]
+		[Export ("moveItemAtURL:toURL:error:")]
+		bool Move (NSUrl srcUrl, NSUrl dstUrl, out NSError error);
+
+		[Since (4,0)]
+		[Export ("linkItemAtURL:toURL:error:")]
+		bool Link (NSUrl srcUrl, NSUrl dstUrl, out NSError error);
+
+		[Since (4,0)]
+		[Export ("removeItemAtURL:error:")]
+		bool Remove (NSUrl url, out NSError error);
+
+		[Since (4,0)]
+		[Export ("enumeratorAtURL:includingPropertiesForKeys:options:errorHandler:")]
+		NSDirectoryEnumerator GetEnumerator (NSUrl url, NSArray properties, NSDirectoryEnumerationOptions options, out NSError error);
+
+		[Since (4,0)]
+		[Export ("URLForDirectory:inDomain:appropriateForURL:create:error:")]
+		NSUrl GetUrl (NSSearchPathDirectory directory, NSSearchPathDomain domain, NSUrl url, bool shouldCreate, out NSError error);
+
+		[Since (4,0)]
+		[Export ("URLsForDirectory:inDomains:")]
+		NSUrl[] GetUrls (NSSearchPathDirectory directory, NSSearchPathDomain domains);
+
+		[Since (4,0)]
+		[Export ("replaceItemAtURL:withItemAtURL:backupItemName:options:resultingItemURL:error:")]
+		bool Replace (NSUrl originalItem, NSUrl newItem, string backupItemName, NSFileManagerItemReplacementOptions options, out NSUrl resultingURL, out NSError error);
+
+		[Since (4,0)]
+		[Export ("mountedVolumeURLsIncludingResourceValuesForKeys:options:")]
+		NSUrl[] GetMountedVolumes(NSArray properties, NSVolumeEnumerationOptions options);
+
+		// Methods to convert paths to/from C strings for passing to system calls - Not implemented
 		////- (const char *)fileSystemRepresentationWithPath:(NSString *)path;
 		//[Export ("fileSystemRepresentationWithPath:")]
 		//const char FileSystemRepresentationWithPath (string path);
@@ -3873,10 +4143,10 @@ namespace MonoMac.Foundation
 		bool FileExtensionHidden ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileHFSCreatorCode")]
-		uint FileHFSCreatorCode ([Target] NSDictionary fileAttributes);
+		uint FileHfsCreatorCode ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileHFSTypeCode")]
-		uint FileHFSTypeCode ([Target] NSDictionary fileAttributes);
+		uint FileHfsTypeCode ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileIsImmutable")]
 		bool FileIsImmutable ([Target] NSDictionary fileAttributes);
@@ -3993,6 +4263,99 @@ namespace MonoMac.Foundation
 		void FailedWithError(NSUrlDownload download, NSError error);
 	}
 #endif
+
+	[BaseType (typeof (NSObject), Name="NSURLProtocolClient")]
+	[Model]
+	interface NSUrlProtocolClient {
+		[Abstract]
+		[Export ("UrlProtocol:wasRedirectedToRequest:redirectResponse:"), EventArgs ("NSUrlProtocolRedirect")]
+		void Redirected (NSUrlProtocol protocol, NSUrlRequest redirectedToEequest, NSUrlResponse redirectResponse);
+
+		[Abstract]
+		[Export ("UrlProtocol:cachedResponseIsValid:"), EventArgs ("NSUrlProtocolCachedResponse")]
+		void CachedResponseIsValid (NSUrlProtocol protocol, NSCachedUrlResponse cachedResponse);
+
+		[Abstract]
+		[Export ("UrlProtocol:didReceiveResponse:cacheStoragePolicy:"), EventArgs ("NSUrlProtocolResponse")]
+		void ReceivedResponse (NSUrlProtocol protocol, NSUrlResponse response, NSUrlCacheStoragePolicy policy);
+
+		[Abstract]
+		[Export ("UrlProtocol:didLoadData:"), EventArgs ("NSUrlProtocolData")]
+		void DataLoaded (NSUrlProtocol protocol, NSData data);
+
+		[Abstract]
+		[Export ("UrlProtocolDidFinishLoading:")]
+		void FinishedLoading (NSUrlProtocol protocol);
+
+		[Abstract]
+		[Export ("UrlProtocol:didFailWithError:"), EventArgs ("NSUrlProtocolError")]
+		void FailedWithError (NSUrlProtocol protocol, NSError error);
+
+		[Abstract]
+		[Export ("UrlProtocol:didReceiveAuthenticationChallenge:"), EventArgs ("NSUrlProtocolChallenge")]
+		void ReceivedAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge);
+
+		[Abstract]
+		[Export ("UrlProtocol:didCancelAuthenticationChallenge:"), EventArgs ("NSUrlProtocolChallenge")]
+		void CancelledAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge);
+	}
+
+	[BaseType (typeof (NSObject),
+		   Delegates=new string [] {"WeakClient"},
+		   Events=new Type [] {typeof (NSUrlProtocolClient)})]
+	interface NSUrlProtocol {
+		[Export ("initWithRequest:cachedResponse:client:")]
+		IntPtr Constructor (NSUrlRequest request, NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
+
+		[Export ("client")]
+		NSObject WeakClient { get; set; }
+
+		[Wrap ("WeakClient")]
+		NSUrlProtocolClient Client { get; set; }
+
+		[Export ("request")]
+		NSUrlRequest Request { get; }
+
+		[Export ("cachedResponse")]
+		NSCachedUrlResponse CachedResponse { get; }
+
+		[Export ("canInitWithRequest:")]
+		bool CanInitWithRequest (NSUrlRequest request);
+
+		[Static]
+		[Export ("canonicalRequestForRequest:")]
+		NSUrlRequest GetCanonicalRequest (NSUrlRequest forRequest);
+
+		[Static]
+		[Export ("requestIsCacheEquivalent:toRequest:")]
+		bool IsRequestCacheEquivalent (NSUrlRequest first, NSUrlRequest second);
+
+		[Export ("startLoading")]
+		void StartLoading ();
+
+		[Export ("stopLoading")]
+		void StopLoading ();
+
+		[Static]
+		[Export ("propertyForKey:inRequest:")]
+		NSObject GetProperty (string key, NSUrlRequest inRequest);
+
+		[Static]
+		[Export ("setProperty:forKey:inRequest:")]
+		void SetProperty ([NullAllowed] NSObject value, string key, NSMutableUrlRequest inRequest);
+
+		[Static]
+		[Export ("removePropertyForKey:inRequest:")]
+		void RemoveProperty (string propertyKey, NSMutableUrlRequest request);
+
+		[Static]
+		[Export ("registerClass:")]
+		bool RegisterClass (Class protocolClass);
+
+		[Static]
+		[Export ("unregisterClass:")]
+		void UnregisterClass (Class protocolClass);
+	}
 
 }
 

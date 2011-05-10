@@ -1,9 +1,10 @@
-// 
-// CGImage.cs: Implements the managed CGImage
 //
-// Authors: Miguel de Icaza
-//     
-// Copyright 2009 Novell, Inc
+// AVAssetReaderVideoCompositionOutput.cs: Extra support methods
+//
+// Authors:
+//   Miguel de Icaza
+//
+// Copyright 2011, Novell, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,26 +26,32 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
-using System.Drawing;
-using System.Runtime.InteropServices;
-
-using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
+using MonoMac.ObjCRuntime;
+using MonoMac.CoreVideo;
 
-namespace MonoMac.CoreGraphics {
-
-	public partial class CGDataProvider {
-
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGDataProviderCopyData (IntPtr handle);
-
-		public NSData CopyData ()
+namespace MonoMac.AVFoundation {
+	public partial class AVAssetReaderVideoCompositionOutput {
+		public AVAssetReaderVideoCompositionOutput (AVAssetTrack [] videoTracks, AVVideoSettings videoSettings)
+		: this (videoTracks, videoSettings == null ? null : videoSettings.ToDictionary ())
 		{
-			var provider = CGDataProviderCopyData (handle);
-			var data = new NSData (provider);
+		}
+		
+		public AVAssetReaderVideoCompositionOutput FromTracks (AVAssetTrack [] videoTracks, AVVideoSettings videoSettings)
+		{
+			return WeakFromTracks (videoTracks, videoSettings == null ? null : videoSettings.ToDictionary ());
+		}
 
-			CGDataProviderRelease (provider);
-			return data;
+		public AVVideoSettings VideoSettings {
+			get {
+				var dict = WeakVideoSettings;
+				NSObject val;
+				if (dict.TryGetValue (CVPixelBuffer.PixelFormatTypeKey, out val) && val is NSNumber){
+					var number = val as NSNumber;
+					return new AVVideoSettings ((CVPixelFormatType) number.Int32Value);
+				}
+				return new AVVideoSettings ();
+			}
 		}
 	}
 }

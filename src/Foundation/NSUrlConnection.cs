@@ -16,7 +16,7 @@ namespace MonoMac.Foundation {
 	public partial class NSUrlConnection {
                 static Selector selSendSynchronousRequestReturningResponseError = new Selector ("sendSynchronousRequest:returningResponse:error:");
 		
-		unsafe static NSData SendSynchronousRequest (NSUrlRequest request, out NSUrlResponse response, out NSError error)
+		public unsafe static NSData SendSynchronousRequest (NSUrlRequest request, out NSUrlResponse response, out NSError error)
 		{
 			IntPtr responseStorage = IntPtr.Zero;
 			IntPtr errorStorage = IntPtr.Zero;

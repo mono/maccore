@@ -15,7 +15,7 @@ using MonoMac.Foundation;
 namespace MonoMac.CoreVideo {
 
 	[Since (4,0)]
-	public class CVPixelBuffer : CVBuffer, INativeObject, IDisposable {
+	public class CVPixelBuffer : CVImageBuffer {
 		public static readonly NSString PixelFormatTypeKey;
 		public static readonly NSString MemoryAllocatorKey;
 		public static readonly NSString WidthKey;
@@ -31,7 +31,11 @@ namespace MonoMac.CoreVideo {
 		public static readonly NSString IOSurfacePropertiesKey;
 		public static readonly NSString PlaneAlignmentKey;
 
-
+		public static readonly int CVImageBufferType;
+		
+		[DllImport (Constants.CoreVideoLibrary)]
+		extern static int CVPixelBufferGetTypeID ();
+		
 		static CVPixelBuffer ()
 		{
 			var handle = Dlfcn.dlopen (Constants.CoreVideoLibrary, 0);
@@ -52,61 +56,23 @@ namespace MonoMac.CoreVideo {
 				OpenGLCompatibilityKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferOpenGLCompatibilityKey");
 				IOSurfacePropertiesKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferIOSurfacePropertiesKey");
 				PlaneAlignmentKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferPlaneAlignmentKey");
+				CVImageBufferType = CVPixelBufferGetTypeID ();
 			}
 			finally {
 				Dlfcn.dlclose (handle);
 			}
 		}
 
-		IntPtr handle;
-
-		internal CVPixelBuffer (IntPtr handle)
+		internal CVPixelBuffer (IntPtr handle) : base (handle)
 		{
-			if (handle == IntPtr.Zero)
-				throw new Exception ("Invalid parameters to context creation");
-
-			CVBufferRetain (handle);
-			this.handle = handle;
 		}
 
 		[Preserve (Conditional=true)]
-		internal CVPixelBuffer (IntPtr handle, bool owns)
+		internal CVPixelBuffer (IntPtr handle, bool owns) : base (handle, owns)
 		{
-			if (!owns)
-				CVBufferRetain (handle);
-
-			this.handle = handle;
 		}
 
-		~CVPixelBuffer ()
-		{
-			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-	
-		[DllImport (Constants.CoreVideoLibrary)]
-		extern static void CVBufferRelease (IntPtr handle);
-		
-		[DllImport (Constants.CoreVideoLibrary)]
-		extern static void CVBufferRetain (IntPtr handle);
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CVBufferRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-
+#if !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static CVReturn CVPixelBufferCreate (IntPtr allocator, IntPtr width, IntPtr height, CVPixelFormatType pixelFormatType, IntPtr pixelBufferAttributes, IntPtr pixelBufferOut);
 		public CVPixelBuffer (int width, int height, CVPixelFormatType pixelFormatType, NSDictionary pixelBufferAttributes)
@@ -141,6 +107,7 @@ namespace MonoMac.CoreVideo {
 
 			return dictionary;
 		}
+#endif
 
 		// TODO: CVPixelBufferCreateWithBytes
 		// TODO: CVPixelBufferCreateWithPlanarBytes

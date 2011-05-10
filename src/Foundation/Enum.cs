@@ -130,6 +130,12 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+	public enum NSDataReadingOptions: uint {
+		   Mapped =   1 << 0,
+		   Uncached = 1 << 1
+	}
+
+	[Flags]
 	public enum NSDataWritingOptions : uint {
 		Atomic = 1,
 
@@ -302,4 +308,108 @@ namespace MonoMac.Foundation  {
 		And,
 		Or
 	}	
+
+	[Since (4,0)]
+	[Flags]
+	public enum NSVolumeEnumerationOptions {
+		None                     = 0,
+		// skip                  = 1 << 0,
+		SkipHiddenVolumes        = 1 << 1,
+		ProduceFileReferenceUrls = 1 << 2,
+	}
+
+	[Since (4,0)]
+	[Flags]
+	public enum NSDirectoryEnumerationOptions {
+		SkipsNone                    = 0,
+		SkipsSubdirectoryDescendants = 1 << 0,
+		SkipsPackageDescendants      = 1 << 1,
+		SkipsHiddenFiles             = 1 << 2,
+	}
+
+	[Since (4,0)]
+	[Flags]
+	public enum NSFileManagerItemReplacementOptions {
+		None                      = 0,
+		UsingNewMetadataOnly      = 1 << 0,
+		WithoutDeletingBackupItem = 1 << 1,
+	}
+
+	public enum NSSearchPathDirectory {
+		ApplicationDirectory = 1,
+		DemoApplicationDirectory,
+		DeveloperApplicationDirectory,
+		AdminApplicationDirectory,
+		LibraryDirectory,
+		DeveloperDirectory,
+		UserDirectory,
+		DocumentationDirectory,
+		DocumentDirectory,
+		CoreServiceDirectory,
+		AutosavedInformationDirectory = 11,
+		DesktopDirectory = 12,
+		CachesDirectory = 13,
+		ApplicationSupportDirectory = 14,
+		DownloadsDirectory = 15,
+		InputMethodsDirectory = 16,
+		MoviesDirectory = 17,
+		MusicDirectory = 18,
+		PicturesDirectory = 19,
+		PrinterDescriptionDirectory = 20,
+		SharedPublicDirectory = 21,
+		PreferencePanesDirectory = 22,
+		ItemReplacementDirectory = 99,
+		AllApplicationsDirectory = 100,
+		AllLibrariesDirectory = 101
+	}
+
+	[Flags]
+	public enum NSSearchPathDomain {
+		None    = 0,
+		User    = 1 << 0,
+		Local   = 1 << 1,
+		Network = 1 << 2,
+		System  = 1 << 3,
+		All     = 0x0ffff,
+	}
+
+	public enum NSRoundingMode {
+		Plain, Down, Up, Bankers
+	}
+
+	public enum NSCalculationError {
+		None, PrecisionLoss, Underflow, Overflow, DivideByZero
+	}
+	
+	public enum NSStringDrawingOptions : uint {
+		UsesLineFragmentOrigin = (1 << 0),
+		UsesFontLeading = (1 << 1),
+		DisableScreenFontSubstitution = (1 << 2),
+		UsesDeviceMetrics = (1 << 3),
+		OneShot = (1 << 4),
+		TruncatesLastVisibleLine = (1 << 5)
+	}		
+
+	public enum NSNumberFormatterStyle {
+		None = 0,
+		Decimal = 1,
+		Currency = 2,
+		Percent = 3,
+		Scientific = 4,
+		SpellOut = 5
+	}
+
+	public enum NSNumberFormatterBehavior {
+		Default = 0,
+		Version_10_0 = 1000,
+		Version_10_4 = 1040
+	}
+
+	public enum NSNumberFormatterPadPosition {
+		BeforePrefix, AfterPrefix, BeforeSuffix, AfterSuffix
+	}
+
+	public enum NSNumberFormatterRoundingMode {
+		Ceiling, Floor, Down, Up, HalfEven, HalfDown, HalfUp
+	}
 }

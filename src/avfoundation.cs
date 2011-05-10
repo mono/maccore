@@ -32,6 +32,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.CoreMedia;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreAnimation;
+using MonoMac.CoreVideo;
 using System;
 using System.Drawing;
 
@@ -471,6 +472,30 @@ namespace MonoMac.AVFoundation {
 		[Since (4,2)]
 		[Export ("hasProtectedContent")]
 		bool ProtectedContent { get; }
+
+		[Since (4,3)]
+		[Export ("availableChapterLocales")]
+		NSLocale [] AvailableChapterLocales { get; }
+
+		[Since (4,3)]
+		[Export ("chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:")]
+		AVMetadataItem [] ChapterMetadataGroups (NSLocale forLocale, [NullAllowed] AVMetadataItem [] commonKeys);
+
+		[Since (4,3)]
+		[Export ("isPlayable")]
+		bool Playable { get; }
+
+		[Since (4,3)]
+		[Export ("isExportable")]
+		bool Exportable { get; }
+
+		[Since (4,3)]
+		[Export ("isReadable")]
+		bool Readable { get; }
+
+		[Since (4,3)]
+		[Export ("isComposable")]
+		bool Composable { get; }
 	}
 
 	[Since (4,1)]
@@ -547,7 +572,7 @@ namespace MonoMac.AVFoundation {
 		AVAudioMix AudioMix { get; set;  }
 
 		[Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
-		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, NSDictionary audioSettings);
+		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
 		[Export ("initWithAudioTracks:audioSettings:")]
 		IntPtr Constructor (AVAssetTrack [] audioTracks, NSDictionary audioSettings);
@@ -566,13 +591,13 @@ namespace MonoMac.AVFoundation {
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
-		AVAssetReaderVideoCompositionOutput FromTracks (AVAssetTrack [] videoTracks, NSDictionary videoSettings);
+		AVAssetReaderVideoCompositionOutput WeakFromTracks (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
 
 		[Export ("initWithVideoTracks:videoSettings:")]
 		IntPtr Constructor (AVAssetTrack [] videoTracks, NSDictionary videoSettings);
 
 		[Export ("videoSettings")]
-		NSDictionary VideoSettings { get; }
+		NSDictionary WeakVideoSettings { get; }
 	}
 
 	[Since (4,1)]
@@ -631,6 +656,9 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("finishWriting")]
 		bool FinishWriting ();
+
+		[Export ("movieTimeScale")]
+		int MovieTimeScale { get; set; }
 	}
 
 	[Since (4,1)]
@@ -668,6 +696,9 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("markAsFinished")]
 		void MarkAsFinished ();
+
+		[Export ("mediaTimeScale")]
+		int MediaTimeScale { get; set; }
 	}
 
 	[Since (4,1)]
@@ -688,8 +719,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		IntPtr Constructor (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
 
-		//[Export ("appendPixelBuffer:withPresentationTime:")]
-		//bool AppendPixelBufferwithPresentationTime (CVPixelBufferRef pixelBuffer, CMTime presentationTime);
+		[Export ("appendPixelBuffer:withPresentationTime:")]
+		bool AppendPixelBufferWithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
 	}
 
 	[Since (4,0)]
@@ -832,6 +863,12 @@ namespace MonoMac.AVFoundation {
 		[Since (4,2)]
 		[Export ("duration")]
 		CMTime Duration { get; }
+
+                [Export ("statusOfValueForKey:error:")]
+                AVKeyValueStatus StatusOfValueForKeyerror (string key, IntPtr outError);
+
+                [Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
+                void LoadValuesAsynchronously (string [] keys, NSAction handler);
 	}
 
 	[Since (4,0)]
@@ -876,9 +913,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("segments", ArgumentSemantic.Copy)]
 		AVCompositionTrackSegment [] Segments { get; set; }
 
-		// TODO: binding for out NSError
-		//[Export ("insertTimeRange:ofTrack:atTime:error:")]
-		//bool InsertTimeRange (CMTimeRange timeRange, AVAssetTrack ofTrack, CMTime atTime, out NSError error);
+		[Export ("insertTimeRange:ofTrack:atTime:error:")]
+		bool InsertTimeRange (CMTimeRange timeRange, AVAssetTrack ofTrack, CMTime atTime, out NSError error);
 
 		[Export ("insertEmptyTimeRange:")]
 		void InsertEmptyTimeRange (CMTimeRange timeRange);
@@ -889,9 +925,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("scaleTimeRange:toDuration:")]
 		void ScaleTimeRange (CMTimeRange timeRange, CMTime duration);
 
-		// TODO binding for out NSError
-		//[Export ("validateTrackSegments:error:")]
-		//bool ValidateTrackSegments (AVCompositionTrackSegment [] trackSegments, out NSError error);
+		[Export ("validateTrackSegments:error:")]
+		bool ValidateTrackSegments (AVCompositionTrackSegment [] trackSegments, out NSError error);
 
 		[Export ("extendedLanguageTag")]
 		string ExtendedLanguageTag { get; set; }
@@ -997,7 +1032,7 @@ namespace MonoMac.AVFoundation {
 		IntPtr Constructor (AVAsset asset, string presetName);
 
 		[Export ("exportAsynchronouslyWithCompletionHandler:")]
-		void ExportAsynchronously (AVErrorHandler errorHandler);
+		void ExportAsynchronously (AVCompletionHandler handler);
 
 		[Export ("cancelExport")]
 		void CancelExport ();
@@ -1213,7 +1248,7 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (NSObject))]
 	interface AVCaptureSession {
 		[Export ("sessionPreset")]
-		string SessionPreset { get; set;  }
+		NSString SessionPreset { get; set;  }
 
 		[Export ("inputs")]
 		AVCaptureInput [] Inputs { get;  }
@@ -1228,7 +1263,7 @@ namespace MonoMac.AVFoundation {
 		bool Interrupted { [Bind ("isInterrupted")] get;  }
 
 		[Export ("canSetSessionPreset:")]
-		bool CanSetSessionPreset (string preset);
+		bool CanSetSessionPreset (NSString preset);
 
 		[Export ("canAddInput:")]
 		bool CanAddInput (AVCaptureInput input);
@@ -1259,6 +1294,42 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("stopRunning")]
 		void StopRunning ();
+
+		[Field ("AVCaptureSessionPresetPhoto")]
+		NSString PresetPhoto { get; }
+		
+		[Field ("AVCaptureSessionPresetHigh")]
+		NSString PresetHigh { get; }
+		
+		[Field ("AVCaptureSessionPresetMedium")]
+		NSString PresetMedium { get; }
+		
+		[Field ("AVCaptureSessionPresetLow")]
+		NSString PresetLow { get; }
+		
+		[Field ("AVCaptureSessionPreset640x480")]
+		NSString Preset640x480 { get; }
+		
+		[Field ("AVCaptureSessionPreset1280x720")]
+		NSString Preset1280x720 { get; }
+
+		[Field ("AVCaptureSessionRuntimeErrorNotification")]
+		NSString RuntimeErrorNotification { get; }
+		
+		[Field ("AVCaptureSessionErrorKey")]
+		NSString ErrorKey { get; }
+		
+		[Field ("AVCaptureSessionDidStartRunningNotification")]
+		NSString DidStartRunningNotification { get; }
+		
+		[Field ("AVCaptureSessionDidStopRunningNotification")]
+		NSString DidStopRunningNotification { get; }
+		
+		[Field ("AVCaptureSessionWasInterruptedNotification")]
+		NSString WasInterruptedNotification { get; }
+		
+		[Field ("AVCaptureSessionInterruptionEndedNotification")]
+		NSString InterruptionEndedNotification { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1332,13 +1403,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("device")]
 		AVCaptureDevice Device { get;  }
 
-		// TODO: binding of error
 		[Static, Export ("deviceInputWithDevice:error:")]
-		AVCaptureDeviceInput FromDevice (AVCaptureDevice device, IntPtr ptrToHandleToError);
+		AVCaptureDeviceInput FromDevice (AVCaptureDevice device, out NSError error);
 
-		// TODO: binding of error
 		[Export ("initWithDevice:error:")]
-		IntPtr Constructor (AVCaptureDevice device, IntPtr ptrToHandleToError);
+		IntPtr Constructor (AVCaptureDevice device, out NSError error);
 
 	}
 
@@ -1387,10 +1456,10 @@ namespace MonoMac.AVFoundation {
 		AVCaptureVideoDataOutputSampleBufferDelegate SampleBufferDelegate { get; }
 
 		[Export ("sampleBufferCallbackQueue")]
-		IntPtr SampleBufferCallbackQueue { get;  }
+		DispatchQueue SampleBufferCallbackQueue { get;  }
 
-		[Export ("videoSettings")]
-		NSDictionary VideoSettings { get; set;  }
+		[Export ("videoSettings"), NullAllowed]
+		NSDictionary WeakVideoSettings { get; set;  }
 
 		[Export ("minFrameDuration")]
 		CMTime MinFrameDuration { get; set;  }
@@ -1399,7 +1468,9 @@ namespace MonoMac.AVFoundation {
 		bool AlwaysDiscardsLateVideoFrames { get; set;  }
 
 		[Export ("setSampleBufferDelegate:queue:")]
-		void SetSampleBufferDelegatequeue (AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
+		[PostGet ("SampleBufferDelegate")]
+		[PostGet ("SampleBufferCallbackQueue")]
+		void SetSampleBufferDelegatequeue ([NullAllowed] AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1537,9 +1608,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("hasMediaType:")]
 		bool HasMediaType (string mediaType);
 
-		// TODO: NSError
 		[Export ("lockForConfiguration:")]
-		bool LockForConfiguration (IntPtr ptrToHandleToError);
+		bool LockForConfiguration (out NSError error);
 
 		[Export ("unlockForConfiguration")]
 		void UnlockForConfiguration ();
@@ -1594,7 +1664,7 @@ namespace MonoMac.AVFoundation {
 		AVCaptureDevicePosition Position { get; }
 	}
 
-	public delegate void AVErrorHandler (NSError error);
+	public delegate void AVCompletionHandler ();
 	public delegate void AVCaptureCompletionHandler (MonoMac.CoreMedia.CMSampleBuffer imageDataSampleBuffer, NSError error);
 
 	[Since (4,0)]
@@ -1657,6 +1727,28 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("status")]
 		AVPlayerStatus Status { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	interface AVTimedMetadataGroup {
+		[Export ("timeRange")]
+		CMTimeRange TimeRange { get;  }
+
+		[Export ("items")]
+		AVMetadataItem [] Items { get;  }
+
+		[Export ("initWithItems:timeRange:")]
+		IntPtr Constructor (AVMetadataItem [] items, CMTimeRange timeRange);
+	}
+
+	[BaseType (typeof (AVTimedMetadataGroup))]
+	interface AVMutableTimedMetadataGroup {
+		[Export ("items")]
+		AVMetadataItem [] Items { get; set;  }
+
+		[Export ("timeRange")]
+		CMTimeRange Timerange { get; set; }
 	}
 
 	delegate void AVTimeHandler (CMTime time);
@@ -1737,7 +1829,127 @@ namespace MonoMac.AVFoundation {
 		bool SeekToDate (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter);
 
 		[Export ("error")]
-		NSError Error { get; }	
+		NSError Error { get; }
+
+		[Field ("AVPlayerItemDidPlayToEndTimeNotification")]
+		NSString DidPLayToEndTimeNotification { get; }
+
+		[Since (4,3)]
+		[Field ("AVPlayerItemFailedToPlayToEndTimeNotification")]
+		NSString ItemFailedToPlayToEndTimeNotification { get; }
+
+		[Since (4,3)]
+		[Field ("AVPlayerItemFailedToPlayToEndTimeErrorKey")]
+		NSString ItemFailedToPlayToEndTimeErrorKey { get; }
+
+		[Since (4,3)]
+		[Export ("accessLog")]
+		AVPlayerItemAccessLog AccessLog { get; }
+
+		[Since (4,3)]
+		[Export ("errorLog")]
+		AVPlayerItemErrorLog ErrorLog { get; }
+
+		[Since (4,3)]
+		[Export ("currentDate")]
+		NSDate CurrentDate { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	public interface AVPlayerItemAccessLog {
+		[Export ("events")]
+		AVPlayerItemAccessLogEvent [] Events { get; }
+
+		[Export ("extendedLogDataStringEncoding")]
+		NSStringEncoding ExtendedLogDataStringEncoding { get; }
+
+		[Export ("extendedLogData")]
+		NSData ExtendedLogData { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	public interface AVPlayerItemErrorLog {
+		[Export ("events")]
+		AVPlayerItemErrorLogEvent [] Events { get; }
+
+		[Export ("extendedLogDataStringEncoding")]
+		NSStringEncoding ExtendedLogDataStringEncoding { get; }
+
+		[Export ("extendedLogData")]
+		NSData ExtendedLogData { get; }
+	}
+	
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	public interface AVPlayerItemAccessLogEvent {
+		[Export ("numberOfSegmentsDownloaded")]
+		int SegmentedDownloadedCount { get; }
+
+		[Export ("playbackStartDate")]
+		NSData PlaybackStartDate { get; }
+
+		[Export ("URI")]
+		string Uri { get; }
+
+		[Export ("serverAddress")]
+		string ServerAddress { get; }
+
+		[Export ("numberOfServerAddressChanges")]
+		int ServerAddressChangeCount { get; }
+
+		[Export ("playbackSessionID")]
+		string PlaybackSessionID { get; }
+
+		[Export ("playbackStartOffset")]
+		double PlaybackStartOffset { get; }
+
+		[Export ("segmentsDownloadedDuration")]
+		double SegmentsDownloadedDuration { get; }
+
+		[Export ("durationWatched")]
+		double DurationWatched { get; }
+
+		[Export ("numberOfStalls")]
+		int StallCount { get; }
+
+		[Export ("numberOfBytesTransferred")]
+		long BytesTransferred { get; }
+
+		[Export ("observedBitrate")]
+		double ObservedBitrate { get; }
+
+		[Export ("indicatedBitrate")]
+		double IndicatedBitrate { get; }
+
+		[Export ("numberOfDroppedVideoFrames")]
+		int DroppedVideoFrameCount { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Since (4,3)]
+	public interface AVPlayerItemErrorLogEvent {
+		[Export ("date")]
+		NSDate Date { get; }
+
+		[Export ("URI")]
+		string Uri { get; }
+
+		[Export ("serverAddress")]
+		string ServerAddress { get; }
+
+		[Export ("playbackSessionID")]
+		string PlaybackSessionID { get; }
+
+		[Export ("errorStatusCode")]
+		int ErrorStatusCode { get; }
+
+		[Export ("errorDomain")]
+		string ErrorDomain { get; }
+
+		[Export ("errorComment")]
+		string ErrorComment { get; }
 	}
 
 	[Since (4,0)]

@@ -33,6 +33,8 @@ using System.Drawing;
 #if MONOMAC
 using MonoMac.AppKit;
 using MonoMac.CoreVideo;
+using MonoMac.CoreImage;
+using MonoMac.OpenGL;
 #else
 using MonoMac.UIKit;
 #endif
@@ -488,6 +490,9 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("addConstraint:")]
 		void AddConstraint (CAConstraint c);
+
+		[Export ("filter")]
+		CIFilter [] Filters { get; set; }
 #else
 		[Since (3,2)]
 		[Export ("shouldRasterize")]
@@ -505,6 +510,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CATiledLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+		
 		[Static][Export ("fadeDuration")]
 		double FadeDuration { get; }
 
@@ -520,6 +528,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CAReplicatorLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("instanceCount")]
 		int InstanceCount { get; set; }
 
@@ -551,6 +562,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CAScrollLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("scrollMode")]
 		NSString ScrollMode { get; set;  }
 
@@ -575,6 +589,9 @@ namespace MonoMac.CoreAnimation {
 	
 	[BaseType (typeof (CALayer))]
 	public interface CAShapeLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("path")]
 		CGPath Path { get; set; }
 
@@ -582,10 +599,10 @@ namespace MonoMac.CoreAnimation {
 		CGColor FillColor { get; set; }
 
 		[Export ("fillRule", ArgumentSemantic.Copy)]
-		string FillRule { get; set; }
+		NSString FillRule { get; set; }
 
 		[Export ("lineCap", ArgumentSemantic.Copy)]
-		string LineCap { get; set; }
+		NSString LineCap { get; set; }
 
 		[Export ("lineDashPattern", ArgumentSemantic.Copy)]
 		NSNumber [] LineDashPattern { get; set; }
@@ -594,7 +611,7 @@ namespace MonoMac.CoreAnimation {
 		float LineDashPhase { get; set; }
 
 		[Export ("lineJoin", ArgumentSemantic.Copy)]
-		string LineJoin { get; set; }
+		NSString LineJoin { get; set; }
 
 		[Export ("lineWidth")]
 		float LineWidth { get; set; }
@@ -612,10 +629,37 @@ namespace MonoMac.CoreAnimation {
 		[Since (4,2)]
 		[Export ("strokeEnd")]
 		float StrokeEnd { get; set; }
+
+		[Field ("kCALineJoinMiter")]
+		NSString JoinMiter { get; }
+
+		[Field ("kCALineJoinRound")]
+		NSString JoinRound { get; }
+
+		[Field ("kCALineJoinBevel")]
+		NSString JoinBevel { get; }
+
+		[Field ("kCALineCapButt")]
+		NSString CapButt { get; }
+
+		[Field ("kCALineCapRound")]
+		NSString CapRound { get; }
+
+		[Field ("kCALineCapSquare")]
+		NSString CapSquare { get; }
+
+		[Field ("kCAFillRuleNonZero")]
+		NSString FillRuleNonZero { get; }
+
+		[Field ("kCAFillRuleEvenOdd")]
+		NSString FillRuleEvenOdd { get; }
 	}
 
 	[BaseType (typeof (CALayer))]
 	public interface CATransformLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("hitTest:")]
 		CALayer HitTest (PointF thePoint);
 	}
@@ -623,6 +667,9 @@ namespace MonoMac.CoreAnimation {
 	[Since (3,2)]
 	[BaseType (typeof (CALayer))]
 	public interface CATextLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("string", ArgumentSemantic.Copy)]
 		string String { get; set; }
 
@@ -691,6 +738,9 @@ namespace MonoMac.CoreAnimation {
 #if !MONOMAC
 	[BaseType (typeof (CALayer))]
 	public interface CAEAGLLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		// From the interface  IEAGLDrawable
 		[Export ("drawableProperties", ArgumentSemantic.Copy)]
 		NSDictionary DrawableProperties { get; set; }
@@ -974,6 +1024,9 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (CALayer))]
 	public interface CAGradientLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("colors", ArgumentSemantic.Copy)][Internal]
 		IntPtr _Colors { get; set;  }
 	
@@ -1067,28 +1120,240 @@ namespace MonoMac.CoreAnimation {
 #if MONOMAC
 	[BaseType (typeof (CALayer))]
 	interface CAOpenGLLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
 		[Export ("asynchronous")]
 		bool Asynchronous { [Bind ("isAsynchronous")]get; set; }	
 
 		[Export ("canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
-		bool CanDrawInCGLContext (NSOpenGLContext ctx, NSOpenGLPixelFormat pf, double t, CVTimeStamp ts);
+		bool CanDrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
 
 		[Export ("drawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
-		void DrawInCGLContext (NSOpenGLContext ctx, NSOpenGLPixelFormat pf, double t, CVTimeStamp ts);
+		void DrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
 
 		[Export ("copyCGLPixelFormatForDisplayMask:")]
-		NSOpenGLPixelFormat CopyCGLPixelFormatForDisplayMask (UInt32 mask);
+		CGLPixelFormat CopyCGLPixelFormatForDisplayMask (UInt32 mask);
 
 		[Export ("releaseCGLPixelFormat:")]
-		void Release (NSOpenGLPixelFormat pf);
+		void Release (CGLPixelFormat pixelFormat);
 
 		[Export ("copyCGLContextForPixelFormat:")]
-		NSOpenGLContext CopyContext (NSOpenGLPixelFormat pf);
+		CGLContext CopyContext (CGLPixelFormat pixelFormat);
 
 		[Export ("releaseCGLContext:")]
-		void Release (NSOpenGLContext ctx);
+		void Release (CGLContext glContext);
 
-	}	
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface CAEmitterCell {
+		
+		[Export ("name")]
+		string Name { get; set;  }
+
+		[Export ("enabled")]
+		bool Enabled { [Bind ("isEnabled")] get; set;  }
+
+		[Export ("birthRate")]
+		float BirthRate { get; set;  }
+
+		[Export ("lifetime")]
+		float LifeTime { get; set;  }
+
+		[Export ("lifetimeRange")]
+		float LifetimeRange { get; set;  }
+
+		[Export ("emissionLatitude")]
+		float EmissionLatitude { get; set;  }
+
+		[Export ("emissionLongitude")]
+		float EmissionLongitude { get; set;  }
+
+		[Export ("emissionRange")]
+		float EmissionRange { get; set;  }
+
+		[Export ("velocity")]
+		float Velocity { get; set;  }
+
+		[Export ("velocityRange")]
+		float VelocityRange { get; set;  }
+
+		[Export ("xAcceleration")]
+		float AccelerationX { get; set;  }
+
+		[Export ("yAcceleration")]
+		float AccelerationY { get; set;  }
+
+		[Export ("zAcceleration")]
+		float AccelerationZ { get; set;  }
+
+		[Export ("scale")]
+		float Scale { get; set;  }
+
+		[Export ("scaleRange")]
+		float ScaleRange { get; set;  }
+
+		[Export ("scaleSpeed")]
+		float ScaleSpeed { get; set;  }
+
+		[Export ("spin")]
+		float Spin { get; set;  }
+
+		[Export ("spinRange")]
+		float SpinRange { get; set;  }
+		
+		[Export ("color")]
+		CGColor Color { get; set;  }
+
+		[Export ("redSpeed")]
+		float RedSpeed { get; set;  }
+
+		[Export ("greenSpeed")]
+		float GreenSpeed { get; set;  }
+
+		[Export ("BlueSpeed")]
+		float BlueSpeed { get; set;  }
+
+		[Export ("AlphaSpeed")]
+		float AlphaSpeed { get; set;  }
+
+		[Export ("contents")]
+		NSObject WeakContents { get; set;  }
+
+		[Export ("contents")]
+		CGImage Contents { get; set;  }
+
+		[Export ("contentsRect")]
+		RectangleF ContentsRect { get; set;  }
+
+		[Export ("minificationFilter")]
+		string MinificationFilter { get; set;  }
+
+		[Export ("magnificationFilter")]
+		string MagnificationFilter { get; set;  }
+
+		[Export ("minificationFilterBias")]
+		float MinificationFilterBias { get; set;  }
+
+		[Export ("emitterCells")]
+		CAEmitterCell[] Cells { get; set;  }
+
+		[Export ("style")]
+		NSDictionary Style { get; set;  }
+		
+		[Static]
+		[Export ("emitterCell")]
+		CAEmitterCell EmitterCell ();
+
+		[Static]
+		[Export ("defaultValueForKey:")]
+		NSObject DefaultValueForKey (string key);
+
+		[Export ("shouldArchiveValueForKey:")]
+		bool ShouldArchiveValueForKey (string key);
+
+	}
+	
+	[BaseType (typeof (CALayer))]
+	interface CAEmitterLayer {
+		[Export ("layer"), New, Static]
+		CALayer Create ();
+
+		[Export ("emitterCells")]
+		CAEmitterCell[] Cells { get; set;  }
+
+		[Export ("birthRate")]
+		float BirthRate { get; set;  }
+
+		[Export ("lifetime")]
+		float LifeTime { get; set;  }
+
+		[Export ("emitterPosition")]
+		PointF Position { get; set;  }
+
+		[Export ("emitterZPosition")]
+		float ZPosition { get; set;  }
+
+		[Export ("emitterSize")]
+		SizeF Size { get; set;  }
+
+		[Export ("emitterDepth")]
+		float Depth { get; set;  }
+
+		[Export ("emitterShape")]
+		string Shape { get; set;  }
+
+		[Export ("emitterMode")]
+		string Mode { get; set;  }
+
+		[Export ("renderMode")]
+		string RenderMode { get; set;  }
+
+		[Export ("preservesDepth")]
+		bool PreservesDepth { get; set;  }
+
+		[Export ("velocity")]
+		float Velocity { get; set;  }
+
+		[Export ("scale")]
+		float Scale { get; set;  }
+
+		[Export ("spin")]
+		float Spin { get; set;  }
+
+		[Export ("seed")]
+		int Seed { get; set;  }
+		
+		/** `emitterShape' values. **/
+		[Field ("kCAEmitterLayerPoint")]
+		NSString ShapePoint { get; }		
+
+		[Field ("kCAEmitterLayerLine")]
+		NSString ShapeLine { get; }		
+
+		[Field ("kCAEmitterLayerRectangle")]
+		NSString ShapeRectangle { get; }		
+		
+		[Field ("kCAEmitterLayerCuboid")]
+		NSString ShapeCuboid { get; }		
+		
+		[Field ("kCAEmitterLayerCircle")]
+		NSString ShapeCircle { get; }		
+		
+		[Field ("kCAEmitterLayerSphere")]
+		NSString ShapeSphere { get; }		
+	
+		/** `emitterMode' values. **/
+		[Field ("kCAEmitterLayerPoints")]
+		NSString ModePoints { get; }			
+
+		[Field ("kCAEmitterLayerOutline")]
+		NSString ModeOutline { get; }			
+
+		[Field ("kCAEmitterLayerSurface")]
+		NSString ModeSurface { get; }			
+
+		[Field ("kCAEmitterLayerVolume")]
+		NSString ModeVolume { get; }			
+
+		/** `renderOrder' values. **/		
+		[Field ("kCAEmitterLayerUnordered")]
+		NSString RenderUnordered { get; }			
+
+		[Field ("kCAEmitterLayerOldestFirst")]
+		NSString RenderOldestFirst { get; }			
+
+		[Field ("kCAEmitterLayerOldestLastt")]
+		NSString RenderOldestLast { get; }			
+
+		[Field ("kCAEmitterLayerBackToFront")]
+		NSString RenderBackToFront { get; }			
+
+		[Field ("kCAEmitterLayerAdditive")]
+		NSString RenderAdditive { get; }			
+
+		
+	}
 #endif
 }
-

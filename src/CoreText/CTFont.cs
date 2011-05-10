@@ -121,6 +121,7 @@ namespace MonoMac.CoreText {
 		HorizontalStyle            = 0x68737479,  // 'Hsty'
 		JustificationJust          = 0x6a757374,  // 'Just'
 		Kerning                    = 0x6b65726e,  // 'Kern'
+	        ExtendedKerning            = 0x6b657278,  // 'Kerx'
 		LigatureCaret              = 0x6c636172,  // 'Lcar'
 		IndexToLocation            = 0x6c6f6361,  // 'Loca'
 		MaximumProfile             = 0x6d617870,  // 'Maxp'

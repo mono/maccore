@@ -78,6 +78,9 @@ namespace MonoMac.CoreText {
 		ParagraphSpacing        = 11,
 		ParagraphSpacingBefore  = 12,
 		BaseWritingDirection    = 13,
+		MaximumLineSpacing      = 14,
+		MinimumLineSpacing      = 15,
+		LineSpacingAdjustment   = 16,
 
 		Count = 14,
 	}
@@ -198,6 +201,9 @@ namespace MonoMac.CoreText {
 		public float? LineSpacing {get; set;}
 		public float? ParagraphSpacing {get; set;}
 		public float? ParagraphSpacingBefore {get; set;}
+		public float? MaximumLineSpacing { get; set;}
+		public float? MinimumLineSpacing { get; set;}
+		public float? LineSpacingAdjustment { get; set; }
 
 		internal List<CTParagraphStyleSpecifierValue> GetSpecifiers ()
 		{
@@ -231,7 +237,12 @@ namespace MonoMac.CoreText {
 				values.Add (CreateValue (CTParagraphStyleSpecifier.ParagraphSpacing, ParagraphSpacing.Value));
 			if (ParagraphSpacingBefore.HasValue)
 				values.Add (CreateValue (CTParagraphStyleSpecifier.ParagraphSpacingBefore, ParagraphSpacingBefore.Value));
-
+			if (MaximumLineSpacing.HasValue)
+				values.Add (CreateValue (CTParagraphStyleSpecifier.MaximumLineSpacing, MaximumLineSpacing.Value));
+			if (MinimumLineSpacing.HasValue)
+				values.Add (CreateValue (CTParagraphStyleSpecifier.MinimumLineSpacing, MinimumLineSpacing.Value));
+			if (LineSpacingAdjustment.HasValue)
+				values.Add (CreateValue (CTParagraphStyleSpecifier.LineSpacingAdjustment, LineSpacingAdjustment.Value));
 			return values;
 		}
 

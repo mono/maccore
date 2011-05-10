@@ -51,12 +51,14 @@ using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreVideo;
+using MonoMac.OpenGL;
 #else
 using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
 using MonoTouch.CoreFoundation;
 using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
+using MonoTouch.CoreVideo;
 #endif
 
 public static class ReflectionExtensions {
@@ -70,6 +72,10 @@ public static class ReflectionExtensions {
 
 	public static List <PropertyInfo> GatherProperties (this Type type) {
 		List <PropertyInfo> properties = new List <PropertyInfo> (type.GetProperties ());
+
+		if (Generator.IsBtouch)
+			return properties;
+
 		Type parent_type = GetBaseType (type);
 		string owrap;
 		string nwrap;
@@ -79,6 +85,10 @@ public static class ReflectionExtensions {
 				foreach (PropertyInfo pinfo in parent_type.GetProperties ()) {
 					bool toadd = true;
 					var modelea = Generator.GetExportAttribute (pinfo, out nwrap);
+
+					if (modelea == null)
+						continue;
+
 					foreach (PropertyInfo exists in properties) {
 						var origea = Generator.GetExportAttribute (exists, out owrap);
 						if (origea.Selector == modelea.Selector)
@@ -97,6 +107,10 @@ public static class ReflectionExtensions {
 
 	public static List <PropertyInfo> GatherProperties (this Type type, BindingFlags flags) {
 		List <PropertyInfo> properties = new List <PropertyInfo> (type.GetProperties (flags));
+
+		if (Generator.IsBtouch)
+			return properties;
+
 		Type parent_type = GetBaseType (type);
 		string owrap;
 		string nwrap;
@@ -106,6 +120,10 @@ public static class ReflectionExtensions {
 				foreach (PropertyInfo pinfo in parent_type.GetProperties (flags)) {
 					bool toadd = true;
 					var modelea = Generator.GetExportAttribute (pinfo, out nwrap);
+
+					if (modelea == null)
+						continue;
+
 					foreach (PropertyInfo exists in properties) {
 						var origea = Generator.GetExportAttribute (exists, out owrap);
 						if (origea.Selector == modelea.Selector)
@@ -124,13 +142,18 @@ public static class ReflectionExtensions {
 
 	public static List <MethodInfo> GatherMethods (this Type type) {
 		List <MethodInfo> methods = new List <MethodInfo> (type.GetMethods ());
+
+		if (Generator.IsBtouch)
+			return methods;
+
 		Type parent_type = GetBaseType (type);
 
 		if (parent_type != typeof (NSObject)) {
-			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
-				methods.AddRange (parent_type.GetMethods ());
-			}
-	                parent_type = GetBaseType (parent_type);
+			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false))
+				foreach (MethodInfo minfo in parent_type.GetMethods ())
+					if (minfo.GetCustomAttributes (typeof (ExportAttribute), false).Length > 0)
+						methods.Add (minfo);
+			parent_type = GetBaseType (parent_type);
 		}
 
 		return methods;
@@ -139,13 +162,18 @@ public static class ReflectionExtensions {
 
 	public static List <MethodInfo> GatherMethods (this Type type, BindingFlags flags) {
 		List <MethodInfo> methods = new List <MethodInfo> (type.GetMethods (flags));
+
+		if (Generator.IsBtouch)
+			return methods;
+
 		Type parent_type = GetBaseType (type);
 
 		if (parent_type != typeof (NSObject)) {
-			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false)) {
-				methods.AddRange (parent_type.GetMethods (flags));
-			}
-	                parent_type = GetBaseType (parent_type);
+			if (Attribute.IsDefined (parent_type, typeof (ModelAttribute), false))
+				foreach (MethodInfo minfo in parent_type.GetMethods ())
+					if (minfo.GetCustomAttributes (typeof (ExportAttribute), false).Length > 0)
+						methods.Add (minfo);
+			parent_type = GetBaseType (parent_type);
 		}
 
 		return methods;
@@ -175,6 +203,7 @@ public class RetainAttribute : Attribute {
 	public string WrapName { get; set; }
 }
 
+[AttributeUsage(AttributeTargets.All, AllowMultiple=true)]
 public class PostGetAttribute : Attribute {
 	public PostGetAttribute (string name)
 	{
@@ -256,6 +285,10 @@ public class PlainStringAttribute : Attribute {
 //
 public class TargetAttribute : Attribute {
 	public TargetAttribute () {}
+}
+
+public class ProxyAttribute : Attribute {
+	public ProxyAttribute () {}
 }
 
 public class StaticAttribute : Attribute {
@@ -430,6 +463,8 @@ public class TrampolineInfo {
 }
 
 public class Generator {
+	internal static bool IsBtouch;
+
 	Dictionary<Type,IEnumerable<string>> selectors = new Dictionary<Type,IEnumerable<string>> ();
 	Dictionary<Type,bool> need_static = new Dictionary<Type,bool> ();
 	Dictionary<Type,bool> need_abstract = new Dictionary<Type,bool> ();
@@ -447,7 +482,6 @@ public class Generator {
 	Type [] types;
 	bool debug;
 	bool external;
-	bool btouch;
 	StreamWriter sw, m;
 	int indent;
 
@@ -543,6 +577,8 @@ public class Generator {
 			return "byte";
 		if (t == typeof (float))
 			return "float";
+		if (t == typeof (bool))
+			return "bool";
 
 		return t.Name;
 	}
@@ -637,6 +673,13 @@ public class Generator {
 				invoke.AppendFormat ("({1}) Runtime.GetNSObject ({0})", pi.Name, pi.ParameterType);
 				continue;
 			}
+
+			if (pi.ParameterType.IsSubclassOf (typeof (INativeObject))){
+				pars.AppendFormat ("IntPtr {0}", pi.Name);
+				invoke.AppendFormat ("new {0} ({1})", pi.ParameterType, pi.Name);
+				continue;
+			}
+
 			if (pi.ParameterType.IsByRef){
 				var nt = pi.ParameterType.GetElementType ();
 				if (nt.IsValueType){
@@ -811,26 +854,11 @@ public class Generator {
 		return GetAttribute (mi, typeof (BindAttribute)) as BindAttribute;
 	}
 	
-	public bool HasAttribute (PropertyInfo pi, Type t)
+	public bool HasAttribute (ICustomAttributeProvider i, Type t)
 	{
-		return pi.GetCustomAttributes (t, true).Length > 0;
+		return i.GetCustomAttributes (t, true).Length > 0;
 	}
 
-	public bool HasAttribute (Type queryType, Type t)
-	{
-		return queryType.GetCustomAttributes (t, true).Length > 0;
-	}
-	
-	public bool HasAttribute (MethodInfo mi, Type t)
-	{
-		return mi.GetCustomAttributes (t, true).Length > 0;
-	}
-
-	public bool HasAttribute (ParameterInfo pi, Type t)
-	{
-		return pi.GetCustomAttributes (t, true).Length > 0;
-	}
-	
 	public bool IsTarget (ParameterInfo pi)
 	{
 		return HasAttribute (pi, typeof (TargetAttribute)); 
@@ -993,7 +1021,7 @@ public class Generator {
 
 	public Generator (bool btouch, bool external, bool debug, Type [] types)
 	{
-		this.btouch = btouch;
+		Generator.IsBtouch = btouch;
 		this.external = external;
 		this.debug = debug;
 		this.types = types;
@@ -1020,8 +1048,11 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CGColorSpace), "IntPtr", "{0}.Handle", "new CGColorSpace ("));
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
 #if MONOMAC
+		marshal_types.Add (new MarshalType (typeof (CGLContext), "IntPtr", "{0}.Handle", "new CGLContext ("));
+		marshal_types.Add (new MarshalType (typeof (CGLPixelFormat), "IntPtr", "{0}.Handle", "new CGLPixelFormat ("));
 		marshal_types.Add (new MarshalType (typeof (CVImageBuffer), "IntPtr", "{0}.Handle", "new CVImageBuffer ("));
 #endif
+		marshal_types.Add (new MarshalType (typeof (CVPixelBuffer), "IntPtr", "{0}.Handle", "new CVPixelBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (CGLayer), "IntPtr", "{0}.Handle", "new CGLayer ("));
 #if !MONOMAC
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));
@@ -1117,8 +1148,9 @@ public class Generator {
 						continue;
 					} else if (attr is FactoryAttribute){
 						continue;
-					} else  if (attr is AbstractAttribute && mi.DeclaringType == t){
-						need_abstract [t] = true;
+					} else  if (attr is AbstractAttribute){
+						if (mi.DeclaringType == t)
+							need_abstract [t] = true;
 						continue;
 					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute)
 						continue;
@@ -1300,7 +1332,8 @@ public class Generator {
 		"MonoMac.CoreAnimation",
 		"MonoMac.CoreLocation", 
 		"MonoMac.QTKit",
-		"MonoMac.CoreVideo",		
+		"MonoMac.CoreVideo",
+		"MonoMac.OpenGL",
 #else
 		"MonoTouch",
 		"MonoTouch.CoreFoundation",
@@ -1564,6 +1597,7 @@ public class Generator {
 			(HasAttribute (mi, typeof (FactoryAttribute))) ||
 			(assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ())))) ||
 			(mi.ReturnType.IsSubclassOf (typeof (Delegate))) ||
+			(HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ProxyAttribute))) ||
 			(mi.Name != "Constructor" && byRefPostProcessing.Length > 0 && mi.ReturnType != typeof (void));
 		
 
@@ -1604,15 +1638,20 @@ public class Generator {
 			print ("{0} = ret;", assign);
 		if (has_postget) {
 			PostGetAttribute [] attr = (PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true);
-			print ("#pragma warning disable 168");
-			print ("var postget = {0};", attr [0].MethodName);
-			print ("#pragma warning restore 168");
+			for (int i = 0; i < attr.Length; i++) {
+				print ("#pragma warning disable 168");
+				print ("var postget{0} = {1};", i, attr [i].MethodName);
+				print ("#pragma warning restore 168");
+			}
 		}
 		if (HasAttribute (mi, typeof (FactoryAttribute)))
 			print ("ret.Release (); // Release implicit ref taken by GetNSObject");
 		if (byRefPostProcessing.Length > 0)
 			print (byRefPostProcessing.ToString ());
 		if (use_temp_return) {
+			if (HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ProxyAttribute)))
+				print ("ret.SetAsProxy ();");
+
 			if (mi.ReturnType.IsSubclassOf (typeof (Delegate))) {
 				print ("return ({0}) (ret->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (ret->global_handle).Target : GCHandle.FromIntPtr (ret->local_handle).Target);", FormatType (mi.DeclaringType, mi.ReturnType));
 			} else {
@@ -1673,7 +1712,7 @@ public class Generator {
 
 			if (!is_model){
 				foreach (var ea in selectors [type]){
-					if (external || btouch)
+					if (external || IsBtouch)
 						print ("\t\tstatic IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 					else
 						print ("\t\tstatic IntPtr {0} = Selector.sel_registerName (\"{1}\");", SelectorField (ea), ea);

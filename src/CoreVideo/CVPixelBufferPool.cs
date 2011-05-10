@@ -90,6 +90,7 @@ namespace MonoMac.CoreVideo {
 			}
 		}
 
+#if !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static IntPtr CVPixelBufferPoolGetPixelBufferAttributes (IntPtr pool);
 		public NSDictionary PixelBufferAttributes {
@@ -105,6 +106,7 @@ namespace MonoMac.CoreVideo {
 				return (NSDictionary) Runtime.GetNSObject (CVPixelBufferPoolGetAttributes (handle));
 			}
 		}
+#endif
 
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static CVReturn CVPixelBufferPoolCreatePixelBuffer (IntPtr allocator, IntPtr pixelBufferPool, IntPtr pixelBufferOut);
@@ -123,6 +125,7 @@ namespace MonoMac.CoreVideo {
 			return pixelBuffer;
 		}
 
+#if !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static CVReturn CVPixelBufferPoolCreate (IntPtr allocator, IntPtr poolAttributes, IntPtr pixelBufferAttributes, IntPtr poolOut);
 		public CVPixelBufferPool (NSDictionary poolAttributes, NSDictionary pixelBufferAttributes)
@@ -138,5 +141,6 @@ namespace MonoMac.CoreVideo {
 			this.handle = Marshal.ReadIntPtr (poolOut);
 			Marshal.FreeHGlobal (poolOut);
 		}
+#endif
 	}
 }

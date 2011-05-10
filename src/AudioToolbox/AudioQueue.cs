@@ -199,7 +199,7 @@ namespace MonoMac.AudioToolbox {
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	struct AudioQueueLevelMeterState {
+	public struct AudioQueueLevelMeterState {
 		public float AveragePower;
 		public float PeakPower;
 	}
@@ -639,6 +639,17 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		int SetInt (AudioQueueProperty property, int val)
+		{
+			unsafe {
+				int size = 4;
+				var k = AudioQueueGetProperty (handle, property, (IntPtr) (&val), ref size);
+				if (k == 0)
+					return val;
+				throw new AudioQueueException (k);
+			}
+		}
+
 		double GetDouble (AudioQueueProperty property)
 		{
 			unsafe {
@@ -745,13 +756,69 @@ namespace MonoMac.AudioToolbox {
 				Marshal.FreeHGlobal (h);
 			}
 		}
+
+		public bool EnableLevelMetering {
+			get {
+				return GetInt (AudioQueueProperty.EnableLevelMetering) != 0;
+			}
+			set {
+				SetInt (AudioQueueProperty.EnableLevelMetering, value ? 1 : 0);
+			}
+		}
+
+		public int MaximumOutputPacketSize {
+			get {
+				return GetInt (AudioQueueProperty.MaximumOutputPacketSize);
+			}
+		}
+
+		public int DecodeBufferSizeFrames {
+			get {
+				return GetInt (AudioQueueProperty.DecodeBufferSizeFrames);
+			}
+		}
+
+		public AudioStreamPacketDescription AudioStreamPacketDescription {
+			get {
+				return GetProperty<AudioStreamPacketDescription> (AudioQueueProperty.StreamDescription);
+			}
+		}
+
+		public AudioQueueLevelMeterState [] CurrentLevelMeter {
+			get {
+				unsafe {
+					int size = DeviceChannels * sizeof (AudioQueueLevelMeterState);
+					int n;
+					var buffer = GetProperty (AudioQueueProperty.CurrentLevelMeter, out n);
+					if (buffer == IntPtr.Zero)
+						return new AudioQueueLevelMeterState [0];
+					var ret = new AudioQueueLevelMeterState [n];
+					AudioQueueLevelMeterState *ptr = (AudioQueueLevelMeterState *) buffer;
+					for (int i = 0; i < n; i++)
+						ret [i] = ptr [i];
+					return ret;
+				}
+			}
+		}
+
+		public AudioQueueLevelMeterState [] CurrentLevelMeterDB {
+			get {
+				unsafe {
+					int size = DeviceChannels * sizeof (AudioQueueLevelMeterState);
+					int n;
+					var buffer = GetProperty (AudioQueueProperty.CurrentLevelMeterDB, out n);
+					if (buffer == IntPtr.Zero)
+						return new AudioQueueLevelMeterState [0];
+					var ret = new AudioQueueLevelMeterState [n];
+					AudioQueueLevelMeterState *ptr = (AudioQueueLevelMeterState *) buffer;
+					for (int i = 0; i < n; i++)
+						ret [i] = ptr [i];
+					return ret;
+				}
+			}
+		}
 		
 		// TODO:
-		// MaximumOutputPacketSize = 0x786f7073
-		// StreamDescription = 0x61716674
-		// EnableLevelMetering = 0x61716d65
-		// CurrentLevelMeter = 0x61716d76
-		// CurrentLevelMeterDB = 0x61716d64
 		// DecodeBufferSizeFrames = 0x64636266
 
 		

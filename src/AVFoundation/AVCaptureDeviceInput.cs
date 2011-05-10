@@ -1,9 +1,11 @@
-// 
-// CGImage.cs: Implements the managed CGImage
 //
-// Authors: Miguel de Icaza
-//     
-// Copyright 2009 Novell, Inc
+// AVFoundation.cs: This file describes the API that the generator will produce for AVFoundation
+//
+// Authors:
+//   Miguel de Icaza
+//
+// Copyright 2009, Novell, Inc.
+// Copyright 2010, Novell, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,26 +27,29 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
-using System.Drawing;
-using System.Runtime.InteropServices;
-
-using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
+using MonoMac.ObjCRuntime;
 
-namespace MonoMac.CoreGraphics {
-
-	public partial class CGDataProvider {
-
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGDataProviderCopyData (IntPtr handle);
-
-		public NSData CopyData ()
+namespace MonoMac.AVFoundation {
+	public partial class AVCaptureDeviceInput {
+		[Obsolete ("Use FromDevice (AVCaptureDevice, ref NSError) instead")]
+		static public AVCaptureDeviceInput FromDevice (AVCaptureDevice device, IntPtr handle)
 		{
-			var provider = CGDataProviderCopyData (handle);
-			var data = new NSData (provider);
+			NSError error;
+			return FromDevice (device, out error);
+		}
 
-			CGDataProviderRelease (provider);
-			return data;
+		static public AVCaptureDeviceInput FromDevice (AVCaptureDevice device)
+		{
+			NSError error;
+			return FromDevice (device, out error);
+		}
+		
+		static NSError globalerr;
+		
+		[Obsolete ("Use AVCaptureDeviceInput (AVCaptureDevice, ref NSError) instead")]
+		public AVCaptureDeviceInput (AVCaptureDevice device, IntPtr handle) : this (device, out globalerr)
+		{
 		}
 	}
 }

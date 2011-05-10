@@ -35,7 +35,6 @@ namespace MonoMac.Foundation {
 			if (t == typeof (NSObject) || t.IsSubclassOf (typeof (NSObject)))
 				return (NSObject) obj;
 			
-			NSObject val;
 			switch (Type.GetTypeCode (t)){
 			case TypeCode.Boolean:
 				return new NSNumber ((bool) obj);
@@ -83,6 +82,18 @@ namespace MonoMac.Foundation {
 #endif
 				return null;
 			}
+		}
+
+		public void SetValueForKeyPath (IntPtr handle, NSString keyPath)
+		{
+			if (keyPath == null)
+				throw new ArgumentNullException ("keyPath");
+			if (IsDirectBinding) {
+				MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selSetValueForKeyPath, handle, keyPath.Handle);
+			} else {
+				MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selSetValueForKeyPath, handle, keyPath.Handle);
+			}
+			
 		}
 	}
 }

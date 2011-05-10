@@ -132,6 +132,9 @@ namespace MonoMac.CoreGraphics {
 			if (!owns)
 				CGContextRetain (handle);
 
+			if (handle == IntPtr.Zero)
+				throw new Exception ("Invalid handle");
+			
 			this.handle = handle;
 		}
 
@@ -1080,5 +1083,38 @@ namespace MonoMac.CoreGraphics {
 		{
 			CGContextSetShouldSubpixelQuantizeFonts (handle, shouldSubpixelQuantizeFonts);
 		}
+
+#if !COREBUILD
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGContextBeginTransparencyLayer (IntPtr context, IntPtr dictionary);
+		public void BeginTransparencyLayer ()
+		{
+			CGContextBeginTransparencyLayer (handle, IntPtr.Zero);
+		}
+		
+		public void BeginTransparencyLayer (NSDictionary auxiliaryInfo = null)
+		{
+			CGContextBeginTransparencyLayer (handle, auxiliaryInfo == null ? IntPtr.Zero : auxiliaryInfo.Handle);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGContextBeginTransparencyLayerWithRect (IntPtr context, RectangleF rect, IntPtr dictionary);
+		public void BeginTransparencyLayer (RectangleF rectangle, NSDictionary auxiliaryInfo = null)
+		{
+			CGContextBeginTransparencyLayerWithRect (handle, rectangle, auxiliaryInfo == null ? IntPtr.Zero : auxiliaryInfo.Handle);
+		}
+
+		public void BeginTransparencyLayer (RectangleF rectangle)
+		{
+			CGContextBeginTransparencyLayerWithRect (handle, rectangle, IntPtr.Zero);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGContextEndTransparencyLayer (IntPtr context);
+		public void EndTransparencyLayer ()
+		{
+			CGContextEndTransparencyLayer (handle);
+		}
+#endif
 	}
 }

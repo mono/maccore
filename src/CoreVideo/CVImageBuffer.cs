@@ -34,7 +34,7 @@ using MonoMac.Foundation;
 namespace MonoMac.CoreVideo {
 
 	[Since (4,0)]
-	public class CVImageBuffer : CVBuffer, INativeObject, IDisposable {
+	public class CVImageBuffer : CVBuffer {
 		public static readonly NSString CGColorSpaceKey;
 		public static readonly NSString GammaLevelKey;
 		public static readonly NSString CleanApertureKey;
@@ -136,24 +136,15 @@ namespace MonoMac.CoreVideo {
 			}
 		}
 
-		IntPtr handle;
-
-		internal CVImageBuffer (IntPtr handle)
+		internal CVImageBuffer (IntPtr handle) : base (handle)
 		{
-			if (handle == IntPtr.Zero)
-				throw new Exception ("Invalid parameters to context creation");
-
-			CVBufferRetain (handle);
-			this.handle = handle;
 		}
 
+		internal CVImageBuffer () {}
+		
 		[Preserve (Conditional=true)]
-		internal CVImageBuffer (IntPtr handle, bool owns)
+		internal CVImageBuffer (IntPtr handle, bool owns) : base (handle, owns)
 		{
-			if (!owns)
-				CVBufferRetain (handle);
-
-			this.handle = handle;
 		}
 
 		~CVImageBuffer ()
@@ -161,30 +152,6 @@ namespace MonoMac.CoreVideo {
 			Dispose (false);
 		}
 		
-		new public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		new public IntPtr Handle {
-			get { return handle; }
-		}
-	
-		[DllImport (Constants.CoreVideoLibrary)]
-		extern static void CVBufferRelease (IntPtr handle);
-		
-		[DllImport (Constants.CoreVideoLibrary)]
-		extern static void CVBufferRetain (IntPtr handle);
-		
-		protected override void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CVBufferRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static RectangleF CVImageBufferGetCleanRect (IntPtr imageBuffer);
 		public RectangleF CleanRect {

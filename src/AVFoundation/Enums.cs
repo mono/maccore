@@ -37,7 +37,7 @@ namespace MonoMac.AVFoundation {
 
 	public static class AVAudioSettings {
 
-		public static readonly NSString AVFormatKey = new NSString ("AVFormatKey");
+		public static readonly NSString AVFormatIDKey = new NSString ("AVFormatIDKey");
 		public static readonly NSString AVSampleRateKey = new NSString ("AVSampleRateKey");
 		public static readonly NSString AVNumberOfChannelsKey = new NSString ("AVNumberOfChannelsKey");
 
@@ -158,8 +158,12 @@ namespace MonoMac.AVFoundation {
 		InvalidCompositionTrackSegmentSourceDuration = -11827,
 		MaximumStillImageCaptureRequestsExceeded = 11830,
 		NoImageAtTime = -11832,
+		DecoderNotFound = -11833,
+		EncoderNotFound = -11834,
+		ContentIsNotAuthorized = -11836,
 #if !MONOMAC
-		MediaServicesWereReset = -11820,			
+		DeviceIsNotAvailableInBackground = -11837,
+		MediaServicesWereReset = -11820,
 #endif
 	}
 

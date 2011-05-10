@@ -78,6 +78,13 @@ namespace MonoMac.CoreFoundation {
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static void CFRunLoopWakeUp (IntPtr loop);
+		public void WakeUp ()
+		{
+			CFRunLoopWakeUp (handle);
+		}
+		
+		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static int CFRunLoopRunInMode (IntPtr cfstring_mode, double interval, int return_after_source_handled);
 
 		public CFRunLoopExitReason RunInMode (string mode, double interval, bool returnAfterSourceHandled)

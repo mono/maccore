@@ -43,22 +43,22 @@ namespace MonoMac.CoreVideo {
 
 		static CVBuffer ()
 		{
-			var handle = Dlfcn.dlopen (Constants.CoreVideoLibrary, 0);
-			if (handle == IntPtr.Zero)
+			var hlib = Dlfcn.dlopen (Constants.CoreVideoLibrary, 0);
+			if (hlib == IntPtr.Zero)
 				return;
 			try {
-				MovieTimeKey = Dlfcn.GetStringConstant (handle, "kCVBufferMovieTimeKey");
-				TimeValueKey = Dlfcn.GetStringConstant (handle, "kCVBufferTimeValueKey");
-				TimeScaleKey = Dlfcn.GetStringConstant (handle, "kCVBufferTimeScaleKey");
-				PropagatedAttachmentsKey = Dlfcn.GetStringConstant (handle, "kCVBufferPropagatedAttachmentsKey");
-				NonPropagatedAttachmentsKey = Dlfcn.GetStringConstant (handle, "kCVBufferNonPropagatedAttachmentsKey");
+				MovieTimeKey = Dlfcn.GetStringConstant (hlib, "kCVBufferMovieTimeKey");
+				TimeValueKey = Dlfcn.GetStringConstant (hlib, "kCVBufferTimeValueKey");
+				TimeScaleKey = Dlfcn.GetStringConstant (hlib, "kCVBufferTimeScaleKey");
+				PropagatedAttachmentsKey = Dlfcn.GetStringConstant (hlib, "kCVBufferPropagatedAttachmentsKey");
+				NonPropagatedAttachmentsKey = Dlfcn.GetStringConstant (hlib, "kCVBufferNonPropagatedAttachmentsKey");
 			}
 			finally {
-				Dlfcn.dlclose (handle);
+				Dlfcn.dlclose (hlib);
 			}
 		}
 
-		IntPtr handle;
+		internal IntPtr handle;
 
 		internal CVBuffer ()
 		{
@@ -132,7 +132,7 @@ namespace MonoMac.CoreVideo {
 			return Runtime.GetNSObject (CVBufferGetAttachment (handle, key.Handle, out attachmentMode));
 		}
 
-#if !MONOMAC_BOOTSTRAP
+#if !MONOMAC_BOOTSTRAP && !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static IntPtr CVBufferGetAttachments (IntPtr buffer, CVAttachmentMode attachmentMode);
 		public NSDictionary GetAttachments (CVAttachmentMode attachmentMode)
@@ -155,7 +155,7 @@ namespace MonoMac.CoreVideo {
 			CVBufferSetAttachment (handle, key.Handle, @value.Handle, attachmentMode);
 		}
 
-#if !MONOMAC_BOOTSTRAP
+#if !MONOMAC_BOOTSTRAP && !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static void CVBufferSetAttachments (IntPtr buffer, IntPtr theAttachments, CVAttachmentMode attachmentMode);
 		public void SetAttachments (NSDictionary theAttachments, CVAttachmentMode attachmentMode)
