@@ -39,7 +39,7 @@ namespace MonoMac.Foundation {
 				response = null;
 
 			if (errorStorage != IntPtr.Zero)
-				error = (NSUrlResponse) Runtime.GetNSObject (errorStorage);
+				error = (NSError) Runtime.GetNSObject (errorStorage);
 			else
 				error = null;
 			
