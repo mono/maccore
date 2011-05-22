@@ -84,6 +84,8 @@ namespace MonoMac.CoreAnimation {
 					return CFString.FetchString (handle);
 #if MONOMAC
 				else return (NSFont) Runtime.GetNSObject (handle);
+#else
+				return null;
 #endif
 			} 
 
