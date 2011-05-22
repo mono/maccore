@@ -165,13 +165,13 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGColorSpaceCreateWithName (string name);
+		extern static IntPtr CGColorSpaceCreateWithName (IntPtr name);
 
 		public static CGColorSpace CreateWithName (string name)
 		{
 			if (name == null)
 				throw new ArgumentNullException ("name");
-			return new CGColorSpace (CGColorSpaceCreateWithName (name), true);
+			return new CGColorSpace (CGColorSpaceCreateWithName (new NSString(name).Handle), true);
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
