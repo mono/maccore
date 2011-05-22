@@ -4048,7 +4048,7 @@ namespace MonoMac.Foundation
 		bool ShouldLinkItemAtUrl (NSFileManager fileManager, NSUrl srcUrl, NSUrl dstUrl);
 
 		[Export ("fileManager:shouldMoveItemAtURL:toURL:")]
-		bool ShouldMoveItemAtUrl (NSFileManager fileManager, NSUrl dstUrl, NSUrl dstUrl);
+		bool ShouldMoveItemAtUrl (NSFileManager fileManager, NSUrl srcUrl, NSUrl dstUrl);
 
 		[Export ("fileManager:shouldProceedAfterError:copyingItemAtURL:toURL:")]
 		bool ShouldProceedAfterErrorCopyingItem (NSFileManager fileManager, NSError error, NSUrl srcUrl, NSUrl dstUrl);
