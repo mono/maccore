@@ -59,7 +59,7 @@ namespace MonoMac.Foundation {
 			set { this.semantic = value; }
 		}
 
-#if MONOMAC
+//#if MONOMAC
 		public ExportAttribute ToGetter (PropertyInfo prop) {
 			if (string.IsNullOrEmpty (Selector))
 				Selector = prop.Name;
@@ -71,6 +71,6 @@ namespace MonoMac.Foundation {
 				Selector = prop.Name;
 			return new ExportAttribute (string.Format ("set{0}{1}:", char.ToUpper (selector [0]), selector.Substring (1)), semantic); 
 		}
-#endif
+//#endif
 	}
 }
