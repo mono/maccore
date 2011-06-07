@@ -180,6 +180,15 @@ public static class ReflectionExtensions {
 	}
 }
 
+public class NeedsAuditAttribute : Attribute {
+	public NeedsAuditAttribute (string reason)
+	{
+		Reason = reason;
+	}
+
+	public string Reason { get; set; }
+}
+
 public class RetainListAttribute : Attribute {
 	public RetainListAttribute (bool doadd, string name)
 	{
@@ -1145,6 +1154,8 @@ public class Generator {
 						need_static [t] = true;
 						continue;
 					} else if (attr is InternalAttribute){
+						continue;
+					} else if (attr is NeedsAuditAttribute) {
 						continue;
 					} else if (attr is FactoryAttribute){
 						continue;
