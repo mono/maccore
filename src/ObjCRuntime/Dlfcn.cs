@@ -104,6 +104,18 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
+		public static float GetFloat (IntPtr handle, string symbol)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return 0;
+			unsafe {
+				float *d = (float *) indirect;
+
+				return *d;
+			}
+		}
+		
 		internal static int SlowGetInt32 (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
