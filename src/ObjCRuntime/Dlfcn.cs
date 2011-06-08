@@ -104,7 +104,6 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
-
 		internal static int SlowGetInt32 (string lib, string symbol)
 		{
 			var handle = dlopen (lib, 0);
