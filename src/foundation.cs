@@ -1061,11 +1061,11 @@ namespace MonoMac.Foundation
 
 		[Export ("dictionaryWithObjects:forKeys:count:")]
 		[Static, New, Internal]
-		NSDictionary FromObjectsAndKeysInternal (NSArray objects, NSArray keys, int count);
+		NSDictionary FromObjectsAndKeysInternal ([NullAllowed] NSArray objects, [NullAllowed] NSArray keys, int count);
 
 		[Export ("dictionaryWithObjects:forKeys:")]
 		[Static, New, Internal]
-		NSDictionary FromObjectsAndKeysInternal (NSArray objects, NSArray keys);
+		NSDictionary FromObjectsAndKeysInternal ([NullAllowed] NSArray objects, [NullAllowed] NSArray keys);
 
 		[Export ("initWithDictionary:")]
 		IntPtr Constructor (NSDictionary other);
