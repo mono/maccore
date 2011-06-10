@@ -1349,6 +1349,7 @@ public class Generator {
 		"MonoTouch",
 		"MonoTouch.CoreFoundation",
 		"MonoTouch.CoreMedia",
+		"MonoTouch.CoreMotion",
 		"MonoTouch.Foundation", 
 		"MonoTouch.ObjCRuntime", 
 		"MonoTouch.CoreAnimation", 
