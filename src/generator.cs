@@ -2394,6 +2394,11 @@ public class Generator {
 			throw new Exception ();
 		}
 		var ea = (EventArgsAttribute) a;
+		if (ea.ArgName.EndsWith ("EventArgs")){
+			Console.WriteLine ("EventArgs in {0}.{1} attribute should not include the text `EventArgs' at the end", mi.DeclaringType.FullName, mi.Name);
+			throw new Exception ();
+		}
+		
 		if (ea.SkipGeneration){
 			skipGeneration [ea.FullName ? ea.ArgName : ea.ArgName + "EventArgs"] = true;
 		}
