@@ -82,6 +82,24 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVMediaCharacteristicFrameBased")]
 		NSString FrameBased { get; }
+
+		[Field ("AVMediaCharacteristicIsMainProgramContent")]
+		NSString IsMainProgramContent { get; }
+
+		[Field ("AVMediaCharacteristicIsAuxiliaryContent")]
+		NSString IsAuxiliaryContent { get; }
+
+		[Field ("AVMediaCharacteristicContainsOnlyForcedSubtitles")]
+		NSString ContainsOnlyForcedSubtitles { get; }
+
+		[Field ("AVMediaCharacteristicTranscribesSpokenDialogForAccessibility")]
+		NSString TranscribesSpokenDialogForAccessibility { get; }
+
+		[Field ("AVMediaCharacteristicDescribesMusicAndSoundForAccessibility")]
+		NSString DescribesMusicAndSoundForAccessibility { get; }
+
+		[Field ("AVMediaCharacteristicDescribesVideoForAccessibility")]
+		NSString DescribesVideoForAccessibility { get;  }
 	}
 
 	[Since (4,0)]
