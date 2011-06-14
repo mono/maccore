@@ -1546,6 +1546,24 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("isVideoOrientationSupported")]
 		bool SupportsVideoOrientation { get; }
+
+		[Export ("supportsVideoMinFrameDuration"), Internal]
+		bool _SupportsVideoMinFrameDuration { [Bind ("isVideoMinFrameDurationSupported")] get;  }
+
+		[Export ("videoMinFrameDuration")]
+		CMTime VideoMinFrameDuration { get; set;  }
+
+		[Export ("supportsVideoMaxFrameDuration")]
+		bool SupportsVideoMaxFrameDuration { [Bind ("isVideoMaxFrameDurationSupported")] get;  }
+
+		[Export ("videoMaxFrameDuration")]
+		CMTime VideoMaxFrameDuration { get; set;  }
+
+		[Export ("videoMaxScaleAndCropFactor")]
+		float VideoMaxScaleAndCropFactor { get;  }
+
+		[Export ("videoScaleAndCropFactor")]
+		float VideoScaleAndCropFactor { get; set;  }
 	}
 
 	[BaseType (typeof (NSObject))]
