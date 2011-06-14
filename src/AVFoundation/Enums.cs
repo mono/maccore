@@ -160,11 +160,13 @@ namespace MonoMac.AVFoundation {
 		NoImageAtTime = -11832,
 		DecoderNotFound = -11833,
 		EncoderNotFound = -11834,
-		ContentIsNotAuthorized = -11836,
-#if !MONOMAC
+		ContentIsNotAuthorized = -11835,
 		DeviceIsNotAvailableInBackground = -11837,
+		OperationNotSupportedForAsset = -11838,
+		DecoderTemporarilyUnavailable = -11839,
+		EncoderTemporarilyUnavailable = -11840,
+		InvalidVideoComposition = -11841,
 		MediaServicesWereReset = -11820,
-#endif
 	}
 
 	[Since (4,0)]
