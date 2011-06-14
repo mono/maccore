@@ -893,6 +893,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("metadataForFormat:")]
 		AVMetadataItem [] MetadataForFormat (string format);
 
+		[Export ("isPlayable")]
+		bool Playable { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
