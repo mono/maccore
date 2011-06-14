@@ -768,6 +768,9 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("mediaTimeScale")]
 		int MediaTimeScale { get; set; }
+
+		// Export ("sampleBufferFormatHint")]
+		// TODO: bind CMFormatDescriptionRef
 	}
 
 	[Since (4,1)]
