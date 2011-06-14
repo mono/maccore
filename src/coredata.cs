@@ -991,7 +991,25 @@ namespace MonoMac.CoreData
 		[Since (5,0)]
 		[Export ("ordered")]
 		bool Ordered { [Bind ("isOrdered")]get; set; }
-
 	}
+
+	[BaseType (typeof (NSPersistentStoreRequest))]
+	interface NSSaveChangesRequest {
+		[Export ("initWithInsertedObjects:updatedObjects:deletedObjects:lockedObjects:")]
+		IntPtr Constructor (NSSet insertedObjects, NSSet updatedObjects, NSSet deletedObjects, NSSet lockedObjects);
+
+		[Export ("insertedObjects")]
+		NSSet InsertedObjects { get; }
+
+		[Export ("updatedObjects")]
+		NSSet UpdatedObjects { get; }
+
+		[Export ("deletedObjects")]
+		NSSet DeletedObjects { get; }
+
+		[Export ("lockedObjects")]
+		NSSet LockedObjects { get; }
+	}
+
 }
 
