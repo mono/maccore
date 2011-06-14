@@ -57,7 +57,7 @@ namespace MonoMac.AVFoundation {
 	public partial class AVCaptureVideoDataOutput {
 		public void SetSampleBufferDelegateAndQueue (AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, DispatchQueue queue)
 		{
-			SetSampleBufferDelegatequeue (sampleBufferDelegate, queue == null ? IntPtr.Zero : queue.Handle);
+			SetSampleBufferDelegate (sampleBufferDelegate, queue == null ? IntPtr.Zero : queue.Handle);
 		}
 
 		public AVVideoSettings VideoSettings {

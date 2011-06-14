@@ -1601,6 +1601,9 @@ namespace MonoMac.AVFoundation {
 	interface AVCaptureOutput {
 		[Export ("connections")]
 		NSObject [] Connections { get; }
+
+		[Export ("connectionWithMediaType:")]
+                AVCaptureConnection ConnectionFromMediaType (NSString avMediaType);
 	}
 
 	[Since (4,0)]
@@ -1647,6 +1650,7 @@ namespace MonoMac.AVFoundation {
 		NSDictionary WeakVideoSettings { get; set;  }
 
 		[Export ("minFrameDuration")]
+		[Obsolete ("On iOS 5.0 and later, you can use AVCaptureConnection's MinVideoFrameDuration")]
 		CMTime MinFrameDuration { get; set;  }
 
 		[Export ("alwaysDiscardsLateVideoFrames")]
@@ -1655,7 +1659,16 @@ namespace MonoMac.AVFoundation {
 		[Export ("setSampleBufferDelegate:queue:")]
 		[PostGet ("SampleBufferDelegate")]
 		[PostGet ("SampleBufferCallbackQueue")]
-		void SetSampleBufferDelegatequeue ([NullAllowed] AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
+		void SetSampleBufferDelegate ([NullAllowed] AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
+
+		// 5.0 APIs
+		[Export ("availableVideoCVPixelFormatTypes")]
+                NSNumber [] AvailableVideoCVPixelFormatTypes { get;  }
+
+		// This is an NSString, because these are are codec types that can be used as keys in
+		// the WeakVideoSettings properties.
+                [Export ("availableVideoCodecTypes")]
+                NSString [] AvailableVideoCodecTypes { get;  }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1758,6 +1771,10 @@ namespace MonoMac.AVFoundation {
 
 		[Static, Export ("jpegStillImageNSDataRepresentation:")]
 		NSData JpegStillToNSData (MonoMac.CoreMedia.CMSampleBuffer buffer);
+
+		// 5.0
+		[Export ("capturingStillImage")]
+		bool CapturingStillImage { [Bind ("isCapturingStillImage")] get;  }
 	}
 		
 	[BaseType (typeof (NSObject))]
