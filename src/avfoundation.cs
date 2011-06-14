@@ -1847,6 +1847,29 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("position")]
 		AVCaptureDevicePosition Position { get; }
+
+		[Field ("AVCaptureDeviceWasConnectedNotification")]
+		NSString WasConnectedNotification { get; }
+
+		[Field ("AVCaptureDeviceWasDisconnectedNotification")]
+		NSString WasDisconnectedNotification { get; }
+
+		[Field ("AVCaptureDeviceSubjectAreaDidChangeNotification")]
+		NSString SubjectAreaDidChangeNotification { get; }
+
+		// 5.0
+
+		[Export ("isFlashAvailable")]
+		bool FlashAvailable { get;  }
+
+		[Export ("isFlashActive")]
+		bool FlashActive { get; }
+
+		[Export ("isTorchAvailable")]
+		bool TorchAvailable { get; }
+
+		[Export ("torchLevel")]
+		float TorchLevel { get; }
 	}
 
 	public delegate void AVCompletionHandler ();
