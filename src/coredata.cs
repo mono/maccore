@@ -986,6 +986,12 @@ namespace MonoMac.CoreData
 
 		[Export ("versionHash")]
 		NSData VersionHash { get; }
+
+		// 5.0
+		[Since (5,0)]
+		[Export ("ordered")]
+		bool Ordered { [Bind ("isOrdered")]get; set; }
+
 	}
 }
 
