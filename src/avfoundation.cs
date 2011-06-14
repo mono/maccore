@@ -1151,7 +1151,12 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVAssetExportPresetPassthrough")]
 		NSString PresetPassthrough { get; }
 
-		
+		// 5.0 APIs
+		[Export ("asset")]
+		AVAsset Asset { get; }
+
+		[Export ("estimatedOutputFileLength")]
+		long EstimatedOutputFileLength { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
