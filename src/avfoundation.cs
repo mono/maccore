@@ -166,6 +166,9 @@ namespace MonoMac.AVFoundation {
 		
 		[Field ("AVVideoProfileLevelKey")]
 		NSString ProfileLevelKey { get; }
+
+		[Field ("AVVideoQualityKey")]
+		NSString QualityKey { get; }
 		
 		[Field ("AVVideoProfileLevelH264Baseline30")]
 		NSString ProfileLevelH264Baseline30 { get; }
@@ -178,6 +181,15 @@ namespace MonoMac.AVFoundation {
 		
 		[Field ("AVVideoProfileLevelH264Main31")]
 		NSString ProfileLevelH264Main31 { get; }
+
+		[Field ("AVVideoProfileLevelH264Baseline41")]
+		NSString ProfileLevelH264Baseline41 { get; }
+
+		[Field ("AVVideoProfileLevelH264Main32")]
+		NSString ProfileLevelH264Main32 { get; }
+
+		[Field ("AVVideoProfileLevelH264Main41")]
+		NSString ProfileLevelH264Main41 { get; }
 		
 		[Field ("AVVideoPixelAspectRatioKey")]
 		NSString PixelAspectRatioKey { get; }
