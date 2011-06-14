@@ -56,4 +56,8 @@ namespace MonoMac.CoreData {
 	public enum NSManagedObjectContextConcurrencyType {
 		Confinement, PrivateQueue, MainQueue
 	}
+
+	public enum NSMergePolicyType {
+		Error, PropertyStoreTrump, PropertyObjectTrump, Overwrite, RollbackMerge
+	}
 }

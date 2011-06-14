@@ -656,6 +656,42 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
+	interface NSMergeConflict {
+		[Export ("sourceObject")]
+		NSManagedObject SourceObject { get;  }
+
+		[Export ("objectSnapshot")]
+		NSDictionary ObjectSnapshot { get;  }
+
+		[Export ("cachedSnapshot")]
+		NSDictionary CachedSnapshot { get;  }
+
+		[Export ("persistedSnapshot")]
+		NSDictionary PersistedSnapshot { get;  }
+
+		[Export ("newVersionNumber")]
+		uint NewVersionNumber { get;  }
+
+		[Export ("oldVersionNumber")]
+		uint OldVersionNumber { get;  }
+
+		[Export ("initWithSource:newVersion:oldVersion:cachedSnapshot:persistedSnapshot:")]
+		IntPtr Constructor (NSManagedObject srcObject, uint newvers, uint oldvers, NSDictionary cachesnap, NSDictionary persnap);
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface NSMergePolicy {
+		[Export ("mergeType")]
+		NSMergePolicyType MergeType { get;  }
+
+		[Export ("initWithMergeType:")]
+		IntPtr Constructor (NSMergePolicyType ty);
+
+		[Export ("resolveConflicts:error:")]
+		bool ResolveConflictserror (NSMergeConflict [] list, out NSError error);
+	}
+
+	[BaseType (typeof (NSObject))]
 	public interface NSMigrationManager {
 
 		[Export ("initWithSourceModel:destinationModel:")]
