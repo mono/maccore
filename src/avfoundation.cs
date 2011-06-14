@@ -1081,6 +1081,46 @@ namespace MonoMac.AVFoundation {
 	}
 
 	[Since (4,0)]
+	[BaseType (typeof (AVAsset))]
+	interface AVComposition {
+		// Note: the setter is only valid on the AVMutableComposition, not sure how we dealt with this before.
+		[Export ("naturalSize")]
+		SizeF NaturalSize { get; set; }
+
+		[Export ("tracks")]
+		AVCompositionTrack [] Tracks { get; }
+	}
+	
+	[Since (4,0)]
+	[BaseType (typeof (AVComposition))]
+	interface AVMutableComposition {
+		[Static]
+		[Export ("composition")]
+		AVMutableComposition Create ();
+
+		[Export ("insertTimeRange:ofAsset:atTime:error:")]
+		bool InsertTimeRange (CMTimeRange timeRange, AVAsset ofAsset, CMTime startTime, out NSError outError);
+
+		[Export ("insertEmptyTimeRange:")]
+		void InsertEmptyTimeRange (CMTimeRange timeRange);
+
+		[Export ("removeTimeRange:")]
+		void RemoveTimeRange (CMTimeRange timeRange);
+
+		[Export ("scaleTimeRange:toDuration:")]
+		void ScaleTimeRange (CMTimeRange timeRange, CMTime newDuration);
+
+		[Export ("addMutableTrackWithMediaType:preferredTrackID:")]
+		AVMutableCompositionTrack AddMutableTrack (string mediaType, int preferredTrackID);
+
+		[Export ("removeTrack:")]
+		void RemoveTrack (AVCompositionTrack track);
+
+		[Export ("mutableTrackCompatibleWithTrack:")]
+		AVMutableCompositionTrack MutableTrackCompatibleWithTrack (AVAssetTrack track);
+	}
+
+	[Since (4,0)]
 	[BaseType (typeof (AVAssetTrack))]
 	interface AVCompositionTrack {
 		[Export ("segments", ArgumentSemantic.Copy)]
