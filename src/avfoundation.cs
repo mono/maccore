@@ -1498,6 +1498,15 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVCaptureSessionPreset1280x720")]
 		NSString Preset1280x720 { get; }
 
+		[Field ("AVCaptureSessionPresetiFrame960x540")]
+		NSString PresetiFrame960x540 { get; }
+
+		[Field ("AVCaptureSessionPresetiFrame1280x720")]
+		NSString PresetiFrame1280x720 { get; }
+
+		[Field ("AVCaptureSessionPreset352x288")]
+		NSString Preset352x288 { get; }
+
 		[Field ("AVCaptureSessionRuntimeErrorNotification")]
 		NSString RuntimeErrorNotification { get; }
 		
