@@ -11,3 +11,6 @@ AVFoundation:
 	avmetadataformat.h
 	Strongly typed configuration for AVVideoSettings.h
 
+CoreData:
+	Review where errors are raised, and make sure we bind the
+	enum (currently unbound) of errors

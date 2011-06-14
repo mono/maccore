@@ -84,6 +84,9 @@ namespace MonoMac.CoreData
 		[Export ("valueTransformerName")]
 		string ValueTransformerName { get; set; }
 
+		[Since(5,0)]
+		[Export ("allowsExternalBinaryDataStorage")]
+		bool AllowsExternalBinaryDataStorage { get; set; }
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSEntityDescription {
@@ -142,7 +145,11 @@ namespace MonoMac.CoreData
 		[Export ("versionHashModifier")]
 		string VersionHashModifier { get; set; }
 
+		[Since(5,0)]
+		[Export ("compoundIndexes")]
+		NSPropertyDescription [] CompoundIndexes { get; set; }
 	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSEntityMapping {
 
@@ -633,6 +640,9 @@ namespace MonoMac.CoreData
 
 		[Export ("willRemoveFromPersistentStoreCoordinator:")]
 		void WillRemoveFromPersistentStoreCoordinator (NSPersistentStoreCoordinator coordinator);
+
+		[Field ("NSPersistentStoreSaveConflictsErrorKey")]
+		NSString SaveConflictsErrorKey { get; }
 
 	}
 	[BaseType (typeof (NSObject))]
