@@ -655,6 +655,8 @@ namespace MonoMac.CoreData
 		NSDictionary EntityMappingsByName { get; }
 
 	}
+
+	[Since(5,0)]
 	[BaseType (typeof (NSObject))]
 	interface NSMergeConflict {
 		[Export ("sourceObject")]
@@ -679,6 +681,7 @@ namespace MonoMac.CoreData
 		IntPtr Constructor (NSManagedObject srcObject, uint newvers, uint oldvers, NSDictionary cachesnap, NSDictionary persnap);
 	}
 
+	[Since(5,0)]
 	[BaseType (typeof (NSObject))]
 	interface NSMergePolicy {
 		[Export ("mergeType")]
@@ -745,6 +748,10 @@ namespace MonoMac.CoreData
 		[Export ("cancelMigrationWithError:")]
 		void CancelMigrationWithError (NSError error);
 
+		// 5.0
+		[Since(5,0)]
+		[Export ("usesStoreSpecificMigrationManager")]
+		bool UsesStoreSpecificMigrationManager { get; set; }
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSPersistentStore {
