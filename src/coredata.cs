@@ -219,7 +219,8 @@ namespace MonoMac.CoreData
 		NSFetchRequest FetchRequest { get; set; }
 
 	}
-	[BaseType (typeof (NSObject))]
+
+	[BaseType (typeof (NSPersistentStoreRequest))]
 	public interface NSFetchRequest {
 
 		[Export ("entity")]
@@ -252,6 +253,34 @@ namespace MonoMac.CoreData
 		[Export ("relationshipKeyPathsForPrefetching")]
 		string[] RelationshipKeyPathsForPrefetching { get; set; }
 
+		[Since(5,0)]
+		[Static]
+		[Export ("fetchRequestWithEntityName:")]
+		NSFetchRequest FromEntityName (string entityName);
+
+		[Since(5,0)]
+		[Export ("initWithEntityName:")]
+		IntPtr Constructor (string entityName);
+
+		[Since(5,0)]
+		[Export ("entityName")]
+		string EntityName { get; }
+
+		[Since(5,0)]
+		[Export ("fetchBatchSize")]
+		int FetchBatchSize { get; set; }
+
+		[Since(5,0)]
+		[Export ("shouldRefreshRefetchedObjects")]
+		bool ShouldRefreshRefetchedObjects { get; set; }
+
+		[Since(5,0)]
+		[Export ("havingPredicate")]
+		NSPredicate HavingPredicate { get; set; }
+
+		[Since(5,0)]
+		[Export ("propertiesToGroupBy")]
+		NSPropertyDescription [] PropertiesToGroupBy { get; set; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -710,6 +739,17 @@ namespace MonoMac.CoreData
 		NSDictionary MetadataForPersistentStoreWithUrl (NSUrl url, out NSError error);
 
 	}
+
+	[BaseType (typeof (NSObject))]
+	interface NSPersistentStoreRequest {
+		[Export ("requestType")]
+		NSPersistentStoreRequestType RequestType { get; }
+
+		//Detected properties
+		[Export ("affectedStores")]
+		NSPersistentStore [] AffectedStores { get; set; }
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSPropertyDescription {
 

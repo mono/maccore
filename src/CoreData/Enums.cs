@@ -26,9 +26,12 @@ namespace MonoMac.CoreData {
 		Transformable = 1800    
 	}
 
+	[Flags]
 	public enum NSFetchRequestResultType : uint {
 		ManagedObject = 0x00,
 		ManagedObjectID = 0x01,
+		DictionaryResultType = 0x02,
+		NSCountResultType = 0x04
 	}
 
 	public enum NSKeyValueSetMutationKind : uint {
@@ -43,5 +46,10 @@ namespace MonoMac.CoreData {
 		Nullify,
 		Cascade,
 		Deny
+	}
+
+	public enum NSPersistentStoreRequestType {
+		Fetch = 1,
+		Save
 	}
 }
