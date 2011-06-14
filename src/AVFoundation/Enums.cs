@@ -203,4 +203,8 @@ namespace MonoMac.AVFoundation {
 		ForbidLocalReferenceToLocal  = (1 << 3),
 		ForbidAll = 0xFFFF,
 	}
+
+	public enum AVAssetImageGeneratorResult {
+		Succeeded, Failed, Cancelled
+	}
 }

@@ -37,6 +37,9 @@ using System;
 using System.Drawing;
 
 namespace MonoMac.AVFoundation {
+
+	delegate void AVAssetImageGeneratorCompletionHandler (CMTime requestedTime, IntPtr imageRef, CMTime actualTime, AVAssetImageGeneratorResult result, NSError error);
+		
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))][Static]
 	interface AVMediaType {
@@ -514,6 +517,53 @@ namespace MonoMac.AVFoundation {
 		AVMediaSelectionGroup MediaSelectionGroupForMediaCharacteristic (string avMediaCharacteristic);
 	}
 
+	[BaseType (typeof (NSObject))]
+	interface AVAssetImageGenerator {
+		[Export ("maximumSize")]
+		SizeF MaximumSize { get; set;  }
+
+		[Export ("apertureMode")]
+		NSString ApertureMode { get; set;  }
+
+		[Export ("videoComposition")]
+		AVVideoComposition VideoComposition { get; set;  }
+
+		[Export ("appliesPreferredTrackTransform")]
+		bool AppliesPreferredTrackTransform { get; }
+
+		[Static]
+		[Export ("assetImageGeneratorWithAsset:")]
+		AVAssetImageGenerator FromAsset (AVAsset asset);
+
+		[Export ("initWithAsset:")]
+		IntPtr Constructor (AVAsset asset);
+
+		[Export ("copyCGImageAtTime:actualTime:error:")]
+		CGImage CopyCGImageAtTime (CMTime requestedTime, CMTime actualTime, NSError outError);
+
+		[Export ("generateCGImagesAsynchronouslyForTimes:completionHandler:")]
+		void GenerateCGImagesAsynchronously (NSValue cmTimesRequestedTimes, AVAssetImageGeneratorCompletionHandler handler);
+
+		[Export ("cancelAllCGImageGeneration")]
+		void CancelAllCGImageGeneration ();
+
+		[Field ("AVAssetImageGeneratorApertureModeCleanAperture")]
+		NSString ApertureModeCleanAperture { get; }
+
+		[Field ("AVAssetImageGeneratorApertureModeProductionAperture")]
+		NSString ApertureModeProductionAperture { get; }
+
+		[Field ("AVAssetImageGeneratorApertureModeEncodedPixels")]
+		NSString ApertureModeEncodedPixels { get; }
+
+		// 5.0 APIs
+		[Export ("requestedTimeToleranceBefore")]
+		CMTime RequestedTimeToleranceBefore { get; set;  }
+
+		[Export ("requestedTimeToleranceAfter")]
+		CMTime RequestedTimeToleranceAfter { get; set;  }
+	}
+	
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
 	interface AVAssetReader {
