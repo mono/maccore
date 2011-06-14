@@ -1390,7 +1390,28 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("renderScale")]
 		float RenderScale { get; set; }
+
+		[Since (5,0)]
+		[Export ("isValidForAsset:timeRange:validationDelegate:")]
+                bool IsValidForAsset (AVAsset asset, CMTimeRange timeRange, AVVideoCompositionValidationHandling validationDelegate);
 	}
+
+	[Since (5,0)]
+	[BaseType (typeof (NSObject))]
+        [Model]
+        interface AVVideoCompositionValidationHandling {
+                [Export ("videoComposition:shouldContinueValidatingAfterFindingInvalidValueForKey:")]
+                bool ShouldContinueValidatingAfterFindingInvalidValueForKey (AVVideoComposition videoComposition, string key);
+
+                [Export ("videoComposition:shouldContinueValidatingAfterFindingEmptyTimeRange:")]
+                bool ShouldContinueValidatingAfterFindingEmptyTimeRange (AVVideoComposition videoComposition, CMTimeRange timeRange);
+
+                [Export ("videoComposition:shouldContinueValidatingAfterFindingInvalidTimeRangeInInstruction:")]
+                bool ShouldContinueValidatingAfterFindingInvalidTimeRangeInInstruction (AVVideoComposition videoComposition, AVVideoCompositionInstruction videoCompositionInstruction);
+
+                [Export ("videoComposition:shouldContinueValidatingAfterFindingInvalidTrackIDInInstruction:layerInstruction:asset:")]
+                bool ShouldContinueValidatingAfterFindingInvalidTrackIDInInstruction (AVVideoComposition videoComposition, AVVideoCompositionInstruction videoCompositionInstruction, AVVideoCompositionLayerInstruction layerInstruction, AVAsset asset);
+        }
 
 	[Since (4,0)]
 	[BaseType (typeof (AVVideoComposition))]
