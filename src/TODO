@@ -1,2 +1,6 @@
 ImageIO:
 	Must bind the CGImageProperties file, contains public extern keys for hashtables
+
+AudioServices:
+	Must bind AudioConverter
+	Must bind AudioServices
