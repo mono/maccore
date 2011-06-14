@@ -5,3 +5,8 @@ AudioServices:
 	Must bind AudioConverter
 	Must bind AudioServices
 	AudioServices.SystemSound needs SoundCompletion binding
+
+AVFoundation:
+	Bind and expose the constants for metadata from:
+	avmetadataformat.h
+

@@ -39,7 +39,8 @@ using System.Drawing;
 namespace MonoMac.AVFoundation {
 
 	delegate void AVAssetImageGeneratorCompletionHandler (CMTime requestedTime, IntPtr imageRef, CMTime actualTime, AVAssetImageGeneratorResult result, NSError error);
-		
+	delegate void AVCompletion (bool finished);
+	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))][Static]
 	interface AVMediaType {
@@ -2051,6 +2052,27 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("status")]
 		AVPlayerStatus Status { get; }
+
+		// 5.0
+		[Since (5,0)]
+		[Export ("allowsAirPlayVideo")]
+		bool AllowsAirPlayVideo { get; set;  }
+
+		[Since (5,0)]
+		[Export ("airPlayVideoActive")]
+		bool AirPlayVideoActive { [Bind ("isAirPlayVideoActive")] get;  }
+
+		[Since (5,0)]
+		[Export ("usesAirPlayVideoWhileAirPlayScreenIsActive")]
+		bool UsesAirPlayVideoWhileAirPlayScreenIsActive { get; set;  }
+
+		[Since (5, 0)]
+		[Export ("seekToTime:completionHandler:")]
+		void Seek (CMTime time, AVCompletionHandler completion);
+
+		[Since (5, 0)]
+		[Export ("seekToTime:toleranceBefore:toleranceAfter:completionHandler:")]
+		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletionHandler completion);
 	}
 
 	[BaseType (typeof (NSObject))]
