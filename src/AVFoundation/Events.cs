@@ -366,29 +366,4 @@ namespace MonoMac.AVFoundation {
 			}
 		}
 	}
-	public partial class AVAudioSession {
-		public static NSString CategoryAmbient;
-		public static NSString CategorySoloAmbient;
-		public static NSString CategoryPlayback;
-		public static NSString CategoryRecord;
-		public static NSString CategoryPlayAndRecord;
-		public static NSString CategoryAudioProcessing;
-
-		static AVAudioSession ()
-		{
-			var handle = Dlfcn.dlopen (Constants.AVFoundationLibrary, 0);
-			if (handle == IntPtr.Zero)
-				return;
-			try {
-				CategoryAmbient = Dlfcn.GetStringConstant (handle, "AVAudioSessionCategoryAmbient");
-				CategorySoloAmbient = Dlfcn.GetStringConstant (handle, "AVAudioSessionCategorySoloAmbient");
-				CategoryPlayback = Dlfcn.GetStringConstant (handle, "AVAudioSessionCategoryPlayback");
-				CategoryRecord = Dlfcn.GetStringConstant (handle, "AVAudioSessionCategoryRecord");
-				CategoryPlayAndRecord = Dlfcn.GetStringConstant (handle, "AVAudioSessionCategoryPlayAndRecord");
-				CategoryAudioProcessing = Dlfcn.GetStringConstant (handle, "AVAudioSessionCategoryAudioProcessing");
-			} finally {
-				Dlfcn.dlclose (handle);
-			}
-		}
-	}
 }

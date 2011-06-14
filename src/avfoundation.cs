@@ -376,7 +376,7 @@ namespace MonoMac.AVFoundation {
 		bool _SetActive (bool beActive, int flags, IntPtr outError);
 
 		[Export ("setCategory:error:"), Internal]
-		bool SetCategory (string theCategory, IntPtr outError);
+		bool SetCategory (NSString theCategory, IntPtr outError);
 	
 		[Export ("setPreferredHardwareSampleRate:error:"), Internal]
 		bool SetPreferredHardwareSampleRate (double sampleRate, IntPtr outError);
@@ -385,7 +385,13 @@ namespace MonoMac.AVFoundation {
 		bool SetPreferredIOBufferDuration (double duration, IntPtr outError);
 	
 		[Export ("category")]
-		string Category { get;  }
+		NSString Category { get;  }
+
+		[Export ("mode")]
+		NSString Mode { get; }
+
+		[Export ("setMode:error:")]
+		bool SetMode (NSString mode, out NSError error);
 	
 		[Export ("preferredHardwareSampleRate")]
 		double PreferredHardwareSampleRate { get;  }
@@ -405,6 +411,35 @@ namespace MonoMac.AVFoundation {
 		[Export ("currentHardwareOutputNumberOfChannels")]
 		int CurrentHardwareOutputNumberOfChannels { get;  }
 
+		[Field ("AVAudioSessionCategoryAmbient")]
+		NSString CategoryAmbient { get; }
+
+		[Field ("AVAudioSessionCategorySoloAmbient")]
+		NSString CategorySoloAmbient { get; }
+
+		[Field ("AVAudioSessionCategoryPlayback")]
+		NSString CategoryPlayback { get; }
+
+		[Field ("AVAudioSessionCategoryRecord")]
+		NSString CategoryRecord { get; }
+
+		[Field ("AVAudioSessionCategoryPlayAndRecord")]
+		NSString CategoryPlayAndRecord { get; }
+
+		[Field ("AVAudioSessionCategoryAudioProcessing")]
+		NSString CategoryAudioProcessing { get; }
+
+		[Field ("AVAudioSessionModeDefault")]
+		NSString ModeDefault { get; }
+
+		[Field ("AVAudioSessionModeVoiceChat")]
+		NSString ModeVoiceChat { get; }
+
+		[Field ("AVAudioSessionModeVideoRecording")]
+		NSString ModeVideoRecording { get; }
+
+		[Field ("AVAudioSessionModeMeasurement")]
+		NSString ModeMeasurement { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]

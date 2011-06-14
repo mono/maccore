@@ -69,13 +69,13 @@ namespace MonoMac.AVFoundation {
 		}
 
 		[Obsolete ("Use SetCategory(bool, out NSError) instead")]
-		public bool SetCategory (string theCategory, NSError outError)
+		public bool SetCategory (NSString theCategory, NSError outError)
 		{
 			// Effectively discarded due to original binding error
 			return SetCategory (theCategory, out outError);
 		}
 
-		public bool SetCategory (string theCategory, out NSError outError)
+		public bool SetCategory (NSString theCategory, out NSError outError)
 		{
 			unsafe {
 				IntPtr errhandle;
