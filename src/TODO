@@ -14,3 +14,5 @@ AVFoundation:
 CoreData:
 	Review where errors are raised, and make sure we bind the
 	enum (currently unbound) of errors
+
+	NSPersistentStoreCoordinator has many NSDictionary-based APIs that should be strongly typed instead

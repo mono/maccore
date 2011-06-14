@@ -806,13 +806,13 @@ namespace MonoMac.CoreData
 		NSDictionary RegisteredStoreTypes { get; }
 
 		[Static, Export ("registerStoreClass:forStoreType:")]
-		void RegisterStoreClass (Class storeClass, string storeType);
+		void RegisterStoreClass (Class storeClass, NSString storeType);
 
 		[Static, Export ("metadataForPersistentStoreOfType:URL:error:")]
-		NSDictionary MetadataForPersistentStoreOfType (string storeType, NSUrl url, out NSError error);
+		NSDictionary MetadataForPersistentStoreOfType (NSString storeType, NSUrl url, out NSError error);
 
 		[Static, Export ("setMetadata:forPersistentStoreOfType:URL:error:")]
-		bool SetMetadata (NSDictionary metadata, string storeType, NSUrl url, out NSError error);
+		bool SetMetadata (NSDictionary metadata, NSString storeType, NSUrl url, out NSError error);
 
 		[Export ("setMetadata:forPersistentStore:")]
 		void SetMetadata (NSDictionary metadata, NSPersistentStore store);
@@ -839,13 +839,13 @@ namespace MonoMac.CoreData
 		bool SetUrl (NSUrl url, NSPersistentStore store);
 
 		[Export ("addPersistentStoreWithType:configuration:URL:options:error:")]
-		NSPersistentStore AddPersistentStoreWithType (string storeType, string configuration, NSUrl storeURL, NSDictionary options, out NSError error);
+		NSPersistentStore AddPersistentStoreWithType (NSString storeType, string configuration, NSUrl storeURL, NSDictionary options, out NSError error);
 
 		[Export ("removePersistentStore:error:")]
 		bool RemovePersistentStore (NSPersistentStore store, out NSError error);
 
 		[Export ("migratePersistentStore:toURL:options:withType:error:")]
-		NSPersistentStore MigratePersistentStore (NSPersistentStore store, NSUrl URL, NSDictionary options, string storeType, out NSError error);
+		NSPersistentStore MigratePersistentStore (NSPersistentStore store, NSUrl URL, NSDictionary options, NSString storeType, out NSError error);
 
 		[Export ("managedObjectIDForURIRepresentation:")]
 		NSManagedObjectID ManagedObjectIDForURIRepresentation (NSUrl url);
@@ -863,6 +863,36 @@ namespace MonoMac.CoreData
 		[Static, Export ("metadataForPersistentStoreWithURL:error:")]
 		NSDictionary MetadataForPersistentStoreWithUrl (NSUrl url, out NSError error);
 
+		[Field ("NSSQLiteStoreType")]
+		NSString SQLiteStoreType { get; }
+		
+		[Field ("NSXMLStoreType")]
+		NSString XMLStoreType { get; }
+		
+		[Field ("NSBinaryStoreType")]
+		NSString BinaryStoreType { get; }
+		
+		[Field ("NSInMemoryStoreType")]
+		NSString InMemoryStoreType { get; }
+		
+		[Field ("NSStoreTypeKey")]
+		NSString StoreTypeKey { get; }
+
+		[Field ("NSPersistentStoreCoordinatorStoresDidChangeNotification")]
+		NSString StoresDidChangeNotification { get; }
+
+		[Field ("NSPersistentStoreCoordinatorWillRemoveStoreNotification")]
+		NSString WillRemoveStoreNotification { get; }
+		
+		// 5.0
+		[Since(5,0)]
+		[Export ("executeRequest:withContext:error:")]
+		NSObject ExecuteRequestwithContexterror (NSPersistentStoreRequest request, NSManagedObjectContext context, out NSError error);
+
+		[Field ("NSPersistentStoreDidImportUbiquitousContentChangesNotification")]
+		NSString DidImportUbiquitousContentChangesNotification { get; }
+
+		
 	}
 
 	[BaseType (typeof (NSObject))]
