@@ -52,4 +52,8 @@ namespace MonoMac.CoreData {
 		Fetch = 1,
 		Save
 	}
+
+	public enum NSManagedObjectContextConcurrencyType {
+		Confinement, PrivateQueue, MainQueue
+	}
 }

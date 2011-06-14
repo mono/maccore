@@ -542,6 +542,26 @@ namespace MonoMac.CoreData
 
 		[Export ("mergeChangesFromContextDidSaveNotification:")]
 		void MergeChangesFromContextDidSaveNotification (NSNotification notification);
+
+		// 5.0
+		[Export ("initWithConcurrencyType:")]
+		IntPtr Constructor (NSManagedObjectContextConcurrencyType ct);
+
+		[Export ("performBlock:")]
+		void Perform (NSAction action);
+
+		[Export ("performBlockAndWait:")]
+		void PerformAndWait (NSAction action);
+
+		[Export ("userInfo")]
+		NSMutableDictionary UserInfo { get; }
+
+		[Export ("concurrencyType")]
+		NSManagedObjectContextConcurrencyType ConcurrencyType { get; }
+
+		//Detected properties
+		[Export ("parentContext")]
+		NSManagedObjectContext ParentContext { get; set; }
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSManagedObjectID {
