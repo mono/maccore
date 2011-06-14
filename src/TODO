@@ -4,3 +4,4 @@ ImageIO:
 AudioServices:
 	Must bind AudioConverter
 	Must bind AudioServices
+	AudioServices.SystemSound needs SoundCompletion binding

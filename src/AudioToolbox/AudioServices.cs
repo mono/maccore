@@ -32,18 +32,38 @@ using MonoMac.Foundation;
 
 namespace MonoMac.AudioToolbox {
 
+	enum AudioServicesError {
+		None = 0,
+		UnsupportedProperty = 0x7074793f, // 'pty?'
+		BadPropertySize = 0x2173697a, // '!siz'
+		BadSpecifierSizeError = 0x21737063, // '!spc'
+		SystemSoundUnspecifiedError = -1500,
+		SystemSoundClientTimedOutError = -1501
+	}
+		
 	enum AudioServiceProperty {
 		IsUISound                 = 0x69737569, // 'isui'
 		CompletePlaybackIfAppDies = 0x69666469, // 'ifdi'
 	}
 
+	delegate void SoundCompletionProc (int systemSoundId, IntPtr clientData);
+
+	enum AudioServicesProperty {
+		IsUISound = 0x69737569, // 'isui'
+		CompletePlaybackIfAppDies = 0x69666469 // 'ifdi'
+	}
+	
 	public enum AudioSessionInterruptionType {
 		ShouldResume = 1769108333, // 'irsm'
 		ShouldNotResume = 561148781, // '!rsm'
 	}
-	
-	static class AudioService {
+
+
+	public static class AudioServices {
+
+		
 #if false
+
 		[DllImport (Constants.AudioToolboxLibrary)]
 		static extern int AudioServicesAddSystemSoundCompletion (uint soundId, CFRunLoopRef runLoop, NSString runLoopMode, SystemSoundCompletionCallback completeionRoutine, IntPtr clientData);
 
