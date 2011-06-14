@@ -536,18 +536,23 @@ namespace MonoMac.AVFoundation {
 		bool Composable { get; }
 
 		// 5.0 APIs:
+		[Since (5,0)]
 		[Static, Export ("assetWithURL:")]
 		AVAsset FromUrl (NSUrl url);
 
+		[Since (5,0)]
 		[Export ("availableMediaCharacteristicsWithMediaSelectionOptions")]
 		string [] AvailableMediaCharacteristicsWithMediaSelectionOptions { get; }
 
+		[Since (5,0)]
 		[Export ("compatibleWithSavedPhotosAlbum")]
 		bool CompatibleWithSavedPhotosAlbum  { get; }
 
+		[Since (5,0)]
 		[Export ("creationDate")]
 		AVMetadataItem CreationDate { get; }
 
+		[Since (5,0)]
 		[Export ("mediaSelectionGroupForMediaCharacteristic:")]
 		AVMediaSelectionGroup MediaSelectionGroupForMediaCharacteristic (string avMediaCharacteristic);
 	}
@@ -592,9 +597,11 @@ namespace MonoMac.AVFoundation {
 		NSString ApertureModeEncodedPixels { get; }
 
 		// 5.0 APIs
+		[Since (5,0)]
 		[Export ("requestedTimeToleranceBefore")]
 		CMTime RequestedTimeToleranceBefore { get; set;  }
 
+		[Since (5,0)]
 		[Export ("requestedTimeToleranceAfter")]
 		CMTime RequestedTimeToleranceAfter { get; set;  }
 	}
@@ -848,13 +855,15 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVURLAssetPreferPreciseDurationAndTimingKey")]
 		NSString PreferPreciseDurationAndTimingKey { get; }
 
-		// 5.0
+		[Since (5,0)]
 		[Static, Export ("audiovisualMIMETypes")]
 		string [] AudiovisualMimeTypes { get; }
 
+		[Since (5,0)]
 		[Static, Export ("audiovisualTypes")]
 		string [] AudiovisualTypes { get; }
 
+		[Since (5,0)]
 		[Static, Export ("isPlayableExtendedMIMEType")]
 		bool IsPlayable (string extendedMimeType);
 	}
@@ -1162,6 +1171,11 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("preferredVolume")]
 		float PreferredVolume { get; set; }
+
+		// 5.0
+		[Since (5,0)]
+		[Export ("insertTimeRanges:ofTracks:atTime:error:")]
+		bool InsertTimeRanges (NSValue cmTimeRanges, AVAssetTrack [] tracks, CMTime startTime, out NSError error);
 	}
 
 	[Since (4,0)]
