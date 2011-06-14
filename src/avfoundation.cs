@@ -609,6 +609,9 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("copyNextSampleBuffer")]
 		CMSampleBuffer CopyNextSampleBuffer ();
+
+		[Export ("alwaysCopiesSampleData")]
+		bool AlwaysCopiesSampleData { get; set; }
 	}
 
 	[Since (4,1)]
