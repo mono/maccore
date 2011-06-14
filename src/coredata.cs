@@ -283,6 +283,7 @@ namespace MonoMac.CoreData
 		NSPropertyDescription [] PropertiesToGroupBy { get; set; }
 	}
 
+	[Since(5,0)]
 	[BaseType (typeof (NSPersistentStore))]
 	interface NSIncrementalStore {
 		[Export ("loadMetadata:")]
@@ -318,6 +319,7 @@ namespace MonoMac.CoreData
 
 	}
 
+	[Since(5,0)]
 	[BaseType (typeof (NSObject))]
 	interface NSIncrementalStoreNode {
 		[Export ("initWithObjectID:withValues:version:")]
@@ -434,7 +436,14 @@ namespace MonoMac.CoreData
 		[Export ("validateForUpdate:")]
 		bool ValidateForUpdate (out NSError error);
 
+		[Since(5,0)]
+		[Export ("hasChanges")]
+		bool HasChanges { get; }
+
+		[Export ("changedValuesForCurrentEvent")]
+		NSDictionary ChangedValuesForCurrentEvent { get; }
 	}
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSManagedObjectContext {
 
