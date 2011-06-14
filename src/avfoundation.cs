@@ -2066,11 +2066,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("usesAirPlayVideoWhileAirPlayScreenIsActive")]
 		bool UsesAirPlayVideoWhileAirPlayScreenIsActive { get; set;  }
 
-		[Since (5, 0)]
+		[Since (5,0)]
 		[Export ("seekToTime:completionHandler:")]
 		void Seek (CMTime time, AVCompletionHandler completion);
 
-		[Since (5, 0)]
+		[Since (5,0)]
 		[Export ("seekToTime:toleranceBefore:toleranceAfter:completionHandler:")]
 		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletionHandler completion);
 	}
@@ -2199,6 +2199,37 @@ namespace MonoMac.AVFoundation {
 		[Since (4,3)]
 		[Export ("currentDate")]
 		NSDate CurrentDate { get; }
+
+		[Since (5,0)]
+		[Export ("canPlayFastReverse")]
+		bool CanPlayFastReverse { get;  }
+
+		[Since (5,0)]
+		[Export ("canPlayFastForward")]
+		bool CanPlayFastForward { get; }
+
+		[Since (5,0)]
+		[Field ("AVPlayerItemTimeJumpedNotification")]
+		NSString TimeJumpedNotification { get; }
+
+		[Since (5,0)]
+		[Export ("seekToTime:completionHandler:")]
+		void Seek (CMTime time, AVCompletion completion);
+
+		[Since (5,0)]
+		[Export ("cancelPendingSeeks")]
+		void CancelPendingSeeks ();
+
+		[Since (5,0)]
+		[Export ("seekToTime:toleranceBefore:toleranceAfter:completionHandler:")]
+		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletionHandler completion);
+
+		[Since (5,0)]
+		[Export ("selectMediaOption:inMediaSelectionGroup:")]
+		void SelectMediaOption (AVMediaSelectionOption mediaSelectionOption, AVMediaSelectionGroup mediaSelectionGroup);
+
+		[Export ("selectedMediaOptionInMediaSelectionGroup:")]
+		AVMediaSelectionOption SelectedMediaOption (AVMediaSelectionGroup inMediaSelectionGroup);
 	}
 
 	[BaseType (typeof (NSObject))]
