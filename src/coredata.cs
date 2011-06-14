@@ -940,6 +940,15 @@ namespace MonoMac.CoreData
 
 		[Export ("versionHashModifier")]
 		string VersionHashModifier { get; set; }
+
+		// 5.0
+		[Since (5,0)]
+		[Export ("indexedBySpotlight")]
+		bool IndexedBySpotlight { [Bind ("isIndexedBySpotlight")]get; set; }
+
+		[Since (5,0)]
+		[Export ("storedInExternalRecord")]
+		bool StoredInExternalRecord { [Bind ("isStoredInExternalRecord")]get; set; }
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSPropertyMapping {
