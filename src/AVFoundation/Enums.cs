@@ -194,4 +194,13 @@ namespace MonoMac.AVFoundation {
 		ReadyToPlay,
 		Failed
 	}
+
+	public enum AVAssetReferenceRestrictions {
+		ForbidNone = 0,
+		ForbidRemoteReferenceToLocal = (1 << 0),
+		ForbidLocalReferenceToRemote = (1 << 1),
+		ForbidCrossSiteReference     = (1 << 2),
+		ForbidLocalReferenceToLocal  = (1 << 3),
+		ForbidAll = 0xFFFF,
+	}
 }

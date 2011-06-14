@@ -436,7 +436,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("preferredTransform")]
 		CGAffineTransform PreferredTransform { get;  }
 
-		[Export ("naturalSize")]
+		[Export ("naturalSize"), Obsolete ("Instead use NaturalSize/PreferredTransform as appropriate on the video track")]
 		SizeF NaturalSize { get;  }
 
 		[Export ("providesPreciseDurationAndTiming")]
@@ -496,6 +496,22 @@ namespace MonoMac.AVFoundation {
 		[Since (4,3)]
 		[Export ("isComposable")]
 		bool Composable { get; }
+
+		// 5.0 APIs:
+		[Static, Export ("assetWithURL:")]
+		AVAsset FromUrl (NSUrl url);
+
+		[Export ("availableMediaCharacteristicsWithMediaSelectionOptions")]
+		string [] AvailableMediaCharacteristicsWithMediaSelectionOptions { get; }
+
+		[Export ("compatibleWithSavedPhotosAlbum")]
+		bool CompatibleWithSavedPhotosAlbum  { get; }
+
+		[Export ("creationDate")]
+		AVMetadataItem CreationDate { get; }
+
+		[Export ("mediaSelectionGroupForMediaCharacteristic:")]
+		AVMediaSelectionGroup MediaSelectionGroupForMediaCharacteristic (string avMediaCharacteristic);
 	}
 
 	[Since (4,1)]
@@ -740,6 +756,16 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVURLAssetPreferPreciseDurationAndTimingKey")]
 		NSString PreferPreciseDurationAndTimingKey { get; }
+
+		// 5.0
+		[Static, Export ("audiovisualMIMETypes")]
+		string [] AudiovisualMimeTypes { get; }
+
+		[Static, Export ("audiovisualTypes")]
+		string [] AudiovisualTypes { get; }
+
+		[Static, Export ("isPlayableExtendedMIMEType")]
+		bool IsPlayable (string extendedMimeType);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -814,6 +840,67 @@ namespace MonoMac.AVFoundation {
 		[Export ("metadataForFormat:")]
 		AVMetadataItem [] MetadataForFormat (string format);
 
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface AVMediaSelectionGroup {
+		[Export ("options")]
+		AVMediaSelectionOption [] Options { get;  }
+		
+		[Export ("allowsEmptySelection")]
+		bool AllowsEmptySelection { get;  }
+
+		[Export ("mediaSelectionOptionWithPropertyList:")]
+		AVMediaSelectionOption GetMediaSelectionOptionForPropertyList (NSObject propertyList);
+
+		[Static]
+		[Export ("playableMediaSelectionOptionsFromArray:")]
+		AVMediaSelectionOption [] PlayableMediaSelectionOptions (AVMediaSelectionOption [] source);
+
+		[Static]
+		[Export ("mediaSelectionOptionsFromArray:withLocale:")]
+		AVMediaSelectionOption [] MediaSelectionOptions (AVMediaSelectionOption [] source, NSLocale locale);
+
+		[Static]
+		[Export ("mediaSelectionOptionsFromArray:withMediaCharacteristics:")]
+		AVMediaSelectionOption [] MediaSelectionOptions (AVMediaSelectionOption [] source, NSString [] avmediaCharacteristics);
+
+		[Static]
+		[Export ("mediaSelectionOptionsFromArray:withoutMediaCharacteristics:")]
+		AVMediaSelectionOption [] MediaSelectionOptionsExcludingCharacteristics (NSArray array, NSString [] avmediaCharacteristics);
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface AVMediaSelectionOption {
+		[Export ("mediaType")]
+		string MediaType { get;  }
+
+		[Export ("mediaSubTypes")]
+		NSNumber []  MediaSubTypes { get;  }
+
+		[Export ("playable")]
+		bool Playable { [Bind ("isPlayable")] get;  }
+
+		[Export ("locale")]
+		NSLocale Locale { get;  }
+
+		[Export ("commonMetadata")]
+		AVMetadataItem [] CommonMetadata { get;  }
+
+		[Export ("availableMetadataFormats")]
+		string [] AvailableMetadataFormats { get;  }
+
+		[Export ("hasMediaCharacteristic:")]
+		bool HasMediaCharacteristic (string mediaCharacteristic);
+
+		[Export ("metadataForFormat:")]
+		AVMetadataItem [] GetMetadataForFormat (string format);
+
+		[Export ("associatedMediaSelectionOptionInMediaSelectionGroup:")]
+		AVMediaSelectionOption AssociatedMediaSelectionOptionInMediaSelectionGroup (AVMediaSelectionGroup mediaSelectionGroup);
+
+		[Export ("propertyList")]
+		NSObject PropertyList { get; }
 	}
 
 	[Since (4,0)]
