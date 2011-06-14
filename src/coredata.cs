@@ -283,6 +283,59 @@ namespace MonoMac.CoreData
 		NSPropertyDescription [] PropertiesToGroupBy { get; set; }
 	}
 
+	[BaseType (typeof (NSPersistentStore))]
+	interface NSIncrementalStore {
+		[Export ("loadMetadata:")]
+		bool LoadMetadata (out NSError error);
+
+		[Export ("executeRequest:withContext:error:")]
+		NSObject ExecuteRequest (NSPersistentStoreRequest request, NSManagedObjectContext context, out NSError error);
+
+		[Export ("newValuesForObjectWithID:withContext:error:")]
+		NSIncrementalStoreNode NewValues (NSManagedObjectID forObjectId, NSManagedObjectContext context, out NSError error);
+
+		[Export ("newValueForRelationship:forObjectWithID:withContext:error:")]
+		NSObject NewValue (NSRelationshipDescription forRelationship, NSManagedObjectID forObjectI, NSManagedObjectContext context, out NSError error);
+
+		[Static]
+		[Export ("identifierForNewStoreAtURL:")]
+		NSObject IdentifierForNewStoreAtURL (NSUrl storeURL);
+
+		[Export ("obtainPermanentIDsForObjects:error:")]
+		NSObject [] ObtainPermanentIds (NSObject [] array, out NSError error);
+
+		[Export ("managedObjectContextDidRegisterObjectsWithIDs:")]
+		void ManagedObjectContextDidRegisterObjectsWithIds (NSObject [] objectIds);
+
+		[Export ("managedObjectContextDidUnregisterObjectsWithIDs:")]
+		void ManagedObjectContextDidUnregisterObjectsWithIds (NSObject [] objectIds);
+
+		[Export ("newObjectIDForEntity:referenceObject:")]
+		NSManagedObjectID NewObjectIdFor (NSEntityDescription forEntity, NSObject referenceObject);
+
+		[Export ("referenceObjectForObjectID:")]
+		NSObject ReferenceObjectForObject (NSManagedObjectID objectId);
+
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface NSIncrementalStoreNode {
+		[Export ("initWithObjectID:withValues:version:")]
+		IntPtr Constructor (NSManagedObjectID objectId, NSDictionary values, ulong version);
+
+		[Export ("updateWithValues:version:")]
+		void Update (NSDictionary values, ulong version);
+
+		[Export ("objectID")]
+		NSManagedObjectID ObjectId { get; }
+
+		[Export ("version")]
+		long Version { get; }
+
+		[Export ("valueForPropertyDescription:")]
+		NSObject ValueForPropertyDescription (NSPropertyDescription prop);
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSManagedObject {
 		[Export ("initWithEntity:insertIntoManagedObjectContext:")]
