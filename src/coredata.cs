@@ -896,7 +896,7 @@ namespace MonoMac.CoreData
 	}
 
 	[BaseType (typeof (NSObject))]
-	interface NSPersistentStoreRequest {
+	public interface NSPersistentStoreRequest {
 		[Export ("requestType")]
 		NSPersistentStoreRequestType RequestType { get; }
 
