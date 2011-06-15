@@ -7,6 +7,7 @@
 //   Miguel de Icaza
 //
 // Copyright 2009-2010, Novell, Inc.
+// Copyright 2011, Xamarin, Inc.
 //
 //
 // This generator produces various */*.g.cs files based on the
@@ -1092,7 +1093,7 @@ public class Generator {
 
 			var tselectors = new List<string> ();
 			
-			foreach (var pi in t.GatherProperties ()){
+			foreach (var pi in GetTypeContractProperties (t)){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
@@ -1134,7 +1135,7 @@ public class Generator {
 				}
 			}
 			
-			foreach (var mi in t.GatherMethods (BindingFlags.Instance | BindingFlags.Public)){
+			foreach (var mi in GetTypeContractMethods (t)){
 				// Skip properties
 				if (mi.IsSpecialName)
 					continue;
@@ -1674,6 +1675,40 @@ public class Generator {
 		indent--;
 	}
 
+	public IEnumerable<MethodInfo> GetTypeContractMethods (Type source)
+	{
+		foreach (var method in source.GatherMethods (BindingFlags.Public | BindingFlags.Instance))
+			yield return method;
+		foreach (var parent in source.GetInterfaces ()){
+			foreach (var method in parent.GatherMethods (BindingFlags.Public | BindingFlags.Instance))
+				yield return method;
+		}
+	}
+
+	public IEnumerable<PropertyInfo> GetTypeContractProperties (Type source)
+	{
+		foreach (var prop in source.GatherProperties ())
+			yield return prop;
+		foreach (var parent in source.GetInterfaces ()){
+			foreach (var prop in parent.GatherProperties ())
+				yield return prop;
+		}
+	}
+
+	//
+	// This is used to determine if the memberType is in the declaring type or in any of the
+	// inherited versions of the type.   We use this now, since we support inlining protocols
+	//
+	static bool MemberBelongsToType (Type memberType, Type hostType)
+	{
+		if (memberType == hostType)
+			return true;
+		foreach (var p in hostType.GetInterfaces ())
+			if (memberType == p)
+				return true;
+		return false;
+	}
+	
 	Dictionary<string,object> generatedEvents = new Dictionary<string,object> ();
 	Dictionary<string,object> generatedDelegates = new Dictionary<string,object> ();
 	
@@ -1762,7 +1797,7 @@ public class Generator {
 			}
 			
 			indent = 2;
-			foreach (var mi in type.GatherMethods (BindingFlags.Public | BindingFlags.Instance)){
+			foreach (var mi in GetTypeContractMethods (type)){
 				if (mi.IsSpecialName)
 					continue;
 
@@ -1816,7 +1851,7 @@ public class Generator {
 
 				bool is_abstract = HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
 				bool is_public = !HasAttribute (mi, typeof (InternalAttribute));
-				bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || mi.DeclaringType != type;
+				bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
 				bool is_new = HasAttribute (mi, typeof (NewAttribute));
 				bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
 				bool is_unsafe = false;
@@ -1847,7 +1882,7 @@ public class Generator {
 			}
 
 			var field_exports = new List<PropertyInfo> ();
-			foreach (var pi in type.GatherProperties ()){
+			foreach (var pi in GetTypeContractProperties (type)){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
@@ -1861,7 +1896,7 @@ public class Generator {
 				bool is_static = HasAttribute (pi, typeof (StaticAttribute));
 				bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
 				bool is_public = !HasAttribute (pi, typeof (InternalAttribute));
-				bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || pi.DeclaringType != type;
+				bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType,  type);
 				bool is_new = HasAttribute (pi, typeof (NewAttribute));
 				bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
 				bool is_unsafe = false;
