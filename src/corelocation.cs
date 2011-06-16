@@ -235,6 +235,10 @@ namespace MonoMac.CoreLocation {
 		[Since (4,0)]
 		[Export ("locationManager:monitoringDidFailForRegion:withError:"), EventArgs ("CLRegionError")]
 		void MonitoringFailed (CLLocationManager manager, CLRegion region, NSError error);
+
+		[Since(5,0)]
+		[Export ("locationManager:didStartMonitoringForRegion:")]
+		void DidStartMonitoringForRegion (CLRegion region);
 #endif
 
 		[Since (4,2)]
@@ -291,6 +295,30 @@ namespace MonoMac.CoreLocation {
 
 		[Export("subThoroughfare")]
 		string SubThoroughfare { get; }
+
+		[Export ("ISOcountryCode")]
+		string IsoCountryCode { get;  }
+
+		[Export ("areasOfInterest")]
+		string [] AreasOfInterest { get;  }
+
+		[Export ("initWithPlacemark:")]
+		IntPtr Constructor (CLPlacemark placemark);
+
+		[Export ("inlandWater")]
+		string InlandWater { get;  }
+
+		[Export ("location")]
+		CLLocation Location { get; }
+
+		[Export ("name")]
+		string Name { get;  }
+
+		[Export ("ocean")]
+		string Ocean { get;  }
+
+		[Export ("region")]
+		CLRegion Region { get; }
 	}
 
 	delegate void CLGeocodeCompletionHandler (CLPlacemark [] placemarks, NSError error);
