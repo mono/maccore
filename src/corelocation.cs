@@ -21,7 +21,7 @@ namespace MonoMac.CoreLocation {
 
 #if !MONOMAC
 	[BaseType (typeof (NSObject))]
-	interface CLHeading {
+	partial interface CLHeading {
 		[Export ("magneticHeading")]
 		double MagneticHeading { get;  }
 	
@@ -95,7 +95,7 @@ namespace MonoMac.CoreLocation {
 	}
 	
 	[BaseType (typeof (NSObject), Delegates=new string [] {"WeakDelegate"}, Events=new Type [] {typeof (CLLocationManagerDelegate)})]
-	interface CLLocationManager {
+	partial interface CLLocationManager {
 		[Wrap ("WeakDelegate")]
 		CLLocationManagerDelegate Delegate { get; set;  }
 
@@ -200,7 +200,7 @@ namespace MonoMac.CoreLocation {
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface CLLocationManagerDelegate {
+	partial interface CLLocationManagerDelegate {
 		[Export ("locationManager:didUpdateToLocation:fromLocation:"), EventArgs ("CLLocationUpdated")]
 		void UpdatedLocation (CLLocationManager  manager, CLLocation newLocation, CLLocation oldLocation);
 	
@@ -237,7 +237,7 @@ namespace MonoMac.CoreLocation {
 #if !MONOMAC
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
-	interface CLRegion {
+	partial interface CLRegion {
 		[Export ("center")]
 		CLLocationCoordinate2D Center { get;  }
 
