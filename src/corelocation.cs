@@ -50,7 +50,7 @@ namespace MonoMac.CoreLocation {
 #endif
 	
 	[BaseType (typeof (NSObject))]
-	interface CLLocation {
+	partial interface CLLocation {
 		[Export ("coordinate")]
 		CLLocationCoordinate2D Coordinate { get;  }
 	
