@@ -1145,10 +1145,10 @@ namespace MonoMac.CoreAnimation {
 		void Release (CGLContext glContext);
 
 	}
+#endif
 
 	[BaseType (typeof (NSObject))]
 	interface CAEmitterCell {
-		
 		[Export ("name")]
 		string Name { get; set;  }
 
@@ -1252,7 +1252,19 @@ namespace MonoMac.CoreAnimation {
 
 		[Export ("shouldArchiveValueForKey:")]
 		bool ShouldArchiveValueForKey (string key);
+#if !MONOMAC
+		[Export ("redRange")]
+		float RedRange { get; set; }
+		
+		[Export ("greenRange")]
+		float GreenRange { get; set; }
 
+		[Export ("blueRange")]
+		float BlueRange { get; set; }
+
+		[Export ("alphaRange")]
+		float AlphaRange { get; set; }
+#endif
 	}
 	
 	[BaseType (typeof (CALayer))]
@@ -1355,5 +1367,4 @@ namespace MonoMac.CoreAnimation {
 
 		
 	}
-#endif
 }
