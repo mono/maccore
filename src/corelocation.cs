@@ -6,6 +6,7 @@
 //   Miguel de Icaza
 //
 // Copyright 2009, Novell, Inc.
+// Copyright 2011, Xamarin, Inc.
 //
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
@@ -92,6 +93,10 @@ namespace MonoMac.CoreLocation {
 		[Since (4,2)]
 		[Export ("initWithCoordinate:altitude:horizontalAccuracy:verticalAccuracy:course:speed:timestamp:")]
 		IntPtr Constructor (CLLocationCoordinate2D coordinate, double altitude, double hAccuracy, double vAccuracy, double course, double speed, NSDate timestamp);
+
+		[Since (5,0)]
+		[Field ("kCLErrorUserInfoAlternateRegionKey")]
+		NSString ErrorUserInfoAlternateRegionKey { get; }
 	}
 	
 	[BaseType (typeof (NSObject), Delegates=new string [] {"WeakDelegate"}, Events=new Type [] {typeof (CLLocationManagerDelegate)})]
@@ -195,6 +200,9 @@ namespace MonoMac.CoreLocation {
 		[Since (4,2)]
 		[Export ("authorizationStatus")][Static]
 		CLAuthorizationStatus Status { get; }
+
+		[Export ("startMonitoringForRegion:")]
+		void StartMonitoring (CLRegion region);
 #endif
 	}
 	
@@ -253,6 +261,61 @@ namespace MonoMac.CoreLocation {
 		[Export ("containsCoordinate:")]
 		bool Contains (CLLocationCoordinate2D coordinate);
 	}
+
+	[Since (5,0)]
+	[BaseType (typeof (NSObject))]
+	interface CLPlacemark {
+		[Export("addressDictionary")]
+		NSDictionary AddressDictionary { get; }
+
+		[Export("administrativeArea")]
+		string AdministrativeArea { get; }
+
+		[Export("subAdministrativeArea")]
+		string SubAdministrativeArea { get; }
+
+		[Export("subLocality")]
+		string SubLocality { get; }
+
+		[Export("locality")]
+		string Locality { get; }
+
+		[Export("country")]
+		string Country { get; }
+	
+		[Export("postalCode")]
+		string PostalCode { get; }
+
+		[Export("thoroughfare")]
+		string Thoroughfare { get; }
+
+		[Export("subThoroughfare")]
+		string SubThoroughfare { get; }
+	}
+
+	delegate void CLGeocodeCompletionHandler (CLPlacemark [] placemarks, NSError error);
+
+	[BaseType (typeof (NSObject))]
+	interface CLGeocoder {
+		[Export ("isGeocoding")]
+		bool Geocoding { get; }
+
+		[Export ("reverseGeocodeLocation:completionHandler:")]
+		void ReverseGeocodeLocation (CLLocation location, CLGeocodeCompletionHandler completionHandler);
+
+		[Export ("geocodeAddressDictionary:completionHandler:")]
+		void GeocodeAddress (NSDictionary addressDictionary, CLGeocodeCompletionHandler completionHandler);
+
+		[Export ("geocodeAddressString:completionHandler:")]
+		void GeocodeAddress (string addressString, CLGeocodeCompletionHandler completionHandler);
+
+		[Export ("geocodeAddressString:inRegion:completionHandler:")]
+		void GeocodeAddress (string addressString, CLRegion region, CLGeocodeCompletionHandler completionHandler);
+
+		[Export ("cancelGeocode")]
+		void CancelGeocode ();
+	}
+
 #endif
 }
 

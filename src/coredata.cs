@@ -1,3 +1,12 @@
+// This file describes the API that the generator will produce
+//
+// Authors:
+//   MonoMac community
+//   Miguel de Icaza
+//
+// Copyright 2009, 2011, MonoMac community
+// Copyright 2011, Xamarin, Inc.
+//
 using System;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
