@@ -16,3 +16,7 @@ CoreData:
 	enum (currently unbound) of errors
 
 	NSPersistentStoreCoordinator has many NSDictionary-based APIs that should be strongly typed instead
+
+ImageIO:
+	The CGImageSource.CopyProperties exposes one of those ugly NSDictionary's
+	to expose data.   This should be strongly typed
