@@ -1810,6 +1810,12 @@ namespace MonoMac.Foundation
 	
 		[Export ("cancelAuthenticationChallenge:")]
 		void CancelAuthenticationChallenge (NSUrlAuthenticationChallenge  challenge);
+
+#if !MONOMAC
+		// Extension from iOS5, NewsstandKit
+		[Export ("newsstandAssetDownload")]
+		MonoTouch.NewsstandKit.NKAssetDownload NewsstandAssetDownload { get; }
+#endif
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLConnectionDelegate")]

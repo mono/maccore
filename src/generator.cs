@@ -1357,7 +1357,8 @@ public class Generator {
 		"MonoTouch.CoreLocation", 
 		"MonoTouch.MapKit", 
 		"MonoTouch.UIKit",
-		"MonoTouch.CoreGraphics"
+		"MonoTouch.CoreGraphics",
+		"MonoTouch.NewsstandKit"
 #endif
 	};
 		
