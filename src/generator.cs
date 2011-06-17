@@ -1066,6 +1066,8 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CGLayer), "IntPtr", "{0}.Handle", "new CGLayer ("));
 #if !MONOMAC
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));
+		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreVideo.CVImageBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreVideo.CMImageBuffer ("));
+
 #endif
 
 		marshal_types.Add (new MarshalType (typeof (BlockLiteral), "BlockLiteral", "{0}", "THIS_IS_BROKEN"));

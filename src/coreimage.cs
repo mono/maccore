@@ -41,6 +41,9 @@ using MonoMac.ObjCRuntime;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreImage;
 using MonoMac.CoreVideo;
+#if !MONOMAC
+using MonoTouch.OpenGLES;
+#endif
 
 namespace MonoMac.CoreImage {
 
@@ -101,6 +104,28 @@ namespace MonoMac.CoreImage {
 		[Export ("contextWithCGContext:options:")]
 		CIContext FromContext (CGContext ctx, [NullAllowed] NSDictionary options);
 
+#if !MONOMAC
+		[Static]
+		[Export ("contextWithEAGLContext:")]
+		CIContext FromContext (EAGLContext eaglContext);
+
+		[Static, Internal]
+		[Export ("contextWithOptions:")]
+		CIContext FromOptions (NSDictionary dictionary);
+
+		[Export ("render:toCVPixelBuffer:")]
+		void Render (CIImage image, CVPixelBuffer buffer);
+
+		[Export ("render:toCVPixelBuffer:bounds:colorSpace:")]
+		void Render (CIImage image, CVPixelBuffer buffer, RectangleF rectangle, CGColorSpace cs);
+
+		[Export ("inputImageMaximumSize")]
+		SizeF InputImageMaximumSize { get; }
+
+		[Export ("outputImageMaximumSize")]
+		SizeF OutputImageMaximumSize { get; }
+#endif
+
 		[Export ("drawImage:atPoint:fromRect:")]
 		void DrawImage (CIImage image, PointF atPoint, RectangleF fromRect);
 
@@ -155,9 +180,6 @@ namespace MonoMac.CoreImage {
 		[Export ("name")]
 		string Name { get; set;}
 
-		[Export ("apply:arguments:options:")]
-		CIImage Applyargumentsoptions (CIKernel k, NSArray args, NSDictionary options);
-
 		[Static]
 		[Export ("filterWithName:")]
 		CIFilter FromName (string name);
@@ -169,6 +191,10 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("filterNamesInCategories:")]
 		string [] FilterNamesInCategories (string [] categories);
+
+#if MONOMAC
+		[Export ("apply:arguments:options:")]
+		CIImage Apply (CIKernel k, NSArray args, NSDictionary options);
 
 		[Static]
 		[Export ("registerFilterName:constructor:classAttributes:")]
@@ -189,6 +215,10 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("localizedReferenceDocumentationForFilterName:")]
 		NSUrl FilterLocalizedReferenceDocumentation (string filterName);
+#else
+		[Export ("outputImage")]
+		CIImage OutputImage { get; }
+#endif
 
 		[Field ("kCIAttributeFilterName", "Quartz")]
 		NSString AttributeFilterName  { get; }
@@ -196,11 +226,13 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIAttributeFilterDisplayName", "Quartz")]
 		NSString AttributeFilterDisplayName  { get; }
 
+#if MONOMAC
 		[Field ("kCIAttributeDescription", "Quartz")]
 		NSString AttributeDescription  { get; }
 
 		[Field ("kCIAttributeReferenceDocumentation", "Quartz")]
 		NSString AttributeReferenceDocumentation  { get; }
+#endif
 
 		[Field ("kCIAttributeFilterCategories", "Quartz")]
 		NSString AttributeFilterCategories  { get; }
@@ -235,6 +267,7 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIAttributeDisplayName", "Quartz")]
 		NSString AttributeDisplayName  { get; }
 
+#if MONOMAC
 		[Field ("kCIUIParameterSet", "Quartz")]
 		NSString UIParameterSet  { get; }
 
@@ -249,6 +282,7 @@ namespace MonoMac.CoreImage {
 
 		[Field ("kCIUISetDevelopment", "Quartz")]
 		NSString UISetDevelopment  { get; }
+#endif
 
 		[Field ("kCIAttributeTypeTime", "Quartz")]
 		NSString AttributeTypeTime  { get; }
@@ -286,9 +320,16 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIAttributeTypeOpaqueColor", "Quartz")]
 		NSString AttributeTypeOpaqueColor  { get; }
 
+#if MONOMAC
 		[Field ("kCIAttributeTypeGradient", "Quartz")]
 		NSString AttributeTypeGradient  { get; }
+#else
+		[Field ("kCIAttributeTypeImage", "Quartz")]
+		NSString AttributeTypeImage  { get; }
 
+		[Field ("kCIAttributeTypeTransform", "Quartz")]
+		NSString AttributeTypeTransform  { get; }
+#endif
 		[Field ("kCICategoryDistortionEffect", "Quartz")]
 		NSString CategoryDistortionEffect  { get; }
 
@@ -349,6 +390,7 @@ namespace MonoMac.CoreImage {
 		[Field ("kCICategoryBuiltIn", "Quartz")]
 		NSString CategoryBuiltIn  { get; }
 
+#if MONOMAC
 		[Field ("kCICategoryFilterGenerator", "Quartz")]
 		NSString CategoryFilterGenerator  { get; }
 
@@ -361,6 +403,9 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIApplyOptionUserInfo", "Quartz")]
 		NSString ApplyOptionUserInfo  { get; }
 
+		[Field ("kCIApplyOptionColorSpace", "Quartz")]
+		NSString ApplyOptionColorSpace  { get; }
+#endif
 		[Field ("kCIOutputImageKey", "Quartz")]
 		NSString OutputImageKey  { get; }
 
@@ -370,6 +415,7 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIInputImageKey", "Quartz")]
 		NSString InputImageKey  { get; }
 
+#if MONOMAC
 		[Field ("kCIInputTimeKey", "Quartz")]
 		NSString InputTimeKey  { get; }
 
@@ -432,8 +478,10 @@ namespace MonoMac.CoreImage {
 
 		[Field ("kCIInputExtentKey", "Quartz")]
 		NSString InputExtentKey  { get; }
+#endif
 	}
 
+#if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CIFilterGenerator {
 		[Static, Export ("filterGenerator")]
@@ -513,7 +561,7 @@ namespace MonoMac.CoreImage {
 		[Export ("intersectWithRect:")]
 		CIFilterShape IntersectWithRect (Rectangle rectangle);
 	}
-
+#endif
 	[BaseType (typeof (NSObject))]
 	public interface CIImage {
 		[Static]
@@ -697,6 +745,7 @@ namespace MonoMac.CoreImage {
 		void LoadPlugInallowNonExecutable (NSUrl pluginUrl, bool allowNonExecutable);
 	}
 
+#if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CISampler {
 		[Static, Export ("samplerWithImage:")]
@@ -736,6 +785,7 @@ namespace MonoMac.CoreImage {
 		[Field ("kCISamplerFilterLinear", "Quartz"), Internal]
 		NSString FilterLinear { get; }
 	}
+#endif
 	
 	[BaseType (typeof (NSObject))]
 	interface CIVector {
