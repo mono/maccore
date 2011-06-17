@@ -136,13 +136,13 @@ namespace MonoMac.CoreImage {
 		CGImage CreateCGImage (CIImage image, RectangleF fromRectangle);
 
 		[Export ("createCGImage:fromRect:format:colorSpace:")]
-		CGImage CreateCGImage (CIImage image, RectangleF fromRect, CIFormat format, CGColorSpace colorSpace);
+		CGImage CreateCGImage (CIImage image, RectangleF fromRect, int ciImageFormat, CGColorSpace colorSpace);
 
 		[Internal, Export ("createCGLayerWithSize:info:")]
 		CGLayer CreateCGLayer (SizeF size, [NullAllowed] NSDictionary info);
 
 		[Export ("render:toBitmap:rowBytes:bounds:format:colorSpace:")]
-		void RenderToBitmap (CIImage image, IntPtr bitmapPtr, int bytesPerRow, RectangleF bounds, CIFormat bitmapFormat, CGColorSpace colorSpace);
+		void RenderToBitmap (CIImage image, IntPtr bitmapPtr, int bytesPerRow, RectangleF bounds, int bitmapFormat, CGColorSpace colorSpace);
 
 		//[Export ("render:toIOSurface:bounds:colorSpace:")]
 		//void RendertoIOSurfaceboundscolorSpace (CIImage im, IOSurfaceRef surface, RectangleF r, CGColorSpaceRef cs, );
@@ -562,6 +562,7 @@ namespace MonoMac.CoreImage {
 		CIFilterShape IntersectWithRect (Rectangle rectangle);
 	}
 #endif
+	
 	[BaseType (typeof (NSObject))]
 	public interface CIImage {
 		[Static]
@@ -582,7 +583,7 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithBitmapData:bytesPerRow:size:format:colorSpace:")]
-		CIImage FromData (NSData bitmapData, int bpr, SizeF size, CIFormat format, CGColorSpace colorspace);
+		CIImage FromData (NSData bitmapData, int bpr, SizeF size, int ciImageFormat, CGColorSpace colorspace);
 
 		[Static]
 		[Export ("imageWithTexture:size:flipped:colorSpace:")]
@@ -647,7 +648,7 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (NSData data, NSDictionary d);
 
 		[Export ("initWithBitmapData:bytesPerRow:size:format:colorSpace:")]
-		IntPtr Constructor (NSData d, int bpr, SizeF size, CIFormat f, CGColorSpace c);
+		IntPtr Constructor (NSData d, int bpr, SizeF size, int f, CGColorSpace c);
 
 		[Export ("initWithTexture:size:flipped:colorSpace:")]
 		IntPtr Constructor (int glTextureName, SizeF size, bool flag, CGColorSpace cs);
@@ -691,21 +692,42 @@ namespace MonoMac.CoreImage {
 
 		[Export ("colorSpace")]
 		CGColorSpace ColorSpace { get; }
+
+#if MONOMAC
+		[Export ("kCIFormatARGB8")]
+		int FormatARGB8 { get; }
+
+		[Export ("kCIFormatRGBA16")]
+		int FormatRGBA16 { get; }
+
+		[Export ("kCIFormatRGBAf")]
+		int FormatRGBAf { get; }
+
+		[Export ("kCIFormatRGBAh")]
+		int FormatRGBAh { get; }
+#else
+		[Export ("kCIFormatBGRA8")]
+		int FormatBGRA8 { get; }
+
+		[Export ("kCIFormatRGBA8")]
+		int FormatRGBA8 { get; }
+#endif
+		
 	}
 
 	[BaseType (typeof (NSObject))]
 	public interface CIImageAccumulator {
 		[Export ("imageAccumulatorWithExtent:format:")]
-		CIImageAccumulator FromRectangle (RectangleF rect, CIFormat format);
+		CIImageAccumulator FromRectangle (RectangleF rect, int ciImageFormat);
 
 		[Export ("initWithExtent:format:")]
-		IntPtr Constructor (RectangleF rectangle, CIFormat format);
+		IntPtr Constructor (RectangleF rectangle, int ciImageFormat);
 
 		[Export ("extent")]
 		RectangleF Extent { get; }
 
 		[Export ("format")]
-		CIFormat Format { get; }
+		int CIImageFormat { get; }
 
 		[Export ("setImage:dirtyRect:")]
 		void SetImageDirty (CIImage image, RectangleF dirtyRect);
@@ -852,5 +874,61 @@ namespace MonoMac.CoreImage {
 		string StringRepresentation ();
 
 	}
-	
+
+	[BaseType (typeof (NSObject))]
+	interface CIDetector {
+		[Static, Export ("detectorOfType:context:options:"), Internal]
+		CIDetector FromType (NSString detectorType, CIContext context, [NullAllowed] NSDictionary options);
+
+		[Export ("featuresInImage:")]
+		CIFeature [] GetFeatures (CIImage image);
+
+		[Export ("featuresInImage:options:")]
+		CIFeature FeaturesInImage (CIImage image, NSDictionary options);
+
+		[Field ("CIDetectorTypeFace"), Internal]
+		NSString TypeFace { get; }
+		
+		[Field ("CIDetectorImageOrientation"), Internal]
+		NSString ImageOrientation { get; }
+
+		[Field ("CIDetectorAccuracy"), Internal]
+		NSString Accuracy { get; }
+
+		[Field ("CIDetectorAccuracyLow"), Internal]
+		NSString AccuracyLow { get; }
+
+		[Field ("CIDetectorAccuracyHigh"), Internal]
+		NSString AccuracyHigh { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface CIFeature {
+		[Export ("type")]
+		NSString Type { get; }
+
+		[Export ("bounds")]
+		RectangleF Bounds { get; }
+	}
+
+	[BaseType (typeof (CIFeature))]
+	interface CIFaceFeature {
+		[Export ("hasLeftEyePosition")]
+		bool HasLeftEyePosition { get; }
+		
+		[Export ("leftEyePosition")]
+		PointF LeftEyePosition { get; }
+		
+		[Export ("hasRightEyePosition")]
+		bool HasRightEyePosition { get; }
+		
+		[Export ("rightEyePosition")]
+		PointF RightEyePosition { get; }
+		
+		[Export ("hasMouthPosition")]
+		bool HasMouthPosition { get; }
+		
+		[Export ("mouthPosition")]
+		PointF MouthPosition { get; }
+	}
 }

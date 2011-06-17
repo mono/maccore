@@ -1,4 +1,7 @@
 //
+// Authors:
+//   Miguel de Icaza
+//
 // Copyright 2011, Xamarin, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -20,19 +23,27 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
-using System;
+using MonoMac.Foundation;
+using MonoMac.CoreGraphics;
+using System.Drawing;
+using MonoMac.CoreFoundation;
 
 namespace MonoMac.CoreImage {
-
-	public enum CIImageOrientation {
-		TopLeft = 1,
-		TopRight = 2,
-		BottomRight = 3,
-		BottomLeft = 4,
-		LeftTop = 5,
-		RightTop = 6,
-		RightBottom = 7,
-		LeftBottom = 8
+	public partial class CIDetector {
+		static CIDetector CreateFaceDetector (CIContext context, bool highAccuracy)
+		{
+			// TypeFace is the only detector supported now
+			using (var options = NSDictionary.FromObjectsAndKeys (new NSObject [] { highAccuracy ? AccuracyHigh : AccuracyLow },
+									      new NSObject [] { Accuracy }))
+				return FromType (TypeFace, context, options);
+		}
+		
+		CIFeature FeaturesInImage (CIImage image, CIImageOrientation orientation)
+		{
+			using (var options = NSDictionary.FromObjectsAndKeys (new NSObject [] { new NSNumber ((int) orientation) },
+									      new NSObject [] { ImageOrientation })){
+				return FeaturesInImage (image, options);
+			}
+		}
 	}
 }
