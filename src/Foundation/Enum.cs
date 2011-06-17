@@ -132,19 +132,31 @@ namespace MonoMac.Foundation  {
 	[Flags]
 	public enum NSDataReadingOptions: uint {
 		   Mapped =   1 << 0,
-		   Uncached = 1 << 1
+		   Uncached = 1 << 1,
+
+		   [Since (5,0)]
+		   Coordinated = 1 << 2,
+		   [Since (5,0)]
+		   MappedAlways = 1 << 3
 	}
 
 	[Flags]
 	public enum NSDataWritingOptions : uint {
 		Atomic = 1,
 
+		[Since (5,0)]
+		Coordinated = 1 << 2,
+			
 		[Since (4,0)]
 		FileProtectionNone = 0x10000000,
 		[Since (4,0)]
 		FileProtectionComplete = 0x20000000,
 		[Since (4,0)]
-		NSDataWritingFileProtectionMask = 0xf0000000
+		FileProtectionMask = 0xf0000000,
+		[Since (5,0)]
+		FileProtectionCompleteUnlessOpen = 0x30000000,
+		[Since (5,0)]
+		FileProtectionCompleteUntilFirstUserAuthentication = 0x40000000,
 	}
 	
 	public delegate void NSSetEnumerator (NSObject obj, ref bool stop);
