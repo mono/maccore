@@ -4103,7 +4103,70 @@ namespace MonoMac.Foundation
 		[Export ("fileManager:shouldProceedAfterError:removingItemAtPath:")]
 		bool ShouldProceedAfterErrorRemovingItem (NSFileManager fileManager, NSError error, string path);
 	}
-    
+
+	[BaseType (typeof (NSObject))]
+	interface NSFileVersion {
+		[Export ("URL")]
+		NSUrl Url { get;  }
+
+		[Export ("localizedName")]
+		string LocalizedName { get;  }
+
+		[Export ("localizedNameOfSavingComputer")]
+		string LocalizedNameOfSavingComputer { get;  }
+
+		[Export ("modificationDate")]
+		NSDate ModificationDate { get;  }
+
+		[Export ("persistentIdentifier")]
+		NSObject PersistentIdentifier { get;  }
+
+		[Export ("conflict")]
+		bool IsConflict { [Bind ("isConflict")] get;  }
+
+		[Export ("resolved")]
+		bool Resolved { [Bind ("isResolved")] get; set;  }
+
+		[Export ("discardable")]
+		bool Discardable { [Bind ("isDiscardable")] get; set;  }
+
+		[Static]
+		[Export ("currentVersionOfItemAtURL:")]
+		NSFileVersion GetCurrentVersion (NSUrl url);
+
+		[Static]
+		[Export ("otherVersionsOfItemAtURL:")]
+		NSFileVersion [] GetOtherVersions (NSUrl url);
+
+		[Static]
+		[Export ("unresolvedConflictVersionsOfItemAtURL:")]
+		NSFileVersion [] GetUnresolvedConflictVersions (NSUrl url);
+
+		[Static]
+		[Export ("versionOfItemAtURL:forPersistentIdentifier:")]
+		NSFileVersion GetSpecificVersion (NSUrl url, NSObject persistentIdentifier);
+
+#if MONOMAC
+		[Static]
+		[Export ("addVersionOfItemAtURL:withContentsOfURL:options:error:")]
+		NSFileVersion AddVersion (NSUrl url, NSUrl contentsURL, NSFileVersionAddingOptions options, out NSError outError);
+
+		[Static]
+		[Export ("temporaryDirectoryURLForNewVersionOfItemAtURL:")]
+		NSUrl TemporaryDirectoryForItem (NSUrl url);
+#endif
+
+		[Export ("replaceItemAtURL:options:error:")]
+		NSUrl ReplaceItem (NSUrl url, NSFileVersionReplacingOptions options, out NSError error);
+
+		[Export ("removeAndReturnError:")]
+		bool Remove (out NSError outError);
+
+		[Static]
+		[Export ("removeOtherVersionsOfItemAtURL:error:")]
+		bool RemoveOtherVersions (NSUrl url, out NSError outError);
+	}
+
 	[BaseType (typeof (NSEnumerator))]
 	public interface NSDirectoryEnumerator {
 		[Export ("fileAttributes")]

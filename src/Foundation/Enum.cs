@@ -412,4 +412,13 @@ namespace MonoMac.Foundation  {
 	public enum NSNumberFormatterRoundingMode {
 		Ceiling, Floor, Down, Up, HalfEven, HalfDown, HalfUp
 	}
+
+	[Flags]
+	public enum NSFileVersionReplacingOptions {
+		ByMoving = 1 << 0
+	}
+
+	public enum NSFileVersionAddingOptions {
+		ByMoving = 1 << 0
+	}
 }
