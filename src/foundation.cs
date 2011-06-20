@@ -2804,11 +2804,11 @@ namespace MonoMac.Foundation
 		[Wrap ("WeakDelegate")]
 		NSStreamDelegate Delegate { get; set; }
 
-		[Export ("propertyForKey:")]
-		NSObject PropertyForKey (string  key);
+		[Export ("propertyForKey:"), Internal]
+		NSObject PropertyForKey (NSString key);
 	
-		[Export ("setProperty:forKey:")]
-		bool SetPropertyForKey (NSObject property, string key);
+		[Export ("setProperty:forKey:"), Internal]
+		bool SetPropertyForKey (NSObject property, NSString key);
 	
 		[Export ("scheduleInRunLoop:forMode:")]
 		void Schedule (NSRunLoop aRunLoop, string mode);
@@ -2822,10 +2822,75 @@ namespace MonoMac.Foundation
 		[Export ("streamError")]
 		NSError Error { get; }
 
-#if !MONOMAC
+
+		[Field ("NSStreamSocketSecurityLevelKey")]
+		NSString SocketSecurityLevelKey { get; }
+
+		[Field ("NSStreamSocketSecurityLevelNone")]
+		NSString SocketSecurityLevelNone { get; }
+
+		[Field ("NSStreamSocketSecurityLevelSSLv2")]
+		NSString SocketSecurityLevelSslV2 { get; }
+
+		[Field ("NSStreamSocketSecurityLevelSSLv3")]
+		NSString SocketSecurityLevelSslV3 { get; }
+
+		[Field ("NSStreamSocketSecurityLevelTLSv1")]
+		NSString SocketSecurityLevelTlsV1 { get; }
+
+		[Field ("NSStreamSocketSecurityLevelNegotiatedSSL")]
+		NSString SocketSecurityLevelNegotiatedSsl { get; }
+
+		[Field ("NSStreamSOCKSProxyConfigurationKey")]
+		NSString SocksProxyConfigurationKey { get; }
+
+		[Field ("NSStreamSOCKSProxyHostKey")]
+		NSString SocksProxyHostKey { get; }
+
+		[Field ("NSStreamSOCKSProxyPortKey")]
+		NSString SocksProxyPortKey { get; }
+
+		[Field ("NSStreamSOCKSProxyVersionKey")]
+		NSString SocksProxyVersionKey { get; }
+
+		[Field ("NSStreamSOCKSProxyUserKey")]
+		NSString SocksProxyUserKey { get; }
+
+		[Field ("NSStreamSOCKSProxyPasswordKey")]
+		NSString SocksProxyPasswordKey { get; }
+
+		[Field ("NSStreamSOCKSProxyVersion4")]
+		NSString SocksProxyVersion4 { get; }
+
+		[Field ("NSStreamSOCKSProxyVersion5")]
+		NSString SocksProxyVersion5 { get; }
+
+		[Field ("NSStreamDataWrittenToMemoryStreamKey")]
+		NSString DataWrittenToMemoryStreamKey { get; }
+
+		[Field ("NSStreamFileCurrentOffsetKey")]
+		NSString FileCurrentOffsetKey { get; }
+
+		[Field ("NSStreamSocketSSLErrorDomain")]
+		NSString SocketSslErrorDomain { get; }
+
+		[Field ("NSStreamSOCKSErrorDomain")]
+		NSString SocksErrorDomain { get; }
+
+		[Field ("NSStreamNetworkServiceType")]
+		NSString NetworkServiceType { get; }
+
 		[Field ("NSStreamNetworkServiceTypeVoIP")]
 		NSString NetworkServiceTypeVoIP { get; }
-#endif
+
+		[Field ("NSStreamNetworkServiceTypeVideo")]
+		NSString NetworkServiceTypeVideo { get; }
+
+		[Field ("NSStreamNetworkServiceTypeBackground")]
+		NSString NetworkServiceTypeBackground { get; }
+
+		[Field ("NSStreamNetworkServiceTypeVoice")]
+		NSString NetworkServiceTypeVoice { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
