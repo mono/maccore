@@ -461,4 +461,8 @@ namespace MonoMac.Foundation  {
 		OmitOther = 8,
 		JoinNames = 16
 	}
+
+	public enum NSUbiquitousKeyValueStoreChangeReason {
+		ServerChange, InitialSyncChange, QuotaViolationChange
+	}	
 }

@@ -1693,7 +1693,81 @@ namespace MonoMac.Foundation
 		[Export ("timeZoneWithAbbreviation:"), Static]
 		NSTimeZone FromAbbreviation (string abbreviation);
 	}
+
 	
+	[BaseType (typeof (NSObject))]
+	interface NSUbiquitousKeyValueStore {
+		[Static]
+		[Export ("defaultStore")]
+		NSUbiquitousKeyValueStore DefaultStore { get; }
+
+		[Export ("objectForKey:"), Internal]
+		NSObject ObjectForKey (string aKey);
+
+		[Export ("setObject:forKey:"), Internal]
+		void SetObjectForKey (NSObject anObject, string aKey);
+
+		[Export ("removeObjectForKey:")]
+		void Remove (string aKey);
+
+		[Export ("stringForKey:")]
+		string GetString (string aKey);
+
+		[Export ("arrayForKey:")]
+		NSObject [] GetArray (string aKey);
+
+		[Export ("dictionaryForKey:")]
+		NSDictionary GetDictionary (string aKey);
+
+		[Export ("dataForKey:")]
+		NSData GetData (string aKey);
+
+		[Export ("longLongForKey:")]
+		long GetLong (string aKey);
+
+		[Export ("doubleForKey:")]
+		double GetDouble (string aKey);
+
+		[Export ("boolForKey:")]
+		bool GetBool (string aKey);
+
+		[Export ("setString:forKey:"), Internal]
+		void _SetString (string aString, string aKey);
+
+		[Export ("setData:forKey:"), Internal]
+		void _SetData (NSData data, string key);
+
+		[Export ("setArray:forKey:"), Internal]
+		void _SetArray (NSObject [] array, string key);
+
+		[Export ("setDictionary:forKey:"), Internal]
+		void _SetDictionary (NSDictionary aDictionary, string aKey);
+
+		[Export ("setLongLong:forKey:"), Internal]
+		void _SetLong (long value, string aKey);
+
+		[Export ("setDouble:forKey:"), Internal]
+		void _SetDouble (double value, string aKey);
+
+		[Export ("setBool:forKey:"), Internal]
+		void _SetBool (bool value, string aKey);
+
+		[Export ("dictionaryRepresentation")]
+		NSDictionary DictionaryRepresentation ();
+
+		[Export ("synchronize")]
+		bool Synchronize ();
+
+		[Field ("NSUbiquitousKeyValueStoreDidChangeExternallyNotification")]
+		NSString DidChangeExternallyNotification { get; }
+
+		[Field ("NSUbiquitousKeyValueStoreChangeReasonKey")]
+		NSString ChangeReasonKey { get; }
+
+		[Field ("NSUbiquitousKeyValueStoreChangedKeysKey")]
+		NSString ChangedKeysKey { get; }
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSUserDefaults {
 		[Static]
