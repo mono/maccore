@@ -43,6 +43,7 @@ using MonoMac.CoreImage;
 using MonoMac.CoreVideo;
 #if !MONOMAC
 using MonoTouch.OpenGLES;
+using MonoTouch.UIKit;
 #endif
 
 namespace MonoMac.CoreImage {
@@ -711,6 +712,13 @@ namespace MonoMac.CoreImage {
 
 		[Export ("kCIFormatRGBA8")]
 		int FormatRGBA8 { get; }
+
+		// UIKit extensions
+		[Export ("initWithImage:")]
+		IntPtr Constructor (UIImage image);
+
+		[Export ("initWithImage:options")]
+		IntPtr Constructor (UIImage image, NSDictionary options);
 #endif
 		
 	}
