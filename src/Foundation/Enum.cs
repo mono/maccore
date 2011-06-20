@@ -452,4 +452,13 @@ namespace MonoMac.Foundation  {
 		ForMoving = 2,
 		ForMerging = 4
 	}
+
+	[Flags]
+	public enum NSLinguisticTaggerOptions {
+		OmitWords = 1,
+		OmitPunctuation = 2,
+		OmitWhitespace = 4,
+		OmitOther = 8,
+		JoinNames = 16
+	}
 }

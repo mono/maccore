@@ -1296,6 +1296,166 @@ namespace MonoMac.Foundation
 		[Export ("null"), Static]
 		NSNull Null { get; }
 	}
+
+	delegate void NSLingusticEnumerator (NSString tag, NSRange tokenRange, NSRange sentenceRange, ref bool stop);
+	
+	[BaseType (typeof (NSObject))]
+	interface NSLinguisticTagger {
+		[Export ("initWithTagSchemes:options:")]
+		IntPtr Constructor (NSString [] tagSchemes, NSLinguisticTaggerOptions opts);
+
+		[Export ("tagSchemes")]
+		NSString [] TagSchemes { get; }
+
+		[Static]
+		[Export ("availableTagSchemesForLanguage:")]
+		NSString [] GetAvailableTagSchemesForLanguage (string language);
+
+		[Export ("setOrthography:range:")]
+		void SetOrthographyrange (NSOrthography orthography, NSRange range);
+
+		[Export ("orthographyAtIndex:effectiveRange:"), Internal]
+		NSOrthography GetOrthography (int charIndex, IntPtr effectiveRangePtr);
+
+		[Export ("stringEditedInRange:changeInLength:")]
+		void StringEditedInRange (NSRange newRange, int delta);
+
+		[Export ("enumerateTagsInRange:scheme:options:usingBlock:")]
+		void EnumerateTagsInRange (NSRange range, NSString tagScheme, NSLinguisticTaggerOptions opts, NSLingusticEnumerator enumerator);
+
+		[Export ("sentenceRangeForRange:")]
+		NSRange GetSentenceRangeForRange (NSRange range);
+
+		[Export ("tagAtIndex:scheme:tokenRange:sentenceRange:"), Internal]
+		string GetTag (int charIndex, NSString tagScheme, IntPtr tokenRangePtr, IntPtr sentenceRangePtr);
+
+		[Export ("tagsInRange:scheme:options:tokenRanges:"), Internal]
+		NSString [] GetTangsInRange (NSRange range, NSString tagScheme, NSLinguisticTaggerOptions opts, IntPtr refToNSArrayTokenRanges);
+
+		[Export ("possibleTagsAtIndex:scheme:tokenRange:sentenceRange:scores:"), Internal]
+		NSString [] GetPossibleTags (int charIndex, NSString tagScheme, IntPtr tokenRangePointer, IntPtr sentenceRangePointer, IntPtr IntPtrToReturnArrayScores);
+
+		//Detected properties
+		[Export ("string")]
+		string AnalysisString { get; set; }
+	}
+
+	[Static]
+	public interface NSLinguisticTag {
+		[Export ("NSLinguisticTagSchemeTokenType")]
+		NSString SchemeTokenType { get; }
+
+		[Export ("NSLinguisticTagSchemeLexicalClass")]
+		NSString SchemeLexicalClass { get; }
+
+		[Export ("NSLinguisticTagSchemeNameType")]
+		NSString SchemeNameType { get; }
+
+		[Export ("NSLinguisticTagSchemeNameTypeOrLexicalClass")]
+		NSString SchemeNameTypeOrLexicalClass { get; }
+
+		[Export ("NSLinguisticTagSchemeLemma")]
+		NSString SchemeLemma { get; }
+
+		[Export ("NSLinguisticTagSchemeLanguage")]
+		NSString SchemeLanguage { get; }
+
+		[Export ("NSLinguisticTagSchemeScript")]
+		NSString SchemeScript { get; }
+
+		[Export ("NSLinguisticTagWord")]
+		NSString Word { get; }
+
+		[Export ("NSLinguisticTagPunctuation")]
+		NSString Punctuation { get; }
+
+		[Export ("NSLinguisticTagWhitespace")]
+		NSString Whitespace { get; }
+
+		[Export ("NSLinguisticTagOther")]
+		NSString Other { get; }
+
+		[Export ("NSLinguisticTagNoun")]
+		NSString Noun { get; }
+
+		[Export ("NSLinguisticTagVerb")]
+		NSString Verb { get; }
+
+		[Export ("NSLinguisticTagAdjective")]
+		NSString Adjective { get; }
+
+		[Export ("NSLinguisticTagAdverb")]
+		NSString Adverb { get; }
+
+		[Export ("NSLinguisticTagPronoun")]
+		NSString Pronoun { get; }
+
+		[Export ("NSLinguisticTagDeterminer")]
+		NSString Determiner { get; }
+
+		[Export ("NSLinguisticTagParticle")]
+		NSString Particle { get; }
+
+		[Export ("NSLinguisticTagPreposition")]
+		NSString Preposition { get; }
+
+		[Export ("NSLinguisticTagNumber")]
+		NSString Number { get; }
+
+		[Export ("NSLinguisticTagConjunction")]
+		NSString Conjunction { get; }
+
+		[Export ("NSLinguisticTagInterjection")]
+		NSString Interjection { get; }
+
+		[Export ("NSLinguisticTagClassifier")]
+		NSString Classifier { get; }
+
+		[Export ("NSLinguisticTagIdiom")]
+		NSString Idiom { get; }
+
+		[Export ("NSLinguisticTagOtherWord")]
+		NSString OtherWord { get; }
+
+		[Export ("NSLinguisticTagSentenceTerminator")]
+		NSString SentenceTerminator { get; }
+
+		[Export ("NSLinguisticTagOpenQuote")]
+		NSString OpenQuote { get; }
+
+		[Export ("NSLinguisticTagCloseQuote")]
+		NSString CloseQuote { get; }
+
+		[Export ("NSLinguisticTagOpenParenthesis")]
+		NSString OpenParenthesis { get; }
+
+		[Export ("NSLinguisticTagCloseParenthesis")]
+		NSString CloseParenthesis { get; }
+
+		[Export ("NSLinguisticTagWordJoiner")]
+		NSString WordJoiner { get; }
+
+		[Export ("NSLinguisticTagDash")]
+		NSString Dash { get; }
+
+		[Export ("NSLinguisticTagOtherPunctuation")]
+		NSString OtherPunctuation { get; }
+
+		[Export ("NSLinguisticTagParagraphBreak")]
+		NSString ParagraphBreak { get; }
+
+		[Export ("NSLinguisticTagOtherWhitespace")]
+		NSString OtherWhitespace { get; }
+
+		[Export ("NSLinguisticTagPersonalName")]
+		NSString PersonalName { get; }
+
+		[Export ("NSLinguisticTagPlaceName")]
+		NSString PlaceName { get; }
+
+		[Export ("NSLinguisticTagOrganizationName")]
+		NSString OrganizationName { get; }
+	}
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSLocale {
@@ -2568,7 +2728,35 @@ namespace MonoMac.Foundation
 		[Export ("suspended")]
 		bool Suspended { [Bind ("isSuspended")]get; set; }
 	}
+
 	
+	[BaseType (typeof (NSObject))]
+	interface NSOrthography {
+		[Export ("dominantScript")]
+		string DominantScript { get;  }
+
+		[Export ("languageMap")]
+		NSDictionary LanguageMap { get;  }
+
+		[Export ("dominantLanguage")]
+		string DominantLanguage { get;  }
+
+		[Export ("allScripts")]
+		string [] AllScripts { get;  }
+
+		[Export ("allLanguages")]
+		string [] AllLanguages { get;  }
+
+		[Export ("languagesForScript:")]
+		string [] LanguagesForScript (string script);
+
+		[Export ("dominantLanguageForScript:")]
+		string DominantLanguageForScript (string script);
+
+		[Export ("initWithDominantScript:languageMap:")]
+		IntPtr Constructor (string dominantScript, NSDictionary languageMap);
+	}
+
 	[BaseType (typeof (NSStream))]
 	public interface NSOutputStream {
 		[Export ("hasSpaceAvailable")]
