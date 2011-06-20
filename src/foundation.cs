@@ -1958,9 +1958,326 @@ namespace MonoMac.Foundation
 		void WriteToPasteboard (NSPasteboard pasteboard);
 		
 #endif
+
+		[Export ("getResourceValue:forKey:error:"), Internal]
+		bool GetResourceValue (out NSObject value, string key, out NSError error);
+
+		[Export ("resourceValuesForKeys:error:")]
+		NSDictionary GetResourceValues (NSString [] keys, out NSError error);
+
+		[Export ("setResourceValue:forKey:error:"), Internal]
+		bool SetResourceValue (NSObject value, string key, out NSError error);
 		
 		//[Export ("port")]
 		//NSNumber Port { get;}
+
+		[Field ("NSURLNameKey")]
+		NSString NameKey { get; }
+
+		[Field ("NSURLLocalizedNameKey")]
+		NSString LocalizedNameKey { get; }
+
+		[Field ("NSURLIsRegularFileKey")]
+		NSString IsRegularFileKey { get; }
+
+		[Field ("NSURLIsDirectoryKey")]
+		NSString IsDirectoryKey { get; }
+
+		[Field ("NSURLIsSymbolicLinkKey")]
+		NSString IsSymbolicLinkKey { get; }
+
+		[Field ("NSURLIsVolumeKey")]
+		NSString IsVolumeKey { get; }
+
+		[Field ("NSURLIsPackageKey")]
+		NSString IsPackageKey { get; }
+
+		[Field ("NSURLIsSystemImmutableKey")]
+		NSString IsSystemImmutableKey { get; }
+
+		[Field ("NSURLIsUserImmutableKey")]
+		NSString IsUserImmutableKey { get; }
+
+		[Field ("NSURLIsHiddenKey")]
+		NSString IsHiddenKey { get; }
+
+		[Field ("NSURLHasHiddenExtensionKey")]
+		NSString HasHiddenExtensionKey { get; }
+
+		[Field ("NSURLCreationDateKey")]
+		NSString CreationDateKey { get; }
+
+		[Field ("NSURLContentAccessDateKey")]
+		NSString ContentAccessDateKey { get; }
+
+		[Field ("NSURLContentModificationDateKey")]
+		NSString ContentModificationDateKey { get; }
+
+		[Field ("NSURLAttributeModificationDateKey")]
+		NSString AttributeModificationDateKey { get; }
+
+		[Field ("NSURLLinkCountKey")]
+		NSString LinkCountKey { get; }
+
+		[Field ("NSURLParentDirectoryURLKey")]
+		NSString ParentDirectoryURLKey { get; }
+
+		[Field ("NSURLVolumeURLKey")]
+		NSString VolumeURLKey { get; }
+
+		[Field ("NSURLTypeIdentifierKey")]
+		NSString TypeIdentifierKey { get; }
+
+		[Field ("NSURLLocalizedTypeDescriptionKey")]
+		NSString LocalizedTypeDescriptionKey { get; }
+
+		[Field ("NSURLLabelNumberKey")]
+		NSString LabelNumberKey { get; }
+
+		[Field ("NSURLLabelColorKey")]
+		NSString LabelColorKey { get; }
+
+		[Field ("NSURLLocalizedLabelKey")]
+		NSString LocalizedLabelKey { get; }
+
+		[Field ("NSURLEffectiveIconKey")]
+		NSString EffectiveIconKey { get; }
+
+		[Field ("NSURLCustomIconKey")]
+		NSString CustomIconKey { get; }
+
+		[Field ("NSURLFileSizeKey")]
+		NSString FileSizeKey { get; }
+
+		[Field ("NSURLFileAllocatedSizeKey")]
+		NSString FileAllocatedSizeKey { get; }
+
+		[Field ("NSURLIsAliasFileKey		")]
+		NSString IsAliasFileKey		 { get; }
+
+		[Field ("NSURLVolumeLocalizedFormatDescriptionKey")]
+		NSString VolumeLocalizedFormatDescriptionKey { get; }
+
+		[Field ("NSURLVolumeTotalCapacityKey")]
+		NSString VolumeTotalCapacityKey { get; }
+
+		[Field ("NSURLVolumeAvailableCapacityKey")]
+		NSString VolumeAvailableCapacityKey { get; }
+
+		[Field ("NSURLVolumeResourceCountKey")]
+		NSString VolumeResourceCountKey { get; }
+
+		[Field ("NSURLVolumeSupportsPersistentIDsKey")]
+		NSString VolumeSupportsPersistentIDsKey { get; }
+
+		[Field ("NSURLVolumeSupportsSymbolicLinksKey")]
+		NSString VolumeSupportsSymbolicLinksKey { get; }
+
+		[Field ("NSURLVolumeSupportsHardLinksKey")]
+		NSString VolumeSupportsHardLinksKey { get; }
+
+		[Field ("NSURLVolumeSupportsJournalingKey")]
+		NSString VolumeSupportsJournalingKey { get; }
+
+		[Field ("NSURLVolumeIsJournalingKey")]
+		NSString VolumeIsJournalingKey { get; }
+
+		[Field ("NSURLVolumeSupportsSparseFilesKey")]
+		NSString VolumeSupportsSparseFilesKey { get; }
+
+		[Field ("NSURLVolumeSupportsZeroRunsKey")]
+		NSString VolumeSupportsZeroRunsKey { get; }
+
+		[Field ("NSURLVolumeSupportsCaseSensitiveNamesKey")]
+		NSString VolumeSupportsCaseSensitiveNamesKey { get; }
+
+		[Field ("NSURLVolumeSupportsCasePreservedNamesKey")]
+		NSString VolumeSupportsCasePreservedNamesKey { get; }
+
+		// 5.0 Additions
+		[Since (5,0)]
+		[Field ("NSURLKeysOfUnsetValuesKey")]
+		NSString KeysOfUnsetValuesKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceIdentifierKey")]
+		NSString FileResourceIdentifierKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIdentifierKey")]
+		NSString VolumeIdentifierKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLPreferredIOBlockSizeKey")]
+		NSString PreferredIOBlockSizeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsReadableKey")]
+		NSString IsReadableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsWritableKey")]
+		NSString IsWritableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsExecutableKey")]
+		NSString IsExecutableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsMountTriggerKey")]
+		NSString IsMountTriggerKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileSecurityKey")]
+		NSString FileSecurityKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeKey")]
+		NSString FileResourceTypeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeNamedPipe")]
+		NSString FileResourceTypeNamedPipe { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeCharacterSpecial")]
+		NSString FileResourceTypeCharacterSpecial { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeDirectory")]
+		NSString FileResourceTypeDirectory { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeBlockSpecial")]
+		NSString FileResourceTypeBlockSpecial { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeRegular")]
+		NSString FileResourceTypeRegular { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeSymbolicLink")]
+		NSString FileResourceTypeSymbolicLink { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeSocket")]
+		NSString FileResourceTypeSocket { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeUnknown")]
+		NSString FileResourceTypeUnknown { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLTotalFileSizeKey")]
+		NSString TotalFileSizeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLTotalFileAllocatedSizeKey")]
+		NSString TotalFileAllocatedSizeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsRootDirectoryDatesKey")]
+		NSString VolumeSupportsRootDirectoryDatesKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsVolumeSizesKey")]
+		NSString VolumeSupportsVolumeSizesKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsRenamingKey")]
+		NSString VolumeSupportsRenamingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsAdvisoryFileLockingKey")]
+		NSString VolumeSupportsAdvisoryFileLockingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsExtendedSecurityKey")]
+		NSString VolumeSupportsExtendedSecurityKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsBrowsableKey")]
+		NSString VolumeIsBrowsableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeMaximumFileSizeKey")]
+		NSString VolumeMaximumFileSizeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsEjectableKey")]
+		NSString VolumeIsEjectableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsRemovableKey")]
+		NSString VolumeIsRemovableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsInternalKey")]
+		NSString VolumeIsInternalKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsAutomountedKey")]
+		NSString VolumeIsAutomountedKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsLocalKey")]
+		NSString VolumeIsLocalKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsReadOnlyKey")]
+		NSString VolumeIsReadOnlyKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeCreationDateKey")]
+		NSString VolumeCreationDateKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeURLForRemountingKey")]
+		NSString VolumeURLForRemountingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeUUIDStringKey")]
+		NSString VolumeUUIDStringKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeNameKey")]
+		NSString VolumeNameKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeLocalizedNameKey")]
+		NSString VolumeLocalizedNameKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsUbiquitousItemKey")]
+		NSString IsUbiquitousItemKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemHasUnresolvedConflictsKey")]
+		NSString UbiquitousItemHasUnresolvedConflictsKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemIsDownloadedKey")]
+		NSString UbiquitousItemIsDownloadedKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemIsDownloadingKey")]
+		NSString UbiquitousItemIsDownloadingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemIsUploadedKey")]
+		NSString UbiquitousItemIsUploadedKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemIsUploadingKey")]
+		NSString UbiquitousItemIsUploadingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemPercentDownloadedKey")]
+		NSString UbiquitousItemPercentDownloadedKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemPercentUploadedKey")]
+		NSString UbiquitousItemPercentUploadedKey { get; }
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLCache")]
