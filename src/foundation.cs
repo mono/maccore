@@ -4442,30 +4442,39 @@ namespace MonoMac.Foundation
 
 		[Export ("arguments")]
 		string [] Arguments { get; }
+
 		[Export ("environment")]
 		NSDictionary Environment { get; }
+
 		[Export ("processIdentifier")]
 		int ProcessIdentifier { get; }
+
 		[Export ("globallyUniqueString")]
 		string GloballyUniqueString { get; }
+
 		[Export ("processName")]
 		string ProcessName { get; set; }
 
 		[Export ("hostName")]
 		string HostName { get; }
+
 		[Export ("operatingSystem")]
-		uint OperatingSystem { get; }
+		int OperatingSystem { get; }
+
 		[Export ("operatingSystemName")]
 		string OperatingSystemName { get; }
+
 		[Export ("operatingSystemVersionString")]
 		string OperatingSystemVersionString { get; }
 
 		[Export ("physicalMemory")]
-		UInt64 PhysicalMemory { get; }
+		long PhysicalMemory { get; }
+		
 		[Export ("processorCount")]
-		uint ProcessorCount { get; }
+		int ProcessorCount { get; }
+		
 		[Export ("activeProcessorCount")]
-		uint ActiveProcessorCount { get; }
+		int ActiveProcessorCount { get; }
 	}
 
 	[BaseType (typeof (NSMutableData))]
