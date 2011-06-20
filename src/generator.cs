@@ -2060,11 +2060,11 @@ public class Generator {
 					print ("}");
 				}
 			}
-			
+
 			var eventArgTypes = new Dictionary<string,ParameterInfo[]> ();
 			var delegateTypes = new Dictionary<string,MethodInfo> ();
-			
-			if (bta.Events != null){
+
+			if (bta != null && bta.Events != null){
 				if (bta.Delegates == null){
 					Console.WriteLine ("In class {0} You specified the Events property, but did not bind those to names with Delegates", type.FullName);
 					Environment.Exit (1);

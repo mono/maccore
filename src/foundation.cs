@@ -1342,118 +1342,118 @@ namespace MonoMac.Foundation
 
 	[Static]
 	public interface NSLinguisticTag {
-		[Export ("NSLinguisticTagSchemeTokenType")]
+		[Field ("NSLinguisticTagSchemeTokenType")]
 		NSString SchemeTokenType { get; }
 
-		[Export ("NSLinguisticTagSchemeLexicalClass")]
+		[Field ("NSLinguisticTagSchemeLexicalClass")]
 		NSString SchemeLexicalClass { get; }
 
-		[Export ("NSLinguisticTagSchemeNameType")]
+		[Field ("NSLinguisticTagSchemeNameType")]
 		NSString SchemeNameType { get; }
 
-		[Export ("NSLinguisticTagSchemeNameTypeOrLexicalClass")]
+		[Field ("NSLinguisticTagSchemeNameTypeOrLexicalClass")]
 		NSString SchemeNameTypeOrLexicalClass { get; }
 
-		[Export ("NSLinguisticTagSchemeLemma")]
+		[Field ("NSLinguisticTagSchemeLemma")]
 		NSString SchemeLemma { get; }
 
-		[Export ("NSLinguisticTagSchemeLanguage")]
+		[Field ("NSLinguisticTagSchemeLanguage")]
 		NSString SchemeLanguage { get; }
 
-		[Export ("NSLinguisticTagSchemeScript")]
+		[Field ("NSLinguisticTagSchemeScript")]
 		NSString SchemeScript { get; }
 
-		[Export ("NSLinguisticTagWord")]
+		[Field ("NSLinguisticTagWord")]
 		NSString Word { get; }
 
-		[Export ("NSLinguisticTagPunctuation")]
+		[Field ("NSLinguisticTagPunctuation")]
 		NSString Punctuation { get; }
 
-		[Export ("NSLinguisticTagWhitespace")]
+		[Field ("NSLinguisticTagWhitespace")]
 		NSString Whitespace { get; }
 
-		[Export ("NSLinguisticTagOther")]
+		[Field ("NSLinguisticTagOther")]
 		NSString Other { get; }
 
-		[Export ("NSLinguisticTagNoun")]
+		[Field ("NSLinguisticTagNoun")]
 		NSString Noun { get; }
 
-		[Export ("NSLinguisticTagVerb")]
+		[Field ("NSLinguisticTagVerb")]
 		NSString Verb { get; }
 
-		[Export ("NSLinguisticTagAdjective")]
+		[Field ("NSLinguisticTagAdjective")]
 		NSString Adjective { get; }
 
-		[Export ("NSLinguisticTagAdverb")]
+		[Field ("NSLinguisticTagAdverb")]
 		NSString Adverb { get; }
 
-		[Export ("NSLinguisticTagPronoun")]
+		[Field ("NSLinguisticTagPronoun")]
 		NSString Pronoun { get; }
 
-		[Export ("NSLinguisticTagDeterminer")]
+		[Field ("NSLinguisticTagDeterminer")]
 		NSString Determiner { get; }
 
-		[Export ("NSLinguisticTagParticle")]
+		[Field ("NSLinguisticTagParticle")]
 		NSString Particle { get; }
 
-		[Export ("NSLinguisticTagPreposition")]
+		[Field ("NSLinguisticTagPreposition")]
 		NSString Preposition { get; }
 
-		[Export ("NSLinguisticTagNumber")]
+		[Field ("NSLinguisticTagNumber")]
 		NSString Number { get; }
 
-		[Export ("NSLinguisticTagConjunction")]
+		[Field ("NSLinguisticTagConjunction")]
 		NSString Conjunction { get; }
 
-		[Export ("NSLinguisticTagInterjection")]
+		[Field ("NSLinguisticTagInterjection")]
 		NSString Interjection { get; }
 
-		[Export ("NSLinguisticTagClassifier")]
+		[Field ("NSLinguisticTagClassifier")]
 		NSString Classifier { get; }
 
-		[Export ("NSLinguisticTagIdiom")]
+		[Field ("NSLinguisticTagIdiom")]
 		NSString Idiom { get; }
 
-		[Export ("NSLinguisticTagOtherWord")]
+		[Field ("NSLinguisticTagOtherWord")]
 		NSString OtherWord { get; }
 
-		[Export ("NSLinguisticTagSentenceTerminator")]
+		[Field ("NSLinguisticTagSentenceTerminator")]
 		NSString SentenceTerminator { get; }
 
-		[Export ("NSLinguisticTagOpenQuote")]
+		[Field ("NSLinguisticTagOpenQuote")]
 		NSString OpenQuote { get; }
 
-		[Export ("NSLinguisticTagCloseQuote")]
+		[Field ("NSLinguisticTagCloseQuote")]
 		NSString CloseQuote { get; }
 
-		[Export ("NSLinguisticTagOpenParenthesis")]
+		[Field ("NSLinguisticTagOpenParenthesis")]
 		NSString OpenParenthesis { get; }
 
-		[Export ("NSLinguisticTagCloseParenthesis")]
+		[Field ("NSLinguisticTagCloseParenthesis")]
 		NSString CloseParenthesis { get; }
 
-		[Export ("NSLinguisticTagWordJoiner")]
+		[Field ("NSLinguisticTagWordJoiner")]
 		NSString WordJoiner { get; }
 
-		[Export ("NSLinguisticTagDash")]
+		[Field ("NSLinguisticTagDash")]
 		NSString Dash { get; }
 
-		[Export ("NSLinguisticTagOtherPunctuation")]
+		[Field ("NSLinguisticTagOtherPunctuation")]
 		NSString OtherPunctuation { get; }
 
-		[Export ("NSLinguisticTagParagraphBreak")]
+		[Field ("NSLinguisticTagParagraphBreak")]
 		NSString ParagraphBreak { get; }
 
-		[Export ("NSLinguisticTagOtherWhitespace")]
+		[Field ("NSLinguisticTagOtherWhitespace")]
 		NSString OtherWhitespace { get; }
 
-		[Export ("NSLinguisticTagPersonalName")]
+		[Field ("NSLinguisticTagPersonalName")]
 		NSString PersonalName { get; }
 
-		[Export ("NSLinguisticTagPlaceName")]
+		[Field ("NSLinguisticTagPlaceName")]
 		NSString PlaceName { get; }
 
-		[Export ("NSLinguisticTagOrganizationName")]
+		[Field ("NSLinguisticTagOrganizationName")]
 		NSString OrganizationName { get; }
 	}
 	
