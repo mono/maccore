@@ -2178,6 +2178,25 @@ namespace MonoMac.Foundation
 
 		[Field ("NSUndoManagerWillUndoChangeNotification")]
 		NSString WillUndoChangeNotification { get; }
+
+		[Since (5,0)]
+		[Export ("setActionIsDiscardable:")]
+		void SetActionIsDiscardable (bool discardable);
+
+		[Since (5,0)]
+		[Export ("undoActionIsDiscardable")]
+		bool UndoActionIsDiscardable { get; }
+
+		[Since (5,0)]
+		[Export ("redoActionIsDiscardable")]
+		bool RedoActionIsDiscardable { get; }
+
+		[Field ("NSUndoManagerGroupIsDiscardableKey")]
+		NSString GroupIsDiscardableKey { get; }
+
+		[Field ("NSUndoManagerDidCloseUndoGroupNotification")]
+		NSString DidCloseUndoGroupNotification { get; }
+
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLProtectionSpace")]
