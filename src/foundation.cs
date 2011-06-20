@@ -2729,7 +2729,7 @@ namespace MonoMac.Foundation
 		bool Suspended { [Bind ("isSuspended")]get; set; }
 	}
 
-	
+#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	interface NSOrthography {
 		[Export ("dominantScript")]
@@ -2756,7 +2756,8 @@ namespace MonoMac.Foundation
 		[Export ("initWithDominantScript:languageMap:")]
 		IntPtr Constructor (string dominantScript, NSDictionary languageMap);
 	}
-
+#endif
+	
 	[BaseType (typeof (NSStream))]
 	public interface NSOutputStream {
 		[Export ("hasSpaceAvailable")]
