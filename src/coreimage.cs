@@ -93,6 +93,11 @@ namespace MonoMac.CoreImage {
 
 		[Export ("stringRepresentation")]
 		string StringRepresentation ();
+
+#if !MONOMAC
+		[Export ("initWithColor:")]
+		IntPtr Constructor (UIColor color);
+#endif
 	}
 
         [BaseType (typeof (NSObject))]
