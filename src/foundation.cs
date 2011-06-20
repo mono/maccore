@@ -554,6 +554,18 @@ namespace MonoMac.Foundation
 
 		[Export ("weekdayOrdinal")]
 		int WeekdayOrdinal { get; set; }
+
+		[Since (5,0)]
+		[Export ("weekOfMonth")]
+		int WeekOfMonth { get; set; }
+
+		[Since (5,0)]
+		[Export ("weekOfYear")]
+		int WeekOfYear { get; set; }
+		
+		[Since (5,0)]
+		[Export ("yearForWeekOfYear")]
+		int YearForWeekOfYear { get; set; }
 	}
 	
 	[BaseType (typeof (NSFormatter))]

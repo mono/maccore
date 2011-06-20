@@ -111,22 +111,29 @@ namespace MonoMac.Foundation  {
 
 	[Flags]
 	public enum NSCalendarUnit {
-		NSEra = 2, 
-		NSYear = 4,
-		NSMonth = 8,
-		NSDay = 16,
-		NSHour = 32,
-		NSMinute = 64,
-		NSSecond = 128,
-		NSWeek = 256,
-		NSWeekday = 512,
-		NSWeekdayOrdinal = 1024,
-		NSQuarter = 2048,
+		Era = 2, 
+		Year = 4,
+		Month = 8,
+		Day = 16,
+		Hour = 32,
+		Minute = 64,
+		Second = 128,
+		Week = 256,
+		Weekday = 512,
+		WeekdayOrdinal = 1024,
+		Quarter = 2048,
 
+		[Since (5,0)]
+		WeekOfMonth = (1 << 12),
+		[Since (5,0)]
+		WeekOfYear = (1 << 13),
+		[Since (5,0)]
+		YearForWeakOfYear = (1 << 14),
+			 
 		[Since (4,0)]
-		NSCalendar = (1 << 20),
+		Calendar = (1 << 20),
 		[Since (4,0)]
-		NSTimeZone = (1 << 21),
+		TimeZone = (1 << 21),
 	}
 
 	[Flags]
