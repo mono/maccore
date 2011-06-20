@@ -440,4 +440,16 @@ namespace MonoMac.Foundation  {
 	public enum NSFileVersionAddingOptions {
 		ByMoving = 1 << 0
 	}
+
+	[Flags]
+	public enum NSFileCoordinatorReadingOptions {
+		WithoutChanges = 1
+	}
+
+	[Flags]
+	public enum NSFileCoordinatorWritingOptions {
+		ForDeleting = 1,
+		ForMoving = 2,
+		ForMerging = 4
+	}
 }

@@ -1210,7 +1210,6 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSExpression {
-
 		[Static, Export ("expressionForConstantValue:")]
 		NSExpression FromConstant (NSObject obj);
 
@@ -1224,8 +1223,11 @@ namespace MonoMac.Foundation
 		NSExpression FromKeyPath (string keyPath);
 
 		[Static, Export ("expressionForFunction:arguments:")]
-		NSExpression FromFuction (string name, NSExpression[] parameters);
+		NSExpression FromFunction (string name, NSExpression[] parameters);
 
+		[Static, Export ("expressionWithFormat:argumentArray:")]
+		NSExpression FromFormat (string format, NSExpression [] parameters);
+		
 		//+ (NSExpression *)expressionForAggregate:(NSArray *)subexpressions; 
 		[Export ("expressionForAggregate:")]
 		NSExpression FromAggregate (NSExpression [] subexpressions);
@@ -3808,6 +3810,44 @@ namespace MonoMac.Foundation
 		
 	}
 
+	public delegate void NSFileCoordinatorWorker (NSUrl newUrl);
+	public delegate void NSFileCoordinatorWorkerRW (NSUrl newReadingUrl, NSUrl newWritingUrl);
+	
+	[BaseType (typeof (NSObject))]
+	interface NSFileCoordinator {
+		[Export ("addFilePresenter:")]
+		void AddFilePresenter (NSFilePresenter filePresenter);
+
+		[Static]
+		[Export ("removeFilePresenter:")]
+		void RemoveFilePresenter (NSFilePresenter filePresenter);
+
+		[Static]
+		[Export ("filePresenters")]
+		NSFilePresenter [] FilePresenters { get; }
+
+		[Export ("initWithFilePresenter:")]
+		IntPtr Constructor ([NullAllowed] NSFilePresenter filePresenterOrNil);
+
+		[Export ("coordinateReadingItemAtURL:options:error:byAccessor:")]
+		void CoordinateRead (NSUrl itemUrl, NSFileCoordinatorReadingOptions options, out NSError error, NSFileCoordinatorWorker worker);
+
+		[Export ("coordinateWritingItemAtURL:options:error:byAccessor:")]
+		void CoordinateWrite (NSUrl url, NSFileCoordinatorWritingOptions options, out NSError error, NSFileCoordinatorWorker worker);
+
+		[Export ("coordinateReadingItemAtURL:options:writingItemAtURL:options:error:byAccessor:")]
+		void CoordinateReadWrite (NSUrl readingURL, NSFileCoordinatorReadingOptions readingOptions, NSUrl writingURL, NSFileCoordinatorWritingOptions writingOptions, out NSError error, NSFileCoordinatorWorkerRW readWriteWorker);
+
+		[Export ("prepareForReadingItemsAtURLs:options:writingItemsAtURLs:options:error:byAccessor:")]
+		void CoordinateBatc (NSUrl [] readingURLs, NSFileCoordinatorReadingOptions readingOptions, NSUrl [] writingURLs, NSFileCoordinatorWritingOptions writingOptions, NSError error, NSAction batchHandler);
+
+		[Export ("itemAtURL:didMoveToURL:")]
+		void ItemMoved (NSUrl fromUrl, NSUrl toUrl);
+
+		[Export ("cancel")]
+		void Cancel ();
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSFileManager {
 		[Field("NSFileType")]
@@ -4114,6 +4154,69 @@ namespace MonoMac.Foundation
 
 		[Export ("fileManager:shouldProceedAfterError:removingItemAtPath:")]
 		bool ShouldProceedAfterErrorRemovingItem (NSFileManager fileManager, NSError error, string path);
+	}
+
+
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface NSFilePresenter {
+		[Abstract]
+		[Export ("NSURL*presentedItemURL")]
+		NSUrl PresentedItemURL { get; }
+
+		[Export ("NSOperationQueue*presentedItemOperationQueue")]
+		NSOperationQueue PesentedItemOperationQueue { get; }
+
+#if DOUBLE_BLOCKS
+		[Export ("relinquishPresentedItemToReader:")]
+		void RelinquishPresentedItem (NSAction readerAction);
+
+		[Export ("relinquishPresentedItemToWriter:")]
+		void RelinquishPresentedItem (NSAction writerAction);
+
+		[Export ("savePresentedItemChangesWithCompletionHandler:")]
+		void SavePresentedItemChanges (...);
+
+		[Export ("accommodatePresentedItemDeletionWithCompletionHandler:")]
+		void AccommodatePresentedItem (..);
+#endif
+
+		[Export ("presentedItemDidMoveToURL:")]
+		void PresentedItemMoved (NSUrl newURL);
+
+		[Export ("presentedItemDidChange")]
+		void PresentedItemChanged ();
+
+		[Export ("presentedItemDidGainVersion:")]
+		void PresentedItemGainedVersion (NSFileVersion version);
+
+		[Export ("presentedItemDidLoseVersion:")]
+		void PresentedItemLostVersion (NSFileVersion version);
+
+		[Export ("presentedItemDidResolveConflictVersion:")]
+		void PresentedItemResolveConflictVersion (NSFileVersion version);
+
+#if DOUBLE_BLOCKS
+		[Export ("accommodatePresentedSubitemDeletionAtURL:completionHandler:NSError*errorOrNil))completionHandler")]
+		void AccommodatePresentedSubitemDeletion (NSUrl url, 
+#endif
+		[Export ("presentedSubitemDidAppearAtURL:")]
+		void PresentedSubitemAppeared (NSUrl atUrl);
+
+		[Export ("presentedSubitemAtURL:didMoveToURL:")]
+		void PresentedSubitemMoved (NSUrl oldURL, NSUrl newURL);
+
+		[Export ("presentedSubitemDidChangeAtURL:")]
+		void PresentedSubitemChanged (NSUrl url);
+
+		[Export ("presentedSubitemAtURL:didGainVersion:")]
+		void PresentedSubitemGainedVersion (NSUrl url, NSFileVersion version);
+
+		[Export ("presentedSubitemAtURL:didLoseVersion:")]
+		void PresentedSubitemLostVersion (NSUrl url, NSFileVersion version);
+
+		[Export ("presentedSubitemAtURL:didResolveConflictVersion:")]
+		void PresentedSubitemResolvedConflictVersion (NSUrl url, NSFileVersion version);
 	}
 
 	[BaseType (typeof (NSObject))]

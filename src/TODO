@@ -20,3 +20,8 @@ CoreData:
 ImageIO:
 	The CGImageSource.CopyProperties exposes one of those ugly NSDictionary's
 	to expose data.   This should be strongly typed
+
+Foundation:
+
+	For NSFilePresenter the various block operations have not been
+	bound because they look like nested blocks
