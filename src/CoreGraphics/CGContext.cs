@@ -826,6 +826,24 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGContextShowText(IntPtr c, byte[] bytes, int size_t_length);
+		public void ShowText (byte[] bytes, int l)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			if (l > bytes.Length)
+				throw new ArgumentException ("l");
+			CGContextShowText (handle, bytes, l);
+		}
+		
+		public void ShowText (byte[] bytes)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			CGContextShowText (handle, bytes, bytes.Length);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextShowTextAtPoint(IntPtr c, float x, float y, string str, int size_t_length);
 		public void ShowTextAtPoint (float x, float y, string str, int length)
 		{
@@ -839,6 +857,22 @@ namespace MonoMac.CoreGraphics {
 			if (str == null)
 				throw new ArgumentNullException ("str");
 			CGContextShowTextAtPoint (handle, x, y, str, str.Length);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGContextShowTextAtPoint(IntPtr c, float x, float y, byte[] bytes, int size_t_length);
+		public void ShowTextAtPoint (float x, float y, byte[] bytes, int length)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			CGContextShowTextAtPoint (handle, x, y, bytes, length);
+		}
+		
+		public void ShowTextAtPoint (float x, float y, byte[] bytes)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			CGContextShowTextAtPoint (handle, x, y, bytes, bytes.Length);
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
