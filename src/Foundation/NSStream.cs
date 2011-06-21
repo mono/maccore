@@ -28,7 +28,7 @@
 
 namespace MonoMac.Foundation {
 	public partial class NSStream {
-		public NSObject this [string key] {
+		public NSObject this [NSString key] {
 			get {
 				return PropertyForKey (key);
 			}
