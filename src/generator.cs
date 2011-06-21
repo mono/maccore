@@ -1361,7 +1361,8 @@ public class Generator {
 		"MonoTouch.UIKit",
 		"MonoTouch.CoreGraphics",
 		"MonoTouch.NewsstandKit",
-		"MonoTouch.GLKit"
+		"MonoTouch.GLKit",
+		"OpenTK"
 #endif
 	};
 		
