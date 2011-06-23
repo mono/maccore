@@ -3333,6 +3333,10 @@ namespace MonoMac.Foundation
 
 		[Export ("cookieAcceptPolicy")]
 		NSHttpCookieAcceptPolicy AcceptPolicy { get; set; }
+
+		[Export ("sortedCookiesUsingDescriptors:")]
+		NSHttpCookie [] GetSortedCookies (NSSortDescriptor [] sortDescriptors);
+		
 	}
 	
 	[BaseType (typeof (NSUrlResponse), Name="NSHTTPURLResponse")]
@@ -3530,6 +3534,8 @@ namespace MonoMac.Foundation
 		
 	}
 
+	public delegate void NSRangeIterator (NSRange range, ref bool stop);
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSIndexSet {
 		[Static, Export ("indexSetWithIndex:")]
@@ -3573,6 +3579,15 @@ namespace MonoMac.Foundation
 
 		[Export ("containsIndexes:")]
 		bool Contains (NSIndexSet indexes);
+
+		[Export ("enumerateRangesUsingBlock:")]
+		void EnumerateRanges (NSRangeIterator iterator);
+
+		[Export ("enumerateRangesWithOptions:usingBlock:")]
+		void EnumerateRanges (NSEnumerationOptions opts, NSRangeIterator iterator);
+
+		[Export ("enumerateRangesInRange:options:usingBlock:")]
+		void EnumerateRanges (NSRange range, NSEnumerationOptions opts, NSRangeIterator iterator);
 	}
 	
 	[BaseType (typeof (NSIndexSet))]
@@ -4601,6 +4616,23 @@ namespace MonoMac.Foundation
 		[Field("NSFileBusy")]
 		NSString Busy { get; }
 
+		[Field ("NSFileProtectionKey")]
+		NSString FileProtectionKey { get; }
+
+		[Field ("NSFileProtectionNone")]
+		NSString FileProtectionNone { get; }
+
+		[Field ("NSFileProtectionComplete")]
+		NSString FileProtectionComplete { get; }
+
+		[Since (5,0)]
+		[Field ("NSFileProtectionCompleteUnlessOpen")]
+		NSString FileProtectionCompleteUnlessOpen { get; }
+
+		[Since (5,0)]
+		[Field ("NSFileProtectionCompleteUntilFirstUserAuthentication ")]
+		NSString FileProtectionCompleteUntilFirstUserAuthentication  { get; }
+		
 		[Field("NSFileSystemSize")]
 		NSString SystemSize { get; }
 
@@ -4763,6 +4795,37 @@ namespace MonoMac.Foundation
 		//[Export ("stringWithFileSystemRepresentation:length:")]
 		//string StringWithFileSystemRepresentation (const char str, uint len);
 
+		[Since (5,0)]
+                [Export ("createDirectoryAtURL:withIntermediateDirectories:attributes:error:")]
+                bool CreateDirectory (NSUrl url, bool createIntermediates, NSDictionary attributes, out NSError error);
+
+		[Since (5,0)]
+                [Export ("createSymbolicLinkAtURL:withDestinationURL:error:")]
+                bool CreateSymbolicLink (NSUrl url, NSUrl destURL, out NSError error);
+
+		[Since (5,0)]
+                [Export ("setUbiquitous:itemAtURL:destinationURL:error:")]
+                bool SetUbiquitous (bool flag, NSUrl url, NSUrl destinationUrl, out NSError error);
+
+		[Since (5,0)]
+                [Export ("isUbiquitousItemAtURL:")]
+                bool IsUbiquitous (NSUrl url);
+
+		[Since (5,0)]
+                [Export ("startDownloadingUbiquitousItemAtURL:error:")]
+                bool StartDownloadingUbiquitous (NSUrl url, out NSError error);
+
+		[Since (5,0)]
+                [Export ("evictUbiquitousItemAtURL:error:")]
+                bool EvictUbiquitous (NSUrl url, out NSError error);
+
+		[Since (5,0)]
+                [Export ("URLForUbiquityContainerIdentifier:")]
+                NSUrl GetUrlForUbiquityContainer (string containerIdentifier);
+
+		[Since (5,0)]
+                [Export ("URLForPublishingUbiquitousItemAtURL:expirationDate:error:")]
+                NSUrl GetUrlForPublishingUbiquitousItem (NSUrl url, out NSDate expirationDate, out NSError error);
 	}
 
 	[BaseType(typeof(NSObject))]
