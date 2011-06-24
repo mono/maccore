@@ -789,7 +789,6 @@ namespace MonoMac.Foundation
 		Class GetClass (string codedName);
 	}
 
-#if MONOMAC
 	[BaseType (typeof (NSObject), Delegates=new string [] { "Delegate" }, Events=new Type [] { typeof (NSMetadataQueryDelegate)})]
 	public interface NSMetadataQuery {
 		[Export ("startQuery")]
@@ -883,6 +882,60 @@ namespace MonoMac.Foundation
 		
 		[Field ("NSMetadataQueryNetworkScope")]
 		NSString QueryNetworkScope { get; }
+
+		[Field ("NSMetadataQueryLocalDocumentsScope")]
+		NSString QueryLocalDocumentsScope { get; }
+
+		[Field ("NSMetadataQueryUbiquitousDocumentsScope")]
+		NSString QueryUbiquitousDocumentsScope { get; }
+
+		[Field ("NSMetadataQueryUbiquitousDataScope")]
+		NSString QueryUbiquitousDataScope { get; }
+
+		[Field ("NSMetadataItemFSNameKey")]
+		NSString ItemFSNameKey { get; }
+
+		[Field ("NSMetadataItemDisplayNameKey")]
+		NSString ItemDisplayNameKey { get; }
+
+		[Field ("NSMetadataItemURLKey")]
+		NSString ItemURLKey { get; }
+
+		[Field ("NSMetadataItemPathKey")]
+		NSString ItemPathKey { get; }
+
+		[Field ("NSMetadataItemFSSizeKey")]
+		NSString ItemFSSizeKey { get; }
+
+		[Field ("NSMetadataItemFSCreationDateKey")]
+		NSString ItemFSCreationDateKey { get; }
+
+		[Field ("NSMetadataItemFSContentChangeDateKey")]
+		NSString ItemFSContentChangeDateKey { get; }
+
+		[Field ("NSMetadataItemIsUbiquitousKey")]
+		NSString ItemIsUbiquitousKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemHasUnresolvedConflictsKey")]
+		NSString UbiquitousItemHasUnresolvedConflictsKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemIsDownloadedKey")]
+		NSString UbiquitousItemIsDownloadedKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemIsDownloadingKey")]
+		NSString UbiquitousItemIsDownloadingKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemIsUploadedKey")]
+		NSString UbiquitousItemIsUploadedKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemIsUploadingKey")]
+		NSString UbiquitousItemIsUploadingKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemPercentDownloadedKey")]
+		NSString UbiquitousItemPercentDownloadedKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemPercentUploadedKey")]
+		NSString UbiquitousItemPercentUploadedKey { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -940,7 +993,6 @@ namespace MonoMac.Foundation
 		NSObject [] Results { get; }
 
 	}
-#endif
 
 	[Since (3,2)]
 	[BaseType (typeof (NSAttributedString))]
