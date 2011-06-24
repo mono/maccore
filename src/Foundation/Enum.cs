@@ -464,5 +464,17 @@ namespace MonoMac.Foundation  {
 
 	public enum NSUbiquitousKeyValueStoreChangeReason {
 		ServerChange, InitialSyncChange, QuotaViolationChange
-	}	
+	}
+
+	[Flags]
+	public enum NSJsonReadingOptions {
+		MutableContainers = 1,
+		MutableLeaves = 2,
+		AllowFragments = 4
+	}
+
+	[Flags]
+	public enum NSJsonWritingOptions {
+		PrettyPrinted = 1
+	}
 }

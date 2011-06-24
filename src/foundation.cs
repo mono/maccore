@@ -3589,6 +3589,30 @@ namespace MonoMac.Foundation
 		[Export ("enumerateRangesInRange:options:usingBlock:")]
 		void EnumerateRanges (NSRange range, NSEnumerationOptions opts, NSRangeIterator iterator);
 	}
+
+	[BaseType (typeof (NSObject), Name="NSJSONSerialization")]
+	interface NSJsonSerialization {
+		[Static]
+		[Export ("isValidJSONObject:")]
+		bool IsValidJSONObject (NSObject obj);
+
+		[Static]
+		[Export ("dataWithJSONObject:options:error:")]
+		NSData Serialize (NSObject obj, NSJsonWritingOptions opt, out NSError error);
+
+		[Static]
+		[Export ("JSONObjectWithData:options:error:")]
+		NSObject Deserialize (NSData data, NSJsonReadingOptions opt, NSError error);
+
+		[Static]
+		[Export ("writeJSONObject:toStream:options:error:")]
+		int Serialize (NSObject obj, NSOutputStream stream, NSJsonWritingOptions opt, out NSError error);
+
+		[Static]
+		[Export ("JSONObjectWithStream:options:error:")]
+		NSObject Deserialize (NSInputStream stream, NSJsonReadingOptions opt, out NSError error);
+
+	}
 	
 	[BaseType (typeof (NSIndexSet))]
 	public interface NSMutableIndexSet {
