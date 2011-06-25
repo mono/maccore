@@ -4,6 +4,7 @@ using MonoMac.Foundation;
 
 namespace MonoMac.ObjCRuntime {
 
+	[StructLayout (LayoutKind.Sequential)]
 	public unsafe struct NSStringStruct {
 		public IntPtr ClassPtr;
 		public int Flags;
