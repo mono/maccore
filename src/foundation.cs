@@ -1998,6 +1998,9 @@ namespace MonoMac.Foundation
 
 		[Export ("standardizedURL")]
 		NSUrl StandardizedUrl { get; }
+
+		[Export ("URLByAppendingPathComponent:isDirectory:")]
+		NSUrl Append (string pathComponent, bool isDirectory);
 		
 #if MONOMAC && !MONOMAC_BOOTSTRAP
 
