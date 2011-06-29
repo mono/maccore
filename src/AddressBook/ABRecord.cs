@@ -37,6 +37,7 @@ namespace MonoMac.AddressBook {
 	public enum ABRecordType : uint {
 		Person = 0,
 		Group = 1,
+		Source = 2
 	}
 
 	public enum ABPropertyType : ushort {
