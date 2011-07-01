@@ -56,7 +56,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyAutoConfigurationHTTPResponseKey == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyAutoConfigurationHTTPResponseKey");
-					kCFProxyAutoConfigurationHTTPResponseKey = new NSString (native, true);
+					kCFProxyAutoConfigurationHTTPResponseKey = new NSString (native);
 				}
 				
 				return kCFProxyAutoConfigurationHTTPResponseKey;
@@ -68,7 +68,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyAutoConfigurationJavaScriptKey == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyAutoConfigurationJavaScriptKey");
-					kCFProxyAutoConfigurationJavaScriptKey = new NSString (native, true);
+					kCFProxyAutoConfigurationJavaScriptKey = new NSString (native);
 				}
 				
 				return kCFProxyAutoConfigurationJavaScriptKey;
@@ -80,7 +80,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyAutoConfigurationURLKey == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyAutoConfigurationURLKey");
-					kCFProxyAutoConfigurationURLKey = new NSString (native, true);
+					kCFProxyAutoConfigurationURLKey = new NSString (native);
 				}
 				
 				return kCFProxyAutoConfigurationURLKey;
@@ -90,9 +90,9 @@ namespace MonoMac.CoreFoundation {
 		static NSString kCFProxyHostNameKey;
 		static NSString HostNameKey {
 			get {
-				if (kCFProxyAutoHostNameKey == null) {
+				if (kCFProxyHostNameKey == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyHostNameKey");
-					kCFProxyHostNameKey = new NSString (native, true);
+					kCFProxyHostNameKey = new NSString (native);
 				}
 				
 				return kCFProxyHostNameKey;
@@ -104,7 +104,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyPasswordKey == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyPasswordKey");
-					kCFProxyPasswordKey = new NSString (native, true);
+					kCFProxyPasswordKey = new NSString (native);
 				}
 				
 				return kCFProxyPasswordKey;
@@ -116,7 +116,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyPortNumberKey == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyPortNumberKey");
-					kCFProxyPortNumberKey = new NSString (native, true);
+					kCFProxyPortNumberKey = new NSString (native);
 				}
 				
 				return kCFProxyPortNumberKey;
@@ -128,7 +128,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyTypeKey == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyTypeKey");
-					kCFProxyTypeKey = new NSString (native, true);
+					kCFProxyTypeKey = new NSString (native);
 				}
 				
 				return kCFProxyTypeKey;
@@ -140,7 +140,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyUsernameKey == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyUsernameKey");
-					kCFProxyUsernameKey = new NSString (native, true);
+					kCFProxyUsernameKey = new NSString (native);
 				}
 				
 				return kCFProxyUsernameKey;
@@ -154,7 +154,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyTypeNone == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyTypeNone");
-					kCFProxyTypeNone = new NSString (native, true);
+					kCFProxyTypeNone = new NSString (native);
 				}
 				
 				return kCFProxyTypeNone;
@@ -166,7 +166,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyTypeAutoConfigurationURL == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyTypeAutoConfigurationURL");
-					kCFProxyTypeAutoConfigurationURL = new NSString (native, true);
+					kCFProxyTypeAutoConfigurationURL = new NSString (native);
 				}
 				
 				return kCFProxyTypeAutoConfigurationURL;
@@ -178,7 +178,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyTypeAutoConfigurationJavaScript == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyTypeAutoConfigurationJavaScript");
-					kCFProxyTypeAutoConfigurationJavaScript = new NSString (native, true);
+					kCFProxyTypeAutoConfigurationJavaScript = new NSString (native);
 				}
 				
 				return kCFProxyTypeAutoConfigurationJavaScript;
@@ -190,7 +190,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyTypeFTP == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyTypeFTP");
-					kCFProxyTypeFTP = new NSString (native, true);
+					kCFProxyTypeFTP = new NSString (native);
 				}
 				
 				return kCFProxyTypeFTP;
@@ -202,7 +202,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyTypeHTTP == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyTypeHTTP");
-					kCFProxyTypeHTTP = new NSString (native, true);
+					kCFProxyTypeHTTP = new NSString (native);
 				}
 				
 				return kCFProxyTypeHTTP;
@@ -214,7 +214,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyTypeHTTPS == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyTypeHTTPS");
-					kCFProxyTypeHTTPS = new NSString (native, true);
+					kCFProxyTypeHTTPS = new NSString (native);
 				}
 				
 				return kCFProxyTypeHTTPS;
@@ -226,7 +226,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFProxyTypeSOCKS == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFProxyTypeSOCKS");
-					kCFProxyTypeSOCKS = new NSString (native, true);
+					kCFProxyTypeSOCKS = new NSString (native);
 				}
 				
 				return kCFProxyTypeSOCKS;
@@ -388,7 +388,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFNetworkProxiesHTTPEnable == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFNetworkProxiesHTTPEnable");
-					kCFNetworkProxiesHTTPEnable = new NSString (native, true);
+					kCFNetworkProxiesHTTPEnable = new NSString (native);
 				}
 				
 				return kCFNetworkProxiesHTTPEnable;
@@ -400,7 +400,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFNetworkProxiesHTTPPort == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFNetworkProxiesHTTPPort");
-					kCFNetworkProxiesHTTPPort = new NSString (native, true);
+					kCFNetworkProxiesHTTPPort = new NSString (native);
 				}
 				
 				return kCFNetworkProxiesHTTPPort;
@@ -412,7 +412,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFNetworkProxiesHTTPProxy == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFNetworkProxiesHTTPProxy");
-					kCFNetworkProxiesHTTPProxy = new NSString (native, true);
+					kCFNetworkProxiesHTTPProxy = new NSString (native);
 				}
 				
 				return kCFNetworkProxiesHTTPProxy;
@@ -424,7 +424,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFNetworkProxiesProxyAutoConfigEnable == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFNetworkProxiesProxyAutoConfigEnable");
-					kCFNetworkProxiesProxyAutoConfigEnable = new NSString (native, true);
+					kCFNetworkProxiesProxyAutoConfigEnable = new NSString (native);
 				}
 				
 				return kCFNetworkProxiesProxyAutoConfigEnable;
@@ -436,7 +436,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFNetworkProxiesProxyAutoConfigJavaScript == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFNetworkProxiesProxyAutoConfigJavaScript");
-					kCFNetworkProxiesProxyAutoConfigJavaScript = new NSString (native, true);
+					kCFNetworkProxiesProxyAutoConfigJavaScript = new NSString (native);
 				}
 				
 				return kCFNetworkProxiesProxyAutoConfigJavaScript;
@@ -448,7 +448,7 @@ namespace MonoMac.CoreFoundation {
 			get {
 				if (kCFNetworkProxiesProxyAutoConfigURLString == null) {
 					IntPtr native = Dlfcn.SlowGetIntPtr (Constants.CoreFoundationLibrary, "kCFNetworkProxiesProxyAutoConfigURLString");
-					kCFNetworkProxiesProxyAutoConfigURLString = new NSString (native, true);
+					kCFNetworkProxiesProxyAutoConfigURLString = new NSString (native);
 				}
 				
 				return kCFNetworkProxiesProxyAutoConfigURLString;
@@ -510,14 +510,14 @@ namespace MonoMac.CoreFoundation {
 		// CFArrayRef CFNetworkCopyProxiesForAutoConfigurationScript (CFStringRef proxyAutoConfigurationScript, CFURLRef targetURL);
 		extern static IntPtr CFNetworkCopyProxiesForAutoConfigurationScript (IntPtr proxyAutoConfigurationScript, IntPtr targetURL);
 		
-		static NSArray CopyProxiesForAutoConfigurationScript (NSString proxyAutoConfigurationScript, CFUrl targetURL)
+		static NSArray CopyProxiesForAutoConfigurationScript (NSString proxyAutoConfigurationScript, NSUrl targetURL)
 		{
 			IntPtr native = CFNetworkCopyProxiesForAutoConfigurationScript (proxyAutoConfigurationScript.Handle, targetURL.Handle);
 			
 			if (native == IntPtr.Zero)
 				return null;
 			
-			return new NSArray (native, true);
+			return new NSArray (native);
 		}
 		
 		public static CFProxySettings[] GetProxiesForAutoConfigurationScript (NSString proxyAutoConfigurationScript, NSUrl targetURL)
@@ -528,7 +528,7 @@ namespace MonoMac.CoreFoundation {
 			if (targetURL == null)
 				throw new ArgumentNullException ("targetURL");
 			
-			NSArray array = CopyProxiesForAutoConfigurationScript (script, url);
+			NSArray array = CopyProxiesForAutoConfigurationScript (proxyAutoConfigurationScript, targetURL);
 			
 			if (array == null)
 				return null;
@@ -550,19 +550,19 @@ namespace MonoMac.CoreFoundation {
 		// CFArrayRef CFNetworkCopyProxiesForURL (CFURLRef url, CFDictionaryRef proxySettings);
 		extern static IntPtr CFNetworkCopyProxiesForURL (IntPtr url, IntPtr proxySettings);
 		
-		static NSArray CopyProxiesForURL (CFUrl url, NSDictionary proxySettings)
+		static NSArray CopyProxiesForURL (NSUrl url, NSDictionary proxySettings)
 		{
 			IntPtr native = CFNetworkCopyProxiesForURL (url.Handle, proxySettings != null ? proxySettings.Handle : IntPtr.Zero);
 			
 			if (native == IntPtr.Zero)
 				return null;
 			
-			return new NSArray (native, true);
+			return new NSArray (native);
 		}
 		
 		public static CFProxy[] GetProxiesForURL (NSUrl url, CFProxySettings proxySettings)
 		{
-			if (uri == null)
+			if (url == null)
 				throw new ArgumentNullException ("url");
 			
 			if (proxySettings == null)
@@ -609,7 +609,7 @@ namespace MonoMac.CoreFoundation {
 			if (native == IntPtr.Zero)
 				return null;
 			
-			return new CFProxySettings (new NSDictionary (native, true));
+			return new CFProxySettings (new NSDictionary (native));
 		}
 		
 #if notyet
