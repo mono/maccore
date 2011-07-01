@@ -123,7 +123,19 @@ namespace MonoMac.Foundation {
 		{
 			return new NSDecimalNumber (value).Int32Value;
 		}
-
 #endif
+		
+		public override bool Equals (object obj)
+		{
+			if (!(obj is NSDecimal))
+				return false;
+			
+			return this == (NSDecimal) obj;
+		}
+		
+		public override int GetHashCode ()
+		{
+			return fields ^ m1 ^ m2 ^ m3 ^ m4 ^ m5 ^ m6 ^ m7 ^ m8; 
+		}
 	}
 }
