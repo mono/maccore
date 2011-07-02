@@ -325,7 +325,7 @@ namespace MonoMac.AddressBook {
 		static readonly NSString ServiceLinkedIn;
 		static readonly NSString ServiceFlickr;
 
-		internal static ABPersonSocialProfile ()
+		static ABPersonSocialProfile ()
 		{
 			var handle = Dlfcn.dlopen (Constants.AddressBookLibrary, 0);
 			if (handle == IntPtr.Zero)
