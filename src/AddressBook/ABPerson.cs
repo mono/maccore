@@ -331,16 +331,16 @@ namespace MonoMac.AddressBook {
 			if (handle == IntPtr.Zero)
 				return;
 			try {
-				URLKey = Dlfcn.GetStringConstant ("kABPersonSocialProfileURLKey");
-				ServiceKey = Dlfcn.GetStringConstant ("kABPersonSocialProfileServiceKey");
-				UsernameKey = Dlfcn.GetStringConstant ("kABPersonSocialProfileUsernameKey");
-				UserIdentifierKey = Dlfcn.GetStringConstant ("kABPersonSocialProfileUserIdentifierKey");
-				ServiceTwitter = Dlfcn.GetStringConstant ("kABPersonSocialProfileServiceTwitter");
-				ServiceGameCenter = Dlfcn.GetStringConstant ("kABPersonSocialProfileServiceGameCenter");
-				ServiceFacebook = Dlfcn.GetStringConstant ("kABPersonSocialProfileServiceFacebook");
-				ServiceMyspace = Dlfcn.GetStringConstant ("kABPersonSocialProfileServiceMyspace");
-				ServiceLinkedIn = Dlfcn.GetStringConstant ("kABPersonSocialProfileServiceLinkedIn");
-				ServiceFlickr = Dlfcn.GetStringConstant ("kABPersonSocialProfileServiceFlickr");
+				URLKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileURLKey");
+				ServiceKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceKey");
+				UsernameKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileUsernameKey");
+				UserIdentifierKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileUserIdentifierKey");
+				ServiceTwitter = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceTwitter");
+				ServiceGameCenter = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceGameCenter");
+				ServiceFacebook = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceFacebook");
+				ServiceMyspace = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceMyspace");
+				ServiceLinkedIn = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceLinkedIn");
+				ServiceFlickr = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceFlickr");
 			} finally {
 				Dlfcn.dlclose (handle);
 			}
