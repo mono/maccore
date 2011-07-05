@@ -45,7 +45,7 @@ namespace MonoMac.CoreFoundation {
 	public class CFProxy {
 		NSDictionary settings;
 		
-		public CFProxy (NSDictionary settings)
+		internal CFProxy (NSDictionary settings)
 		{
 			this.settings = settings;
 		}
