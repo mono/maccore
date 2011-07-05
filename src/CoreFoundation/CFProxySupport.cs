@@ -330,7 +330,7 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 		
-		public WebProxy GetWebProxy ()
+		internal Uri GetProxyUri ()
 		{
 			string protocol;
 			
@@ -365,6 +365,16 @@ namespace MonoMac.CoreFoundation {
 			}
 			
 			uri = protocol + userinfo + hostname + (port != 0 ? ':' + port.ToString () : string.Empty);
+			
+			return new Uri (uri, UriKind.Absolute);
+		}
+		
+		public WebProxy GetWebProxy ()
+		{
+			Uri uri = GetProxyUri ();
+			
+			if (uri == null)
+				return null;
 			
 			return new WebProxy (uri);
 		}
@@ -635,5 +645,76 @@ namespace MonoMac.CoreFoundation {
 			
 		}
 #endif
+		
+		class CFWebProxy : IWebProxy {
+			public CFWebProxy ()
+			{
+				
+			}
+			
+			public ICredentials Credentials {
+				get {
+					throw new NotSupportedException ();
+				}
+				set {
+					throw new NotSupportedException ();
+				}
+			}
+			
+			public Uri GetProxy (Uri targetUri)
+			{
+				if (targetUri == null)
+					throw new ArgumentNullException ("targetUri");
+				
+				CFProxySettings settings = CFNetwork.GetSystemProxySettings ();
+				CFProxy[] proxies = CFNetwork.GetProxiesForUri (targetUri, settings);
+				
+				if (proxies == null)
+					return targetUri;
+				
+				for (int i = 0; i < proxies.Length; i++) {
+					Uri uri = proxies[i].GetProxyUri ();
+					
+					if (uri != null)
+						return uri;
+				}
+				
+				// no supported proxies for this Uri, fall back to trying to connect to targetUri directly.
+				return targetUri;
+			}
+			
+			public bool IsBypassed (Uri targetUri)
+			{
+				if (targetUri == null)
+					throw new ArgumentNullException ("targetUri");
+				
+				CFProxySettings settings = CFNetwork.GetSystemProxySettings ();
+				CFProxy[] proxies = CFNetwork.GetProxiesForUri (targetUri, settings);
+				
+				if (proxies == null) {
+					// if there are no proxies for target Uri, then we can assume it is bypassed
+					return true;
+				}
+				
+				for (int i = 0; i < proxies.Length; i++) {
+					if (proxies[i].CanGetWebProxy) {
+						// there is a supported proxy we can use for the targetUri, so not bypassed
+						return false;
+					}
+				}
+				
+				// no supported proxies for the target Uri, will be bypassed
+				return true;
+			}
+		}
+		
+		static CFWebProxy defaultWebProxy;
+		public static IWebProxy GetDefaultProxy ()
+		{
+			if (defaultWebProxy == null)
+				defaultWebProxy = new CFWebProxy ();
+			
+			return defaultWebProxy;
+		}
 	}
 }
