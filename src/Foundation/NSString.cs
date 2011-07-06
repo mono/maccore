@@ -112,8 +112,11 @@ namespace MonoMac.Foundation {
 
 			if (a.Handle == b.Handle)
 				return true;
-
+#if GENERATOR || COREBUILD
 			return a.ToString ().Equals (b.ToString ());
+#else
+			return a.IsEqualTo (b.Handle);
+#endif
 		}
 
 		public static bool operator == (NSString a, NSString b)

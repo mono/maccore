@@ -3014,6 +3014,9 @@ namespace MonoMac.Foundation
 
 		[Export ("hash"), Internal]
 		int Hash ();
+
+		[Export ("isEqualToString:"), Internal]
+		bool IsEqualTo (IntPtr handle);
 	}
 	
 	[BaseType (typeof (NSStream))]
