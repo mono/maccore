@@ -3011,6 +3011,9 @@ namespace MonoMac.Foundation
 
 		[Export ("length")]
 		int Length {get;}
+
+		[Export ("hash"), Internal]
+		int Hash ();
 	}
 	
 	[BaseType (typeof (NSStream))]

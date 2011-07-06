@@ -133,8 +133,11 @@ namespace MonoMac.Foundation {
 
 		public override int GetHashCode ()
 		{
-			// FIXME: This isn't 64-bit safe if the simulator ever goes that way
+#if GENERATOR  || COREBUILD
 			return (int) this.Handle;
+#else
+			return Hash ();
+#endif
 		}
 	}
 }
