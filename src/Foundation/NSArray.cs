@@ -152,6 +152,22 @@ namespace MonoMac.Foundation {
 			return ret;
 		}
 
+		static public T [] FromArray<T> (NSArray weakArray) where T : NSObject
+		{
+			if (weakArray == null || weakArray.Handle == IntPtr.Zero)
+				return null;
+			try {
+				uint n = weakArray.Count;
+				T [] ret = new T [n];
+				for (uint i = 0; i < n; i++){
+					ret [i] = (T) Runtime.GetNSObject (weakArray.ValueAt (i));
+				}
+				return ret;
+			} catch {
+				return null;
+			}
+		}
+		
 		// Used when we need to provide our constructor
 		static public T [] ArrayFromHandleFunc<T> (IntPtr handle, Func<IntPtr,T> createObject) 
 		{
