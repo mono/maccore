@@ -2393,6 +2393,14 @@ namespace MonoMac.Foundation
 	
 		[Export ("sender")]
 		NSUrlConnection Sender { get; }
+
+		[Since (5,0)]
+		[Export ("performDefaultHandlingForAuthenticationChallenge:")]
+		void PerformDefaultHandlingForChallenge (NSUrlAuthenticationChallenge challenge);
+
+		[Since (5,0)]
+		[Export ("rejectProtectionSpaceAndContinueWithChallenge:")]
+		void PejectProtectionSpaceAndContinueWithChallenge (NSUrlAuthenticationChallenge challenge);
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLConnection")]
