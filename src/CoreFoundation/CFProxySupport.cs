@@ -31,7 +31,7 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
-namespace MonoTouch.CoreFoundation {
+namespace MonoMac.CoreFoundation {
 	public enum CFProxyType {
 		None,
 		AutoConfigurationUrl,
