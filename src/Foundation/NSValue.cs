@@ -24,10 +24,12 @@ using System.Runtime.InteropServices;
 
 namespace MonoMac.Foundation {
 	public partial class NSValue : NSObject {
+#if !COREBUILD
 		public string ObjCType {
 			get {
 				return Marshal.PtrToStringAnsi (ObjCTypePtr ());
 			}
 		}
+#endif
 	}
 }
