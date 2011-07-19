@@ -66,6 +66,9 @@ namespace MonoMac.Foundation {
 #endif
 
 		public NSString (string str) {
+			if (str == null)
+				throw new ArgumentNullException ("str");
+
 			IntPtr bytes = Marshal.StringToHGlobalAuto (str);
 
 			Handle = (IntPtr) Messaging.intptr_objc_msgSend_intptr (Handle, selInitWithUTF8String, bytes);
