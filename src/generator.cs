@@ -1711,7 +1711,7 @@ public class Generator {
 			if (is_static_class){
 				base_type = typeof (object);
 			} else {
-				print ("\t[Register(\"{0}\")]", objc_type_name);
+				print ("\t[Register(\"{0}, true\")]", objc_type_name);
 			} 
 			
 			if (is_model)
