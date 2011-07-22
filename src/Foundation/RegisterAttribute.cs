@@ -36,7 +36,7 @@ namespace MonoMac.Foundation {
 
 		public RegisterAttribute (string name, bool isWrapper) {
 			this.name = name;
-			this.is_wrapper = is_wrapper;
+			this.is_wrapper = isWrapper;
 		}
 
 		public string Name {
