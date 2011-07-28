@@ -68,7 +68,85 @@ namespace MonoMac.Foundation
 		[Export ("arrayWithContentsOfFile:")][Static]
 		NSArray FromFile (string path);
 	}
+	
+	[BaseType (typeof (NSArray))]
+	interface NSMutableArray {
 
+		[Export ("initWithCapacity:")]
+		IntPtr Constructor (uint numItems);
+		
+		[Static]
+		[Export ("arrayWithCapacity:")]
+		NSMutableArray WithCapacity (uint numItems);
+		
+		[Export ("insertObject:atIndex:")]
+		void Insert (NSObject anObject, uint index);
+
+		[Export ("removeLastObject")]
+		void RemoveLast ();
+
+		[Export ("removeObjectAtIndex:")]
+		void Remove (uint index);
+
+		[Export ("replaceObjectAtIndex:withObject:")]
+		void Replace(uint index, NSObject anObject);
+		
+		[Export ("exchangeObjectAtIndex:withObjectAtIndex:")]
+		void ExchangeObjectAtIndexwithObjectAtIndex (uint idx1, uint idx2);
+
+		[Export ("removeAllObjects")]
+		void RemoveAll ();
+
+		[Export ("removeObject:inRange:")]
+		void Remove (NSObject anObject, NSRange range);
+
+		[Export ("removeObject:")]
+		void Remove (NSObject anObject);
+
+		[Export ("removeObjectIdenticalTo:inRange:")]
+		void RemoveIdenticalTo (NSObject anObject, NSRange range);
+
+		[Export ("removeObjectIdenticalTo:")]
+		void RemoveIdenticalTo (NSObject anObject);
+
+		[Export ("removeObjectsInArray:")]
+		void Remove (NSArray otherArray);
+
+		[Export ("removeObjectsInRange:")]
+		void Remove (NSRange range);
+
+		[Export ("replaceObjectsInRange:withObjectsFromArray:range:")]
+		void Replace (NSRange range, NSArray otherArray, NSRange otherRange);
+
+		[Export ("replaceObjectsInRange:withObjectsFromArray:")]
+		void Replace (NSRange range, NSArray otherArray);
+
+		[Export ("setArray:")]
+		NSArray Array {set;}
+
+//		[Export ("sortUsingFunction:id,id,void*))comparecontext:")]
+//		void SortUsingFunctionid,id,void*))comparecontext (NSInteger ( (id,, void context);
+
+		[Export ("sortUsingSelector:")]
+		void Sort (Selector comparator);
+
+		[Export ("insertObjects:atIndexes:")]
+		void Insert (NSArray objects, NSIndexSet indexes );
+
+		[Export ("removeObjectsAtIndexes:")]
+		void Remove (NSIndexSet indexes );
+
+		[Export ("replaceObjectsAtIndexes:withObjects:")]
+		void Replace (NSIndexSet indexes, NSArray objects );
+
+//		[Export ("sortUsingComparator:")]
+//		void SortUsingComparator (NSComparator cmptr );
+//
+//		[Export ("sortWithOptions:usingComparator:")]
+//		void SortWithOptionsusingComparator (NSSortOptions opts, NSComparator cmptr );
+
+	}
+	
 	[Since (3,2)]
 	[BaseType (typeof (NSObject))]
 	public interface NSAttributedString {
