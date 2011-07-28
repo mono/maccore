@@ -61,6 +61,8 @@ namespace MonoMac.AVFoundation {
 		{
 			if (cbFinishedPlaying != null)
 				cbFinishedPlaying (player, new AVStatusEventArgs (flag));
+			if (player.Handle == IntPtr.Zero)
+				throw new ObjectDisposedException ("the player object was Dispose()d during the callback, this has corrupted the state of the program");
 		}
 	
 		[Preserve (Conditional = true)]
