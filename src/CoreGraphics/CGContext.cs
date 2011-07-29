@@ -809,13 +809,13 @@ namespace MonoMac.CoreGraphics {
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextShowText(IntPtr c, string s, int size_t_length);
-		public void ShowText (string str, int l)
+		public void ShowText (string str, int count)
 		{
 			if (str == null)
 				throw new ArgumentNullException ("str");
-			if (l > str.Length)
-				throw new ArgumentException ("l");
-			CGContextShowText (handle, str, l);
+			if (count > str.Length)
+				throw new ArgumentException ("count");
+			CGContextShowText (handle, str, count);
 		}
 
 		public void ShowText (string str)
@@ -827,13 +827,13 @@ namespace MonoMac.CoreGraphics {
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextShowText(IntPtr c, byte[] bytes, int size_t_length);
-		public void ShowText (byte[] bytes, int l)
+		public void ShowText (byte[] bytes, int count)
 		{
 			if (bytes == null)
 				throw new ArgumentNullException ("bytes");
-			if (l > bytes.Length)
-				throw new ArgumentException ("l");
-			CGContextShowText (handle, bytes, l);
+			if (count > bytes.Length)
+				throw new ArgumentException ("count");
+			CGContextShowText (handle, bytes, count);
 		}
 		
 		public void ShowText (byte[] bytes)
