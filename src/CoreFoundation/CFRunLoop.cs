@@ -121,11 +121,24 @@ namespace MonoMac.CoreFoundation {
 		static IntPtr CoreFoundationLibraryHandle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
 		internal IntPtr handle;
 
+		static CFString GetStringConstant (IntPtr handle, string symbol)
+		{
+			IntPtr indirect = Dlfcn.GetIndirect (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return null;
+
+			IntPtr actual = Marshal.ReadIntPtr (indirect);
+			if (actual == IntPtr.Zero)
+				return null;
+
+			return new CFString (actual);
+		}
+
 		static CFString _CFDefaultRunLoopMode;
 		public static CFString CFDefaultRunLoopMode {
 			get {
 				if (_CFDefaultRunLoopMode == null)
-					_CFDefaultRunLoopMode = Dlfcn.GetStringConstant (CoreFoundationLibraryHandle, "kCFDefaultRunLoopMode");
+					_CFDefaultRunLoopMode = GetStringConstant (CoreFoundationLibraryHandle, "kCFDefaultRunLoopMode");
 				return _CFDefaultRunLoopMode;
 			}
 		}
@@ -134,7 +147,7 @@ namespace MonoMac.CoreFoundation {
 		public static CFString CFRunLoopCommonModes {
 			get {
 				if (_CFRunLoopCommonModes == null)
-					_CFRunLoopCommonModes = Dlfcn.GetStringConstant (CoreFoundationLibraryHandle, "kCFRunLoopCommonModes");
+					_CFRunLoopCommonModes = GetStringConstant (CoreFoundationLibraryHandle, "kCFRunLoopCommonModes");
 				return _CFRunLoopCommonModes;
 			}
 		}
