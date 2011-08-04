@@ -585,7 +585,7 @@ namespace MonoMac.CoreFoundation {
 #if notyet
 		// FIXME: These require bindings for CFRunLoopSource and CFStreamClientContext
 		
-		public delegate void CFProxyAutoConfigurationResultCallback (IntPtr client, NSArray proxyList, CFError error);
+		public delegate void CFProxyAutoConfigurationResultCallback (IntPtr client, NSArray proxyList, NSError error);
 		
 		[DllImport (Constants.CoreFoundationLibrary)]
 		// CFRunLoopSourceRef CFNetworkExecuteProxyAutoConfigurationScript (CFStringRef proxyAutoConfigurationScript, CFURLRef targetURL, CFProxyAutoConfigurationResultCallback cb, CFStreamClientContext *clientContext);
