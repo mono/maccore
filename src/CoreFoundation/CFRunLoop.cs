@@ -39,6 +39,7 @@ namespace MonoMac.CoreFoundation {
 		HandledSource = 4
 	}
 
+#if needed_for_cfproxysupport
 	public class CFRunLoopSource : INativeObject, IDisposable {
 		internal IntPtr handle;
 
@@ -73,6 +74,7 @@ namespace MonoMac.CoreFoundation {
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
+		// FIXME: CFRunLoopSourceGetOrder() returns CFIndex which is a typedef for 'signed long'
 		extern static int CFRunLoopSourceGetOrder (IntPtr source);
 		public int Order {
 			get {
@@ -116,7 +118,8 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 	}
-	
+#endif // needed_for_cfproxysupport
+
 	public class CFRunLoop : INativeObject, IDisposable {
 		static IntPtr CoreFoundationLibraryHandle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
 		internal IntPtr handle;
@@ -227,6 +230,7 @@ namespace MonoMac.CoreFoundation {
 			return (CFRunLoopExitReason) v;
 		}
 
+#if needed_for_cfproxysupport
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static void CFRunLoopAddSource (IntPtr loop, IntPtr source, IntPtr mode);
 		public void AddSource (CFRunLoopSource source, CFString mode)
@@ -256,6 +260,7 @@ namespace MonoMac.CoreFoundation {
 
 			return CFRunLoopRemoveSource (handle, source.Handle, mode.Handle);
 		}
+#endif // needed_for_cfproxysupport
 
 		internal CFRunLoop (IntPtr handle)
 		{

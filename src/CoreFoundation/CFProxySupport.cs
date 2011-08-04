@@ -591,18 +591,52 @@ namespace MonoMac.CoreFoundation {
 		// CFRunLoopSourceRef CFNetworkExecuteProxyAutoConfigurationScript (CFStringRef proxyAutoConfigurationScript, CFURLRef targetURL, CFProxyAutoConfigurationResultCallback cb, CFStreamClientContext *clientContext);
 		extern static IntPtr CFNetworkExecuteProxyAutoConfigurationScript (IntPtr proxyAutoConfigurationScript, IntPtr targetURL, IntPtr cb, IntPtr clientContext);
 		
-		public static IntPtr ExecuteProxyAutoConfigurationScript (NSString proxyAutoConfigurationScript, CFUrl targetURL, IntPtr cb, IntPtr clientContext)
+		public static CFRunLoopSource ExecuteProxyAutoConfigurationScript (NSString proxyAutoConfigurationScript, NSUrl targetURL, CFProxyAutoConfigurationResultCallback resultCallback, CFStreamClientContext clientContext)
 		{
-			
+			if (proxyAutoConfigurationScript == null)
+				throw new ArgumentNullException ("proxyAutoConfigurationScript");
+
+			if (targetURL == null)
+				throw new ArgumentNullException ("targetURL");
+
+			if (resultCallback == null)
+				throw new ArgumentNullException ("resultCallback");
+
+			if (clientContext == null)
+				throw new ArgumentNullException ("clientContext");
+
+			IntPtr source = CFNetworkExecuteProxyAutoConfigurationScript (proxyAutoConfigurationScript.Handle, targetURL.Handle, resultCallback, clientContext);
+
+			if (source != IntPtr.Zero)
+				return new CFRunLoopSource (source);
+
+			return null;
 		}
 		
 		[DllImport (Constants.CoreFoundationLibrary)]
 		// CFRunLoopSourceRef CFNetworkExecuteProxyAutoConfigurationURL (CFURLRef proxyAutoConfigurationURL, CFURLRef targetURL, CFProxyAutoConfigurationResultCallback cb, CFStreamClientContext *clientContext);
 		extern static IntPtr CFNetworkExecuteProxyAutoConfigurationURL (IntPtr proxyAutoConfigurationURL, IntPtr targetURL, IntPtr cb, IntPtr clientContext);
 		
-		public static IntPtr ExecuteProxyAutoConfigurationScript (CFUrl proxyAutoConfigurationURL, CFUrl targetURL, IntPtr cb, IntPtr clientContext)
+		public static CFRunLoopSource ExecuteProxyAutoConfigurationURL (NSUrl proxyAutoConfigurationURL, NSUrl targetURL, CFProxyAutoConfigurationResultCallback resultCallback, CFStreamClientContext clientContext)
 		{
-			
+			if (proxyAutoConfigurationURL == null)
+				throw new ArgumentNullException ("proxyAutoConfigurationURL");
+
+			if (targetURL == null)
+				throw new ArgumentNullException ("targetURL");
+
+			if (resultCallback == null)
+				throw new ArgumentNullException ("resultCallback");
+
+			if (clientContext == null)
+				throw new ArgumentNullException ("clientContext");
+
+			IntPtr source = CFNetworkExecuteProxyAutoConfigurationURL (proxyAutoConfigurationURL.Handle, targetURL.Handle, resultCallback, clientContext);
+
+			if (source != IntPtr.Zero)
+				return new CFRunLoopSource (source);
+
+			return null;
 		}
 #endif
 		
