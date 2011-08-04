@@ -83,10 +83,17 @@ namespace MonoMac.CoreFoundation {
 		{
 			CFRunLoopWakeUp (handle);
 		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static bool CFRunLoopIsWaiting (IntPtr loop);
+		public bool IsWaiting {
+			get {
+				return CFRunLoopIsWaiting (handle);
+			}
+		}
 		
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static int CFRunLoopRunInMode (IntPtr cfstring_mode, double interval, int return_after_source_handled);
-
 		public CFRunLoopExitReason RunInMode (string mode, double interval, bool returnAfterSourceHandled)
 		{
 			CFString s = mode == null ? null : new CFString (mode);
@@ -97,7 +104,6 @@ namespace MonoMac.CoreFoundation {
 			
 			return (CFRunLoopExitReason) v;
 		}
-
 		
 		internal CFRunLoop (IntPtr handle)
 		{
