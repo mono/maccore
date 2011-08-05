@@ -2304,6 +2304,12 @@ namespace MonoMac.Foundation
 
 		[Export ("length")]
 		int Length {get;}
+
+		[Export ("hash"), Internal]
+		int Hash ();
+
+		[Export ("isEqualToString:"), Internal]
+		bool IsEqualTo (IntPtr handle);
 	}
 	
 	[BaseType (typeof (NSStream))]
