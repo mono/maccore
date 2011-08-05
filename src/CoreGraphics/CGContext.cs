@@ -545,14 +545,25 @@ namespace MonoMac.CoreGraphics {
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetFillColorWithColor(IntPtr c, IntPtr color);
+		public void SetFillColor (CGColor color)
+		{
+			CGContextSetFillColorWithColor (handle, color.handle);
+		}
+		
+		[Obsolete ("Use SetFillColor() instead.")]
 		public void SetFillColorWithColor (CGColor color)
 		{
 			CGContextSetFillColorWithColor (handle, color.handle);
 		}
 		
-
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetStrokeColorWithColor(IntPtr c, IntPtr color);
+		public void SetStrokeColor (CGColor color)
+		{
+			CGContextSetStrokeColorWithColor (handle, color.handle);
+		}
+		
+		[Obsolete ("Use SetStrokeColor() instead.")]
 		public void SetStrokeColorWithColor (CGColor color)
 		{
 			CGContextSetStrokeColorWithColor (handle, color.handle);
@@ -617,13 +628,25 @@ namespace MonoMac.CoreGraphics {
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetGrayFillColor(IntPtr context, float gray, float alpha);
+		public void SetFillColor (float gray, float alpha)
+		{
+			CGContextSetGrayFillColor (handle, gray, alpha);
+		}
+		
+		[Obsolete ("Use SetFillColor() instead.")]
 		public void SetGrayFillColor (float gray, float alpha)
 		{
 			CGContextSetGrayFillColor (handle, gray, alpha);
 		}
-
+		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetGrayStrokeColor(IntPtr context, float gray, float alpha);
+		public void SetStrokeColor (float gray, float alpha)
+		{
+			CGContextSetGrayStrokeColor (handle, gray, alpha);
+		}
+		
+		[Obsolete ("Use SetStrokeColor() instead.")]
 		public void SetGrayStrokeColor (float gray, float alpha)
 		{
 			CGContextSetGrayStrokeColor (handle, gray, alpha);
@@ -631,6 +654,12 @@ namespace MonoMac.CoreGraphics {
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetRGBFillColor(IntPtr context, float red, float green, float blue, float alpha);
+		public void SetFillColor (float red, float green, float blue, float alpha)
+		{
+			CGContextSetRGBFillColor (handle, red, green, blue, alpha);
+		}
+		
+		[Obsolete ("Use SetFillColor() instead.")]
 		public void SetRGBFillColor (float red, float green, float blue, float alpha)
 		{
 			CGContextSetRGBFillColor (handle, red, green, blue, alpha);
@@ -638,6 +667,12 @@ namespace MonoMac.CoreGraphics {
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetRGBStrokeColor(IntPtr context, float red, float green, float blue, float alpha);
+		public void SetStrokeColor (float red, float green, float blue, float alpha)
+		{
+			CGContextSetRGBStrokeColor (handle, red, green, blue, alpha);
+		}
+		
+		[Obsolete ("Use SetStrokeColor() instead.")]
 		public void SetRGBStrokeColor (float red, float green, float blue, float alpha)
 		{
 			CGContextSetRGBStrokeColor (handle, red, green, blue, alpha);
@@ -645,6 +680,12 @@ namespace MonoMac.CoreGraphics {
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetCMYKFillColor(IntPtr context, float cyan, float magenta, float yellow, float black, float alpha);
+		public void SetFillColor (float cyan, float magenta, float yellow, float black, float alpha)
+		{
+			CGContextSetCMYKFillColor (handle, cyan, magenta, yellow, black, alpha);
+		}
+		
+		[Obsolete ("Use SetFillColor() instead.")]
 		public void SetCMYKFillColor (float cyan, float magenta, float yellow, float black, float alpha)
 		{
 			CGContextSetCMYKFillColor (handle, cyan, magenta, yellow, black, alpha);
@@ -652,11 +693,17 @@ namespace MonoMac.CoreGraphics {
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetCMYKStrokeColor(IntPtr context, float cyan, float magenta, float yellow, float black, float alpha);
+		public void SetStrokeColor (float cyan, float magenta, float yellow, float black, float alpha)
+		{
+			CGContextSetCMYKStrokeColor (handle, cyan, magenta, yellow, black, alpha);
+		}
+		
+		[Obsolete ("Use SetStrokeColor() instead.")]
 		public void SetCMYKStrokeColor (float cyan, float magenta, float yellow, float black, float alpha)
 		{
 			CGContextSetCMYKStrokeColor (handle, cyan, magenta, yellow, black, alpha);
 		}
-
+		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetRenderingIntent(IntPtr context, CGColorRenderingIntent intent);
 		public void SetRenderingIntent (CGColorRenderingIntent intent)
@@ -809,13 +856,13 @@ namespace MonoMac.CoreGraphics {
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextShowText(IntPtr c, string s, int size_t_length);
-		public void ShowText (string str, int l)
+		public void ShowText (string str, int count)
 		{
 			if (str == null)
 				throw new ArgumentNullException ("str");
-			if (l > str.Length)
-				throw new ArgumentException ("l");
-			CGContextShowText (handle, str, l);
+			if (count > str.Length)
+				throw new ArgumentException ("count");
+			CGContextShowText (handle, str, count);
 		}
 
 		public void ShowText (string str)
@@ -823,6 +870,24 @@ namespace MonoMac.CoreGraphics {
 			if (str == null)
 				throw new ArgumentNullException ("str");
 			CGContextShowText (handle, str, str.Length);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGContextShowText(IntPtr c, byte[] bytes, int size_t_length);
+		public void ShowText (byte[] bytes, int count)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			if (count > bytes.Length)
+				throw new ArgumentException ("count");
+			CGContextShowText (handle, bytes, count);
+		}
+		
+		public void ShowText (byte[] bytes)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			CGContextShowText (handle, bytes, bytes.Length);
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -839,6 +904,22 @@ namespace MonoMac.CoreGraphics {
 			if (str == null)
 				throw new ArgumentNullException ("str");
 			CGContextShowTextAtPoint (handle, x, y, str, str.Length);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGContextShowTextAtPoint(IntPtr c, float x, float y, byte[] bytes, int size_t_length);
+		public void ShowTextAtPoint (float x, float y, byte[] bytes, int length)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			CGContextShowTextAtPoint (handle, x, y, bytes, length);
+		}
+		
+		public void ShowTextAtPoint (float x, float y, byte[] bytes)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			CGContextShowTextAtPoint (handle, x, y, bytes, bytes.Length);
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]

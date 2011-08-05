@@ -20,7 +20,16 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+using System.Runtime.InteropServices;
+
 namespace MonoMac.Foundation {
 	public partial class NSValue : NSObject {
+#if !COREBUILD
+		public string ObjCType {
+			get {
+				return Marshal.PtrToStringAnsi (ObjCTypePtr ());
+			}
+		}
+#endif
 	}
 }

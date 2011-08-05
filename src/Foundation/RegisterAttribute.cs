@@ -27,15 +27,26 @@ namespace MonoMac.Foundation {
 	[AttributeUsage (AttributeTargets.Method | AttributeTargets.Class)]
 	public sealed class RegisterAttribute : Attribute {
 		string name;
+		bool is_wrapper;
 
 		public RegisterAttribute () {}
 		public RegisterAttribute (string name) {
 			this.name = name;
 		}
 
+		public RegisterAttribute (string name, bool isWrapper) {
+			this.name = name;
+			this.is_wrapper = isWrapper;
+		}
+
 		public string Name {
 			get { return this.name; }
 			set { this.name = value; }
+		}
+
+		public bool IsWrapper {
+			get { return this.is_wrapper; }
+			set { this.is_wrapper = value; }
 		}
 	}
 }

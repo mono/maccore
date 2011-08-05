@@ -288,6 +288,20 @@ public class PlainStringAttribute : Attribute {
 	public PlainStringAttribute () {}
 }
 
+// When applied, the generator generates a check for the Handle being valid on the main object, to
+// ensure that the user did not Dispose() the object.
+//
+// This is typically used in scenarios where the user might be tempted to dispose
+// the object in a callback:
+//
+//     foo.FinishedDownloading += delegate { foo.Dispose (); }
+//
+// This would invalidate "foo" and force the code to return to a destroyed/freed
+// object
+public class CheckDisposedAttribute : Attribute {
+	public CheckDisposedAttribute () {}
+}
+
 //
 // When applied, instructs the generator to use this object as the
 // target, instead of the implicit Handle Can only be used in methods
@@ -1166,7 +1180,7 @@ public class Generator {
 						if (mi.DeclaringType == t)
 							need_abstract [t] = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute)
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute)
 						continue;
 					else 
 						Console.WriteLine ("Error: Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -1751,7 +1765,7 @@ public class Generator {
 			if (is_static_class){
 				base_type = typeof (object);
 			} else {
-				print ("\t[Register(\"{0}\")]", objc_type_name);
+				print ("\t[Register(\"{0}\", true)]", objc_type_name);
 			} 
 			
 			if (is_model)
@@ -2175,6 +2189,10 @@ public class Generator {
 
 									print ("{0} = args.{1};", par.Name, GetPublicParameterName (par));
 								}
+							}
+							if (HasAttribute (mi, typeof (CheckDisposedAttribute))){
+								print ("if ({0}.Handle == IntPtr.Zero)", RenderArgs (pars.Take (1)));
+								print ("\tthrow new ObjectDisposedException (\"The object was disposed on the event, you should not call Dispose() inside the handler\");");
 							}
 							indent--;
 							print ("}");

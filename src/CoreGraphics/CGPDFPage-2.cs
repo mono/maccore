@@ -93,7 +93,7 @@ namespace MonoMac.CoreGraphics {
 #if !COREBUILD
 		public CGPDFDictionary Dictionary {
 			get {
-				return new CGPDFDictionary (handle);
+				return new CGPDFDictionary (CGPDFPageGetDictionary (handle));
 			}
 		}
 #endif

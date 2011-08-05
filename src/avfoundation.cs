@@ -298,7 +298,7 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (NSObject))]
 	[Model]
 	interface AVAudioPlayerDelegate {
-		[Export ("audioPlayerDidFinishPlaying:successfully:")]
+		[Export ("audioPlayerDidFinishPlaying:successfully:"), CheckDisposed]
 		void FinishedPlaying (AVAudioPlayer player, bool flag);
 	
 		[Export ("audioPlayerDecodeErrorDidOccur:error:")]
@@ -372,7 +372,7 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (NSObject))]
 	[Model]
 	interface AVAudioRecorderDelegate {
-		[Export ("audioRecorderDidFinishRecording:successfully:")]
+		[Export ("audioRecorderDidFinishRecording:successfully:"), CheckDisposed]
 		void FinishedRecording (AVAudioRecorder recorder, bool flag);
 	
 		[Export ("audioRecorderEncodeErrorDidOccur:error:")]
@@ -1874,7 +1874,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("captureOutput:didStartRecordingToOutputFileAtURL:fromConnections:")]
 		void DidStartRecording (AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject [] connections);
 
-		[Export ("captureOutput:didFinishRecordingToOutputFileAtURL:fromConnections:error:")]
+		[Export ("captureOutput:didFinishRecordingToOutputFileAtURL:fromConnections:error:"), CheckDisposed]
 		void FinishedRecording (AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject [] connections, NSError error);
 	}
 

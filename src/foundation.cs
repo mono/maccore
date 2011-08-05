@@ -3970,9 +3970,9 @@ namespace MonoMac.Foundation
 		[Export ("getValue:")]
 		void StoreValueAtAddress (IntPtr value);
 
-		//[Export ("objCType")][Internal]
-		//// This returns a const char *, we need a partial class method
-		//IntPtr ObjCTypePtr ();
+		[Export ("objCType")][Internal]
+		IntPtr ObjCTypePtr ();
+		
 		//[Export ("initWithBytes:objCType:")][Internal]
 		//NSValue InitFromBytes (IntPtr byte_ptr, IntPtr char_ptr_type);
 		//[Export ("valueWithBytes:objCType:")][Static][Internal]

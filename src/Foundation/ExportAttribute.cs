@@ -34,7 +34,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	[AttributeUsage (AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Property)]
-	public sealed class ExportAttribute : Attribute {
+	public class ExportAttribute : Attribute {
 		string selector;
 		ArgumentSemantic semantic;
 
@@ -72,5 +72,17 @@ namespace MonoMac.Foundation {
 			return new ExportAttribute (string.Format ("set{0}{1}:", char.ToUpper (selector [0]), selector.Substring (1)), semantic); 
 		}
 //#endif
+	}
+
+	[AttributeUsage (AttributeTargets.Property)]
+	public sealed class OutletAttribute : ExportAttribute {
+		public OutletAttribute () {}
+		public OutletAttribute (string name) : base (name) {}
+	}
+
+	[AttributeUsage (AttributeTargets.Method)]
+	public sealed class ActionAttribute : ExportAttribute {
+		public ActionAttribute () {}
+		public ActionAttribute (string selector) : base (selector) {}
 	}
 }

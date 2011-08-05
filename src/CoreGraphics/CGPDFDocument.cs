@@ -208,5 +208,14 @@ namespace MonoMac.CoreGraphics {
 		{
 			return CGPDFDocumentGetArtBox (handle, page);
 		}
+		
+#if !COREBUILD
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFDocumentGetCatalog (IntPtr handle);
+		public CGPDFDictionary GetCatalog ()
+		{
+			return new CGPDFDictionary (CGPDFDocumentGetCatalog (handle));
+		}
+#endif
 	}
 }

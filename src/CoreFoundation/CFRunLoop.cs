@@ -38,10 +38,124 @@ namespace MonoMac.CoreFoundation {
 		TimedOut = 3,
 		HandledSource = 4
 	}
-	
-	public class CFRunLoop : INativeObject, IDisposable {
+
+#if needed_for_cfproxysupport
+	public class CFRunLoopSource : INativeObject, IDisposable {
 		internal IntPtr handle;
-		
+
+		internal CFRunLoopSource (IntPtr handle)
+		{
+			CFObject.CFRetain (handle);
+			this.handle = handle;
+		}
+
+		~CFRunLoopSource ()
+		{
+			Dispose (false);
+		}
+
+		// TODO: Bind struct CFRunLoopSourceContext and its callbacks
+		//[DllImport (Constants.CoreFoundationLibrary)]
+		//extern static IntPtr CFRunLoopSourceCreate (IntPtr allocator, int order, IntPtr context);
+		//public static CFRunLoopSource Create (int order, CFRunLoopSourceContext context)
+		//{
+		//	IntPtr source = CFRunLoopSourceCreate (IntPtr.Zero, order, context);
+		//
+		//	if (source != IntPtr.Zero)
+		//		return new CFRunLoopSource (source);
+		//
+		//	return null;
+		//}
+
+		public IntPtr Handle {
+			get {
+				return handle;
+			}
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		// FIXME: CFRunLoopSourceGetOrder() returns CFIndex which is a typedef for 'signed long'
+		extern static int CFRunLoopSourceGetOrder (IntPtr source);
+		public int Order {
+			get {
+				return CFRunLoopSourceGetOrder (handle);
+			}
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static void CFRunLoopSourceInvalidate (IntPtr source);
+		public void Invalidate ()
+		{
+			CFRunLoopSourceInvalidate (handle);
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static int CFRunLoopSourceIsValid (IntPtr source);
+		public bool IsValid {
+			get {
+				return CFRunLoopSourceIsValid (handle) != 0;
+			}
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static void CFRunLoopSourceSignal (IntPtr source);
+		public void Signal ()
+		{
+			CFRunLoopSourceSignal (handle);
+		}
+
+		public void Dispose ()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		public virtual void Dispose (bool disposing)
+		{
+			if (handle != IntPtr.Zero) {
+				CFObject.CFRelease (handle);
+				handle = IntPtr.Zero;
+			}
+		}
+	}
+#endif // needed_for_cfproxysupport
+
+	public class CFRunLoop : INativeObject, IDisposable {
+		static IntPtr CoreFoundationLibraryHandle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
+		internal IntPtr handle;
+
+		static CFString GetStringConstant (IntPtr handle, string symbol)
+		{
+			IntPtr indirect = Dlfcn.GetIndirect (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return null;
+
+			IntPtr actual = Marshal.ReadIntPtr (indirect);
+			if (actual == IntPtr.Zero)
+				return null;
+
+			return new CFString (actual);
+		}
+
+		static CFString _CFDefaultRunLoopMode;
+		public static CFString CFDefaultRunLoopMode {
+			get {
+				if (_CFDefaultRunLoopMode == null)
+					_CFDefaultRunLoopMode = GetStringConstant (CoreFoundationLibraryHandle, "kCFDefaultRunLoopMode");
+				return _CFDefaultRunLoopMode;
+			}
+		}
+
+		static CFString _CFRunLoopCommonModes;
+		public static CFString CFRunLoopCommonModes {
+			get {
+				if (_CFRunLoopCommonModes == null)
+					_CFRunLoopCommonModes = GetStringConstant (CoreFoundationLibraryHandle, "kCFRunLoopCommonModes");
+				return _CFRunLoopCommonModes;
+			}
+		}
+
+		// Note: This is a broken binding... we do not know what the values of the constant strings are, just their variable names.
 		public const string ModeDefault = "kCFRunLoopDefaultMode";
 		public const string ModeCommon = "kCFRunLoopCommonModes";
 		
@@ -83,22 +197,71 @@ namespace MonoMac.CoreFoundation {
 		{
 			CFRunLoopWakeUp (handle);
 		}
-		
+
 		[DllImport (Constants.CoreFoundationLibrary)]
-		extern static int CFRunLoopRunInMode (IntPtr cfstring_mode, double interval, int return_after_source_handled);
+		extern static int CFRunLoopIsWaiting (IntPtr loop);
+		public bool IsWaiting {
+			get {
+				return CFRunLoopIsWaiting (handle) != 0;
+			}
+		}
 
-		public CFRunLoopExitReason RunInMode (string mode, double interval, bool returnAfterSourceHandled)
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static int CFRunLoopRunInMode (IntPtr mode, double seconds, int returnAfterSourceHandled);
+		public CFRunLoopExitReason RunInMode (CFString mode, double seconds, bool returnAfterSourceHandled)
 		{
-			CFString s = mode == null ? null : new CFString (mode);
+			if (mode == null)
+				throw new ArgumentNullException ("mode");
 
-			var v = CFRunLoopRunInMode (s == null ? IntPtr.Zero : s.Handle, interval, returnAfterSourceHandled ? 1 : 0);
-			if (s != null)
-				s.Dispose ();
-			
+			return (CFRunLoopExitReason) CFRunLoopRunInMode (mode.Handle, seconds, returnAfterSourceHandled ? 1 : 0);
+		}
+
+		[Obsolete ("Use the CFString version of CFRunLoop.RunInMode() instead.")]
+		public CFRunLoopExitReason RunInMode (string mode, double seconds, bool returnAfterSourceHandled)
+		{
+			if (mode == null)
+				throw new ArgumentNullException ("mode");
+
+			CFString s = new CFString (mode);
+
+			var v = CFRunLoopRunInMode (s.Handle, seconds, returnAfterSourceHandled ? 1 : 0);
+			s.Dispose ();
+
 			return (CFRunLoopExitReason) v;
 		}
 
-		
+#if needed_for_cfproxysupport
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static void CFRunLoopAddSource (IntPtr loop, IntPtr source, IntPtr mode);
+		public void AddSource (CFRunLoopSource source, CFString mode)
+		{
+			if (mode == null)
+				throw new ArgumentNullException ("mode");
+
+			CFRunLoopAddSource (handle, source.Handle, mode.Handle);
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static bool CFRunLoopContainsSource (IntPtr loop, IntPtr source, IntPtr mode);
+		public bool ContainsSource (CFRunLoopSource source, CFString mode)
+		{
+			if (mode == null)
+				throw new ArgumentNullException ("mode");
+
+			return CFRunLoopContainsSource (handle, source.Handle, mode.Handle);
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static bool CFRunLoopRemoveSource (IntPtr loop, IntPtr source, IntPtr mode);
+		public bool RemoveSource (CFRunLoopSource source, CFString mode)
+		{
+			if (mode == null)
+				throw new ArgumentNullException ("mode");
+
+			return CFRunLoopRemoveSource (handle, source.Handle, mode.Handle);
+		}
+#endif // needed_for_cfproxysupport
+
 		internal CFRunLoop (IntPtr handle)
 		{
 			CFObject.CFRetain (handle);

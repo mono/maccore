@@ -32,9 +32,9 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreVideo {
 	public struct CVTime {
-		public Int64 TimeValue;
-		public Int64 TimeScale;
-		public Int32 Flags;
+		public long TimeValue;
+		public long TimeScale;
+		public int Flags;
 
 		static IntPtr CoreVideo_libraryHandle = Dlfcn.dlopen (Constants.CoreVideoLibrary, 0);
 
@@ -50,16 +50,21 @@ namespace MonoMac.CoreVideo {
 			}
 		}
 
-                public override bool Equals (object other)
-                {
-                        if (!(other is CVTime))
-                                return false;
-
+		public override bool Equals (object other)
+		{
+			if (!(other is CVTime))
+				return false;
+			
 			CVTime b = (CVTime) other;
-
+			
 			return (TimeValue == b.TimeValue) && (TimeScale == b.TimeScale) && (Flags == b.Flags);
-                }
-
+		}
+		
+		public override int GetHashCode ()
+		{
+			return TimeValue.GetHashCode () ^ TimeScale.GetHashCode () ^ Flags;
+		}
+		
 		[DllImport (Constants.CoreVideoLibrary, EntryPoint = "CVGetCurrentHostTime")]
 		public static extern Int64 GetCurrentHostTime ();
 		[DllImport (Constants.CoreVideoLibrary, EntryPoint = "CVGetHostClockFrequency")]
