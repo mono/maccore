@@ -1376,7 +1376,7 @@ public class Generator {
 		"MonoTouch.CoreGraphics",
 		"MonoTouch.NewsstandKit",
 		"MonoTouch.GLKit",
-		//"OpenTK"
+		"OpenTK"
 #endif
 	};
 		
