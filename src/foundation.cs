@@ -1330,7 +1330,7 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSRunLoop {
-		[Export ("currentRunLoop")][Static]
+		[Export ("currentRunLoop")][Static][IsThreadStatic]
 		NSRunLoop Current { get; }
 
 		[Export ("mainRunLoop")][Static]
