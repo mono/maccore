@@ -472,6 +472,9 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVAudioSessionModeMeasurement")]
 		NSString ModeMeasurement { get; }
+
+		[Field ("AVAudioSessionModeGameChat")]
+		NSString ModeGameChat { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
