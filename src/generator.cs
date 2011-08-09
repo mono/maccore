@@ -318,6 +318,10 @@ public class StaticAttribute : Attribute {
 	public StaticAttribute () {}
 }
 
+public class IsThreadStaticAttribute : Attribute {
+	public IsThreadStaticAttribute () {}
+}
+
 public class NullAllowedAttribute : Attribute {
 	public NullAllowedAttribute () {}
 }
@@ -1110,6 +1114,11 @@ public class Generator {
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
+				if (HasAttribute (pi, typeof (IsThreadStaticAttribute)) && !HasAttribute (pi, typeof (StaticAttribute))) {
+					Console.WriteLine ("Error: [IsThreadStatic] is only valid on properties that are also [Static]");
+					Environment.Exit (1);
+				}
+
 				string wrapname;
 				var export = GetExportAttribute (pi, out wrapname);
 				if (export == null){
@@ -1873,6 +1882,7 @@ public class Generator {
 				string wrap;
 				var export = GetExportAttribute (pi, out wrap);
 				bool is_static = HasAttribute (pi, typeof (StaticAttribute));
+				bool is_thread_static = HasAttribute (pi, typeof (IsThreadStaticAttribute));
 				bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
 				bool is_public = !HasAttribute (pi, typeof (InternalAttribute));
 				bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || pi.DeclaringType != type;
@@ -1908,8 +1918,11 @@ public class Generator {
 				
 				string var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
 
-				if ((IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ()))))
+				if ((IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ())))) {
+					if (is_thread_static)
+						print ("[ThreadStatic]");
 					print ("{2}{0} {1};", pi.PropertyType, var_name, is_static ? "static " : "");
+				}
 				print ("{0} {1}{2}{3}{4} {5} {{",
 				       is_public ? "public" : "internal",
 				       is_unsafe ? "unsafe " : "",
