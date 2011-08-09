@@ -3163,7 +3163,7 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSNotificationQueue {
-		[Static]
+		[Static][IsThreadStatic]
 		[Export ("defaultQueue")]
 		NSObject DefaultQueue { get; }
 
