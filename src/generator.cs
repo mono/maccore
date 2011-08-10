@@ -416,6 +416,37 @@ public class DefaultValueFromArgumentAttribute : Attribute {
 	}
 	public string Argument { get; set; }
 }
+
+[AttributeUsage(AttributeTargets.Method|AttributeTargets.Property, AllowMultiple=true)]
+public class SnippetAttribute : Attribute {
+	public SnippetAttribute (string s)
+	{
+		Code = s;
+	}
+	public string Code { get; set; }
+}
+
+//
+// PreSnippet code is inserted after the parameters have been validated/marshalled
+// 
+public class PreSnippetAttribute : SnippetAttribute {
+	public PreSnippetAttribute (string s) : base (s) {}
+}
+
+//
+// PrologueSnippet code is inserted before any code is generated
+// 
+public class PrologueSnippetAttribute : SnippetAttribute {
+	public PrologueSnippetAttribute (string s) : base (s) {}
+}
+
+//
+// PostSnippet code is inserted before returning, before paramters are disposed/released
+// 
+public class PostSnippetAttribute : SnippetAttribute {
+	public PostSnippetAttribute (string s) : base (s) {}
+}
+
 //
 // Used to encapsulate flags about types in either the parameter or the return value
 // For now, it only supports the [PlainString] attribute on strings.
@@ -1186,7 +1217,7 @@ public class Generator {
 						if (mi.DeclaringType == t)
 							need_abstract [t] = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute)
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute)
 						continue;
 					else 
 						Console.WriteLine ("Error: Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -1502,6 +1533,25 @@ public class Generator {
 		}
 	}
 
+	static char [] newlineTab = new char [] { '\n', '\t' };
+	
+	void Inject (MethodInfo method, Type snippetType)
+	{
+		var snippets = method.GetCustomAttributes (snippetType, false);
+		if (snippets.Length == 0)
+			return;
+		foreach (SnippetAttribute snippet in snippets){
+			if (snippet.Code == null)
+				continue;
+			var lines = snippet.Code.Split (newlineTab);
+			foreach (var l in lines){
+				if (l.Length == 0)
+					continue;
+				print (l);
+			}
+		}
+	}
+	
 	//
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
@@ -1513,6 +1563,8 @@ public class Generator {
 		var convs = new StringBuilder ();
 		var disposes = new StringBuilder ();
 		var byRefPostProcessing = new StringBuilder();
+
+		Inject (mi, typeof (PrologueSnippetAttribute));
 		
 		indent++;
 		foreach (var pi in mi.GetParameters ()){
@@ -1626,6 +1678,7 @@ public class Generator {
 			print (sw, convs.ToString ());
 
 
+		Inject (mi, typeof (PreSnippetAttribute));
 		bool has_postget = HasAttribute (mi, typeof (PostGetAttribute));
 		bool use_temp_return =
 			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
@@ -1667,6 +1720,8 @@ public class Generator {
 			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
 		}
 		
+		Inject (mi, typeof (PostSnippetAttribute));
+
 		if (disposes.Length > 0)
 			print (disposes.ToString ());
 		if (assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ()))))
