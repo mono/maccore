@@ -1436,6 +1436,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof(NSObject))]
+	[Dispose ("if (disposing) { Invalidate (); } ")]
 	public interface NSTimer {
 		// TODO: scheduledTimerWithTimeInterval:invocation:repeats:
 

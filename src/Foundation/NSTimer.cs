@@ -53,13 +53,5 @@ namespace MonoMac.Foundation {
 			: this (date, when.TotalSeconds, new NSActionDispatcher (action), NSActionDispatcher.Selector, null, repeats)
 		{
 		}
-
-		protected override void Dispose (bool disposing)
-		{
-			if (disposing){
-				Invalidate ();
-			}
-			base.Dispose (disposing);
-		}
 	}
 }

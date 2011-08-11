@@ -448,6 +448,14 @@ public class PostSnippetAttribute : SnippetAttribute {
 }
 
 //
+// Code to run from a generated Dispose method
+//
+[AttributeUsage(AttributeTargets.Interface, AllowMultiple=true)]
+public class DisposeAttribute : SnippetAttribute {
+	public DisposeAttribute (string s) : base (s) {}
+}
+
+//
 // Used to encapsulate flags about types in either the parameter or the return value
 // For now, it only supports the [PlainString] attribute on strings.
 //
@@ -1540,15 +1548,19 @@ public class Generator {
 		var snippets = method.GetCustomAttributes (snippetType, false);
 		if (snippets.Length == 0)
 			return;
-		foreach (SnippetAttribute snippet in snippets){
-			if (snippet.Code == null)
+		foreach (SnippetAttribute snippet in snippets)
+			Inject (snippet);
+	}
+
+	void Inject (SnippetAttribute snippet)
+	{
+		if (snippet.Code == null)
+			return;
+		var lines = snippet.Code.Split (newlineTab);
+		foreach (var l in lines){
+			if (l.Length == 0)
 				continue;
-			var lines = snippet.Code.Split (newlineTab);
-			foreach (var l in lines){
-				if (l.Length == 0)
-					continue;
-				print (l);
-			}
+			print (l);
 		}
 	}
 	
@@ -1773,6 +1785,8 @@ public class Generator {
 		indent = 0;
 		string output_file = Path.Combine (dir, file);
 		GeneratedFiles.Add (output_file);
+		var instance_fields_to_clear_on_dispose = new List<string> ();
+		
 		using (var sw = new StreamWriter (output_file)){
 			this.sw = sw;
 			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0;
@@ -1977,6 +1991,10 @@ public class Generator {
 					if (is_thread_static)
 						print ("[ThreadStatic]");
 					print ("{2}{0} {1};", pi.PropertyType, var_name, is_static ? "static " : "");
+
+					if (!is_static){
+						instance_fields_to_clear_on_dispose.Add (var_name);
+					}
 				}
 				print ("{0} {1}{2}{3}{4} {5} {{",
 				       is_public ? "public" : "internal",
@@ -2309,6 +2327,26 @@ public class Generator {
 				print ("}");
 				print ("");
 			}
+			//
+			// Do we need a dispose method?
+			//
+			object [] disposeAttr = type.GetCustomAttributes (typeof (DisposeAttribute), true);
+			if (disposeAttr.Length > 0 || instance_fields_to_clear_on_dispose.Count > 0){
+				print ("protected override void Dispose (bool disposing)");
+				print ("{");
+				indent++;
+				if (disposeAttr.Length > 0){
+					var snippet = disposeAttr [0] as DisposeAttribute;
+					Inject (snippet);
+				}
+				
+				foreach (var field in instance_fields_to_clear_on_dispose){
+					print ("{0} = null;", field);
+				}
+				print ("base.Dispose (disposing);");
+				indent--;
+				print ("}");
+			}
 			
 			print ("}} /* class {0} */", TypeName);
 
@@ -2401,7 +2439,7 @@ public class Generator {
 				       delname,
 				       RenderParameterDecl (mi.GetParameters ()));
 			}
-			
+
 			indent--;
 			print ("}");
 		}
