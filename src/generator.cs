@@ -1139,8 +1139,7 @@ public class Generator {
 
 		if (BindThirdPartyLibrary){
 			print (m, "\t\tstatic internal System.Reflection.Assembly this_assembly = typeof (Messaging).Assembly;\n");
-			print (m, "\t\t\tconst string LIBOBJC_DYLIB = \"/usr/lib/libobjc.dylib\";\n");
-
+			print (m, "\t\tconst string LIBOBJC_DYLIB = \"/usr/lib/libobjc.dylib\";\n");
 		}
 		
 		foreach (Type t in types){
@@ -1269,28 +1268,30 @@ public class Generator {
 
 	public void print (string format)
 	{
-		if (indent != 0)
-			for (int i = 0; i < indent; i++)
-				sw.Write ("\t");
 		print (sw, format);
 	}
 
 	public void print (string format, params object [] args)
 	{
-		if (indent != 0)
-			for (int i = 0; i < indent; i++)
-				sw.Write ("\t");
 		print (sw, format, args);
 	}
 
 	public void print (StreamWriter w, string format)
 	{
-		w.WriteLine (format);
+		string[] lines = format.Split (new char [] { '\n' });
+		string lwsp = new string ('\t', indent);
+		
+		for (int i = 0; i < lines.Length; i++)
+			w.WriteLine (lwsp + lines[i]);
 	}
 
 	public void print (StreamWriter w, string format, params object [] args)
 	{
-		w.WriteLine (format, args);
+		string[] lines = String.Format (format, args).Split (new char [] { '\n' });
+		string lwsp = new string ('\t', indent);
+		
+		for (int i = 0; i < lines.Length; i++)
+			w.WriteLine (lwsp + lines[i]);
 	}
 
 	public void print (StreamWriter w, IEnumerable e)
@@ -1576,9 +1577,10 @@ public class Generator {
 		var disposes = new StringBuilder ();
 		var byRefPostProcessing = new StringBuilder();
 
-		Inject (mi, typeof (PrologueSnippetAttribute));
-		
 		indent++;
+
+		Inject (mi, typeof (PrologueSnippetAttribute));
+
 		foreach (var pi in mi.GetParameters ()){
 			MarshalInfo mai = new MarshalInfo (pi);
 
@@ -1591,11 +1593,11 @@ public class Generator {
 			// Construct conversions
 			if (mai.Type == typeof (string) && !mai.PlainString){
 				if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
-					convs.AppendFormat ("\t\t\tvar ns{0} = {0} == null ? null : new NSString ({0});\n", pi.Name);
-					disposes.AppendFormat ("\t\t\tif (ns{0} != null)\n\t\t\t\tns{0}.Dispose ();", pi.Name);
+					convs.AppendFormat ("var ns{0} = {0} == null ? null : new NSString ({0});\n", pi.Name);
+					disposes.AppendFormat ("if (ns{0} != null)\n\tns{0}.Dispose ();", pi.Name);
 				} else {
-					convs.AppendFormat ("\t\t\tvar ns{0} = new NSString ({0});\n", pi.Name);
-					disposes.AppendFormat ("\t\t\tns{0}.Dispose ();\n", pi.Name);
+					convs.AppendFormat ("var ns{0} = new NSString ({0});\n", pi.Name);
+					disposes.AppendFormat ("ns{0}.Dispose ();\n", pi.Name);
 				}
 			}
 
@@ -1603,19 +1605,19 @@ public class Generator {
 				Type etype = mai.Type.GetElementType ();
 				if (etype == typeof (string)){
 					if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
-						convs.AppendFormat ("\t\t\tvar nsa_{0} = {0} == null ? null : NSArray.FromStrings ({0});\n", pi.Name);
-						disposes.AppendFormat ("\t\t\tif (nsa_{0} != null)\n\t\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+						convs.AppendFormat ("var nsa_{0} = {0} == null ? null : NSArray.FromStrings ({0});\n", pi.Name);
+						disposes.AppendFormat ("if (nsa_{0} != null)\n\tnsa_{0}.Dispose ();\n", pi.Name);
 					} else {
-						convs.AppendFormat ("\t\t\tvar nsa_{0} = NSArray.FromStrings ({0});\n", pi.Name);
-						disposes.AppendFormat ("\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+						convs.AppendFormat ("var nsa_{0} = NSArray.FromStrings ({0});\n", pi.Name);
+						disposes.AppendFormat ("nsa_{0}.Dispose ();\n", pi.Name);
 					}
 				} else {
 					if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
-						convs.AppendFormat ("\t\t\tvar nsa_{0} = {0} == null ? null : NSArray.FromNSObjects ({0});\n", pi.Name);
-						disposes.AppendFormat ("\t\t\tif (nsa_{0} != null)\n\t\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+						convs.AppendFormat ("var nsa_{0} = {0} == null ? null : NSArray.FromNSObjects ({0});\n", pi.Name);
+						disposes.AppendFormat ("if (nsa_{0} != null)\n\tnsa_{0}.Dispose ();\n", pi.Name);
 					} else {
-						convs.AppendFormat ("\t\t\tvar nsa_{0} = NSArray.FromNSObjects ({0});\n", pi.Name);
-						disposes.AppendFormat ("\t\t\tnsa_{0}.Dispose ();\n", pi.Name);
+						convs.AppendFormat ("var nsa_{0} = NSArray.FromNSObjects ({0});\n", pi.Name);
+						disposes.AppendFormat ("nsa_{0}.Dispose ();\n", pi.Name);
 					}
 				}
 			}
@@ -1626,24 +1628,24 @@ public class Generator {
 				string extra = "";
 				bool null_allowed = HasAttribute (pi, typeof (NullAllowedAttribute));
 				
-				convs.AppendFormat ("\t\t\tBlockLiteral *block_ptr_{0};\n", pi.Name);
-				convs.AppendFormat ("\t\t\tBlockLiteral block_{0};\n", pi.Name);
+				convs.AppendFormat ("BlockLiteral *block_ptr_{0};\n", pi.Name);
+				convs.AppendFormat ("BlockLiteral block_{0};\n", pi.Name);
 				if (null_allowed){
-					convs.AppendFormat ("\t\t\tif ({0} == null){{\n", pi.Name);
-					convs.AppendFormat ("\t\t\t\tblock_ptr_{0} = (BlockLiteral *) 0;\n", pi.Name);
-					convs.AppendFormat ("\t\t\t}} else {{\n");
+					convs.AppendFormat ("if ({0} == null){{\n", pi.Name);
+					convs.AppendFormat ("\tblock_ptr_{0} = (BlockLiteral *) 0;\n", pi.Name);
+					convs.AppendFormat ("}} else {{\n");
 					extra = "\t";
 				}
-				convs.AppendFormat (extra + "\t\t\tblock_{0} = new BlockLiteral ();\n", pi.Name);
-				convs.AppendFormat (extra + "\t\t\tblock_ptr_{0} = &block_{0};\n", pi.Name);
-				convs.AppendFormat (extra + "\t\t\tblock_{0}.SetupBlock ({1}, {0});\n", pi.Name, trampoline_name);
+				convs.AppendFormat (extra + "block_{0} = new BlockLiteral ();\n", pi.Name);
+				convs.AppendFormat (extra + "block_ptr_{0} = &block_{0};\n", pi.Name);
+				convs.AppendFormat (extra + "block_{0}.SetupBlock ({1}, {0});\n", pi.Name, trampoline_name);
 				if (null_allowed)
-					convs.AppendFormat ("\t\t\t}}");
+					convs.AppendFormat ("}}");
 
 				if (null_allowed){
 					disposes.AppendFormat ("if (block_ptr_{0} != (BlockLiteral *) 0)\n", pi.Name);
 				}
-				disposes.AppendFormat (extra + "\t\t\tblock_ptr_{0}->CleanupBlock ();\n", pi.Name);
+				disposes.AppendFormat (extra + "block_ptr_{0}->CleanupBlock ();\n", pi.Name);
 			}
 
 			// Handle ByRef
@@ -1653,11 +1655,11 @@ public class Generator {
 				print ("");
 				
 				byRefPostProcessing.AppendLine();
-				byRefPostProcessing.AppendFormat("\t\t\tIntPtr {0}Value = Marshal.ReadIntPtr({0}Ptr);", pi.Name);
+				byRefPostProcessing.AppendFormat("IntPtr {0}Value = Marshal.ReadIntPtr({0}Ptr);", pi.Name);
 				byRefPostProcessing.AppendLine();
-				byRefPostProcessing.AppendFormat("\t\t\t{0} = {0}Value != IntPtr.Zero ? ({1})Runtime.GetNSObject({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
+				byRefPostProcessing.AppendFormat("{0} = {0}Value != IntPtr.Zero ? ({1})Runtime.GetNSObject({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
 				byRefPostProcessing.AppendLine();
-				byRefPostProcessing.AppendFormat("\t\t\tMarshal.FreeHGlobal({0}Ptr);", pi.Name);
+				byRefPostProcessing.AppendFormat("Marshal.FreeHGlobal({0}Ptr);", pi.Name);
 				byRefPostProcessing.AppendLine();
 			}
 			// Insert parameter checking
@@ -1689,7 +1691,6 @@ public class Generator {
 		if (convs.Length > 0)
 			print (sw, convs.ToString ());
 
-
 		Inject (mi, typeof (PreSnippetAttribute));
 		bool has_postget = HasAttribute (mi, typeof (PostGetAttribute));
 		bool use_temp_return =
@@ -1699,7 +1700,6 @@ public class Generator {
 			(mi.ReturnType.IsSubclassOf (typeof (Delegate))) ||
 			(HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ProxyAttribute))) ||
 			(mi.Name != "Constructor" && byRefPostProcessing.Length > 0 && mi.ReturnType != typeof (void));
-		
 
 		if (use_temp_return) {
 			if (mi.ReturnType.IsSubclassOf (typeof (Delegate)))
@@ -1735,7 +1735,7 @@ public class Generator {
 		Inject (mi, typeof (PostSnippetAttribute));
 
 		if (disposes.Length > 0)
-			print (disposes.ToString ());
+			print (sw, disposes.ToString ());
 		if (assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ()))))
 			print ("{0} = ret;", assign);
 		if (has_postget) {
@@ -1749,7 +1749,7 @@ public class Generator {
 		if (HasAttribute (mi, typeof (FactoryAttribute)))
 			print ("ret.Release (); // Release implicit ref taken by GetNSObject");
 		if (byRefPostProcessing.Length > 0)
-			print (byRefPostProcessing.ToString ());
+			print (sw, byRefPostProcessing.ToString ());
 		if (use_temp_return) {
 			if (HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ProxyAttribute)))
 				print ("ret.SetAsProxy ();");
@@ -1799,35 +1799,38 @@ public class Generator {
 			Header (sw);
 
 			print ("namespace {0} {{", type.Namespace);
+			indent++;
 
 			if (is_static_class){
 				base_type = typeof (object);
 			} else {
-				print ("\t[Register(\"{0}\", true)]", objc_type_name);
+				print ("[Register(\"{0}\", true)]", objc_type_name);
 			} 
 			
 			if (is_model)
-				print ("\t[Model]");
+				print ("[Model]");
 
-			print ("\tpublic {0}partial class {1} {2} {{",
+			print ("public {0}partial class {1} {2} {{",
 			       need_abstract.ContainsKey (type) ? "abstract " : "",
 			       TypeName,
 			       base_type != typeof (object) && TypeName != "NSObject" ? ": " + FormatType (type, base_type) : "");
 
+			indent++;
+			
 			if (!is_model){
 				foreach (var ea in selectors [type]){
 					if (external || IsBtouch)
-						print ("\t\tstatic IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
+						print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 					else
-						print ("\t\tstatic IntPtr {0} = Selector.sel_registerName (\"{1}\");", SelectorField (ea), ea);
+						print ("static IntPtr {0} = Selector.sel_registerName (\"{1}\");", SelectorField (ea), ea);
 				}
 			}
 			print ("");
 
 			if (!is_static_class){
-				print ("\t\tstatic IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
+				print ("static IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
 				if (!is_model && !external) {
-					print ("\t\tpublic {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
+					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
 				}
 
 				string ctor_visibility = private_default_ctor ? "" : "public ";
@@ -1853,7 +1856,6 @@ public class Generator {
 				}
 			}
 			
-			indent = 2;
 			foreach (var mi in type.GatherMethods (BindingFlags.Public | BindingFlags.Instance)){
 				if (mi.IsSpecialName)
 					continue;
@@ -1928,7 +1930,7 @@ public class Generator {
 				if (!is_abstract){
 					print ("{");
 					if (debug)
-						print ("Console.WriteLine (\"In {0}\");", mi);
+						print ("\tConsole.WriteLine (\"In {0}\");", mi);
 					
 					if (is_model)
 						print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
@@ -2307,9 +2309,6 @@ public class Generator {
 					}
 				}
 			}
-			
-			indent--;
-			print ("");
 
 			//
 			// Now the trampolines
@@ -2327,6 +2326,7 @@ public class Generator {
 				print ("}");
 				print ("");
 			}
+
 			//
 			// Do we need a dispose method?
 			//
@@ -2347,6 +2347,8 @@ public class Generator {
 				indent--;
 				print ("}");
 			}
+						
+			indent--;
 			
 			print ("}} /* class {0} */", TypeName);
 
