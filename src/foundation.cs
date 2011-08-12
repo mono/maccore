@@ -3913,8 +3913,8 @@ namespace MonoMac.Foundation
 		[Export ("attributesOfItemAtPath:error:")][Internal]
 		NSDictionary _GetAttributes (string path, out NSError error);
 
-		[Export ("attributesOfFileSystemForPath:error:")]
-		NSDictionary GetFileSystemAttributes (string path, out NSError error);
+		[Export ("attributesOfFileSystemForPath:error:")][Internal]
+		NSDictionary _GetFileSystemAttributes (String path, out NSError error);
 
 		[Export ("createSymbolicLinkAtPath:withDestinationPath:error:")]
 		bool CreateSymbolicLink (string path, string destPath, out NSError error);
