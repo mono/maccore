@@ -29,6 +29,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreFoundation {
 
@@ -39,7 +40,7 @@ namespace MonoMac.CoreFoundation {
 		HandledSource = 4
 	}
 
-#if needed_for_cfproxysupport
+#if false // this will eventually need to be exposed for CFNetwork.ExecuteAutoConfiguration*()
 	public class CFRunLoopSource : INativeObject, IDisposable {
 		internal IntPtr handle;
 
@@ -118,44 +119,31 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 	}
-#endif // needed_for_cfproxysupport
+#endif
 
 	public class CFRunLoop : INativeObject, IDisposable {
 		static IntPtr CoreFoundationLibraryHandle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
 		internal IntPtr handle;
 
-		static CFString GetStringConstant (IntPtr handle, string symbol)
-		{
-			IntPtr indirect = Dlfcn.GetIndirect (handle, symbol);
-			if (indirect == IntPtr.Zero)
-				return null;
-
-			IntPtr actual = Marshal.ReadIntPtr (indirect);
-			if (actual == IntPtr.Zero)
-				return null;
-
-			return new CFString (actual);
-		}
-
-		static CFString _CFDefaultRunLoopMode;
-		public static CFString CFDefaultRunLoopMode {
+		static NSString _CFDefaultRunLoopMode;
+		public static NSString CFDefaultRunLoopMode {
 			get {
 				if (_CFDefaultRunLoopMode == null)
-					_CFDefaultRunLoopMode = GetStringConstant (CoreFoundationLibraryHandle, "kCFDefaultRunLoopMode");
+					_CFDefaultRunLoopMode = Dlfcn.GetStringConstant (CoreFoundationLibraryHandle, "kCFDefaultRunLoopMode");
 				return _CFDefaultRunLoopMode;
 			}
 		}
 
-		static CFString _CFRunLoopCommonModes;
-		public static CFString CFRunLoopCommonModes {
+		static NSString _CFRunLoopCommonModes;
+		public static NSString CFRunLoopCommonModes {
 			get {
 				if (_CFRunLoopCommonModes == null)
-					_CFRunLoopCommonModes = GetStringConstant (CoreFoundationLibraryHandle, "kCFRunLoopCommonModes");
+					_CFRunLoopCommonModes = Dlfcn.GetStringConstant (CoreFoundationLibraryHandle, "kCFRunLoopCommonModes");
 				return _CFRunLoopCommonModes;
 			}
 		}
 
-		// Note: This is a broken binding... we do not know what the values of the constant strings are, just their variable names.
+		// Note: This is a broken binding... we do not know what the values of the constant strings are, just their variable names and things are done by comparing CFString pointers, not a string compare anyway.
 		public const string ModeDefault = "kCFRunLoopDefaultMode";
 		public const string ModeCommon = "kCFRunLoopCommonModes";
 		
@@ -208,7 +196,7 @@ namespace MonoMac.CoreFoundation {
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static int CFRunLoopRunInMode (IntPtr mode, double seconds, int returnAfterSourceHandled);
-		public CFRunLoopExitReason RunInMode (CFString mode, double seconds, bool returnAfterSourceHandled)
+		public CFRunLoopExitReason RunInMode (NSString mode, double seconds, bool returnAfterSourceHandled)
 		{
 			if (mode == null)
 				throw new ArgumentNullException ("mode");
@@ -216,7 +204,7 @@ namespace MonoMac.CoreFoundation {
 			return (CFRunLoopExitReason) CFRunLoopRunInMode (mode.Handle, seconds, returnAfterSourceHandled ? 1 : 0);
 		}
 
-		[Obsolete ("Use the CFString version of CFRunLoop.RunInMode() instead.")]
+		[Obsolete ("Use the NSString version of CFRunLoop.RunInMode() instead.")]
 		public CFRunLoopExitReason RunInMode (string mode, double seconds, bool returnAfterSourceHandled)
 		{
 			if (mode == null)
@@ -230,10 +218,10 @@ namespace MonoMac.CoreFoundation {
 			return (CFRunLoopExitReason) v;
 		}
 
-#if needed_for_cfproxysupport
+#if false // will eventually be needed by CFNetwork.ExecuteAutoConfiguration*()
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static void CFRunLoopAddSource (IntPtr loop, IntPtr source, IntPtr mode);
-		public void AddSource (CFRunLoopSource source, CFString mode)
+		public void AddSource (CFRunLoopSource source, NSString mode)
 		{
 			if (mode == null)
 				throw new ArgumentNullException ("mode");
@@ -243,7 +231,7 @@ namespace MonoMac.CoreFoundation {
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static bool CFRunLoopContainsSource (IntPtr loop, IntPtr source, IntPtr mode);
-		public bool ContainsSource (CFRunLoopSource source, CFString mode)
+		public bool ContainsSource (CFRunLoopSource source, NSString mode)
 		{
 			if (mode == null)
 				throw new ArgumentNullException ("mode");
@@ -253,14 +241,14 @@ namespace MonoMac.CoreFoundation {
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static bool CFRunLoopRemoveSource (IntPtr loop, IntPtr source, IntPtr mode);
-		public bool RemoveSource (CFRunLoopSource source, CFString mode)
+		public bool RemoveSource (CFRunLoopSource source, NSString mode)
 		{
 			if (mode == null)
 				throw new ArgumentNullException ("mode");
 
 			return CFRunLoopRemoveSource (handle, source.Handle, mode.Handle);
 		}
-#endif // needed_for_cfproxysupport
+#endif
 
 		internal CFRunLoop (IntPtr handle)
 		{

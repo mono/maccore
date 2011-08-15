@@ -1556,7 +1556,7 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSRunLoop {
-		[Export ("currentRunLoop")][Static]
+		[Export ("currentRunLoop")][Static][IsThreadStatic]
 		NSRunLoop Current { get; }
 
 		[Export ("mainRunLoop")][Static]
@@ -1662,6 +1662,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof(NSObject))]
+	[Dispose ("if (disposing) { Invalidate (); } ")]
 	public interface NSTimer {
 		// TODO: scheduledTimerWithTimeInterval:invocation:repeats:
 
@@ -3025,6 +3026,9 @@ namespace MonoMac.Foundation
 
 		[Export ("hash"), Internal]
 		int Hash ();
+
+		[Export ("isEqualToString:"), Internal]
+		bool IsEqualTo (IntPtr handle);
 	}
 	
 	[BaseType (typeof (NSStream))]
@@ -3950,7 +3954,7 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSNotificationQueue {
-		[Static]
+		[Static][IsThreadStatic]
 		[Export ("defaultQueue")]
 		NSObject DefaultQueue { get; }
 
@@ -4763,8 +4767,8 @@ namespace MonoMac.Foundation
 		[Export ("attributesOfItemAtPath:error:")][Internal]
 		NSDictionary _GetAttributes (string path, out NSError error);
 
-		[Export ("attributesOfFileSystemForPath:error:")]
-		NSDictionary GetFileSystemAttributes (string path, out NSError error);
+		[Export ("attributesOfFileSystemForPath:error:")][Internal]
+		NSDictionary _GetFileSystemAttributes (String path, out NSError error);
 
 		[Export ("createSymbolicLinkAtPath:withDestinationPath:error:")]
 		bool CreateSymbolicLink (string path, string destPath, out NSError error);

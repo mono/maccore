@@ -115,7 +115,7 @@ namespace MonoMac.Foundation {
 			return dict;
 		}
 
-		static bool fetch (NSDictionary dict, NSString key, ref bool b)
+		internal static bool fetch (NSDictionary dict, NSString key, ref bool b)
 		{
 			var k = dict.ObjectForKey (key) as NSNumber;
 			if (k == null)
@@ -124,7 +124,7 @@ namespace MonoMac.Foundation {
 			return true;
 		}
 
-		static bool fetch (NSDictionary dict, NSString key, ref uint b)
+		internal static bool fetch (NSDictionary dict, NSString key, ref uint b)
 		{
 			var k = dict.ObjectForKey (key) as NSNumber;
 			if (k == null)
@@ -133,7 +133,7 @@ namespace MonoMac.Foundation {
 			return true;
 		}
 
-		static bool fetch (NSDictionary dict, NSString key, ref ulong b)
+		internal static bool fetch (NSDictionary dict, NSString key, ref ulong b)
 		{
 			var k = dict.ObjectForKey (key) as NSNumber;
 			if (k == null)
@@ -189,6 +189,44 @@ namespace MonoMac.Foundation {
 			return ret;
 		}
 	}
+
+	public class NSFileSystemAttributes {
+		NSDictionary dict;
+		
+		internal NSFileSystemAttributes (NSDictionary dict)
+		{
+			this.dict = dict;
+		}
+
+		public ulong Size { get; internal set; }
+		public ulong FreeSize { get; internal set; }
+		public long Nodes { get; internal set; }
+		public long FreeNodes { get; internal set; }
+		public uint Number { get; internal set; }
+
+		internal static NSFileSystemAttributes FromDict (NSDictionary dict)
+		{
+			if (dict == null)
+				return null;
+			var ret = new NSFileSystemAttributes (dict);
+			ulong l = 0;
+			uint i = 0;
+			ret.Size     = NSFileAttributes.fetch (dict, NSFileManager.SystemSize, ref l) ? l : 0;
+			ret.FreeSize = NSFileAttributes.fetch (dict, NSFileManager.SystemFreeSize, ref l) ? l : 0;
+			ret.Nodes    = NSFileAttributes.fetch (dict, NSFileManager.SystemNodes, ref l) ? (long) l : 0;
+			ret.FreeNodes= NSFileAttributes.fetch (dict, NSFileManager.SystemFreeNodes, ref l) ? (long) l : 0;
+			ret.Number   = NSFileAttributes.fetch (dict, NSFileManager.SystemFreeNodes, ref i) ? i : 0;
+
+			return ret;
+		}
+
+		// For source code compatibility with users that had done manual NSDictionary lookups before
+		public static implicit operator NSDictionary (NSFileSystemAttributes attr)
+		{
+			return attr.dict;
+		}
+		
+	}		
 	
 	public partial class NSFileManager {
 		public bool SetAttributes (NSFileAttributes attributes, string path, out NSError error)
@@ -228,6 +266,17 @@ namespace MonoMac.Foundation {
 		{
 			NSError error;
 			return NSFileAttributes.FromDict (_GetAttributes (path, out error));
+		}
+
+		public NSFileSystemAttributes GetFileSystemAttributes (string path)
+		{
+			NSError error;
+			return NSFileSystemAttributes.FromDict (_GetFileSystemAttributes (path, out error));
+		}
+
+		public NSFileSystemAttributes GetFileSystemAttributes (string path, out NSError error)
+		{
+			return NSFileSystemAttributes.FromDict (_GetFileSystemAttributes (path, out error));
 		}
 	}
 }
