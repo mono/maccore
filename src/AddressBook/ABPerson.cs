@@ -491,13 +491,13 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr ABPersonCreate ();
 
 		public ABPerson ()
-			: base (ABPersonCreate ())
+			: base (ABPersonCreate (), null)
 		{
 			InitConstants.Init ();
 		}
 
-		internal ABPerson (IntPtr handle)
-			: base (CFObject.CFRetain (handle))
+		internal ABPerson (IntPtr handle, ABAddressBook addressbook)
+			: base (CFObject.CFRetain (handle), addressbook)
 		{
 		}
 
