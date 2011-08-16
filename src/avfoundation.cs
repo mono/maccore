@@ -956,6 +956,45 @@ namespace MonoMac.AVFoundation {
 	}
 
 	[Since (4,0)]
+	[BaseType (typeof (AVAsset))]
+	interface AVComposition {
+		[Export ("tracks")]
+		AVCompositionTrack [] Tracks { get; }
+
+		[Export ("naturalSize")]
+		SizeF NaturalSize { get; set; }
+
+	}
+
+	[Since (4,0)]
+	[BaseType (typeof (AVComposition))]
+	interface AVMutableComposition {
+		[Export ("composition"), Static]
+		AVMutableComposition Create ();
+
+		[Export ("insertTimeRange:ofAsset:atTime:error:")]
+		bool Insert (CMTimeRange insertTimeRange, AVAsset sourceAsset, CMTime atTime, NSError outError);
+
+		[Export ("insertEmptyTimeRange:")]
+		void InserEmptyTimeRange (CMTimeRange timeRange);
+
+		[Export ("removeTimeRange:")]
+		void RemoveTimeRange (CMTimeRange timeRange);
+
+		[Export ("scaleTimeRange:toDuration:")]
+		void ScaleTimeRange (CMTimeRange timeRange, CMTime duration);
+
+		[Export ("addMutableTrackWithMediaType:preferredTrackID:")]
+		AVMutableCompositionTrack AddMutableTrack (string mediaType, int preferredTrackId);
+
+		[Export ("removeTrack:")]
+		void RemoveTrack (AVCompositionTrack track);
+
+		[Export ("mutableTrackCompatibleWithTrack:")]
+		AVMutableCompositionTrack CreateMutableTrack (AVAssetTrack referenceTrack);
+	}
+	
+	[Since (4,0)]
 	[BaseType (typeof (AVAssetTrackSegment))]
 	interface AVCompositionTrackSegment {
 		[Export ("sourceURL")]
