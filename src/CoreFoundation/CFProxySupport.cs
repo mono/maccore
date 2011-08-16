@@ -490,7 +490,7 @@ namespace MonoMac.CoreFoundation {
 			return new NSArray (native);
 		}
 		
-		public static CFProxySettings[] GetProxiesForAutoConfigurationScript (NSString proxyAutoConfigurationScript, NSUrl targetURL)
+		public static CFProxy[] GetProxiesForAutoConfigurationScript (NSString proxyAutoConfigurationScript, NSUrl targetURL)
 		{
 			if (proxyAutoConfigurationScript == null)
 				throw new ArgumentNullException ("proxyAutoConfigurationScript");
@@ -509,9 +509,9 @@ namespace MonoMac.CoreFoundation {
 			if (dictionaries == null)
 				return null;
 			
-			CFProxySettings[] proxies = new CFProxySettings [dictionaries.Length];
+			CFProxy[] proxies = new CFProxy [dictionaries.Length];
 			for (int i = 0; i < dictionaries.Length; i++)
-				proxies[i] = new CFProxySettings (dictionaries[i]);
+				proxies[i] = new CFProxy (dictionaries[i]);
 			
 			return proxies;
 		}
