@@ -227,13 +227,14 @@ namespace MonoMac.CoreFoundation {
 			return CFProxyType.None;
 		}
 		
-#if notyet
+#if false
 		// AFAICT these get used with CFNetworkExecuteProxyAutoConfiguration*()
 		
 		// TODO: bind CFHTTPMessage so we can return the proper type here.
 		public NSObject AutoConfigurationHTTPResponse {
 			get { return settings[AutoConfigurationHTTPResponseKey]; }
 		}
+#endif
 		
 		public NSString AutoConfigurationJavaScript {
 			get {
@@ -246,7 +247,6 @@ namespace MonoMac.CoreFoundation {
 				return (NSUrl) settings[AutoConfigurationURLKey];
 			}
 		}
-#endif
 		
 		public string HostName {
 			get {
