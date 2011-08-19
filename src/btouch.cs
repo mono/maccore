@@ -32,9 +32,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Mono.Options;
 
-#if MONOMAC
-using MonoMac.ObjCRuntime;
-#else
+#if !MONOMAC
 using MonoTouch.ObjCRuntime;
 #endif
 
@@ -181,6 +179,7 @@ class BindingTouch {
 				return 1;
 			}
 
+#if !MONOMAC
 			foreach (object attr in api.GetCustomAttributes (typeof (LinkWithAttribute), true)) {
 				LinkWithAttribute linkWith = (LinkWithAttribute) attr;
 				
@@ -191,6 +190,7 @@ class BindingTouch {
 				
 				resources.Add (string.Format ("-res:{0},{1}", linkWith.LibraryName, linkWith.ResourceName));
 			}
+#endif
 
 			var types = new List<Type> ();
 			foreach (var t in api.GetTypes ()){
