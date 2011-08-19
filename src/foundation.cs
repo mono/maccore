@@ -3412,7 +3412,7 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSUrlResponse), Name="NSHTTPURLResponse")]
 	public interface NSHttpUrlResponse {
 		[Since (5,0)]
-		[Export ("initWithURL:statusCode:httpVersion:headerFields:")]
+		[Export ("initWithURL:statusCode:HTTPVersion:headerFields:")]
 		IntPtr Constructor (NSUrl url, int statusCode, string httpVersion, NSDictionary headerFields);
 		
 		[Export ("statusCode")]
