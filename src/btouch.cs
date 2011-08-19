@@ -2,6 +2,7 @@
 // Authors:
 //   Miguel de Icaza
 //
+// Copyright 2011 Xamarin Inc.
 // Copyright 2009-2010 Novell, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -31,6 +32,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Mono.Options;
 
+#if MONOMAC
+using MonoMac.ObjCRuntime;
+#else
+using MonoTouch.ObjCRuntime;
+#endif
+
 class BindingTouch {
 #if MONOMAC
 	static string baselibdll = "MonoMac.dll";
@@ -52,7 +59,6 @@ class BindingTouch {
 		Console.WriteLine ("Usage is: {0} [options] API file [extra source files]", tool_name);
 		
 		os.WriteOptionDescriptions (Console.Out);
-		
 	}
 	
 	static int Main (string [] args)
@@ -69,6 +75,7 @@ class BindingTouch {
 		bool external = false;
 		bool pmode = true;
 		List<string> sources;
+		var resources = new List<string> ();
 		var references = new List<string> ();
 		var libs = new List<string> ();
 		var core_sources = new List<string> ();
@@ -86,7 +93,11 @@ class BindingTouch {
 			{ "sourceonly=", "Only generates the source", v => generate_file_list = v },
 			{ "ns=", "Sets the namespace for storing helper classes", v => ns = v },
 			{ "unsafe", "Sets the unsafe flag for the build", v=> unsafef = true },
+#if MONOMAC
 			{ "core", "Use this to build monomac.dll", v => binding_third_party = false },
+#else
+			{ "core", "Use this to build monotouch.dll", v => binding_third_party = false },
+#endif
 			{ "r=", "Adds a reference", v => references.Add (v) },
 			{ "lib=", "Adds the directory to the search path for the compiler", v => libs.Add (v) },
 			{ "d=", "Defines a symbol", v => defines.Add (v) },
@@ -104,6 +115,7 @@ class BindingTouch {
 			Console.Error.WriteLine ("see {0} --help for more information", tool_name);
 			return 1;
 		}
+
 		if (show_help || sources.Count == 0){
 			Console.WriteLine ("Error: no api file provided");
 			ShowHelp (os);
@@ -121,7 +133,7 @@ class BindingTouch {
 
 		string refs = (references.Count > 0 ? "-r:" + String.Join (" -r:", references.ToArray ()) : "");
 		string paths = (libs.Count > 0 ? "-lib:" + String.Join (" -lib:", libs.ToArray ()) : "");
-			
+
 		try {
 			var api_file = sources [0];
 			var tmpass = Path.Combine (tmpdir, "temp.dll");
@@ -136,6 +148,7 @@ class BindingTouch {
 			var si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
 			};
+
 			if (verbose)
 				Console.WriteLine ("{0} {1}", si.FileName, si.Arguments);
 			
@@ -146,9 +159,9 @@ class BindingTouch {
 				return 1;
 			}
 
-			Assembly a = null, baselib;
+			Assembly api;
 			try {
-				a = Assembly.LoadFrom (tmpass);
+				api = Assembly.LoadFrom (tmpass);
 			} catch (Exception e) {
 				if (verbose)
 					Console.WriteLine (e);
@@ -156,6 +169,8 @@ class BindingTouch {
 				Console.Error.WriteLine ("Error loading API definition from {0}", tmpass);
 				return 1;
 			}
+
+			Assembly baselib;
 			try {
 				baselib = Assembly.LoadFrom (baselibdll);
 			} catch (Exception e){
@@ -166,12 +181,23 @@ class BindingTouch {
 				return 1;
 			}
 
+			foreach (object attr in api.GetCustomAttributes (typeof (LinkWithAttribute), true)) {
+				LinkWithAttribute linkWith = (LinkWithAttribute) attr;
+				
+				if (!File.Exists (linkWith.LibraryName)) {
+					Console.Error.WriteLine ("Missing native library {0}", linkWith.LibraryName);
+					return 1;
+				}
+				
+				resources.Add (string.Format ("-res:{0},{1}", linkWith.LibraryName, linkWith.ResourceName));
+			}
+
 			var types = new List<Type> ();
-			foreach (var t in a.GetTypes ()){
+			foreach (var t in api.GetTypes ()){
 				if (t.GetCustomAttributes (typeof (BaseTypeAttribute), true).Length > 0)
 					types.Add (t);
 			}
-					
+
 			var g = new Generator (pmode, external, debug, types.ToArray ()){
 				MessagingNS = ns == null ? Path.GetFileNameWithoutExtension (api_file) : ns,
 				CoreMessagingNS = RootNS + ".ObjCRuntime",
@@ -183,12 +209,12 @@ class BindingTouch {
 #endif
 				Alpha = alpha
 			};
-					
+
 			foreach (var mi in baselib.GetType (RootNS + ".ObjCRuntime.Messaging").GetMethods ()){
 				if (mi.Name.IndexOf ("_objc_msgSend") != -1)
 					g.RegisterMethodName (mi.Name);
 			}
-			
+
 			g.Go ();
 
 			if (generate_file_list != null){
@@ -197,26 +223,28 @@ class BindingTouch {
 				}
 				return 0;
 			}
-			
-			cargs = String.Format ("-unsafe -target:library -out:{0} -r:{6} {1} {2} {3} {4} {5} -r:{6}",
+
+			cargs = String.Format ("-unsafe -target:library -out:{0} -r:{6} {1} {2} {3} {4} {5} -r:{6} {7}",
 					       outfile,
 					       String.Join (" ", g.GeneratedFiles.ToArray ()),
 					       String.Join (" ", core_sources.ToArray ()),
 					       String.Join (" ", sources.Skip (1).ToArray ()),
-					       refs, unsafef ? "-unsafe" : "", baselibdll);
-
+					       refs, unsafef ? "-unsafe" : "", baselibdll,
+					       String.Join (" ", resources.ToArray ()));
+			
 			si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
 			};
+
 			if (verbose)
 				Console.WriteLine ("{0} {1}", si.FileName, si.Arguments);
+
 			p = Process.Start (si);
 			p.WaitForExit ();
 			if (p.ExitCode != 0){
 				Console.WriteLine ("{0}: API binding contains errors.", tool_name);
 				return 1;
 			}
-			
 		} finally {
 			if (delete_temp)
 				Directory.Delete (tmpdir, true);
