@@ -242,8 +242,9 @@ class BindingTouch {
 				return 0;
 			}
 
-			cargs = String.Format ("-unsafe -target:library -out:{0} -r:{6} {1} {2} {3} {4} {5} -r:{6} {7}",
+			cargs = String.Format ("-unsafe -target:library -out:{0} {1} -r:{7} {2} {3} {4} {5} {6} -r:{7} {8}",
 					       outfile,
+					       string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()),
 					       String.Join (" ", g.GeneratedFiles.ToArray ()),
 					       String.Join (" ", core_sources.ToArray ()),
 					       String.Join (" ", sources.Skip (1).ToArray ()),
