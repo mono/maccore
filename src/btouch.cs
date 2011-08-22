@@ -74,6 +74,9 @@ class BindingTouch {
 		bool pmode = true;
 		List<string> sources;
 		var resources = new List<string> ();
+#if !MONOMAC
+		var linkwith = new List<string> ();
+#endif
 		var references = new List<string> ();
 		var libs = new List<string> ();
 		var core_sources = new List<string> ();
@@ -104,6 +107,23 @@ class BindingTouch {
 			{ "e", "Sets external mode", v => external = true },
 			{ "p", "Sets private mode", v => pmode = false },
 			{ "baselib=", "Sets the base library", v => baselibdll = v },
+#if !MONOMAC
+			{ "link-with=,", "Link with a native library {0:FILE} to the binding, embedded as a resource named {1:ID}",
+				(path, id) => {
+					if (path == null || path.Length == 0)
+						throw new Exception ("-link-with=FILE,ID requires a filename.");
+					
+					if (id == null || id.Length == 0)
+						throw new Exception ("-link-with=FILE,ID requires a resource id.");
+					
+					if (linkwith.Contains (id))
+						throw new Exception ("-link-with=FILE,ID cannot assign the same resource id to multiple libraries.");
+					
+					resources.Add (string.Format ("-res:{0},{1}", path, id));
+					linkwith.Add (id);
+				}
+			},
+#endif
 		};
 
 		try {
@@ -183,12 +203,10 @@ class BindingTouch {
 			foreach (object attr in api.GetCustomAttributes (typeof (LinkWithAttribute), true)) {
 				LinkWithAttribute linkWith = (LinkWithAttribute) attr;
 				
-				if (!File.Exists (linkWith.LibraryName)) {
-					Console.Error.WriteLine ("Missing native library {0}", linkWith.LibraryName);
+				if (!linkwith.Contains (linkWith.LibraryName)) {
+					Console.Error.WriteLine ("Missing native library {0}, please use `--link-with' to specify the path to this library.", linkWith.LibraryName);
 					return 1;
 				}
-				
-				resources.Add (string.Format ("-res:{0},{1}", linkWith.LibraryName, linkWith.ResourceName));
 			}
 #endif
 

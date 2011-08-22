@@ -27,17 +27,32 @@ using System;
 using System.IO;
 
 namespace MonoTouch.ObjCRuntime {
+	[Flags]
+	public enum LinkTarget {
+		Simulator    = 1,
+		ArmV6        = 2,
+		ArmV7        = 4,
+		Thumb        = 12, // Thumb implies ArmV7
+	}
+	
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple=true)]
 	public class LinkWithAttribute : Attribute {
-		public LinkWithAttribute (string libName, string linkerFlags)
+		public LinkWithAttribute (string libraryName, LinkTarget target, string linkerFlags)
 		{
+			LibraryName = libraryName;
 			LinkerFlags = linkerFlags;
-			LibraryName = libName;
+			LinkTarget = target;
 		}
 		
-		public LinkWithAttribute (string libName)
+		public LinkWithAttribute (string libraryName, LinkTarget target)
 		{
-			LibraryName = libName;
+			LibraryName = libraryName;
+			LinkTarget = target;
+		}
+		
+		public LinkWithAttribute (string libraryName)
+		{
+			LibraryName = libraryName;
 		}
 		
 		public string LibraryName {
@@ -48,29 +63,8 @@ namespace MonoTouch.ObjCRuntime {
 			get; set;
 		}
 		
-		public bool IsArmV6 { get; set; }
-		public bool IsArmV7 { get; set; }
-		public bool IsArmV7Thumb { get; set; }
-		public bool IsX86 { get; set; }
-		
-		public string ResourceName {
-			get {
-				string name, suffix;
-				int dot;
-				
-				name = Path.GetFileName (LibraryName);
-				
-				if ((dot = name.LastIndexOf ('.')) != -1) {
-					suffix = name.Substring (dot);
-					name = name.Substring (0, dot);
-				} else {
-					suffix = String.Empty;
-				}
-				
-				return string.Format ("{0}{1}{2}{3}{4}{5}", name, IsArmV6 ? "-armv6" : "",
-						      IsArmV7 ? "-armv7" : "", IsArmV7Thumb ? "-thumb" : "",
-						      IsX86 ? "-x86" : "", suffix);
-			}
+		public LinkTarget LinkTarget {
+			get; set;
 		}
 	}
 }
