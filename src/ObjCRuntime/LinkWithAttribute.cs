@@ -32,7 +32,7 @@ namespace MonoTouch.ObjCRuntime {
 		Simulator    = 1,
 		ArmV6        = 2,
 		ArmV7        = 4,
-		Thumb        = 12, // Thumb implies ArmV7
+		Thumb        = 8,
 	}
 	
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple=true)]
