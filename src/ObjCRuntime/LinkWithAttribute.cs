@@ -55,6 +55,10 @@ namespace MonoTouch.ObjCRuntime {
 			LibraryName = libraryName;
 		}
 		
+		public bool ForceLoad {
+			get; set;
+		}
+		
 		public string LibraryName {
 			get; private set;
 		}
