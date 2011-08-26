@@ -997,8 +997,8 @@ namespace MonoMac.CoreAnimation {
 		void SetValueForKey (NSObject anObject, NSString key);
 
 		[Since (4,0)]
-		[Static, Export ("setCompletionBlock:")]
-		NSAction CompletionBlock { set; }
+		[Static, Export ("completionBlock")]
+		NSAction CompletionBlock { get; set; }
 
 		[Field ("kCATransactionAnimationDuration")]
 		NSString AnimationDurationKey { get; }

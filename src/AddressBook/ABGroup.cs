@@ -65,13 +65,13 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr ABGroupCreate ();
 
 		public ABGroup ()
-			: base (ABGroupCreate ())
+			: base (ABGroupCreate (), null)
 		{
 			InitConstants.Init ();
 		}
 
-		internal ABGroup (IntPtr handle)
-			: base (CFObject.CFRetain (handle))
+		internal ABGroup (IntPtr handle, ABAddressBook addressbook)
+			: base (CFObject.CFRetain (handle), addressbook)
 		{
 		}
 
@@ -106,7 +106,7 @@ namespace MonoMac.AddressBook {
 			if (cfArrayRef == IntPtr.Zero)
 				e = new ABRecord [0];
 			else
-				e = NSArray.ArrayFromHandle (cfArrayRef, h => ABRecord.FromHandle (h));
+				e = NSArray.ArrayFromHandle (cfArrayRef, h => ABRecord.FromHandle (h, AddressBook));
 			return e.GetEnumerator ();
 		}
 
@@ -118,7 +118,7 @@ namespace MonoMac.AddressBook {
 			var cfArrayRef = ABGroupCopyArrayOfAllMembersWithSortOrdering (Handle, sortOrdering);
 			if (cfArrayRef == IntPtr.Zero)
 				return new ABRecord [0];
-			return NSArray.ArrayFromHandle (cfArrayRef, h => ABRecord.FromHandle (h));
+			return NSArray.ArrayFromHandle (cfArrayRef, h => ABRecord.FromHandle (h, AddressBook));
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]

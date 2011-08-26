@@ -184,6 +184,7 @@ namespace MonoMac.AddressBook {
 			IntPtr error;
 			if (!ABAddressBookAddRecord (Handle, record.Handle, out error))
 				throw CFException.FromCFError (error);
+			record.AddressBook = this;
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
@@ -194,6 +195,7 @@ namespace MonoMac.AddressBook {
 			IntPtr error;
 			if (!ABAddressBookRemoveRecord (Handle, record.Handle, out error))
 				throw CFException.FromCFError (error);
+			record.AddressBook = null;
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
@@ -211,7 +213,7 @@ namespace MonoMac.AddressBook {
 		{
 			AssertValid ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllPeople (Handle);
-			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABPerson (h));
+			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABPerson (h, this));
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
@@ -229,7 +231,7 @@ namespace MonoMac.AddressBook {
 		{
 			AssertValid ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllGroups (Handle);
-			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABGroup (h));
+			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABGroup (h, this));
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
@@ -314,7 +316,7 @@ namespace MonoMac.AddressBook {
 			var h = ABAddressBookGetGroupWithRecordID (Handle, recordId);
 			if (h == IntPtr.Zero)
 				return null;
-			return new ABGroup (h);
+			return new ABGroup (h, this);
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
@@ -324,7 +326,7 @@ namespace MonoMac.AddressBook {
 			var h = ABAddressBookGetPersonWithRecordID (Handle, recordId);
 			if (h == IntPtr.Zero)
 				return null;
-			return new ABPerson (h);
+			return new ABPerson (h, this);
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
@@ -334,7 +336,7 @@ namespace MonoMac.AddressBook {
 			IntPtr cfArrayRef;
 			using (var s = new NSString (name))
 				cfArrayRef = ABAddressBookCopyPeopleWithName (Handle, s.Handle);
-			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABPerson (h));
+			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABPerson (h, this));
 		}
 	}
 }

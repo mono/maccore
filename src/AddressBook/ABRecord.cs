@@ -61,12 +61,13 @@ namespace MonoMac.AddressBook {
 
 		IntPtr handle;
 
-		internal ABRecord (IntPtr handle)
+		internal ABRecord (IntPtr handle, ABAddressBook addressbook)
 		{
+			AddressBook = addressbook;
 			this.handle = handle;
 		}
 
-		internal static ABRecord FromHandle (IntPtr handle)
+		internal static ABRecord FromHandle (IntPtr handle, ABAddressBook addressbook)
 		{
 			if (handle == IntPtr.Zero)
 				throw new ArgumentNullException ("handle");
@@ -75,9 +76,9 @@ namespace MonoMac.AddressBook {
 			var type = ABRecordGetRecordType (handle);
 			switch (type) {
 				case ABRecordType.Person:
-					return new ABPerson (handle);
+					return new ABPerson (handle, addressbook);
 				case ABRecordType.Group:
-					return new ABGroup (handle);
+					return new ABGroup (handle, addressbook);
 				default:
 					throw new NotSupportedException ("Could not determine record type.");
 			}
@@ -99,12 +100,17 @@ namespace MonoMac.AddressBook {
 			if (handle != IntPtr.Zero)
 				CFObject.CFRelease (handle);
 			handle = IntPtr.Zero;
+			AddressBook = null;
 		}
 
 		void AssertValid ()
 		{
 			if (handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("");
+		}
+
+		internal ABAddressBook AddressBook {
+			get; set;
 		}
 
 		public IntPtr Handle {
