@@ -3899,10 +3899,10 @@ namespace MonoMac.Foundation
 		void PostNotification (NSNotification notification);
 	
 		[Export ("postNotificationName:object:")]
-		void PostNotificationName (string aName, NSObject anObject);
+		void PostNotificationName (string aName, [NullAllowed] NSObject anObject);
 	
 		[Export ("postNotificationName:object:userInfo:")]
-		void PostNotificationName (string aName, NSObject anObject, [NullAllowed] NSDictionary aUserInfo);
+		void PostNotificationName (string aName, [NullAllowed] NSObject anObject, [NullAllowed] NSDictionary aUserInfo);
 	
 		[Export ("removeObserver:")]
 		void RemoveObserver ([RetainList (false, "ObserverList")] NSObject observer);
