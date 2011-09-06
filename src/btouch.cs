@@ -54,7 +54,7 @@ class BindingTouch {
 	static void ShowHelp (OptionSet os)
 	{
 		Console.WriteLine ("{0} - Mono Objective-C API binder", tool_name);
-		Console.WriteLine ("Usage is: {0} [options] API file [extra source files]", tool_name);
+		Console.WriteLine ("Usage is:\n {0} [options] apifile1.cs [apifileN] [-s=core1.cs [-s=core2.cs]] [-x=extra1.cs [-x=extra2.cs]]", tool_name);
 		
 		os.WriteOptionDescriptions (Console.Out);
 	}
@@ -80,6 +80,7 @@ class BindingTouch {
 		var references = new List<string> ();
 		var libs = new List<string> ();
 		var core_sources = new List<string> ();
+		var extra_sources = new List<string> ();
 		var defines = new List<string> ();
 		bool binding_third_party = true;
 		string generate_file_list = null;
@@ -104,6 +105,7 @@ class BindingTouch {
 			{ "d=", "Defines a symbol", v => defines.Add (v) },
 			{ "s=", "Adds a source file required to build the API", v => core_sources.Add (v) },
 			{ "v", "Sets verbose mode", v => verbose = true },
+			{ "x=", "Adds the specified file to the build, used after the core files are compiled", v => extra_sources.Add (v) },
 			{ "e", "Sets external mode", v => external = true },
 			{ "p", "Sets private mode", v => pmode = false },
 			{ "baselib=", "Sets the base library", v => baselibdll = v },
@@ -250,7 +252,9 @@ class BindingTouch {
 					       String.Join (" ", core_sources.ToArray ()),
 					       String.Join (" ", sources.Skip (1).ToArray ()),
 					       refs, unsafef ? "-unsafe" : "", baselibdll,
-					       String.Join (" ", resources.ToArray ()));
+					       String.Join (" ", resources.ToArray ()),
+					       String.Join (" ", extra_sources.ToArray ())
+				);
 			
 			si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
