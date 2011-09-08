@@ -157,10 +157,126 @@ namespace MonoMac.CoreGraphics {
 			return true;
 		}
 
-		//[DllImport (Constants.CoreGraphicsLibrary)]
-		// Returns a CGPDFString
-		//extern static bool CGPDFDictionaryGetString (IntPtr handle, string key, out IntPtr result);
+		delegate void ApplierFunction (string key, IntPtr pdfObject, IntPtr info);
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGPDFDictionaryApplyFunction (IntPtr dictRef, ApplierFunction function, IntPtr info);
 
-		// TODO: Apply function
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static int CGPDFObjectGetType (IntPtr pdfobj);
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static bool CGPDFObjectGetValue (IntPtr pdfobj, int type, out byte bvar);
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static bool CGPDFObjectGetValue (IntPtr pdfobj, int type, out int ivar);
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static bool CGPDFObjectGetValue (IntPtr pdfobj, int type, out float rvar);
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static bool CGPDFObjectGetValue (IntPtr pdfobj, int type, out IntPtr ptrvar);
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFStringGetLength (IntPtr pdfStr);
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFStringGetBytePtr (IntPtr pdfStr);
+
+		static string PdfStringToString (IntPtr pdfString)
+		{
+			if (pdfString == IntPtr.Zero)
+				return null;
+			
+			int n = (int) CGPDFStringGetLength (pdfString);
+			unsafe {
+				return new String ((char *) CGPDFStringGetBytePtr (pdfString), 0, n);
+			}
+		}
+		
+		static object MapFromCGPdfObject (IntPtr pdfObj)
+		{
+			IntPtr ip;
+			
+			switch (CGPDFObjectGetType (pdfObj)){
+			case 0: // null
+				return null;
+
+			case 1: // boolean
+				byte b;
+				if (CGPDFObjectGetValue (pdfObj, 1, out b))
+					return b != 0;
+				return null;
+				
+			case 2: // int
+				int i;
+				if (CGPDFObjectGetValue (pdfObj, 2, out i))
+					return i;
+				return null;
+				
+			case 3: // real
+				float f;
+				if (CGPDFObjectGetValue (pdfObj, 3, out f))
+					return f;
+				return null;
+				
+			case 4: // name
+				if (CGPDFObjectGetValue (pdfObj, 4, out ip))
+					return Marshal.PtrToStringAnsi (ip);
+				return null;
+				
+			case 5: // string
+				if (CGPDFObjectGetValue (pdfObj, 5, out ip))
+					return PdfStringToString (ip);
+				return null;
+				
+			case 6: // array
+				if (CGPDFObjectGetValue (pdfObj, 6, out ip))
+					return new CGPDFArray (ip);
+				return null;
+			case 7: // dictionary
+				if (CGPDFObjectGetValue (pdfObj, 7, out ip))
+					return new CGPDFDictionary (ip);
+				return null;
+			case 8: // stream	
+				if (CGPDFObjectGetValue (pdfObj, 8, out ip))
+					return new CGPDFStream (ip);
+				return null;
+			}
+			return null;
+		}
+		
+#if !MONOMAC
+		[MonoPInvokeCallback (typeof (ApplierFunction))]
+#endif
+		static void ApplyBridge (string key, IntPtr pdfObject, IntPtr info)
+		{
+			Action<string,object> callback = (Action<string,object>) GCHandle.FromIntPtr (info).Target;
+
+			callback (key, MapFromCGPdfObject (pdfObject));
+		}
+	
+		public void Apply (Action<string,object> callback)
+		{
+			GCHandle gch = GCHandle.Alloc (callback);
+			CGPDFDictionaryApplyFunction (Handle, ApplyBridge, GCHandle.ToIntPtr (gch));
+			gch.Free ();
+		}
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static bool CGPDFDictionaryGetString (IntPtr handle, string key, out IntPtr result);
+
+		public bool GetString (string key, out string result)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+			IntPtr res;
+			if (CGPDFDictionaryGetString (handle, key, out res)){
+				result = PdfStringToString (res);
+				return true;
+			}
+			result = null;
+			return false;
+		}
 	}
 }
