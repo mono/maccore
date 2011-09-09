@@ -188,6 +188,9 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGPDFContextCreateWithURL (IntPtr url, ref RectangleF rect, IntPtr dictionary);
 
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFContextCreateWithURL (IntPtr url, IntPtr rect, IntPtr dictionary);
+
 		public CGContextPDF (NSUrl url, RectangleF mediaBox, CGPDFInfo info)
 		{
 			if (url == null)
@@ -202,6 +205,20 @@ namespace MonoMac.CoreGraphics {
 			handle = CGPDFContextCreateWithURL (url.Handle, ref mediaBox, IntPtr.Zero);
 		}
 
+		public CGContextPDF (NSUrl url, CGPDFInfo info)
+		{
+			if (url == null)
+				throw new ArgumentNullException ("url");
+			handle = CGPDFContextCreateWithURL (url.Handle, IntPtr.Zero, info == null ? IntPtr.Zero : info.ToDictionary ().Handle);
+		}
+
+		public CGContextPDF (NSUrl url)
+		{
+			if (url == null)
+				throw new ArgumentNullException ("url");
+			handle = CGPDFContextCreateWithURL (url.Handle, IntPtr.Zero, IntPtr.Zero);
+		}
+		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPDFContextClose(IntPtr handle);
 		public void Close ()
