@@ -26,7 +26,7 @@
 using System;
 using System.IO;
 
-namespace MonoTouch.ObjCRuntime {
+namespace MonoMac.ObjCRuntime {
 	[Flags]
 	public enum LinkTarget {
 		Simulator    = 1,
