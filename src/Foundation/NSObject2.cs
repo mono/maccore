@@ -14,6 +14,8 @@ using MonoMac.CoreGraphics;
 namespace MonoMac.Foundation {
 
 	public partial class NSObject {
+		static IntPtr selConformsToProtocol = Selector.GetHandle ("conformsToProtocol:");
+		
 		[Export ("encodeWithCoder:")]
 		public virtual void EncodeTo (NSCoder coder)
 		{
@@ -25,6 +27,28 @@ namespace MonoMac.Foundation {
                         } else {
                                 Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, selAwakeFromNib, coder.Handle);
                         }
+		}
+
+		[Export ("conformsToProtocol:")]
+		public virtual bool ConformsToProtocol (IntPtr protocol)
+		{
+			bool does;
+			
+			if (IsDirectBinding) {
+                                does = Messaging.bool_objc_msgSend_intptr (this.Handle, selConformsToProtocol, protocol);
+                        } else {
+                                does = Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, selConformsToProtocol, protocol);
+                        }
+
+			if (does)
+				return true;
+			
+			object [] adoptedProtocols = GetType ().GetCustomAttributes (typeof (AdoptsAttribute), true);
+			foreach (AdoptsAttribute adopts in adoptedProtocols){
+				if (adopts.ProtocolHandle == protocol)
+					return true;
+			}
+			return false;
 		}
 
 		public static NSObject FromObject (object obj)
