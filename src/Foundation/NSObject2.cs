@@ -23,10 +23,10 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("coder");
 			
 			if (IsDirectBinding) {
-                                Messaging.void_objc_msgSend_intptr (this.Handle, selAwakeFromNib, coder.Handle);
-                        } else {
-                                Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, selAwakeFromNib, coder.Handle);
-                        }
+				Messaging.void_objc_msgSend_intptr (this.Handle, selAwakeFromNib, coder.Handle);
+			} else {
+				Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, selAwakeFromNib, coder.Handle);
+			}
 		}
 
 		[Export ("conformsToProtocol:")]
@@ -35,10 +35,10 @@ namespace MonoMac.Foundation {
 			bool does;
 			
 			if (IsDirectBinding) {
-                                does = Messaging.bool_objc_msgSend_intptr (this.Handle, selConformsToProtocol, protocol);
-                        } else {
-                                does = Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, selConformsToProtocol, protocol);
-                        }
+				does = Messaging.bool_objc_msgSend_intptr (this.Handle, selConformsToProtocol, protocol);
+			} else {
+				does = Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, selConformsToProtocol, protocol);
+			}
 
 			if (does)
 				return true;
