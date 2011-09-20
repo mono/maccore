@@ -1755,6 +1755,11 @@ public class Generator {
 				print ("ret.SetAsProxy ();");
 
 			if (mi.ReturnType.IsSubclassOf (typeof (Delegate))) {
+				// BlockLiteral *ret; -> could be null and result in a NRE, e.g. the 'completionBlock' selector
+				print ("if (ret == null)");
+				indent++;
+				print ("return null;");
+				indent--;
 				print ("return ({0}) (ret->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (ret->global_handle).Target : GCHandle.FromIntPtr (ret->local_handle).Target);", FormatType (mi.DeclaringType, mi.ReturnType));
 			} else {
 				print ("return ret;");

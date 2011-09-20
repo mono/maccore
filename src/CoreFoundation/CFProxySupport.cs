@@ -227,13 +227,14 @@ namespace MonoMac.CoreFoundation {
 			return CFProxyType.None;
 		}
 		
-#if notyet
+#if false
 		// AFAICT these get used with CFNetworkExecuteProxyAutoConfiguration*()
 		
 		// TODO: bind CFHTTPMessage so we can return the proper type here.
 		public NSObject AutoConfigurationHTTPResponse {
 			get { return settings[AutoConfigurationHTTPResponseKey]; }
 		}
+#endif
 		
 		public NSString AutoConfigurationJavaScript {
 			get {
@@ -246,7 +247,6 @@ namespace MonoMac.CoreFoundation {
 				return (NSUrl) settings[AutoConfigurationURLKey];
 			}
 		}
-#endif
 		
 		public string HostName {
 			get {
@@ -284,69 +284,6 @@ namespace MonoMac.CoreFoundation {
 				
 				return v != null ? v.ToString () : null;
 			}
-		}
-		
-		public bool CanGetWebProxy {
-			get {
-				switch (ProxyType) {
-				case CFProxyType.AutoConfigurationJavaScript: return false; // not doable via WebProxy
-				case CFProxyType.AutoConfigurationUrl: return false; // not doable via WebProxy
-				case CFProxyType.FTP: return true;
-				case CFProxyType.HTTP: return true;
-				case CFProxyType.HTTPS: return true;
-				case CFProxyType.SOCKS: return false; // not doable via WebProxy
-				default: return false;
-				}
-			}
-		}
-		
-		internal Uri GetProxyUri ()
-		{
-			string protocol;
-			
-			switch (ProxyType) {
-			case CFProxyType.FTP:
-				protocol = "ftp://";
-				break;
-			case CFProxyType.HTTP:
-				protocol = "http://";
-				break;
-			case CFProxyType.HTTPS:
-				protocol = "https://";
-				break;
-			default:
-				return null;
-			}
-			
-			string username = Username;
-			string password = Password;
-			string hostname = HostName;
-			int port = Port;
-			string userinfo;
-			string uri;
-			
-			if (username != null) {
-				if (password != null)
-					userinfo = Uri.EscapeDataString (username) + ':' + Uri.EscapeDataString (password) + '@';
-				else
-					userinfo = Uri.EscapeDataString (username) + '@';
-			} else {
-				userinfo = string.Empty;
-			}
-			
-			uri = protocol + userinfo + hostname + (port != 0 ? ':' + port.ToString () : string.Empty);
-			
-			return new Uri (uri, UriKind.Absolute);
-		}
-		
-		public WebProxy GetWebProxy ()
-		{
-			Uri uri = GetProxyUri ();
-			
-			if (uri == null)
-				return null;
-			
-			return new WebProxy (uri);
 		}
 	}
 	
@@ -516,6 +453,21 @@ namespace MonoMac.CoreFoundation {
 			return proxies;
 		}
 		
+		public static CFProxy[] GetProxiesForAutoConfigurationScript (NSString proxyAutoConfigurationScript, Uri targetUri)
+		{
+			if (proxyAutoConfigurationScript == null)
+				throw new ArgumentNullException ("proxyAutoConfigurationScript");
+			
+			if (targetUri == null)
+				throw new ArgumentNullException ("targetUri");
+			
+			NSUrl targetURL = new NSUrl (targetUri.AbsoluteUri);
+			CFProxy[] proxies = GetProxiesForAutoConfigurationScript (proxyAutoConfigurationScript, targetURL);
+			targetURL.Dispose ();
+			
+			return proxies;
+		}
+		
 		[DllImport (Constants.CFNetworkLibrary)]
 		// CFArrayRef CFNetworkCopyProxiesForURL (CFURLRef url, CFDictionaryRef proxySettings);
 		extern static IntPtr CFNetworkCopyProxiesForURL (IntPtr url, IntPtr proxySettings);
@@ -655,6 +607,72 @@ namespace MonoMac.CoreFoundation {
 				}
 			}
 			
+			static Uri GetProxyUri (CFProxy proxy)
+			{
+				string protocol;
+				
+				switch (proxy.ProxyType) {
+				case CFProxyType.FTP:
+					protocol = "ftp://";
+					break;
+				case CFProxyType.HTTP:
+					protocol = "http://";
+					break;
+				case CFProxyType.HTTPS:
+					protocol = "https://";
+					break;
+				default:
+					return null;
+				}
+				
+				string username = proxy.Username;
+				string password = proxy.Password;
+				string hostname = proxy.HostName;
+				int port = proxy.Port;
+				string userinfo;
+				string uri;
+				
+				if (username != null) {
+					if (password != null)
+						userinfo = Uri.EscapeDataString (username) + ':' + Uri.EscapeDataString (password) + '@';
+					else
+						userinfo = Uri.EscapeDataString (username) + '@';
+				} else {
+					userinfo = string.Empty;
+				}
+				
+				uri = protocol + userinfo + hostname + (port != 0 ? ':' + port.ToString () : string.Empty);
+				
+				return new Uri (uri, UriKind.Absolute);
+			}
+			
+			static Uri GetProxyUriFromScript (NSString script, Uri targetUri)
+			{
+				CFProxy[] proxies = CFNetwork.GetProxiesForAutoConfigurationScript (script, targetUri);
+				
+				if (proxies == null)
+					return targetUri;
+				
+				for (int i = 0; i < proxies.Length; i++) {
+					switch (proxies[i].ProxyType) {
+					case CFProxyType.HTTPS:
+					case CFProxyType.HTTP:
+					case CFProxyType.FTP:
+						// create a Uri based on the hostname/port/etc info
+						return GetProxyUri (proxies[i]);
+					case CFProxyType.SOCKS:
+					default:
+						// unsupported proxy type, try the next one
+						break;
+					case CFProxyType.None:
+						// no proxy should be used
+						return targetUri;
+					}
+				}
+				
+				return null;
+			}
+			
 			public Uri GetProxy (Uri targetUri)
 			{
 				if (targetUri == null)
@@ -662,15 +680,32 @@ namespace MonoMac.CoreFoundation {
 				
 				CFProxySettings settings = CFNetwork.GetSystemProxySettings ();
 				CFProxy[] proxies = CFNetwork.GetProxiesForUri (targetUri, settings);
+				Uri uri;
 				
 				if (proxies == null)
 					return targetUri;
 				
 				for (int i = 0; i < proxies.Length; i++) {
-					Uri uri = proxies[i].GetProxyUri ();
-					
-					if (uri != null)
-						return uri;
+					switch (proxies[i].ProxyType) {
+					case CFProxyType.AutoConfigurationJavaScript:
+						if ((uri = GetProxyUriFromScript (proxies[i].AutoConfigurationJavaScript, targetUri)) != null)
+							return uri;
+						break;
+					case CFProxyType.AutoConfigurationUrl:
+						// unsupported proxy type (requires fetching script from remote url)
+						break;
+					case CFProxyType.HTTPS:
+					case CFProxyType.HTTP:
+					case CFProxyType.FTP:
+						// create a Uri based on the hostname/port/etc info
+						return GetProxyUri (proxies[i]);
+					case CFProxyType.SOCKS:
+						// unsupported proxy type, try the next one
+						break;
+					case CFProxyType.None:
+						// no proxy should be used
+						return targetUri;
+					}
 				}
 				
 				// no supported proxies for this Uri, fall back to trying to connect to targetUri directly.
@@ -682,23 +717,7 @@ namespace MonoMac.CoreFoundation {
 				if (targetUri == null)
 					throw new ArgumentNullException ("targetUri");
 				
-				CFProxySettings settings = CFNetwork.GetSystemProxySettings ();
-				CFProxy[] proxies = CFNetwork.GetProxiesForUri (targetUri, settings);
-				
-				if (proxies == null) {
-					// if there are no proxies for target Uri, then we can assume it is bypassed
-					return true;
-				}
-				
-				for (int i = 0; i < proxies.Length; i++) {
-					if (proxies[i].CanGetWebProxy) {
-						// there is a supported proxy we can use for the targetUri, so not bypassed
-						return false;
-					}
-				}
-				
-				// no supported proxies for the target Uri, will be bypassed
-				return true;
+				return GetProxy (targetUri) == targetUri;
 			}
 		}
 		
