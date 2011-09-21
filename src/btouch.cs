@@ -257,8 +257,6 @@ class BindingTouch {
 					       String.Join (" ", extra_sources.ToArray ())
 				);
 
-			Console.WriteLine ("Got: {0}", extra_sources.ToArray ());
-			Console.WriteLine ("cargs is: {0}", cargs);
 			si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
 			};
