@@ -244,17 +244,21 @@ class BindingTouch {
 				return 0;
 			}
 
-			cargs = String.Format ("-unsafe -target:library -out:{0} {1} -r:{7} {2} {3} {4} {5} {6} -r:{7} {8}",
+			cargs = String.Format ("-unsafe -target:library -out:{0} {1} -r:{7} {2} {3} {4} {5} {6} -r:{7} {8} {9}",
 					       outfile,
 					       string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()),
 					       String.Join (" ", g.GeneratedFiles.ToArray ()),
 					       String.Join (" ", core_sources.ToArray ()),
 					       String.Join (" ", sources.Skip (1).ToArray ()),
-					       refs, unsafef ? "-unsafe" : "", baselibdll,
-					       String.Join (" ", resources.ToArray ()),
+					       refs,
+					       unsafef ? "-unsafe" : "",
+					       baselibdll,
+					       String.Join (" ", resources.ToArray ()), 
 					       String.Join (" ", extra_sources.ToArray ())
 				);
-			
+
+			Console.WriteLine ("Got: {0}", extra_sources.ToArray ());
+			Console.WriteLine ("cargs is: {0}", cargs);
 			si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
 			};
