@@ -1060,7 +1060,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("shouldOptimizeForNetworkUse")]
 		bool ShouldOptimizeForNetworkUse { get; set;  }
 
-		[Export ("allExportPresets")]
+		[Static, Export ("allExportPresets")]
 		string [] AllExportPresets { get; }
 
 		[Static]
