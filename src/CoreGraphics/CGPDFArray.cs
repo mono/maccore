@@ -97,7 +97,7 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static bool CGPDFArrayGetDictionary (IntPtr handle, IntPtr idx, out IntPtr result);
 
-		public bool GetDictionary (int idx, out CGPDFArray result)
+		public bool GetDictionary (int idx, out CGPDFDictionary result)
 		{
 			IntPtr res;
 			var r = CGPDFArrayGetDictionary (handle, (IntPtr) idx, out res);
@@ -105,7 +105,7 @@ namespace MonoMac.CoreGraphics {
 				result = null;
 				return false;
 			}
-			result = new CGPDFArray (res);
+			result = new CGPDFDictionary (res);
 			return true;
 		}
 
