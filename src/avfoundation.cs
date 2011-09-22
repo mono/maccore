@@ -1605,7 +1605,7 @@ namespace MonoMac.AVFoundation {
 		string [] AvailableImageDataCodecTypes { get; }
 		
 		[Export ("outputSettings")]
-		NSDictionary OutputSettings { get; }
+		NSDictionary OutputSettings { get; set; }
 
 		[Export ("captureStillImageAsynchronouslyFromConnection:completionHandler:")]
 		void CaptureStillImageAsynchronously (AVCaptureConnection connection, AVCaptureCompletionHandler completionHandler);
