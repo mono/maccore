@@ -189,8 +189,12 @@ namespace MonoMac.CoreGraphics {
 				return null;
 			
 			int n = (int) CGPDFStringGetLength (pdfString);
+			IntPtr ptr = CGPDFStringGetBytePtr (pdfString);
+			if (ptr == IntPtr.Zero)
+				return null;
 			unsafe {
-				return new String ((char *) CGPDFStringGetBytePtr (pdfString), 0, n);
+				// the returned char* is UTF-8 encoded - see bug #975
+				return new string ((sbyte *) ptr, 0, n, System.Text.Encoding.UTF8);
 			}
 		}
 		
