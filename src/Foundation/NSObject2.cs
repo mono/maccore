@@ -51,6 +51,28 @@ namespace MonoMac.Foundation {
 			return false;
 		}
 
+		[Export ("conformsToProtocol:")]
+		public virtual bool ConformsToProtocol (IntPtr protocol)
+		{
+			bool does;
+			
+			if (IsDirectBinding) {
+                                does = Messaging.bool_objc_msgSend_intptr (this.Handle, selConformsToProtocol, protocol);
+                        } else {
+                                does = Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, selConformsToProtocol, protocol);
+                        }
+
+			if (does)
+				return true;
+			
+			object [] adoptedProtocols = GetType ().GetCustomAttributes (typeof (AdoptsAttribute), true);
+			foreach (AdoptsAttribute adopts in adoptedProtocols){
+				if (adopts.ProtocolHandle == protocol)
+					return true;
+			}
+			return false;
+		}
+
 		public static NSObject FromObject (object obj)
 		{
 			if (obj == null)
