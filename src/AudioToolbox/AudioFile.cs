@@ -361,6 +361,26 @@ namespace MonoMac.AudioToolbox {
 				}
 			}
 		}
+
+		public int Write (long startingByte, byte [] buffer, int offset, int count, bool useCache, out int errorCode)
+		{
+                        if (offset < 0)
+                                throw new ArgumentOutOfRangeException ("offset", "< 0");
+                        if (count < 0)
+                                throw new ArgumentOutOfRangeException ("count", "< 0");
+                        if (offset > buffer.Length - count)
+                                throw new ArgumentException ("Reading would overrun buffer");
+
+			unsafe {
+				fixed (byte *p = &buffer [offset]){
+					errorCode = AudioFileWriteBytes (handle, useCache, startingByte, ref count, (IntPtr) p);
+					if (errorCode == 0)
+						return count;
+					else
+						return -1;
+				}
+			}
+		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
 		unsafe extern static OSStatus AudioFileReadPacketData (
