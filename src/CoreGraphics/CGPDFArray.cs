@@ -1,9 +1,12 @@
 // 
 // CGPDFArray.cs: Implements the managed CGPDFArray binding
 //
-// Authors: Miguel de Icaza
-//     
+// Authors:
+//	Miguel de Icaza <miguel@xamarin.com>
+//	Sebastien Pouliot <sebastien@xamarin.com>
+// 
 // Copyright 2010 Novell, Inc
+// Copyright 2011 Xamarin Inc. All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -109,9 +112,6 @@ namespace MonoMac.CoreGraphics {
 			return true;
 		}
 
-		// TODO: GetString -> returns a CGPDFString
-		// TODO: GetArray -> arrays of CGPDF objects
-		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static bool CGPDFArrayGetStream (IntPtr handle, IntPtr idx, out IntPtr result);
 
@@ -142,10 +142,18 @@ namespace MonoMac.CoreGraphics {
 			return true;
 		}
 
-		//[DllImport (Constants.CoreGraphicsLibrary)]
-		// Returns a CGPDFString
-		//extern static bool CGPDFArrayGetString (IntPtr handle, IntPtr idx, out IntPtr result);
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static bool CGPDFArrayGetString (IntPtr handle, IntPtr idx, out IntPtr result);
 
-		// TODO: Apply function
+		public bool GetString (int idx, out string result)
+		{
+			IntPtr res;
+			if (CGPDFArrayGetString (handle, (IntPtr) idx, out res)){
+				result = CGPDFString.ToString (res);
+				return true;
+			}
+			result = null;
+			return false;
+		}
 	}
 }

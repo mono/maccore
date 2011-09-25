@@ -1,9 +1,12 @@
 // 
 // CGPDFDictionary.cs: Implements the managed CGPDFDictionary binding
 //
-// Authors: Miguel de Icaza
-//     
+// Authors:
+//	Miguel de Icaza <miguel@xamarin.com>
+//	Sebastien Pouliot <sebastien@xamarin.com>
+// 
 // Copyright 2010 Novell, Inc
+// Copyright 2011 Xamarin Inc. All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -119,9 +122,6 @@ namespace MonoMac.CoreGraphics {
 			return true;
 		}
 
-		// TODO: GetString -> returns a CGPDFString
-		// TODO: GetArray -> arrays of CGPDF objects
-		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static bool CGPDFDictionaryGetStream (IntPtr handle, string key, out IntPtr result);
 
@@ -177,27 +177,6 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static bool CGPDFObjectGetValue (IntPtr pdfobj, int type, out IntPtr ptrvar);
 		
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPDFStringGetLength (IntPtr pdfStr);
-
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPDFStringGetBytePtr (IntPtr pdfStr);
-
-		static string PdfStringToString (IntPtr pdfString)
-		{
-			if (pdfString == IntPtr.Zero)
-				return null;
-			
-			int n = (int) CGPDFStringGetLength (pdfString);
-			IntPtr ptr = CGPDFStringGetBytePtr (pdfString);
-			if (ptr == IntPtr.Zero)
-				return null;
-			unsafe {
-				// the returned char* is UTF-8 encoded - see bug #975
-				return new string ((sbyte *) ptr, 0, n, System.Text.Encoding.UTF8);
-			}
-		}
-		
 		static object MapFromCGPdfObject (IntPtr pdfObj)
 		{
 			IntPtr ip;
@@ -231,7 +210,7 @@ namespace MonoMac.CoreGraphics {
 				
 			case 5: // string
 				if (CGPDFObjectGetValue (pdfObj, 5, out ip))
-					return PdfStringToString (ip);
+					return CGPDFString.ToString (ip);
 				return null;
 				
 			case 6: // array
@@ -276,7 +255,7 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentNullException ("key");
 			IntPtr res;
 			if (CGPDFDictionaryGetString (handle, key, out res)){
-				result = PdfStringToString (res);
+				result = CGPDFString.ToString (res);
 				return true;
 			}
 			result = null;
