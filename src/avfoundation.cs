@@ -110,13 +110,13 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVFileTypeQuickTimeMovie")]
 		NSString QuickTimeMovie { get; }
 		
-		[Field ("AVFileTypeMpeg4")]
+		[Field ("AVFileTypeMPEG4")]
 		NSString Mpeg4 { get; }
 		
 		[Field ("AVFileTypeAppleM4V")]
 		NSString AppleM4V { get; }
 		
-		[Field ("AVFileType3Gpp")]
+		[Field ("AVFileType3GPP")]
 		NSString ThreeGpp { get; }
 		
 		[Field ("AVFileTypeAppleM4A")]
@@ -125,16 +125,16 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVFileTypeCoreAudioFormat")]
 		NSString CoreAudioFormat { get; }
 		
-		[Field ("AVFileTypeWave")]
+		[Field ("AVFileTypeWAVE")]
 		NSString Wave { get; }
 		
-		[Field ("AVFileTypeAiff")]
+		[Field ("AVFileTypeAIFF")]
 		NSString Aiff { get; }
 		
-		[Field ("AVFileTypeAifc")]
+		[Field ("AVFileTypeAIFC")]
 		NSString Aifc { get; }
 		
-		[Field ("AVFileTypeAmr")]
+		[Field ("AVFileTypeAMR")]
 		NSString Amr { get; }
 	}
 
@@ -1286,7 +1286,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("shouldOptimizeForNetworkUse")]
 		bool ShouldOptimizeForNetworkUse { get; set;  }
 
-		[Export ("allExportPresets")]
+		[Static, Export ("allExportPresets")]
 		string [] AllExportPresets { get; }
 
 		[Static]
@@ -1897,7 +1897,7 @@ namespace MonoMac.AVFoundation {
 		string [] AvailableImageDataCodecTypes { get; }
 		
 		[Export ("outputSettings")]
-		NSDictionary OutputSettings { get; }
+		NSDictionary OutputSettings { get; set; }
 
 		[Export ("captureStillImageAsynchronouslyFromConnection:completionHandler:")]
 		void CaptureStillImageAsynchronously (AVCaptureConnection connection, AVCaptureCompletionHandler completionHandler);

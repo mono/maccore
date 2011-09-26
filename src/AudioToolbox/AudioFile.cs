@@ -364,6 +364,26 @@ namespace MonoMac.AudioToolbox {
 				}
 			}
 		}
+
+		public int Write (long startingByte, byte [] buffer, int offset, int count, bool useCache, out int errorCode)
+		{
+                        if (offset < 0)
+                                throw new ArgumentOutOfRangeException ("offset", "< 0");
+                        if (count < 0)
+                                throw new ArgumentOutOfRangeException ("count", "< 0");
+                        if (offset > buffer.Length - count)
+                                throw new ArgumentException ("Reading would overrun buffer");
+
+			unsafe {
+				fixed (byte *p = &buffer [offset]){
+					errorCode = AudioFileWriteBytes (handle, useCache, startingByte, ref count, (IntPtr) p);
+					if (errorCode == 0)
+						return count;
+					else
+						return -1;
+				}
+			}
+		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
 		unsafe extern static OSStatus AudioFileReadPacketData (
@@ -515,6 +535,42 @@ namespace MonoMac.AudioToolbox {
 			int nPackets = packetDescriptions.Length;
 			fixed (byte *bop = &buffer [offset]){
 				if (AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, (IntPtr) bop) == 0)
+					return nPackets;
+				return -1;
+			}
+		}
+
+		unsafe public int WritePackets (bool useCache, long inStartingPacket, AudioStreamPacketDescription [] inPacketDescriptions, IntPtr buffer, int count, out int errorCode)
+		{
+			if (inPacketDescriptions == null)
+				throw new ArgumentNullException ("inPacketDescriptions");
+			if (buffer == IntPtr.Zero)
+				throw new ArgumentNullException ("buffer");
+			int nPackets = inPacketDescriptions.Length;
+			
+			errorCode = AudioFileWritePackets (handle, useCache, count, inPacketDescriptions, inStartingPacket, ref nPackets, buffer);
+			if (errorCode == 0)
+				return nPackets;
+			return -1;
+		}
+		
+		unsafe public int WritePackets (bool useCache, long startingPacket, AudioStreamPacketDescription [] packetDescriptions, byte [] buffer, int offset, int count, out int errorCode)
+		{
+			if (packetDescriptions == null)
+				throw new ArgumentNullException ("inPacketDescriptions");
+			if (buffer == null)
+				throw new ArgumentNullException ("buffer");
+                        if (offset < 0)
+                                throw new ArgumentOutOfRangeException ("offset", "< 0");
+                        if (count < 0)
+                                throw new ArgumentOutOfRangeException ("count", "< 0");
+                        if (offset > buffer.Length - count)
+                                throw new ArgumentException ("Reading would overrun buffer");
+
+			int nPackets = packetDescriptions.Length;
+			fixed (byte *bop = &buffer [offset]){
+				errorCode = AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, (IntPtr) bop);
+				if (errorCode == 0)
 					return nPackets;
 				return -1;
 			}

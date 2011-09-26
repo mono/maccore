@@ -247,6 +247,10 @@ namespace MonoMac.AudioToolbox {
 
 		public IntPtr Handle { get { return handle; } }
 
+		internal AudioQueue ()
+		{
+		}
+		
 		public void Dispose ()
 		{
 			Dispose (true, true);
