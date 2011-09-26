@@ -1771,6 +1771,124 @@ public class Generator {
 
 	Dictionary<string,object> generatedEvents = new Dictionary<string,object> ();
 	Dictionary<string,object> generatedDelegates = new Dictionary<string,object> ();
+
+	public void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
+	{
+		string wrap;
+		var export = GetExportAttribute (pi, out wrap);
+		bool is_static = HasAttribute (pi, typeof (StaticAttribute));
+		bool is_thread_static = HasAttribute (pi, typeof (IsThreadStaticAttribute));
+		bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
+		bool is_public = !HasAttribute (pi, typeof (InternalAttribute));
+		bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || pi.DeclaringType != type;
+		bool is_new = HasAttribute (pi, typeof (NewAttribute));
+		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
+		bool is_unsafe = false;
+
+		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
+			print ("[Obsolete (\"{0}\", {1})]",
+					oa.Message, oa.IsError ? "true" : "false");
+		}
+
+		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
+			is_unsafe = true;
+
+		if (wrap != null){
+			print ("{0} {1}{2}{3}{4} {5} {{",
+			       is_public ? "public" : "internal",
+			       is_unsafe ? "unsafe " : "",
+			       is_new ? "new " : "",
+			       (is_static ? "static " : ""),
+			       FormatType (pi.DeclaringType,  pi.PropertyType),
+			       pi.Name);
+			indent++;
+			if (pi.CanRead)
+				print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+			if (pi.CanWrite)
+				print ("set {{ {0} = value; }}", wrap);
+			indent--;
+			print ("}\n");
+			return;
+		}
+		
+		string var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
+
+		if ((IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ())))) {
+			if (is_thread_static)
+				print ("[ThreadStatic]");
+			print ("{2}{0} {1};", pi.PropertyType, var_name, is_static ? "static " : "");
+
+			if (!is_static){
+				instance_fields_to_clear_on_dispose.Add (var_name);
+			}
+		}
+		print ("{0} {1}{2}{3}{4} {5} {{",
+		       is_public ? "public" : "internal",
+		       is_unsafe ? "unsafe " : "",
+		       is_new ? "new " : "",
+		       is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual "))),
+		       FormatType (pi.DeclaringType,  pi.PropertyType),
+		       pi.Name);
+		indent++;
+
+		if (pi.CanRead){
+			var getter = pi.GetGetMethod ();
+			var ba = GetBindAttribute (getter);
+			string sel = ba != null ? ba.Selector : export.Selector;
+			
+			if (export.ArgumentSemantic != ArgumentSemantic.None)
+				print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
+			else
+				print ("[Export (\"{0}\")]", sel);
+			if (is_abstract){
+				print ("get; ");
+			} else {
+				print ("get {");
+				if (debug)
+					print ("Console.WriteLine (\"In {0}\");", pi.GetGetMethod ());
+				if (is_model)
+					print ("\tthrow new ModelNotImplementedException ();");
+				else
+					GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name);
+				print ("}\n");
+			}
+		}
+		if (pi.CanWrite){
+			var setter = pi.GetSetMethod ();
+			var ba = GetBindAttribute (setter);
+			bool null_allowed = HasAttribute (pi, typeof (NullAllowedAttribute)) || HasAttribute (setter, typeof (NullAllowedAttribute));
+			string sel;
+
+			if (ba == null){
+				ExportAttribute setexport = MakeSetAttribute (export);
+				sel = setexport.Selector;
+			} else {
+				sel = ba.Selector;
+			}
+
+			if (export.ArgumentSemantic != ArgumentSemantic.None)
+				print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
+			else
+				print ("[Export (\"{0}\")]", sel);
+			if (is_abstract){
+				print ("set; ");
+			} else {
+				print ("set {");
+				if (debug)
+					print ("Console.WriteLine (\"In {0}\");", pi.GetSetMethod ());
+				if (is_model)
+					print ("\tthrow new ModelNotImplementedException ();");
+				else {
+					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed);
+					if (!is_static && (IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ()))))
+						print ("\t{0} = value;", var_name);
+				}
+				print ("}");
+			}
+		}
+		indent--;
+		print ("}}\n", pi.Name);
+	}
 	
 	public void Generate (Type type)
 	{
@@ -1949,126 +2067,12 @@ public class Generator {
 			foreach (var pi in type.GatherProperties ()){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
-
 				if (HasAttribute (pi, typeof (FieldAttribute))){
 					field_exports.Add (pi);
 					continue;
 				}
 
-				string wrap;
-				var export = GetExportAttribute (pi, out wrap);
-				bool is_static = HasAttribute (pi, typeof (StaticAttribute));
-				bool is_thread_static = HasAttribute (pi, typeof (IsThreadStaticAttribute));
-				bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
-				bool is_public = !HasAttribute (pi, typeof (InternalAttribute));
-				bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || pi.DeclaringType != type;
-				bool is_new = HasAttribute (pi, typeof (NewAttribute));
-				bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
-				bool is_unsafe = false;
-
-				foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
-					print ("[Obsolete (\"{0}\", {1})]",
-							oa.Message, oa.IsError ? "true" : "false");
-				}
-
-				if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
-					is_unsafe = true;
-
-				if (wrap != null){
-					print ("{0} {1}{2}{3}{4} {5} {{",
-					       is_public ? "public" : "internal",
-					       is_unsafe ? "unsafe " : "",
-					       is_new ? "new " : "",
-					       (is_static ? "static " : ""),
-					       FormatType (pi.DeclaringType,  pi.PropertyType),
-					       pi.Name);
-					indent++;
-					if (pi.CanRead)
-						print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
-					if (pi.CanWrite)
-						print ("set {{ {0} = value; }}", wrap);
-					indent--;
-					print ("}\n");
-					continue;
-				}
-				
-				string var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
-
-				if ((IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ())))) {
-					if (is_thread_static)
-						print ("[ThreadStatic]");
-					print ("{2}{0} {1};", pi.PropertyType, var_name, is_static ? "static " : "");
-
-					if (!is_static){
-						instance_fields_to_clear_on_dispose.Add (var_name);
-					}
-				}
-				print ("{0} {1}{2}{3}{4} {5} {{",
-				       is_public ? "public" : "internal",
-				       is_unsafe ? "unsafe " : "",
-				       is_new ? "new " : "",
-				       is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual "))),
-				       FormatType (pi.DeclaringType,  pi.PropertyType),
-				       pi.Name);
-				indent++;
-
-				if (pi.CanRead){
-					var getter = pi.GetGetMethod ();
-					var ba = GetBindAttribute (getter);
-					string sel = ba != null ? ba.Selector : export.Selector;
-					
-					if (export.ArgumentSemantic != ArgumentSemantic.None)
-						print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
-					else
-						print ("[Export (\"{0}\")]", sel);
-					if (is_abstract){
-						print ("get; ");
-					} else {
-						print ("get {");
-						if (debug)
-							print ("Console.WriteLine (\"In {0}\");", pi.GetGetMethod ());
-						if (is_model)
-							print ("\tthrow new ModelNotImplementedException ();");
-						else
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name);
-						print ("}\n");
-					}
-				}
-				if (pi.CanWrite){
-					var setter = pi.GetSetMethod ();
-					var ba = GetBindAttribute (setter);
-					bool null_allowed = HasAttribute (pi, typeof (NullAllowedAttribute)) || HasAttribute (setter, typeof (NullAllowedAttribute));
-					string sel;
-
-					if (ba == null){
-						ExportAttribute setexport = MakeSetAttribute (export);
-						sel = setexport.Selector;
-					} else {
-						sel = ba.Selector;
-					}
-
-					if (export.ArgumentSemantic != ArgumentSemantic.None)
-						print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
-					else
-						print ("[Export (\"{0}\")]", sel);
-					if (is_abstract){
-						print ("set; ");
-					} else {
-						print ("set {");
-						if (debug)
-							print ("Console.WriteLine (\"In {0}\");", pi.GetSetMethod ());
-						if (is_model)
-							print ("\tthrow new ModelNotImplementedException ();");
-						else {
-							GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed);
-							if (!is_static && (IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ()))))
-								print ("\t{0} = value;", var_name);
-						}
-						print ("}");
-					}
-				}
-				indent--;
-				print ("}}\n", pi.Name);
+				GenerateProperty (type, pi, instance_fields_to_clear_on_dispose, is_model);
 			}
 
 			if (field_exports.Count != 0){
