@@ -1325,7 +1325,7 @@ public class Generator {
 			Generate (t);
 		}
 
-		DumpChildren (0, GeneratedType.Lookup (typeof (NSObject)));
+		//DumpChildren (0, GeneratedType.Lookup (typeof (NSObject)));
 		
 		print (m, "\t}\n}");
 		m.Close ();
