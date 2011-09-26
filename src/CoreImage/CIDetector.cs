@@ -30,7 +30,7 @@ using MonoMac.CoreFoundation;
 
 namespace MonoMac.CoreImage {
 	public partial class CIDetector {
-		static CIDetector CreateFaceDetector (CIContext context, bool highAccuracy)
+		public static CIDetector CreateFaceDetector (CIContext context, bool highAccuracy)
 		{
 			// TypeFace is the only detector supported now
 			using (var options = NSDictionary.FromObjectsAndKeys (new NSObject [] { highAccuracy ? AccuracyHigh : AccuracyLow },
@@ -38,7 +38,7 @@ namespace MonoMac.CoreImage {
 				return FromType (TypeFace, context, options);
 		}
 		
-		CIFeature FeaturesInImage (CIImage image, CIImageOrientation orientation)
+		public CIFeature [] FeaturesInImage (CIImage image, CIImageOrientation orientation)
 		{
 			using (var options = NSDictionary.FromObjectsAndKeys (new NSObject [] { new NSNumber ((int) orientation) },
 									      new NSObject [] { ImageOrientation })){

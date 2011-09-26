@@ -897,7 +897,7 @@ namespace MonoMac.CoreImage {
 		CIFeature [] GetFeatures (CIImage image);
 
 		[Export ("featuresInImage:options:")]
-		CIFeature FeaturesInImage (CIImage image, NSDictionary options);
+		CIFeature [] FeaturesInImage (CIImage image, NSDictionary options);
 
 		[Field ("CIDetectorTypeFace"), Internal]
 		NSString TypeFace { get; }
