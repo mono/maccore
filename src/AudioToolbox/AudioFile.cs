@@ -1064,9 +1064,9 @@ namespace MonoMac.AudioToolbox {
 
 		protected override void Dispose (bool disposing)
 		{
+			base.Dispose (disposing);
 			if (gch.IsAllocated)
 				gch.Free ();
-			base.Dispose (disposing);
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
