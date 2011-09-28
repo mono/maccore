@@ -888,6 +888,7 @@ namespace MonoMac.CoreImage {
 
 	}
 
+#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	interface CIDetector {
 		[Static, Export ("detectorOfType:context:options:"), Internal]
@@ -914,7 +915,7 @@ namespace MonoMac.CoreImage {
 		[Field ("CIDetectorAccuracyHigh"), Internal]
 		NSString AccuracyHigh { get; }
 	}
-
+	
 	[BaseType (typeof (NSObject))]
 	interface CIFeature {
 		[Export ("type")]
@@ -944,4 +945,5 @@ namespace MonoMac.CoreImage {
 		[Export ("mouthPosition")]
 		PointF MouthPosition { get; }
 	}
+#endif
 }

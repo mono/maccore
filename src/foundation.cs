@@ -1747,7 +1747,7 @@ namespace MonoMac.Foundation
 		NSTimeZone FromAbbreviation (string abbreviation);
 	}
 
-	
+#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	interface NSUbiquitousKeyValueStore {
 		[Static]
@@ -1820,7 +1820,8 @@ namespace MonoMac.Foundation
 		[Field ("NSUbiquitousKeyValueStoreChangedKeysKey")]
 		NSString ChangedKeysKey { get; }
 	}
-
+#endif
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSUserDefaults {
 		[Static]
@@ -4596,6 +4597,7 @@ namespace MonoMac.Foundation
 		
 	}
 
+#if !MONOMAC
 	public delegate void NSFileCoordinatorWorker (NSUrl newUrl);
 	public delegate void NSFileCoordinatorWorkerRW (NSUrl newReadingUrl, NSUrl newWritingUrl);
 	
@@ -4633,7 +4635,8 @@ namespace MonoMac.Foundation
 		[Export ("cancel")]
 		void Cancel ();
 	}
-
+#endif
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSFileManager {
 		[Field("NSFileType")]
@@ -4990,7 +4993,7 @@ namespace MonoMac.Foundation
 		bool ShouldProceedAfterErrorRemovingItem (NSFileManager fileManager, NSError error, string path);
 	}
 
-
+#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	[Model]
 	interface NSFilePresenter {
@@ -5052,7 +5055,7 @@ namespace MonoMac.Foundation
 		[Export ("presentedSubitemAtURL:didResolveConflictVersion:")]
 		void PresentedSubitemResolvedConflictVersion (NSUrl url, NSFileVersion version);
 	}
-
+		
 	[BaseType (typeof (NSObject))]
 	interface NSFileVersion {
 		[Export ("URL")]
@@ -5115,6 +5118,7 @@ namespace MonoMac.Foundation
 		[Export ("removeOtherVersionsOfItemAtURL:error:")]
 		bool RemoveOtherVersions (NSUrl url, out NSError outError);
 	}
+#endif
 
 	[BaseType (typeof (NSEnumerator))]
 	public interface NSDirectoryEnumerator {
