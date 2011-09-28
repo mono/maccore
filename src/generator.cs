@@ -457,6 +457,13 @@ public class DisposeAttribute : SnippetAttribute {
 	public DisposeAttribute (string s) : base (s) {}
 }
 
+//
+// This attribute is used to flag properties that should be exposed on the strongly typed
+// nested Appearance class.   It is usually a superset of what Apple has labeled with
+// UI_APPEARANCE_SELECTOR because they do support more selectors than those flagged in
+// the UIApperance proxies, so we must label all the options.   This will be a list that
+// is organically grown as we find them
+//
 [AttributeUsage (AttributeTargets.Property|AttributeTargets.Method, AllowMultiple=false)]
 public class AppearanceAttribute : Attribute {
 	public AppearanceAttribute () {}
@@ -562,17 +569,18 @@ public class GeneratedType {
 		var btype = ReflectionExtensions.GetBaseType (Type);
 		if (btype != typeof (object)){
 			Parent = btype;
-			var pg = Lookup (Parent);
+			ParentGenerated = Lookup (Parent);
 
 			// If our parent had UIAppearance, we flag this class as well
-			if (pg.ImplementsAppearance)
+			if (ParentGenerated.ImplementsAppearance)
 				ImplementsAppearance = true;
-			pg.Children.Add (this);
+			ParentGenerated.Children.Add (this);
 		}
 	}
 	public Type Type;
 	public List<GeneratedType> Children = new List<GeneratedType> (1);
 	public Type Parent;
+	public GeneratedType ParentGenerated;
 	public bool ImplementsAppearance;
 
 	List<MemberInfo> appearance_selectors;
@@ -2070,15 +2078,19 @@ public class Generator {
 		}
 	}
 	
+	public string GetGeneratedTypeName (Type type)
+	{
+		object [] bindOnType = type.GetCustomAttributes (typeof (BindAttribute), true);
+		if (bindOnType.Length > 0)
+			return ((BindAttribute) bindOnType [0]).Selector;
+		else
+			return type.Name;
+		
+	}
 	
 	public void Generate (Type type)
 	{
-		string TypeName;
-		object [] bindOnType = type.GetCustomAttributes (typeof (BindAttribute), true);
-		if (bindOnType.Length > 0)
-			TypeName = ((BindAttribute) bindOnType [0]).Selector;
-		else
-			TypeName = type.Name;
+		string TypeName = GetGeneratedTypeName (type);
 
 		string dir = Path.Combine (basedir, type.Namespace.Replace (MainPrefix + ".", ""));
 		string file = TypeName + ".g.cs";
@@ -2483,8 +2495,53 @@ public class Generator {
 				print ("}");
 			}
 
+			//
+			// Appearance class
+			//
+			var gt = GeneratedType.Lookup (type);
+			if (gt.ImplementsAppearance){
+				var parent_implements_appearance = gt.Parent != null && gt.ParentGenerated.ImplementsAppearance;
+				string base_class;
+				
+				if (parent_implements_appearance){
+					var parent = GetGeneratedTypeName (gt.Parent);
+					base_class = parent + "." + parent + "Appearance";
+				} else
+					base_class = "UIAppearance";
+
+				string appearance_type_name = TypeName + "Appearance";
+				print ("");
+				print ("public class {0} : {1} {{", appearance_type_name, base_class);
+				indent++;
+				print ("internal {0} (IntPtr handle) : base (handle) {{}}\n", appearance_type_name);
+
+				if (appearance_selectors != null){
+					var currently_ignored_fields = new List<string> ();
+					
+					foreach (MemberInfo mi in appearance_selectors){
+						if (mi is MethodInfo)
+							GenerateMethod (type, mi as MethodInfo, false);
+						else
+							GenerateProperty (type, mi as PropertyInfo, currently_ignored_fields, false);
+					}
+				}
+				
+				indent--;
+				print ("}");
+				print ("public static {0}{1} Appearance {{\n", parent_implements_appearance ? "new " : "", appearance_type_name);
+				indent++;
+				print ("get {{ return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (class_ptr, UIAppearance.SelectorAppearance)); }}", appearance_type_name);
+				indent--;
+				print ("}");
+				print ("public static {0}{1} AppearanceWhenContainedIn (params Type [] containers)", parent_implements_appearance ? "new " : "", appearance_type_name);
+				print ("{");
+				indent++;
+				print ("return new {0} (UIAppearance.GetAppearance (class_ptr, containers));", appearance_type_name);
+				print ("}");
+				print ("");
+			}
 			indent--;
-			
+
 			print ("}} /* class {0} */", TypeName);
 
 			//
