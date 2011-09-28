@@ -649,7 +649,7 @@ namespace MonoMac.AudioToolbox {
 		{
 			unsafe {
 				int size = 4;
-				var k = AudioQueueGetProperty (handle, property, (IntPtr) (&val), ref size);
+				var k = AudioQueueSetProperty (handle, property, (IntPtr) (&val), size);
 				if (k == 0)
 					return val;
 				throw new AudioQueueException (k);
