@@ -206,8 +206,14 @@ namespace MonoMac.CoreFoundation {
 		
 		static CFProxyType CFProxyTypeToEnum (NSString type)
 		{
-			if (type.Handle == CFProxyTypeAutoConfigurationJavaScript.Handle)
-				return CFProxyType.AutoConfigurationJavaScript;
+#if !MONOMAC
+			if (MonoTouch.UIKit.UIDevice.CurrentDevice.CheckSystemVersion (4, 0)) {
+#endif
+				if (type.Handle == CFProxyTypeAutoConfigurationJavaScript.Handle)
+					return CFProxyType.AutoConfigurationJavaScript;
+#if !MONOMAC
+			}
+#endif
 			
 			if (type.Handle == CFProxyTypeAutoConfigurationURL.Handle)
 				return CFProxyType.AutoConfigurationUrl;
@@ -236,6 +242,7 @@ namespace MonoMac.CoreFoundation {
 		}
 #endif
 		
+		[Since (4, 0)]
 		public NSString AutoConfigurationJavaScript {
 			get {
 				return (NSString) settings[AutoConfigurationJavaScriptKey];
