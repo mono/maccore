@@ -600,7 +600,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("apertureMode")]
 		NSString ApertureMode { get; set;  }
 
-		[Export ("videoComposition")]
+		[Export ("videoComposition", ArgumentSemantic.Copy)]
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("appliesPreferredTrackTransform")]
@@ -714,7 +714,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioTracks")]
 		AVAssetTrack [] AudioTracks { get;  }
 
-		[Export ("audioMix")]
+		[Export ("audioMix", ArgumentSemantic.Copy)]
 		AVAudioMix AudioMix { get; set;  }
 
 		[Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
@@ -733,7 +733,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("videoTracks")]
 		AVAssetTrack [] VideoTracks { get;  }
 
-		[Export ("videoComposition")]
+		[Export ("videoComposition", ArgumentSemantic.Copy)]
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
@@ -749,7 +749,7 @@ namespace MonoMac.AVFoundation {
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
 	interface AVAssetWriter {
-		[Export ("outputURL")]
+		[Export ("outputURL", ArgumentSemantic.Copy)]
 		NSUrl OutputURL { get;  }
 
 		[Export ("outputFileType")]
@@ -1434,7 +1434,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("renderSize")]
 		SizeF RenderSize { get; set;  }
 
-		[Export ("instructions")]
+		[Export ("instructions", ArgumentSemantic.Copy)]
 		AVVideoCompositionInstruction [] Instructions { get; set;  }
 
 		[Export ("animationTool")]
@@ -1456,7 +1456,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("backgroundColor")]
 		CGColor BackgroundColor { get; set;  }
 
-		[Export ("layerInstructions")]
+		[Export ("layerInstructions", ArgumentSemantic.Copy)]
 		AVVideoCompositionLayerInstruction [] LayerInstructions { get;  }
 
 		[Export ("enablePostProcessing")]
@@ -1476,7 +1476,7 @@ namespace MonoMac.AVFoundation {
 		//[Export ("enablePostProcessing")]
 		//bool EnablePostProcessing { get; }
 
-		[Export ("layerInstructions")]
+		[Export ("layerInstructions", ArgumentSemantic.Copy)]
 		AVVideoCompositionLayerInstruction [] LayerInstructions { get; set;  }
 
 		[Static, Export ("videoComposition")]
@@ -1779,7 +1779,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("sampleBufferCallbackQueue")]
 		DispatchQueue SampleBufferCallbackQueue { get;  }
 
-		[Export ("videoSettings"), NullAllowed]
+		[Export ("videoSettings", ArgumentSemantic.Copy), NullAllowed]
 		NSDictionary WeakVideoSettings { get; set;  }
 
 		[Export ("minFrameDuration")]
@@ -1896,7 +1896,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("availableImageDataCodecTypes")]
 		string [] AvailableImageDataCodecTypes { get; }
 		
-		[Export ("outputSettings")]
+		[Export ("outputSettings", ArgumentSemantic.Copy)]
 		NSDictionary OutputSettings { get; set; }
 
 		[Export ("captureStillImageAsynchronouslyFromConnection:completionHandler:")]
@@ -2153,10 +2153,10 @@ namespace MonoMac.AVFoundation {
 		[Export ("reversePlaybackEndTime")]
 		CMTime ReversePlaybackEndTime { get; set;  }
 
-		[Export ("audioMix")]
+		[Export ("audioMix", ArgumentSemantic.Copy)]
 		AVAudioMix AudioMix { get; set;  }
 
-		[Export ("videoComposition")]
+		[Export ("videoComposition", ArgumentSemantic.Copy)]
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("currentTime")]

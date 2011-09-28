@@ -1239,7 +1239,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("emitterCells")]
 		CAEmitterCell[] Cells { get; set;  }
 
-		[Export ("style")]
+		[Export ("style", ArgumentSemantic.Copy)]
 		NSDictionary Style { get; set;  }
 		
 		[Static]
