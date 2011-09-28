@@ -1,5 +1,5 @@
 //
-// AVFoundation.cs: This file describes the API that the generator will produce for AVFoundation
+// AVCaptureConnection: Extensions to the class
 //
 // Authors:
 //   Miguel de Icaza
@@ -25,12 +25,22 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+using MonoTouch.ObjCRuntime;
+
 namespace MonoTouch.AVFoundation {
 	public partial class AVCaptureConnection {
 
-		public SupportsVideoMinFrameDuration {
+		public bool SupportsVideoMinFrameDuration {
 			get {
-				if (RespondsToSelector ("isVideoMinFrameDurationSupported"))
+				if (RespondsToSelector (new Selector ("isVideoMinFrameDurationSupported")))
+					return SupportsVideoMinFrameDuration;
+				return false;
+			}
+		}
+
+		public bool SupportsVideoMaxFrameDuration {
+			get {
+				if (RespondsToSelector (new Selector ("isVideoMaxFrameDurationSupported")))
 					return SupportsVideoMinFrameDuration;
 				return false;
 			}

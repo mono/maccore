@@ -1668,8 +1668,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("videoMinFrameDuration")]
 		CMTime VideoMinFrameDuration { get; set;  }
 
-		[Export ("supportsVideoMaxFrameDuration")]
-		bool SupportsVideoMaxFrameDuration { [Bind ("isVideoMaxFrameDurationSupported")] get;  }
+		[Export ("supportsVideoMaxFrameDuration"), Internal]
+		bool _SupportsVideoMaxFrameDuration { [Bind ("isVideoMaxFrameDurationSupported")] get;  }
 
 		[Export ("videoMaxFrameDuration")]
 		CMTime VideoMaxFrameDuration { get; set;  }

@@ -139,11 +139,7 @@ namespace MonoMac.Foundation {
 
 		public override int GetHashCode ()
 		{
-#if GENERATOR  || COREBUILD
 			return (int) this.Handle;
-#else
-			return Hash ();
-#endif
 		}
 	}
 }

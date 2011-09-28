@@ -700,22 +700,22 @@ namespace MonoMac.CoreImage {
 		CGColorSpace ColorSpace { get; }
 
 #if MONOMAC
-		[Export ("kCIFormatARGB8")]
+		[Field ("kCIFormatARGB8")]
 		int FormatARGB8 { get; }
 
-		[Export ("kCIFormatRGBA16")]
+		[Field ("kCIFormatRGBA16")]
 		int FormatRGBA16 { get; }
 
-		[Export ("kCIFormatRGBAf")]
+		[Field ("kCIFormatRGBAf")]
 		int FormatRGBAf { get; }
 
-		[Export ("kCIFormatRGBAh")]
+		[Field ("kCIFormatRGBAh")]
 		int FormatRGBAh { get; }
 #else
-		[Export ("kCIFormatBGRA8")]
+		[Field ("kCIFormatBGRA8")]
 		int FormatBGRA8 { get; }
 
-		[Export ("kCIFormatRGBA8")]
+		[Field ("kCIFormatRGBA8")]
 		int FormatRGBA8 { get; }
 
 		// UIKit extensions

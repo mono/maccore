@@ -176,6 +176,7 @@ namespace MonoMac.AddressBook {
 				case ABPersonProperty.RelatedNames:       return RelatedNames;
 				case ABPersonProperty.Suffix:             return Suffix;
 				case ABPersonProperty.Url:                return Url;
+				case ABPersonProperty.SocialProfile:      return SocialProfile;
 			}
 			throw new NotSupportedException ("Invalid ABPersonProperty value: " + property);
 		}
@@ -206,6 +207,7 @@ namespace MonoMac.AddressBook {
 			if (id == RelatedNames)       return ABPersonProperty.RelatedNames;
 			if (id == Suffix)             return ABPersonProperty.Suffix;
 			if (id == Url)                return ABPersonProperty.Url;
+			if (id == SocialProfile)      return ABPersonProperty.SocialProfile;
 			throw new NotSupportedException ("Invalid ABPersonPropertyId value: " + id);
 		}
 	}

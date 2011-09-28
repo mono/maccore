@@ -58,11 +58,10 @@ namespace MonoMac.AudioToolbox {
 		ShouldNotResume = 561148781, // '!rsm'
 	}
 
-
+#if false
 	public static class AudioServices {
 
 		
-#if false
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		static extern int AudioServicesAddSystemSoundCompletion (uint soundId, CFRunLoopRef runLoop, NSString runLoopMode, SystemSoundCompletionCallback completeionRoutine, IntPtr clientData);
@@ -78,7 +77,7 @@ namespace MonoMac.AudioToolbox {
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		static extern int AudioServicesSetProperty (uint propertyId, uint specifierSize, IntPtr specifier, uint propertyDataSize, IntPtr propertyData);
-#endif
 	}
+#endif
 }
 
