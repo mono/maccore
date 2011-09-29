@@ -153,11 +153,13 @@ namespace MonoMac.CoreImage {
 		//[Export ("render:toIOSurface:bounds:colorSpace:")]
 		//void RendertoIOSurfaceboundscolorSpace (CIImage im, IOSurfaceRef surface, RectangleF r, CGColorSpaceRef cs, );
 
+#if MONOMAC
 		[Export ("reclaimResources")]
 		void ReclaimResources ();
 
 		[Export ("clearCaches")]
 		void ClearCaches ();
+#endif
 
 		[Internal, Field ("kCIContextOutputColorSpace", "Quartz")]
 		NSString OutputColorSpace { get; }
@@ -579,6 +581,7 @@ namespace MonoMac.CoreImage {
 		[Export ("imageWithCGImage:options:")]
 		CIImage FromCGImage (CGImage image, NSDictionary d);
 
+#if MONOMAC
 		[Static]
 		[Export ("imageWithCGLayer:")]
 		CIImage FromLayer (CGLayer layer);
@@ -586,14 +589,17 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("imageWithCGLayer:options:")]
 		CIImage FromLayer (CGLayer layer, NSDictionary options);
+#endif
 
 		[Static]
 		[Export ("imageWithBitmapData:bytesPerRow:size:format:colorSpace:")]
 		CIImage FromData (NSData bitmapData, int bpr, SizeF size, int ciImageFormat, CGColorSpace colorspace);
 
+#if MONOMAC
 		[Static]
 		[Export ("imageWithTexture:size:flipped:colorSpace:")]
 		CIImage ImageWithTexturesizeflippedcolorSpace (int glTextureName, SizeF size, bool flag, CGColorSpace colorspace);
+#endif
 
 		[Static]
 		[Export ("imageWithContentsOfURL:")]
