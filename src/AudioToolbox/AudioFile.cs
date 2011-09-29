@@ -1076,6 +1076,15 @@ namespace MonoMac.AudioToolbox {
 
 		public AudioSource (AudioFileType inFileType, AudioStreamBasicDescription format) : base (true)
 		{
+			Initialize (inFileType, format);
+		}
+
+		public AudioSource () : base (true)
+		{
+		}
+			
+		protected void Initialize (AudioFileType inFileType, AudioStreamBasicDescription format) 
+		{
 			IntPtr h;
 
 			gch = GCHandle.Alloc (this);
