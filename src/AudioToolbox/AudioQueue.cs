@@ -431,9 +431,9 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static AudioQueueStatus AudioQueueGetCurrentTime (IntPtr AQ, IntPtr timelineHandle, ref AudioTimeStamp time, ref bool discontinuty);
+		extern static AudioQueueStatus AudioQueueGetCurrentTime (IntPtr AQ, IntPtr timelineHandle, out AudioTimeStamp time, out bool discontinuty);
 
-		public AudioQueueStatus GetCurrentTime (AudioQueueTimeline timeline, ref AudioTimeStamp time, ref bool timelineDiscontinuty)
+		public AudioQueueStatus GetCurrentTime (AudioQueueTimeline timeline, out AudioTimeStamp time, out bool timelineDiscontinuty)
 		{
 			IntPtr arg;
 			if (timeline == null)
@@ -444,7 +444,7 @@ namespace MonoMac.AudioToolbox {
 					throw new ObjectDisposedException ("timeline");
 			}
 
-			return AudioQueueGetCurrentTime (handle, arg, ref time, ref timelineDiscontinuty);
+			return AudioQueueGetCurrentTime (handle, arg, out time, out timelineDiscontinuty);
 		}
 
 
