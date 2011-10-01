@@ -783,7 +783,7 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("loadPlugIn:allowNonExecutable:")]
-		void LoadPlugInallowNonExecutable (NSUrl pluginUrl, bool allowNonExecutable);
+		void LoadPlugIn (NSUrl pluginUrl, bool allowNonExecutable);
 	}
 
 #if MONOMAC
