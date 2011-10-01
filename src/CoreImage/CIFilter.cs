@@ -25,7 +25,7 @@
 
 namespace MonoTouch.CoreImage {
 	public partial class CIFilter {
-		public string [] FilterNamesInCategories (params string [] categories)
+		public static string [] FilterNamesInCategories (params string [] categories)
 		{
 			return _FilterNamesInCategories (categories);
 		}
