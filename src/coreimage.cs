@@ -734,6 +734,7 @@ namespace MonoMac.CoreImage {
 		
 	}
 
+#if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CIImageAccumulator {
 		[Export ("imageAccumulatorWithExtent:format:")]
@@ -786,7 +787,6 @@ namespace MonoMac.CoreImage {
 		void LoadPlugIn (NSUrl pluginUrl, bool allowNonExecutable);
 	}
 
-#if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CISampler {
 		[Static, Export ("samplerWithImage:")]
