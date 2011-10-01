@@ -665,11 +665,13 @@ public class Generator {
 	public Type SampleBufferType = typeof (MonoMac.CoreMedia.CMSampleBuffer);
 	string [] standard_namespaces = new string [] { "MonoMac.Foundation", "MonoMac.ObjCRuntime", "MonoMac.CoreGraphics" };
 	const string MainPrefix = "MonoMac";
+	const string CoreImageMap = "Quartz";
 #else
 	public Type MessagingType = typeof (MonoTouch.ObjCRuntime.Messaging);
 	public Type SampleBufferType = typeof (MonoTouch.CoreMedia.CMSampleBuffer);
 	string [] standard_namespaces = new string [] { "MonoTouch.Foundation", "MonoTouch.ObjCRuntime", "MonoTouch.CoreGraphics" };
 	const string MainPrefix = "MonoTouch";
+	const string CoreImageMap = "CoreImage";
 #endif
 
 	//
@@ -2218,9 +2220,17 @@ public class Generator {
 					var fieldAttr = (FieldAttribute) field_pi.GetCustomAttributes (typeof (FieldAttribute), true) [0];
 					string library_name; 
 
-					if (fieldAttr.LibraryName != null)
+					if (fieldAttr.LibraryName != null){
+						// Remapped
 						library_name = fieldAttr.LibraryName;
-					else
+						if (library_name [0] == '+'){
+							switch (library_name){
+							case "+CoreImage":
+								library_name = CoreImageMap;
+								break;
+							}
+						} 
+					} else
 						library_name = type.Namespace.Substring (MainPrefix.Length+1);
 
 					if (!libraries.Contains (library_name)) {
