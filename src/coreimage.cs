@@ -228,267 +228,290 @@ namespace MonoMac.CoreImage {
 		CIImage OutputImage { get; }
 #endif
 
+	}
+
+	[Static]
+	public interface CIFilterOutputKey {
+		[Field ("kCIOutputImageKey", "+CoreImage")]
+		NSString Image  { get; }
+	}
+	
+	[Static]
+	public interface CIFilterInputKey {
+		[Field ("kCIInputBackgroundImageKey", "+CoreImage")]
+		NSString BackgroundImage  { get; }
+
+		[Field ("kCIInputImageKey", "+CoreImage")]
+		NSString Image  { get; }
+
+#if MONOMAC
+		[Field ("kCIInputTimeKey", "+CoreImage")]
+		NSString Time  { get; }
+
+		[Field ("kCIInputTransformKey", "+CoreImage")]
+		NSString Transform  { get; }
+
+		[Field ("kCIInputScaleKey", "+CoreImage")]
+		NSString Scale  { get; }
+
+		[Field ("kCIInputAspectRatioKey", "+CoreImage")]
+		NSString AspectRatio  { get; }
+
+		[Field ("kCIInputCenterKey", "+CoreImage")]
+		NSString Center  { get; }
+
+		[Field ("kCIInputRadiusKey", "+CoreImage")]
+		NSString Radius  { get; }
+
+		[Field ("kCIInputAngleKey", "+CoreImage")]
+		NSString Angle  { get; }
+
+		[Field ("kCIInputRefractionKey", "+CoreImage")]
+		NSString Refraction  { get; }
+
+		[Field ("kCIInputWidthKey", "+CoreImage")]
+		NSString Width  { get; }
+
+		[Field ("kCIInputSharpnessKey", "+CoreImage")]
+		NSString Sharpness  { get; }
+
+		[Field ("kCIInputIntensityKey", "+CoreImage")]
+		NSString Intensity  { get; }
+
+		[Field ("kCIInputEVKey", "+CoreImage")]
+		NSString EV  { get; }
+
+		[Field ("kCIInputSaturationKey", "+CoreImage")]
+		NSString Saturation  { get; }
+
+		[Field ("kCIInputColorKey", "+CoreImage")]
+		NSString Color  { get; }
+
+		[Field ("kCIInputBrightnessKey", "+CoreImage")]
+		NSString Brightness  { get; }
+
+		[Field ("kCIInputContrastKey", "+CoreImage")]
+		NSString Contrast  { get; }
+
+		[Field ("kCIInputGradientImageKey", "+CoreImage")]
+		NSString GradientImage  { get; }
+
+		[Field ("kCIInputMaskImageKey", "+CoreImage")]
+		NSString MaskImage  { get; }
+
+		[Field ("kCIInputShadingImageKey", "+CoreImage")]
+		NSString ShadingImage  { get; }
+
+		[Field ("kCIInputTargetImageKey", "+CoreImage")]
+		NSString TargetImage  { get; }
+
+		[Field ("kCIInputExtentKey", "+CoreImage")]
+		NSString Extent  { get; }
+#endif
+	}
+		
+	[Static]
+	public interface CIFilterAttributes {
 		[Field ("kCIAttributeFilterName", "+CoreImage")]
-		NSString AttributeFilterName  { get; }
+		NSString FilterName  { get; }
 
 		[Field ("kCIAttributeFilterDisplayName", "+CoreImage")]
-		NSString AttributeFilterDisplayName  { get; }
+		NSString FilterDisplayName  { get; }
 
 #if MONOMAC
 		[Field ("kCIAttributeDescription", "+CoreImage")]
-		NSString AttributeDescription  { get; }
+		NSString Description  { get; }
 
 		[Field ("kCIAttributeReferenceDocumentation", "+CoreImage")]
-		NSString AttributeReferenceDocumentation  { get; }
+		NSString ReferenceDocumentation  { get; }
 #endif
 
 		[Field ("kCIAttributeFilterCategories", "+CoreImage")]
-		NSString AttributeFilterCategories  { get; }
+		NSString FilterCategories  { get; }
 
 		[Field ("kCIAttributeClass", "+CoreImage")]
-		NSString AttributeClass  { get; }
+		NSString Class  { get; }
 
 		[Field ("kCIAttributeType", "+CoreImage")]
-		NSString AttributeType  { get; }
+		NSString Type  { get; }
 
 		[Field ("kCIAttributeMin", "+CoreImage")]
-		NSString AttributeMin  { get; }
+		NSString Min  { get; }
 
 		[Field ("kCIAttributeMax", "+CoreImage")]
-		NSString AttributeMax  { get; }
+		NSString Max  { get; }
 
 		[Field ("kCIAttributeSliderMin", "+CoreImage")]
-		NSString AttributeSliderMin  { get; }
+		NSString SliderMin  { get; }
 
 		[Field ("kCIAttributeSliderMax", "+CoreImage")]
-		NSString AttributeSliderMax  { get; }
+		NSString SliderMax  { get; }
 
 		[Field ("kCIAttributeDefault", "+CoreImage")]
-		NSString AttributeDefault  { get; }
+		NSString Default  { get; }
 
 		[Field ("kCIAttributeIdentity", "+CoreImage")]
-		NSString AttributeIdentity  { get; }
+		NSString Identity  { get; }
 
 		[Field ("kCIAttributeName", "+CoreImage")]
-		NSString AttributeName  { get; }
+		NSString Name  { get; }
 
 		[Field ("kCIAttributeDisplayName", "+CoreImage")]
-		NSString AttributeDisplayName  { get; }
+		NSString DisplayName  { get; }
 
 #if MONOMAC
 		[Field ("kCIUIParameterSet", "+CoreImage")]
 		NSString UIParameterSet  { get; }
 
-		[Field ("kCIUISetBasic", "+CoreImage")]
-		NSString UISetBasic  { get; }
-
-		[Field ("kCIUISetIntermediate", "+CoreImage")]
-		NSString UISetIntermediate  { get; }
-
-		[Field ("kCIUISetAdvanced", "+CoreImage")]
-		NSString UISetAdvanced  { get; }
-
-		[Field ("kCIUISetDevelopment", "+CoreImage")]
-		NSString UISetDevelopment  { get; }
 #endif
-
 		[Field ("kCIAttributeTypeTime", "+CoreImage")]
-		NSString AttributeTypeTime  { get; }
+		NSString TypeTime  { get; }
 
 		[Field ("kCIAttributeTypeScalar", "+CoreImage")]
-		NSString AttributeTypeScalar  { get; }
+		NSString TypeScalar  { get; }
 
 		[Field ("kCIAttributeTypeDistance", "+CoreImage")]
-		NSString AttributeTypeDistance  { get; }
+		NSString TypeDistance  { get; }
 
 		[Field ("kCIAttributeTypeAngle", "+CoreImage")]
-		NSString AttributeTypeAngle  { get; }
+		NSString TypeAngle  { get; }
 
 		[Field ("kCIAttributeTypeBoolean", "+CoreImage")]
-		NSString AttributeTypeBoolean  { get; }
+		NSString TypeBoolean  { get; }
 
 		[Field ("kCIAttributeTypeInteger", "+CoreImage")]
-		NSString AttributeTypeInteger  { get; }
+		NSString TypeInteger  { get; }
 
 		[Field ("kCIAttributeTypeCount", "+CoreImage")]
-		NSString AttributeTypeCount  { get; }
+		NSString TypeCount  { get; }
 
 		[Field ("kCIAttributeTypePosition", "+CoreImage")]
-		NSString AttributeTypePosition  { get; }
+		NSString TypePosition  { get; }
 
 		[Field ("kCIAttributeTypeOffset", "+CoreImage")]
-		NSString AttributeTypeOffset  { get; }
+		NSString TypeOffset  { get; }
 
 		[Field ("kCIAttributeTypePosition3", "+CoreImage")]
-		NSString AttributeTypePosition3  { get; }
+		NSString TypePosition3  { get; }
 
 		[Field ("kCIAttributeTypeRectangle", "+CoreImage")]
-		NSString AttributeTypeRectangle  { get; }
+		NSString TypeRectangle  { get; }
 
 		[Field ("kCIAttributeTypeOpaqueColor", "+CoreImage")]
-		NSString AttributeTypeOpaqueColor  { get; }
+		NSString TypeOpaqueColor  { get; }
 
 #if MONOMAC
 		[Field ("kCIAttributeTypeGradient", "+CoreImage")]
-		NSString AttributeTypeGradient  { get; }
+		NSString TypeGradient  { get; }
 #else
 		[Field ("kCIAttributeTypeImage", "+CoreImage")]
-		NSString AttributeTypeImage  { get; }
+		NSString TypeImage  { get; }
 
 		[Field ("kCIAttributeTypeTransform", "+CoreImage")]
-		NSString AttributeTypeTransform  { get; }
-#endif
-		[Field ("kCICategoryDistortionEffect", "+CoreImage")]
-		NSString CategoryDistortionEffect  { get; }
-
-		[Field ("kCICategoryGeometryAdjustment", "+CoreImage")]
-		NSString CategoryGeometryAdjustment  { get; }
-
-		[Field ("kCICategoryCompositeOperation", "+CoreImage")]
-		NSString CategoryCompositeOperation  { get; }
-
-		[Field ("kCICategoryHalftoneEffect", "+CoreImage")]
-		NSString CategoryHalftoneEffect  { get; }
-
-		[Field ("kCICategoryColorAdjustment", "+CoreImage")]
-		NSString CategoryColorAdjustment  { get; }
-
-		[Field ("kCICategoryColorEffect", "+CoreImage")]
-		NSString CategoryColorEffect  { get; }
-
-		[Field ("kCICategoryTransition", "+CoreImage")]
-		NSString CategoryTransition  { get; }
-
-		[Field ("kCICategoryTileEffect", "+CoreImage")]
-		NSString CategoryTileEffect  { get; }
-
-		[Field ("kCICategoryGenerator", "+CoreImage")]
-		NSString CategoryGenerator  { get; }
-
-		[Field ("kCICategoryReduction", "+CoreImage")]
-		NSString CategoryReduction  { get; }
-
-		[Field ("kCICategoryGradient", "+CoreImage")]
-		NSString CategoryGradient  { get; }
-
-		[Field ("kCICategoryStylize", "+CoreImage")]
-		NSString CategoryStylize  { get; }
-
-		[Field ("kCICategorySharpen", "+CoreImage")]
-		NSString CategorySharpen  { get; }
-
-		[Field ("kCICategoryBlur", "+CoreImage")]
-		NSString CategoryBlur  { get; }
-
-		[Field ("kCICategoryVideo", "+CoreImage")]
-		NSString CategoryVideo  { get; }
-
-		[Field ("kCICategoryStillImage", "+CoreImage")]
-		NSString CategoryStillImage  { get; }
-
-		[Field ("kCICategoryInterlaced", "+CoreImage")]
-		NSString CategoryInterlaced  { get; }
-
-		[Field ("kCICategoryNonSquarePixels", "+CoreImage")]
-		NSString CategoryNonSquarePixels  { get; }
-
-		[Field ("kCICategoryHighDynamicRange", "+CoreImage")]
-		NSString CategoryHighDynamicRange  { get; }
-
-		[Field ("kCICategoryBuiltIn", "+CoreImage")]
-		NSString CategoryBuiltIn  { get; }
-
-#if MONOMAC
-		[Field ("kCICategoryFilterGenerator", "+CoreImage")]
-		NSString CategoryFilterGenerator  { get; }
-
-		[Field ("kCIApplyOptionExtent", "+CoreImage")]
-		NSString ApplyOptionExtent  { get; }
-
-		[Field ("kCIApplyOptionDefinition", "+CoreImage")]
-		NSString ApplyOptionDefinition  { get; }
-
-		[Field ("kCIApplyOptionUserInfo", "+CoreImage")]
-		NSString ApplyOptionUserInfo  { get; }
-
-		[Field ("kCIApplyOptionColorSpace", "+CoreImage")]
-		NSString ApplyOptionColorSpace  { get; }
-#endif
-		[Field ("kCIOutputImageKey", "+CoreImage")]
-		NSString OutputImageKey  { get; }
-
-		[Field ("kCIInputBackgroundImageKey", "+CoreImage")]
-		NSString InputBackgroundImageKey  { get; }
-
-		[Field ("kCIInputImageKey", "+CoreImage")]
-		NSString InputImageKey  { get; }
-
-#if MONOMAC
-		[Field ("kCIInputTimeKey", "+CoreImage")]
-		NSString InputTimeKey  { get; }
-
-		[Field ("kCIInputTransformKey", "+CoreImage")]
-		NSString InputTransformKey  { get; }
-
-		[Field ("kCIInputScaleKey", "+CoreImage")]
-		NSString InputScaleKey  { get; }
-
-		[Field ("kCIInputAspectRatioKey", "+CoreImage")]
-		NSString InputAspectRatioKey  { get; }
-
-		[Field ("kCIInputCenterKey", "+CoreImage")]
-		NSString InputCenterKey  { get; }
-
-		[Field ("kCIInputRadiusKey", "+CoreImage")]
-		NSString InputRadiusKey  { get; }
-
-		[Field ("kCIInputAngleKey", "+CoreImage")]
-		NSString InputAngleKey  { get; }
-
-		[Field ("kCIInputRefractionKey", "+CoreImage")]
-		NSString InputRefractionKey  { get; }
-
-		[Field ("kCIInputWidthKey", "+CoreImage")]
-		NSString InputWidthKey  { get; }
-
-		[Field ("kCIInputSharpnessKey", "+CoreImage")]
-		NSString InputSharpnessKey  { get; }
-
-		[Field ("kCIInputIntensityKey", "+CoreImage")]
-		NSString InputIntensityKey  { get; }
-
-		[Field ("kCIInputEVKey", "+CoreImage")]
-		NSString InputEVKey  { get; }
-
-		[Field ("kCIInputSaturationKey", "+CoreImage")]
-		NSString InputSaturationKey  { get; }
-
-		[Field ("kCIInputColorKey", "+CoreImage")]
-		NSString InputColorKey  { get; }
-
-		[Field ("kCIInputBrightnessKey", "+CoreImage")]
-		NSString InputBrightnessKey  { get; }
-
-		[Field ("kCIInputContrastKey", "+CoreImage")]
-		NSString InputContrastKey  { get; }
-
-		[Field ("kCIInputGradientImageKey", "+CoreImage")]
-		NSString InputGradientImageKey  { get; }
-
-		[Field ("kCIInputMaskImageKey", "+CoreImage")]
-		NSString InputMaskImageKey  { get; }
-
-		[Field ("kCIInputShadingImageKey", "+CoreImage")]
-		NSString InputShadingImageKey  { get; }
-
-		[Field ("kCIInputTargetImageKey", "+CoreImage")]
-		NSString InputTargetImageKey  { get; }
-
-		[Field ("kCIInputExtentKey", "+CoreImage")]
-		NSString InputExtentKey  { get; }
+		NSString TypeTransform  { get; }
 #endif
 	}
 
+	[Static]
+	public interface CIFilterCategory {
+		[Field ("kCICategoryDistortionEffect", "+CoreImage")]
+		NSString DistortionEffect  { get; }
+
+		[Field ("kCICategoryGeometryAdjustment", "+CoreImage")]
+		NSString GeometryAdjustment  { get; }
+
+		[Field ("kCICategoryCompositeOperation", "+CoreImage")]
+		NSString CompositeOperation  { get; }
+
+		[Field ("kCICategoryHalftoneEffect", "+CoreImage")]
+		NSString HalftoneEffect  { get; }
+
+		[Field ("kCICategoryColorAdjustment", "+CoreImage")]
+		NSString ColorAdjustment  { get; }
+
+		[Field ("kCICategoryColorEffect", "+CoreImage")]
+		NSString ColorEffect  { get; }
+
+		[Field ("kCICategoryTransition", "+CoreImage")]
+		NSString Transition  { get; }
+
+		[Field ("kCICategoryTileEffect", "+CoreImage")]
+		NSString TileEffect  { get; }
+
+		[Field ("kCICategoryGenerator", "+CoreImage")]
+		NSString Generator  { get; }
+
+		[Field ("kCICategoryReduction", "+CoreImage")]
+		NSString Reduction  { get; }
+
+		[Field ("kCICategoryGradient", "+CoreImage")]
+		NSString Gradient  { get; }
+
+		[Field ("kCICategoryStylize", "+CoreImage")]
+		NSString Stylize  { get; }
+
+		[Field ("kCICategorySharpen", "+CoreImage")]
+		NSString Sharpen  { get; }
+
+		[Field ("kCICategoryBlur", "+CoreImage")]
+		NSString Blur  { get; }
+
+		[Field ("kCICategoryVideo", "+CoreImage")]
+		NSString Video  { get; }
+
+		[Field ("kCICategoryStillImage", "+CoreImage")]
+		NSString StillImage  { get; }
+
+		[Field ("kCICategoryInterlaced", "+CoreImage")]
+		NSString Interlaced  { get; }
+
+		[Field ("kCICategoryNonSquarePixels", "+CoreImage")]
+		NSString NonSquarePixels  { get; }
+
+		[Field ("kCICategoryHighDynamicRange", "+CoreImage")]
+		NSString HighDynamicRange  { get; }
+
+		[Field ("kCICategoryBuiltIn", "+CoreImage")]
+		NSString BuiltIn  { get; }
+
+#if MONOMAC
+		[Field ("kCICategoryFilterGenerator", "+CoreImage")]
+		NSString FilterGenerator  { get; }
+#endif
+	}
+	
+#if MONOMAC
+	[Static]
+	public interface CIUIParameterSet {
+		[Field ("kCIUISetBasic", "+CoreImage")]
+		NSString Basic  { get; }
+
+		[Field ("kCIUISetIntermediate", "+CoreImage")]
+		NSString Intermediate  { get; }
+
+		[Field ("kCIUISetAdvanced", "+CoreImage")]
+		NSString Advanced  { get; }
+
+		[Field ("kCIUISetDevelopment", "+CoreImage")]
+		NSString Development  { get; }
+	}
+
+	[Static]
+	public interface CIFilterApply {
+		[Field ("kCIApplyOptionExtent", "+CoreImage")]
+		NSString OptionExtent  { get; }
+
+		[Field ("kCIApplyOptionDefinition", "+CoreImage")]
+		NSString OptionDefinition  { get; }
+
+		[Field ("kCIApplyOptionUserInfo", "+CoreImage")]
+		NSString OptionUserInfo  { get; }
+
+		[Field ("kCIApplyOptionColorSpace", "+CoreImage")]
+		NSString OptionColorSpace  { get; }
+	}
+#endif
+	
 #if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CIFilterGenerator {
