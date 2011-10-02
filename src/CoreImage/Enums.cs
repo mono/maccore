@@ -35,4 +35,9 @@ namespace MonoMac.CoreImage {
 		RightBottom = 7,
 		LeftBottom = 8
 	}
+
+	public static partial class CIFilterAttributes {}
+	public static partial class CIFilterCategory {}
+	public static partial class CIFilterInputKey {}
+	public static partial class CIFilterOutputKey {}
 }

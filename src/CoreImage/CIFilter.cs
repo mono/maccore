@@ -22,12 +22,22 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
+using MonoTouch.Foundation;
 namespace MonoTouch.CoreImage {
 	public partial class CIFilter {
 		public static string [] FilterNamesInCategories (params string [] categories)
 		{
 			return _FilterNamesInCategories (categories);
 		}
+
+		public NSObject this [NSString key] {
+			get {
+				return ValueForKey (key);
+			}
+			set {
+				SetValueForKey (value, key);
+			}
+		}
+
 	}
 }

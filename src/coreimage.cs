@@ -117,7 +117,7 @@ namespace MonoMac.CoreImage {
 
 		[Static, Internal]
 		[Export ("contextWithOptions:")]
-		CIContext FromOptions (NSDictionary dictionary);
+		CIContext FromOptions ([NullAllowed] NSDictionary dictionary);
 
 		[Export ("render:toCVPixelBuffer:")]
 		void Render (CIImage image, CVPixelBuffer buffer);
@@ -228,6 +228,11 @@ namespace MonoMac.CoreImage {
 		CIImage OutputImage { get; }
 #endif
 
+		[Export ("setValue:forKey:"), Internal]
+		void SetValueForKey ([NullAllowed] NSObject value, NSString key);
+
+		[Export ("valueForKey:"), Internal]
+		NSObject ValueForKey (NSString key);
 	}
 
 	[Static]

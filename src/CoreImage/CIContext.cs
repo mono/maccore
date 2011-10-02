@@ -51,21 +51,26 @@ namespace MonoMac.CoreImage {
 	}
 	
 	public partial class CIContext {
-		CIContext FromContext (CGContext ctx, CIContextOptions options)
+		public static CIContext FromContext (CGContext ctx, CIContextOptions options)
 		{
 			NSDictionary dict = options == null ? null : options.ToDictionary ();
 
 			return FromContext (ctx, options);
 		}
 		
-		CIContext FromContext (CGContext ctx)
+		public static CIContext FromContext (CGContext ctx)
 		{
 			return FromContext (ctx, (CIContextOptions) null);
 		}
 
-		CGLayer CreateCGLayer (SizeF size)
+		public CGLayer CreateCGLayer (SizeF size)
 		{
 			return CreateCGLayer (size, null);
+		}
+
+		public static CIContext FromOptions (CIContextOptions options)
+		{
+			return FromOptions (options == null ? null : options.ToDictionary ());
 		}
 	}
 }
