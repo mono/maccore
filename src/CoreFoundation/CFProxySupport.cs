@@ -207,7 +207,7 @@ namespace MonoMac.CoreFoundation {
 		static CFProxyType CFProxyTypeToEnum (NSString type)
 		{
 #if !MONOMAC
-			if (MonoTouch.UIKit.UIDevice.CurrentDevice.CheckSystemVersion (4, 0, 0)) {
+			if (MonoTouch.UIKit.UIDevice.CurrentDevice.CheckSystemVersion (4, 0, 0) >= 0) {
 #endif
 				if (type.Handle == CFProxyTypeAutoConfigurationJavaScript.Handle)
 					return CFProxyType.AutoConfigurationJavaScript;
