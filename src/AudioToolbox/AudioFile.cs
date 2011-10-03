@@ -1083,6 +1083,11 @@ namespace MonoMac.AudioToolbox {
 		
 		public AudioSource (AudioFileType fileTypeHint) : base (true)
 		{
+			Open (fileTypeHint);
+		}
+		
+		protected void Open (AudioFileType fileTypeHint)
+		{
 			IntPtr h;
 
 			gch = GCHandle.Alloc (this);
