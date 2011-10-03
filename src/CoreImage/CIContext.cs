@@ -68,9 +68,11 @@ namespace MonoMac.CoreImage {
 			return CreateCGLayer (size, null);
 		}
 
+#if !MONOMAC
 		public static CIContext FromOptions (CIContextOptions options)
 		{
 			return FromOptions (options == null ? null : options.ToDictionary ());
 		}
+#endif
 	}
 }
