@@ -31,7 +31,7 @@ namespace MonoMac.Foundation {
 		static Selector postSelector = new Selector ("post:");
 		List <NSObject> __mt_ObserverList_var = new List <NSObject> ();
 
-		[Obsolete ("Use AddObserver(NSSstring, Action<NSNotification>, NSObject)")]
+		[Obsolete ("Use AddObserver(NSString, Action<NSNotification>, NSObject)")]
 		public NSObject AddObserver (string aName, Action<NSNotification> notify, NSObject fromObject)
 		{
 			return AddObserver (new NSString (aName), notify, fromObject);
@@ -54,7 +54,7 @@ namespace MonoMac.Foundation {
 			return AddObserver (aName, notify, null);
 		}
 
-		[Obsolete ("Use AddObserver(NSSstring, Action<NSNotification>) instead")]
+		[Obsolete ("Use AddObserver(NSString, Action<NSNotification>) instead")]
 		public NSObject AddObserver (string aName, Action<NSNotification> notify)
 		{
 			return AddObserver (aName, notify, null);
