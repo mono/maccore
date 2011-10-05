@@ -470,21 +470,6 @@ public class AppearanceAttribute : Attribute {
 }
 
 //
-// This attribute is used so we can apply this to our storage of some
-// backing fields without taking hard dependencies on new types
-//
-// For example UIImage.CoreImage is a field that references the CoreImage
-// framework, not available in older versions of iOS, and since we generate
-// a list of disposable objects, we would end up taking a strong ref.
-//
-// This attribute turns the fields into IDisposable instances and adds a cast
-// on return values.
-//
-public class WeakStorageAttribute : Attribute {
-	public WeakStorageAttribute () {}
-}
-
-//
 // Used to encapsulate flags about types in either the parameter or the return value
 // For now, it only supports the [PlainString] attribute on strings.
 //
@@ -1919,7 +1904,6 @@ public class Generator {
 		bool is_new = HasAttribute (pi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
 		bool is_unsafe = false;
-		bool is_weak_storage = HasAttribute (pi, typeof (WeakStorageAttribute));
 		
 		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
 			print ("[Obsolete (\"{0}\", {1})]",
@@ -1952,8 +1936,7 @@ public class Generator {
 		if ((IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ())))) {
 			if (is_thread_static)
 				print ("[ThreadStatic]");
-			var storage_property_type = is_weak_storage ? "System.IDisposable" : pi.PropertyType.ToString ();
-			print ("{2}{0} {1};", storage_property_type, var_name, is_static ? "static " : "");
+			print ("{1}object {0};", var_name, is_static ? "static " : "");
 
 			if (!is_static){
 				instance_fields_to_clear_on_dispose.Add (var_name);
