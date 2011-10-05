@@ -2443,7 +2443,7 @@ namespace MonoMac.Foundation
 
 #if !MONOMAC
 		// Extension from iOS5, NewsstandKit
-		[Export ("newsstandAssetDownload")]
+		[Export ("newsstandAssetDownload"), WeakStorage]
 		MonoTouch.NewsstandKit.NKAssetDownload NewsstandAssetDownload { get; }
 #endif
 	}
