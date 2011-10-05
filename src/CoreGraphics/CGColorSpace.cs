@@ -155,6 +155,17 @@ namespace MonoMac.CoreGraphics {
 			
 			return new CGColorSpace (CGColorSpaceCreateCalibratedRGB (whitepoint, blackpoint, gamma, matrix), true);
 		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGColorSpaceCreateIndexed (IntPtr baseSpace,
+								int lastIndex,
+								byte[] colorTable);
+
+		public static CGColorSpace CreateIndexed (CGColorSpace baseSpace, int lastIndex, byte[] colorTable)
+		{
+			return new CGColorSpace (CGColorSpaceCreateIndexed (baseSpace == null ? IntPtr.Zero : baseSpace.handle, lastIndex, colorTable), true);
+		}
+
 			
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGColorSpaceCreatePattern (IntPtr baseSpace);
