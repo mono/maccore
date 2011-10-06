@@ -2523,7 +2523,7 @@ public class Generator {
 
 				string appearance_type_name = TypeName + "Appearance";
 				print ("");
-				print ("public class {0} : {1} {{", appearance_type_name, base_class);
+				print ("public partial class {0} : {1} {{", appearance_type_name, base_class);
 				indent++;
 				print ("internal {0} (IntPtr handle) : base (handle) {{}}\n", appearance_type_name);
 
