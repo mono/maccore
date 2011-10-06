@@ -70,7 +70,19 @@ public partial class DocGenerator {
 		"{0}/{1}/Reference/{2}_Protocol/Reference/Reference.html",
 		"{0}/iPhone/Reference/{2}_Class/{2}.html",
 		"{0}/iPhone/Reference/{2}_Class/Reference/Reference.html", 		// UILocalReference
-
+		"{0}/{1}/Reference/{2}ClassReferenceClassRef/{2}ClassReference.html",
+		"{0}/{1}/Reference/{2}ProtocolRef/{2}.html",
+		"{0}/{1}/Reference/{2}_Class/Reference/{5}.html",
+		"{0}/{3}/Reference/{2}_Class/{2}.html",
+		"{0}/{3}/Reference/{2}_class/Reference/{2}.html",
+		"{0}/{3}/Reference/{1}Framework/Classes/{2}_Class/Reference/{2}.html",
+		"{0}/{3}/Reference/{1}Framework/Classes/{2}_Class/{2}.html",
+		"{0}/{1}/Reference/{2}_ProtocolRef/Reference/Reference.html",
+		"{0}/{1}/Reference/{2}_Class/Reference/Reference.html",
+		"{0}/{1}/Reference/{2}_Ref/Reference/Reference.html",
+		"{0}/{1}/Reference/{2}ProtocolRef/Reference/Reference.html",
+		"FOO",
+		
 		// AppKit-style
 		"{0}/{1}/Reference/{3}/Classes/{2}_Class/Reference/Reference.html",
 		"{0}/{1}/Reference/{3}/Classes/{2}_Class/Reference/{2}.html",
@@ -111,8 +123,10 @@ public partial class DocGenerator {
 			fx = "Networking";
 			alt = "CoreWLanFrameworkRef";
 		}
-		if (fx == "Foundation")
+		if (fx == "Foundation"){
 			fx = "Cocoa";
+			alt = "Foundation";
+		}
 		if (fx == "CoreAnimation"){
 			fx = "GraphicsImaging";
 			alt = "QuartzCore";
@@ -139,9 +153,13 @@ public partial class DocGenerator {
 			alt = "ApplicationKit";
 			alt2 = "AppKit";
 		}
+		if (fx == "CoreData"){
+			alt = "Cocoa";
+		}
 		if (fx == "CoreImage"){
 			fx = "GraphicsImaging";
 			alt = "QuartzCoreFramework";
+			alt2 = "CoreImage";
 		}
 		if (fx == "ImageKit"){
 			fx = "Quartz";
@@ -160,11 +178,34 @@ public partial class DocGenerator {
 			fx = "GraphicsImaging";
 			alt = "QuartzFramework";
 		}
-		
+		if (fx == "NewsstandKit"){
+			alt = "StoreKit";
+		}
+
+		string shortName = t.Name;
+
+		// Some types are stored in a different file, deal with those
+		switch (t.FullName){
+		case "MonoTouch.UIKit.UIRotationGestureRecognizer":
+			shortName = "UIRotateGestureRecognizer";
+			break;
+
+		case "MonoTouch.Twitter.TWTweetComposeViewController":
+			shortName = "TWTweetSheetViewController";
+			break;
+
+		case "MonoTouch.GLKit.GLKReflectionMapEffect":
+			shortName = "GLKReflectionEffect";
+			break;
+		}
+			
 		foreach (string pattern in patterns){
-			string path = String.Format (pattern, DocBase, fx, t.Name, alt, alt2, t.Name.Substring (2));
-			if (File.Exists (path))
-				return path;
+			foreach (var fxname in new string [] { fx, alt, alt2 }){
+				string path = String.Format (pattern, DocBase, fxname, shortName, alt, alt2, shortName.Substring (2));
+	
+				if (File.Exists (path))
+					return path;
+			}
 		}
 
 		// Ignore known missing documents
@@ -195,7 +236,7 @@ public partial class DocGenerator {
 		if (DebugDocs){
 			Console.WriteLine ("DocBase: {0}", DocBase);
 			foreach (string pattern in patterns){
-				string path = String.Format (pattern, "", fx, t.Name, alt, alt2, t.Name.Substring (2));
+				string path = String.Format (pattern, "", fx, shortName, alt, alt2, shortName.Substring (2));
 				Console.WriteLine ("    Tried: {0}", path);
 			}
 		}
@@ -1193,6 +1234,7 @@ public partial class DocGenerator {
 		}
 
 		var debug = Environment.GetEnvironmentVariable ("DOCFIXER");
+		DebugDocs = debug != null;
 
 		if (File.Exists (Path.Combine (dir, "en"))){
 			Console.WriteLine ("The directory does not seem to be the root for documentation (missing `en' directory)");

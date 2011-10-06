@@ -15,7 +15,7 @@ public partial class DocGenerator {
 		//var versions = new[]{"4_0", "3_2", "3_1"};
 		//string format = "/Developer/Platforms/iPhoneOS.platform/Developer/Documentation/DocSets/com.apple.adc.documentation.AppleiPhone{0}.iPhoneLibrary.docset/Contents/Resources/Documents/documentation";
 		var versions = new [] { "5_0" };
-		string format = "/Library/Developer/Documentation/DocSets/com.apple.adc.documentation.AppleiOS{0}.iOSLibrary.docset/Contents/Resources/Documents/documentation";
+		string format = "/Library/Developer/Shared/Documentation/DocSets/com.apple.adc.documentation.AppleiOS{0}.iOSLibrary.docset/Contents/Resources/Documents/documentation";
 
 		foreach (var v in versions) {
 			var d = string.Format (format, v);
