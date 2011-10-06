@@ -823,10 +823,8 @@ public partial class DocGenerator {
 		if (end == null)
 			return null;
 
-		return HtmlToMdoc (
-				overview,
-				overview.ElementsAfterSelf().Where(e => e.IsBefore(end))
-		);
+		var contents = overview.ElementsAfterSelf().Where(e => e.IsBefore(end));
+		return HtmlToMdoc (contents.FirstOrDefault (), contents.Skip (1));
 	}
 
 	static IEnumerable<XElement> GetDocSections (XElement appledocs)
@@ -1000,6 +998,9 @@ public partial class DocGenerator {
 				continue;
 			var selector = GetSelector (attrs [0]);
 
+			if (selector == "init")
+				continue;
+			
 			bool overrides = 
 				(method.Attributes & MethodAttributes.Virtual) != 0 &&
 				(method.Attributes & MethodAttributes.NewSlot) == 0;
