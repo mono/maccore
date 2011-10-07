@@ -2244,8 +2244,9 @@ public class Generator {
 								}
 							}
 							if (HasAttribute (mi, typeof (CheckDisposedAttribute))){
-								print ("if ({0}.Handle == IntPtr.Zero)", RenderArgs (pars.Take (1)));
-								print ("\tthrow new ObjectDisposedException (\"The object was disposed on the event, you should not call Dispose() inside the handler\");");
+								var arg = RenderArgs (pars.Take (1));
+								print ("if ({0}.Handle == IntPtr.Zero)", arg);
+								print ("\tthrow new ObjectDisposedException (\"{0}\", \"The object was disposed on the event, you should not call Dispose() inside the handler\");", arg);
 							}
 							indent--;
 							print ("}");
