@@ -2405,6 +2405,8 @@ namespace MonoMac.Foundation
 		void PejectProtectionSpaceAndContinueWithChallenge (NSUrlAuthenticationChallenge challenge);
 	}
 
+	public delegate void NSUrlConnectionDataResponse (NSUrlResponse response, NSData data, NSError error);
+	
 	[BaseType (typeof (NSObject), Name="NSURLConnection")]
 	public interface NSUrlConnection {
 		[Export ("canHandleRequest:")][Static]
@@ -2441,6 +2443,23 @@ namespace MonoMac.Foundation
 		[Export ("cancelAuthenticationChallenge:")]
 		void CancelAuthenticationChallenge (NSUrlAuthenticationChallenge  challenge);
 
+		[Since (5,0)]
+		[Export ("originalRequest")]
+		NSUrlRequest OriginalRequest { get; }
+
+		[Since (5,0)]
+		[Export ("currentRequest")]
+		NSUrlRequest CurrentRequest { get; }
+
+		[Export ("setDelegateQueue:")]
+		[Since (5,0)]
+		void SetDelegateQueue (NSOperationQueue queue);
+		
+		[Since (5,0)]
+		[Static]
+		[Export ("sendAsynchronousRequest:queue:completionHandler:")]
+		void SendAsynchronousRequest (NSUrlRequest request, NSOperationQueue queue, NSUrlConnectionDataResponse completionHandler);
+		
 #if !MONOMAC
 		// Extension from iOS5, NewsstandKit
 		[Export ("newsstandAssetDownload")]
@@ -2488,6 +2507,20 @@ namespace MonoMac.Foundation
 		NSCachedUrlResponse WillCacheResponse (NSUrlConnection connection, NSCachedUrlResponse cachedResponse);
 	}
 
+	[BaseType (typeof (NSUrlConnectionDelegate), Name="NSUrlConnectionDownloadDelegate")]
+	[Model]
+	public interface NSUrlConnectionDownloadDelegate {
+		[Export ("connection:didWriteData:totalBytesWritten:expectedTotalBytes:")]
+		void WroteData (NSUrlConnection connection, long bytesWritten, long totalBytesWritten, long expectedTotalBytes);
+		
+		[Export ("connectionDidResumeDownloading:totalBytesWritten:expectedTotalBytes:")]
+		void ResumedDownloading (NSUrlConnection connection, long totalBytesWritten, long expectedTotalBytes);
+		
+		[Abstract]
+		[Export ("connectionDidFinishDownloading:destinationURL:")]
+		void FinishedDownloading (NSUrlConnection connection, NSUrl destinationUrl);
+	}
+		
 	[BaseType (typeof (NSObject), Name="NSURLCredential")]
 	public interface NSUrlCredential {
 		[Export ("persistence")]
