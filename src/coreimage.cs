@@ -49,6 +49,7 @@ using MonoTouch.UIKit;
 namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	public interface CIColor {
 		[Static]
 		[Export ("colorWithCGColor:")]
@@ -101,6 +102,7 @@ namespace MonoMac.CoreImage {
 	}
 
         [BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	public interface CIContext {
 		// When we bind OpenGL add these:
 		//[Export ("contextWithCGLContext:pixelFormat:colorSpace:options:")]
@@ -172,6 +174,7 @@ namespace MonoMac.CoreImage {
 	}
 
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	public interface CIFilter {
 		[Export ("inputKeys")]
 		string [] InputKeys { get; }
@@ -600,6 +603,7 @@ namespace MonoMac.CoreImage {
 #endif
 	
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	public interface CIImage {
 		[Static]
 		[Export ("imageWithCGImage:")]
@@ -758,6 +762,21 @@ namespace MonoMac.CoreImage {
 
 		[Export ("initWithImage:options")]
 		IntPtr Constructor (UIImage image, NSDictionary options);
+
+		[Field ("kCIImageAutoAdjustFeatures")]
+		NSString AutoAdjustFeaturesKey { get; }
+
+		[Field ("kCIImageAutoAdjustRedEye")]
+		NSString AutoAdjustRedEyeKey { get; }
+
+		[Field ("kCIImageAutoAdjustEnhance")]
+		NSString AutoAdjustEnhanceKey { get; }
+		
+		[Export ("autoAdjustmentFilters")]
+		CIFilter [] GetAutoAdjustmentFilters ();
+
+		[Export ("autoAdjustmentFiltersWithOptions:")]
+		CIFilter [] GetAutoAdjustmentFilters (NSDictionary opts);
 #endif
 		
 	}
@@ -857,6 +876,7 @@ namespace MonoMac.CoreImage {
 #endif
 	
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	interface CIVector {
 		[Static, Internal, Export ("vectorWithValues:count:")]
 		CIVector _FromValues (IntPtr values, int count);
@@ -876,6 +896,20 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("vectorWithX:Y:Z:W:")]
 		CIVector Create (float x, float y, float z, float w);
+
+#if !MONOMAC
+		[Static]
+		[Export ("vectorWithCGPoint:")]
+		CIVector Create (PointF point);
+
+		[Static]
+		[Export ("vectorWithCGRect:")]
+		CIVector Create (RectangleF point);
+
+		[Static]
+		[Export ("vectorWithCGAffineTransform:")]
+		CIVector Create (CGAffineTransform affineTransform);
+#endif
 
 		[Static]
 		[Export ("vectorWithString:")]
@@ -917,19 +951,30 @@ namespace MonoMac.CoreImage {
 		[Export ("W")]
 		float W { get; }
 
+#if !MONOMAC
+		[Export ("CGPointValue")]
+		PointF Point { get; }
+
+		[Export ("CGRectValue")]
+		RectangleF Rectangle { get; }
+
+		[Export ("CGAffineTransformValue")]
+		CGAffineTransform AffineTransform { get; }
+#endif
+
 		[Export ("stringRepresentation"), Internal]
 		string StringRepresentation ();
 
 	}
 
-#if !MONOMAC
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	interface CIDetector {
 		[Static, Export ("detectorOfType:context:options:"), Internal]
 		CIDetector FromType (NSString detectorType, CIContext context, [NullAllowed] NSDictionary options);
 
 		[Export ("featuresInImage:")]
-		CIFeature [] GetFeatures (CIImage image);
+		CIFeature [] FeaturesInImage (CIImage image);
 
 		[Export ("featuresInImage:options:")]
 		CIFeature [] FeaturesInImage (CIImage image, NSDictionary options);
@@ -951,6 +996,7 @@ namespace MonoMac.CoreImage {
 	}
 	
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	interface CIFeature {
 		[Export ("type")]
 		NSString Type { get; }
@@ -960,6 +1006,7 @@ namespace MonoMac.CoreImage {
 	}
 
 	[BaseType (typeof (CIFeature))]
+	[Since (5,0)]
 	interface CIFaceFeature {
 		[Export ("hasLeftEyePosition")]
 		bool HasLeftEyePosition { get; }
@@ -979,5 +1026,4 @@ namespace MonoMac.CoreImage {
 		[Export ("mouthPosition")]
 		PointF MouthPosition { get; }
 	}
-#endif
 }
