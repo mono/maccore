@@ -763,13 +763,13 @@ namespace MonoMac.CoreImage {
 		[Export ("initWithImage:options")]
 		IntPtr Constructor (UIImage image, NSDictionary options);
 
-		[Field ("kCIImageAutoAdjustFeatures")]
+		[Field ("kCIImageAutoAdjustFeatures"), Internal]
 		NSString AutoAdjustFeaturesKey { get; }
 
-		[Field ("kCIImageAutoAdjustRedEye")]
+		[Field ("kCIImageAutoAdjustRedEye"), Internal]
 		NSString AutoAdjustRedEyeKey { get; }
 
-		[Field ("kCIImageAutoAdjustEnhance")]
+		[Field ("kCIImageAutoAdjustEnhance"), Internal]
 		NSString AutoAdjustEnhanceKey { get; }
 		
 		[Export ("autoAdjustmentFilters"), Internal]
@@ -777,6 +777,9 @@ namespace MonoMac.CoreImage {
 
 		[Export ("autoAdjustmentFiltersWithOptions:"), Internal]
 		NSArray _GetAutoAdjustmentFilters (NSDictionary opts);
+
+		[Field ("kCGImagePropertyOrientation", "ImageIO"), Internal]
+		NSString ImagePropertyOrientation { get; }
 #endif
 		
 	}

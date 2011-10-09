@@ -218,6 +218,8 @@ namespace MonoMac.CoreImage {
 				return new CIVignette (handle);
 			case "CIWhitePointAdjust":
 				return new CIWhitePointAdjust (handle);
+			case "CIFaceBalance":
+				return new CIFaceBalance (handle);
 			default:
 				Console.WriteLine ("Unknown filter type returned: `{0}', returning a default CIFilter", filterName);
 				return new CIFilter ();
@@ -225,6 +227,12 @@ namespace MonoMac.CoreImage {
 		}
 	}
 
+	public class CIFaceBalance : CIFilter {
+		private CIFaceBalance (){}
+		public CIFaceBalance (IntPtr handle): base (handle) {}
+		
+	}
+	
 	public class CIAdditionCompositing : CIFilter {
 		public CIAdditionCompositing () : base (CreateFilter ("CIAdditionCompositing")) {}
 		public CIAdditionCompositing (IntPtr handle) : base (handle) {}
