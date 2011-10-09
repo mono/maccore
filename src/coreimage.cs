@@ -772,11 +772,11 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIImageAutoAdjustEnhance")]
 		NSString AutoAdjustEnhanceKey { get; }
 		
-		[Export ("autoAdjustmentFilters")]
-		CIFilter [] GetAutoAdjustmentFilters ();
+		[Export ("autoAdjustmentFilters"), Internal]
+		NSArray _GetAutoAdjustmentFilters ();
 
-		[Export ("autoAdjustmentFiltersWithOptions:")]
-		CIFilter [] GetAutoAdjustmentFilters (NSDictionary opts);
+		[Export ("autoAdjustmentFiltersWithOptions:"), Internal]
+		NSArray _GetAutoAdjustmentFilters (NSDictionary opts);
 #endif
 		
 	}
