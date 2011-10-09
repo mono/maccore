@@ -183,7 +183,6 @@ namespace MonoMac.Security {
 		{
 			if (record == null)
 				throw new ArgumentNullException ("record");
-			IntPtr output;
 			return SecItem.SecItemAdd (record.queryDict.Handle, IntPtr.Zero);
 			
 		}
