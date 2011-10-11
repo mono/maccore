@@ -75,7 +75,7 @@ namespace MonoMac.ObjCRuntime {
 			get; set;
 		}
 		
-		public bool NeedsCpp {
+		public bool IsCxx {
 			get; set; 
 		}
 	}
