@@ -36,6 +36,7 @@ namespace MonoMac.CoreGraphics {
 	public partial class CGDataProvider : INativeObject, IDisposable {
 		internal IntPtr handle;
 		IntPtr buffer;
+		byte [] reference;
 		
 		// invoked by marshallers
 		public CGDataProvider (IntPtr handle)
@@ -81,6 +82,7 @@ namespace MonoMac.CoreGraphics {
 				CGDataProviderRelease (handle);
 				handle = IntPtr.Zero;
 			}
+			reference = null;
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -132,6 +134,8 @@ namespace MonoMac.CoreGraphics {
 			if (offset + count > buffer.Length)
 				throw new ArgumentException ("offset");
 
+			// Keep a reference alive to the byte array.
+			reference = buffer;
 			unsafe {
 				fixed (byte *p = &buffer [offset]){
 					handle = CGDataProviderCreateWithData (IntPtr.Zero, (IntPtr) p, count, IntPtr.Zero);
