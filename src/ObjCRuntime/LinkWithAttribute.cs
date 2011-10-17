@@ -70,11 +70,7 @@ namespace MonoMac.ObjCRuntime {
 		public LinkTarget LinkTarget {
 			get; set;
 		}
-		
-		public bool NeedsGccExceptionHandling {
-			get; set;
-		}
-		
+
 		public bool NeedsCpp {
 			get; set; 
 		}
