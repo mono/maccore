@@ -214,7 +214,8 @@ class BindingTouch {
 
 			var types = new List<Type> ();
 			foreach (var t in api.GetTypes ()){
-				if (t.GetCustomAttributes (typeof (BaseTypeAttribute), true).Length > 0)
+				if (t.GetCustomAttributes (typeof (BaseTypeAttribute), true).Length > 0 ||
+				    t.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0)
 					types.Add (t);
 			}
 

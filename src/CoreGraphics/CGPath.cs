@@ -69,6 +69,16 @@ namespace MonoMac.CoreGraphics {
 			handle = CGPathCreateMutable ();
 		}
 
+#if !MONOMAC
+		[Since (5,0)]
+		public CGPath (CGPath reference, CGAffineTransform transform)
+		{
+			if (reference == null)
+				throw new ArgumentNullException ("reference");
+			handle = CGPathCreateMutableCopyByTransformingPath (reference.Handle, ref transform);
+		}
+#endif
+	
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGPathCreateMutableCopy(IntPtr path);
 		public CGPath (CGPath basePath)
@@ -366,6 +376,20 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGPathAddRelativeArc(IntPtr path, ref CGAffineTransform m, float x, float y, float radius, float startAngle, float delta);
+		public void AddRelativeArc (CGAffineTransform m, float x, float y, float radius, float startAngle, float delta)
+		{
+			CGPathAddRelativeArc (handle, ref m, x, y, radius, startAngle, delta);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGPathAddRelativeArc(IntPtr path, IntPtr zero, float x, float y, float radius, float startAngle, float delta);
+		public void AddRelativeArc (float x, float y, float radius, float startAngle, float delta)
+		{
+			CGPathAddRelativeArc (handle, IntPtr.Zero, x, y, radius, startAngle, delta);
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPathAddPath(IntPtr path1, ref CGAffineTransform m, IntPtr path2);
 		public void AddPath (CGAffineTransform t, CGPath path2)
 		{
@@ -486,5 +510,79 @@ namespace MonoMac.CoreGraphics {
 			gch.Free ();
 		}
 
+		static CGPath MakeMutable (IntPtr source)
+		{
+			var mutable = CGPathCreateMutableCopy (source);
+			CGPathRelease (source);
+
+			return new CGPath (mutable, true);
+		}
+
+#if !MONOMAC
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPathCreateCopyByDashingPath (IntPtr handle, ref CGAffineTransform transform, float [] phase, int count);
+
+		[Since(5,0)]
+		public CGPath CopyByDashingPath (CGAffineTransform transform, float [] phase)
+		{
+			return MakeMutable (CGPathCreateCopyByDashingPath (handle, ref transform, phase, phase == null ? 0 : phase.Length));
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPathCreateCopyByDashingPath (IntPtr handle, IntPtr transform, float [] phase, int count);
+
+		[Since(5,0)]
+		public CGPath CopyByDashingPath (float [] phase)
+		{
+			return MakeMutable (CGPathCreateCopyByDashingPath (handle, IntPtr.Zero, phase, phase == null ? 0 : phase.Length));
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPathCreateCopyByStrokingPath (IntPtr handle, ref CGAffineTransform transform, float lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, float miterLimit);
+
+		[Since(5,0)]
+		public CGPath CopyByStrokingPath (CGAffineTransform transform, float lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, float miterLimit)
+		{
+			return MakeMutable (CGPathCreateCopyByStrokingPath (handle, ref transform, lineWidth, lineCap, lineJoin, miterLimit));
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPathCreateCopyByStrokingPath (IntPtr handle, IntPtr zero, float lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, float miterLimit);
+
+		[Since(5,0)]
+		public CGPath CopyByStrokingPath (float lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, float miterLimit)
+		{
+			return MakeMutable (CGPathCreateCopyByStrokingPath (handle, IntPtr.Zero, lineWidth, lineCap, lineJoin, miterLimit));
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPathCreateMutableCopyByTransformingPath (IntPtr handle, ref CGAffineTransform transform);
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPathCreateWithEllipse (RectangleF boundingRect, ref CGAffineTransform transform);
+
+		[Since (5,0)]
+		static public CGPath EllipseFromRect (RectangleF boundingRect, CGAffineTransform transform)
+		{
+			return MakeMutable (CGPathCreateWithEllipse (boundingRect, ref transform));
+		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPathCreateWithRect (RectangleF boundingRect, ref CGAffineTransform transform);
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPathCreateWithRect (RectangleF boundingRect, IntPtr transform);
+		
+		[Since (5,0)]
+		static public CGPath FromRect (RectangleF rectangle, CGAffineTransform transform)
+		{
+			return MakeMutable (CGPathCreateWithRect (rectangle, ref transform));
+		}
+
+		[Since (5,0)]
+		static public CGPath FromRect (RectangleF rectangle)
+		{
+			return MakeMutable (CGPathCreateWithRect (rectangle, IntPtr.Zero));
+		}
+#endif
 	}
 }

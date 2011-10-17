@@ -1,3 +1,12 @@
+// This file describes the API that the generator will produce
+//
+// Authors:
+//   MonoMac community
+//   Miguel de Icaza
+//
+// Copyright 2009, 2011, MonoMac community
+// Copyright 2011, Xamarin, Inc.
+//
 using System;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
@@ -84,6 +93,9 @@ namespace MonoMac.CoreData
 		[Export ("valueTransformerName")]
 		string ValueTransformerName { get; set; }
 
+		[Since(5,0)]
+		[Export ("allowsExternalBinaryDataStorage")]
+		bool AllowsExternalBinaryDataStorage { get; set; }
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSEntityDescription {
@@ -142,7 +154,11 @@ namespace MonoMac.CoreData
 		[Export ("versionHashModifier")]
 		string VersionHashModifier { get; set; }
 
+		[Since(5,0)]
+		[Export ("compoundIndexes")]
+		NSPropertyDescription [] CompoundIndexes { get; set; }
 	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSEntityMapping {
 
@@ -212,7 +228,8 @@ namespace MonoMac.CoreData
 		NSFetchRequest FetchRequest { get; set; }
 
 	}
-	[BaseType (typeof (NSObject))]
+
+	[BaseType (typeof (NSPersistentStoreRequest))]
 	public interface NSFetchRequest {
 
 		[Export ("entity")]
@@ -245,6 +262,89 @@ namespace MonoMac.CoreData
 		[Export ("relationshipKeyPathsForPrefetching")]
 		string[] RelationshipKeyPathsForPrefetching { get; set; }
 
+		[Since(5,0)]
+		[Static]
+		[Export ("fetchRequestWithEntityName:")]
+		NSFetchRequest FromEntityName (string entityName);
+
+		[Since(5,0)]
+		[Export ("initWithEntityName:")]
+		IntPtr Constructor (string entityName);
+
+		[Since(5,0)]
+		[Export ("entityName")]
+		string EntityName { get; }
+
+		[Since(5,0)]
+		[Export ("fetchBatchSize")]
+		int FetchBatchSize { get; set; }
+
+		[Since(5,0)]
+		[Export ("shouldRefreshRefetchedObjects")]
+		bool ShouldRefreshRefetchedObjects { get; set; }
+
+		[Since(5,0)]
+		[Export ("havingPredicate")]
+		NSPredicate HavingPredicate { get; set; }
+
+		[Since(5,0)]
+		[Export ("propertiesToGroupBy")]
+		NSPropertyDescription [] PropertiesToGroupBy { get; set; }
+	}
+
+	[Since(5,0)]
+	[BaseType (typeof (NSPersistentStore))]
+	interface NSIncrementalStore {
+		[Export ("loadMetadata:")]
+		bool LoadMetadata (out NSError error);
+
+		[Export ("executeRequest:withContext:error:")]
+		NSObject ExecuteRequest (NSPersistentStoreRequest request, NSManagedObjectContext context, out NSError error);
+
+		[Export ("newValuesForObjectWithID:withContext:error:")]
+		NSIncrementalStoreNode NewValues (NSManagedObjectID forObjectId, NSManagedObjectContext context, out NSError error);
+
+		[Export ("newValueForRelationship:forObjectWithID:withContext:error:")]
+		NSObject NewValue (NSRelationshipDescription forRelationship, NSManagedObjectID forObjectI, NSManagedObjectContext context, out NSError error);
+
+		[Static]
+		[Export ("identifierForNewStoreAtURL:")]
+		NSObject IdentifierForNewStoreAtURL (NSUrl storeURL);
+
+		[Export ("obtainPermanentIDsForObjects:error:")]
+		NSObject [] ObtainPermanentIds (NSObject [] array, out NSError error);
+
+		[Export ("managedObjectContextDidRegisterObjectsWithIDs:")]
+		void ManagedObjectContextDidRegisterObjectsWithIds (NSObject [] objectIds);
+
+		[Export ("managedObjectContextDidUnregisterObjectsWithIDs:")]
+		void ManagedObjectContextDidUnregisterObjectsWithIds (NSObject [] objectIds);
+
+		[Export ("newObjectIDForEntity:referenceObject:")]
+		NSManagedObjectID NewObjectIdFor (NSEntityDescription forEntity, NSObject referenceObject);
+
+		[Export ("referenceObjectForObjectID:")]
+		NSObject ReferenceObjectForObject (NSManagedObjectID objectId);
+
+	}
+
+	[Since(5,0)]
+	[BaseType (typeof (NSObject))]
+	interface NSIncrementalStoreNode {
+		[Export ("initWithObjectID:withValues:version:")]
+		IntPtr Constructor (NSManagedObjectID objectId, NSDictionary values, ulong version);
+
+		[Export ("updateWithValues:version:")]
+		void Update (NSDictionary values, ulong version);
+
+		[Export ("objectID")]
+		NSManagedObjectID ObjectId { get; }
+
+		[Export ("version")]
+		long Version { get; }
+
+		[Export ("valueForPropertyDescription:")]
+		NSObject ValueForPropertyDescription (NSPropertyDescription prop);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -345,7 +445,14 @@ namespace MonoMac.CoreData
 		[Export ("validateForUpdate:")]
 		bool ValidateForUpdate (out NSError error);
 
+		[Since(5,0)]
+		[Export ("hasChanges")]
+		bool HasChanges { get; }
+
+		[Export ("changedValuesForCurrentEvent")]
+		NSDictionary ChangedValuesForCurrentEvent { get; }
 	}
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSManagedObjectContext {
 
@@ -444,6 +551,26 @@ namespace MonoMac.CoreData
 
 		[Export ("mergeChangesFromContextDidSaveNotification:")]
 		void MergeChangesFromContextDidSaveNotification (NSNotification notification);
+
+		// 5.0
+		[Export ("initWithConcurrencyType:")]
+		IntPtr Constructor (NSManagedObjectContextConcurrencyType ct);
+
+		[Export ("performBlock:")]
+		void Perform (NSAction action);
+
+		[Export ("performBlockAndWait:")]
+		void PerformAndWait (NSAction action);
+
+		[Export ("userInfo")]
+		NSMutableDictionary UserInfo { get; }
+
+		[Export ("concurrencyType")]
+		NSManagedObjectContextConcurrencyType ConcurrencyType { get; }
+
+		//Detected properties
+		[Export ("parentContext")]
+		NSManagedObjectContext ParentContext { get; set; }
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSManagedObjectID {
@@ -537,6 +664,45 @@ namespace MonoMac.CoreData
 		NSDictionary EntityMappingsByName { get; }
 
 	}
+
+	[Since(5,0)]
+	[BaseType (typeof (NSObject))]
+	interface NSMergeConflict {
+		[Export ("sourceObject")]
+		NSManagedObject SourceObject { get;  }
+
+		[Export ("objectSnapshot")]
+		NSDictionary ObjectSnapshot { get;  }
+
+		[Export ("cachedSnapshot")]
+		NSDictionary CachedSnapshot { get;  }
+
+		[Export ("persistedSnapshot")]
+		NSDictionary PersistedSnapshot { get;  }
+
+		[Export ("newVersionNumber")]
+		uint NewVersionNumber { get;  }
+
+		[Export ("oldVersionNumber")]
+		uint OldVersionNumber { get;  }
+
+		[Export ("initWithSource:newVersion:oldVersion:cachedSnapshot:persistedSnapshot:")]
+		IntPtr Constructor (NSManagedObject srcObject, uint newvers, uint oldvers, NSDictionary cachesnap, NSDictionary persnap);
+	}
+
+	[Since(5,0)]
+	[BaseType (typeof (NSObject))]
+	interface NSMergePolicy {
+		[Export ("mergeType")]
+		NSMergePolicyType MergeType { get;  }
+
+		[Export ("initWithMergeType:")]
+		IntPtr Constructor (NSMergePolicyType ty);
+
+		[Export ("resolveConflicts:error:")]
+		bool ResolveConflictserror (NSMergeConflict [] list, out NSError error);
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSMigrationManager {
 
@@ -591,6 +757,10 @@ namespace MonoMac.CoreData
 		[Export ("cancelMigrationWithError:")]
 		void CancelMigrationWithError (NSError error);
 
+		// 5.0
+		[Since(5,0)]
+		[Export ("usesStoreSpecificMigrationManager")]
+		bool UsesStoreSpecificMigrationManager { get; set; }
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSPersistentStore {
@@ -634,6 +804,9 @@ namespace MonoMac.CoreData
 		[Export ("willRemoveFromPersistentStoreCoordinator:")]
 		void WillRemoveFromPersistentStoreCoordinator (NSPersistentStoreCoordinator coordinator);
 
+		[Field ("NSPersistentStoreSaveConflictsErrorKey")]
+		NSString SaveConflictsErrorKey { get; }
+
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSPersistentStoreCoordinator {
@@ -642,13 +815,13 @@ namespace MonoMac.CoreData
 		NSDictionary RegisteredStoreTypes { get; }
 
 		[Static, Export ("registerStoreClass:forStoreType:")]
-		void RegisterStoreClass (Class storeClass, string storeType);
+		void RegisterStoreClass (Class storeClass, NSString storeType);
 
 		[Static, Export ("metadataForPersistentStoreOfType:URL:error:")]
-		NSDictionary MetadataForPersistentStoreOfType (string storeType, NSUrl url, out NSError error);
+		NSDictionary MetadataForPersistentStoreOfType (NSString storeType, NSUrl url, out NSError error);
 
 		[Static, Export ("setMetadata:forPersistentStoreOfType:URL:error:")]
-		bool SetMetadata (NSDictionary metadata, string storeType, NSUrl url, out NSError error);
+		bool SetMetadata (NSDictionary metadata, NSString storeType, NSUrl url, out NSError error);
 
 		[Export ("setMetadata:forPersistentStore:")]
 		void SetMetadata (NSDictionary metadata, NSPersistentStore store);
@@ -675,13 +848,13 @@ namespace MonoMac.CoreData
 		bool SetUrl (NSUrl url, NSPersistentStore store);
 
 		[Export ("addPersistentStoreWithType:configuration:URL:options:error:")]
-		NSPersistentStore AddPersistentStoreWithType (string storeType, string configuration, NSUrl storeURL, NSDictionary options, out NSError error);
+		NSPersistentStore AddPersistentStoreWithType (NSString storeType, string configuration, NSUrl storeURL, NSDictionary options, out NSError error);
 
 		[Export ("removePersistentStore:error:")]
 		bool RemovePersistentStore (NSPersistentStore store, out NSError error);
 
 		[Export ("migratePersistentStore:toURL:options:withType:error:")]
-		NSPersistentStore MigratePersistentStore (NSPersistentStore store, NSUrl URL, NSDictionary options, string storeType, out NSError error);
+		NSPersistentStore MigratePersistentStore (NSPersistentStore store, NSUrl URL, NSDictionary options, NSString storeType, out NSError error);
 
 		[Export ("managedObjectIDForURIRepresentation:")]
 		NSManagedObjectID ManagedObjectIDForURIRepresentation (NSUrl url);
@@ -699,7 +872,48 @@ namespace MonoMac.CoreData
 		[Static, Export ("metadataForPersistentStoreWithURL:error:")]
 		NSDictionary MetadataForPersistentStoreWithUrl (NSUrl url, out NSError error);
 
+		[Field ("NSSQLiteStoreType")]
+		NSString SQLiteStoreType { get; }
+		
+		[Field ("NSXMLStoreType")]
+		NSString XMLStoreType { get; }
+		
+		[Field ("NSBinaryStoreType")]
+		NSString BinaryStoreType { get; }
+		
+		[Field ("NSInMemoryStoreType")]
+		NSString InMemoryStoreType { get; }
+		
+		[Field ("NSStoreTypeKey")]
+		NSString StoreTypeKey { get; }
+
+		[Field ("NSPersistentStoreCoordinatorStoresDidChangeNotification")]
+		NSString StoresDidChangeNotification { get; }
+
+		[Field ("NSPersistentStoreCoordinatorWillRemoveStoreNotification")]
+		NSString WillRemoveStoreNotification { get; }
+		
+		// 5.0
+		[Since(5,0)]
+		[Export ("executeRequest:withContext:error:")]
+		NSObject ExecuteRequestwithContexterror (NSPersistentStoreRequest request, NSManagedObjectContext context, out NSError error);
+
+		[Field ("NSPersistentStoreDidImportUbiquitousContentChangesNotification")]
+		NSString DidImportUbiquitousContentChangesNotification { get; }
+
+		
 	}
+
+	[BaseType (typeof (NSObject))]
+	public interface NSPersistentStoreRequest {
+		[Export ("requestType")]
+		NSPersistentStoreRequestType RequestType { get; }
+
+		//Detected properties
+		[Export ("affectedStores")]
+		NSPersistentStore [] AffectedStores { get; set; }
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSPropertyDescription {
 
@@ -735,6 +949,15 @@ namespace MonoMac.CoreData
 
 		[Export ("versionHashModifier")]
 		string VersionHashModifier { get; set; }
+
+		// 5.0
+		[Since (5,0)]
+		[Export ("indexedBySpotlight")]
+		bool IndexedBySpotlight { [Bind ("isIndexedBySpotlight")]get; set; }
+
+		[Since (5,0)]
+		[Export ("storedInExternalRecord")]
+		bool StoredInExternalRecord { [Bind ("isStoredInExternalRecord")]get; set; }
 	}
 	[BaseType (typeof (NSObject))]
 	public interface NSPropertyMapping {
@@ -772,6 +995,30 @@ namespace MonoMac.CoreData
 
 		[Export ("versionHash")]
 		NSData VersionHash { get; }
+
+		// 5.0
+		[Since (5,0)]
+		[Export ("ordered")]
+		bool Ordered { [Bind ("isOrdered")]get; set; }
 	}
+
+	[BaseType (typeof (NSPersistentStoreRequest))]
+	interface NSSaveChangesRequest {
+		[Export ("initWithInsertedObjects:updatedObjects:deletedObjects:lockedObjects:")]
+		IntPtr Constructor (NSSet insertedObjects, NSSet updatedObjects, NSSet deletedObjects, NSSet lockedObjects);
+
+		[Export ("insertedObjects")]
+		NSSet InsertedObjects { get; }
+
+		[Export ("updatedObjects")]
+		NSSet UpdatedObjects { get; }
+
+		[Export ("deletedObjects")]
+		NSSet DeletedObjects { get; }
+
+		[Export ("lockedObjects")]
+		NSSet LockedObjects { get; }
+	}
+
 }
 

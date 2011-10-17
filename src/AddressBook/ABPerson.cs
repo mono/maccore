@@ -69,6 +69,7 @@ namespace MonoMac.AddressBook {
 		RelatedNames,
 		Suffix,
 		Url,
+		SocialProfile
 	}
 
 	[Since (4,1)]
@@ -103,7 +104,8 @@ namespace MonoMac.AddressBook {
 		public static int RelatedNames {get; private set;}
 		public static int Suffix {get; private set;}
 		public static int Url {get; private set;}
-
+		public static int SocialProfile { get; private set; }
+		
 		static ABPersonPropertyId ()
 		{
 			InitConstants.Init ();
@@ -139,6 +141,7 @@ namespace MonoMac.AddressBook {
 				RelatedNames        = Dlfcn.GetInt32 (handle, "kABPersonRelatedNamesProperty");
 				Suffix              = Dlfcn.GetInt32 (handle, "kABPersonSuffixProperty");
 				Url                 = Dlfcn.GetInt32 (handle, "kABPersonURLProperty");
+				SocialProfile       = Dlfcn.GetInt32 (handle, "kABPersonSocialProfileProperty");
 			}
 			finally {
 				Dlfcn.dlclose (handle);
@@ -173,6 +176,7 @@ namespace MonoMac.AddressBook {
 				case ABPersonProperty.RelatedNames:       return RelatedNames;
 				case ABPersonProperty.Suffix:             return Suffix;
 				case ABPersonProperty.Url:                return Url;
+				case ABPersonProperty.SocialProfile:      return SocialProfile;
 			}
 			throw new NotSupportedException ("Invalid ABPersonProperty value: " + property);
 		}
@@ -203,6 +207,7 @@ namespace MonoMac.AddressBook {
 			if (id == RelatedNames)       return ABPersonProperty.RelatedNames;
 			if (id == Suffix)             return ABPersonProperty.Suffix;
 			if (id == Url)                return ABPersonProperty.Url;
+			if (id == SocialProfile)      return ABPersonProperty.SocialProfile;
 			throw new NotSupportedException ("Invalid ABPersonPropertyId value: " + id);
 		}
 	}
@@ -310,6 +315,40 @@ namespace MonoMac.AddressBook {
 		}
 	}
 
+	public static class ABPersonSocialProfile {
+		static readonly NSString URLKey;
+		static readonly NSString ServiceKey;
+		static readonly NSString UsernameKey;
+		static readonly NSString UserIdentifierKey;
+		static readonly NSString ServiceTwitter;
+		static readonly NSString ServiceGameCenter;
+		static readonly NSString ServiceFacebook;
+		static readonly NSString ServiceMyspace;
+		static readonly NSString ServiceLinkedIn;
+		static readonly NSString ServiceFlickr;
+
+		static ABPersonSocialProfile ()
+		{
+			var handle = Dlfcn.dlopen (Constants.AddressBookLibrary, 0);
+			if (handle == IntPtr.Zero)
+				return;
+			try {
+				URLKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileURLKey");
+				ServiceKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceKey");
+				UsernameKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileUsernameKey");
+				UserIdentifierKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileUserIdentifierKey");
+				ServiceTwitter = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceTwitter");
+				ServiceGameCenter = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceGameCenter");
+				ServiceFacebook = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceFacebook");
+				ServiceMyspace = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceMyspace");
+				ServiceLinkedIn = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceLinkedIn");
+				ServiceFlickr = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceFlickr");
+			} finally {
+				Dlfcn.dlclose (handle);
+			}
+		}
+	}
+	
 	public static class ABPersonPhoneLabel {
 		public static NSString HomeFax {get; private set;}
 		public static NSString iPhone {get; private set;}
@@ -750,7 +789,16 @@ namespace MonoMac.AddressBook {
 			SetValue (ABPersonPropertyId.InstantMessage, value == null ? IntPtr.Zero : value.Handle);
 		}
 
-
+		public ABMultiValue<NSDictionary> GetSocialProfile ()
+		{
+			return CreateDictionaryMultiValue (CopyValue (ABPersonPropertyId.SocialProfile));
+		}
+		
+		public void SetSocialProfile (ABMultiValue<NSDictionary> value)
+		{
+			SetValue (ABPersonPropertyId.SocialProfile, value == null ? IntPtr.Zero : value.Handle);
+		}
+		
 		public ABMultiValue<string> GetUrls ()
 		{
 			return CreateStringMultiValue (CopyValue (ABPersonPropertyId.Url));
@@ -799,6 +847,7 @@ namespace MonoMac.AddressBook {
 				case ABPersonProperty.RelatedNames:        return GetRelatedNames ();
 				case ABPersonProperty.Suffix:              return Suffix;
 				case ABPersonProperty.Url:                 return GetUrls ();
+				case ABPersonProperty.SocialProfile:       return GetSocialProfile ();
 			}
 			throw new ArgumentException ("Invalid property value: " + property);
 		}

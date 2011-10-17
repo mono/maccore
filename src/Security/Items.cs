@@ -32,6 +32,7 @@ using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 using System.Runtime.InteropServices;
+using System.Collections;
 
 namespace MonoMac.Security {
 
@@ -146,6 +147,7 @@ namespace MonoMac.Security {
 			using (var copy = NSMutableDictionary.FromDictionary (query.queryDict)){
 				SetLimit (copy, 1);
 				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnAttributes);
+				copy.LowlevelSetObject (CFBoolean.True.Handle, SecItem.ReturnData);
 				IntPtr ptr;
 				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (result == SecStatusCode.Success)
@@ -181,8 +183,8 @@ namespace MonoMac.Security {
 		{
 			if (record == null)
 				throw new ArgumentNullException ("record");
-			IntPtr output;
-			return SecItem.SecItemAdd (record.queryDict.Handle, out output);
+			return SecItem.SecItemAdd (record.queryDict.Handle, IntPtr.Zero);
+			
 		}
 
 		public static SecStatusCode Remove (SecRecord record)
@@ -858,8 +860,10 @@ namespace MonoMac.Security {
 
 		public SecAuthenticationType AuthenticationType {
 			get {
-				return KeysAuthenticationType.ToSecAuthenticationType (
-					Fetch (SecAttributeKey.AttrAuthenticationType));
+				var at = Fetch (SecAttributeKey.AttrAuthenticationType);
+				if (at == IntPtr.Zero)
+					return SecAuthenticationType.Default;
+				return KeysAuthenticationType.ToSecAuthenticationType (at);
 			}
 			
 			set {
@@ -1218,7 +1222,7 @@ namespace MonoMac.Security {
 		internal extern static SecStatusCode SecItemCopyMatching (IntPtr cfDictRef, out IntPtr result);
 
 		[DllImport (Constants.SecurityLibrary)]
-		internal extern static SecStatusCode SecItemAdd (IntPtr cfDictRef, out IntPtr result);
+		internal extern static SecStatusCode SecItemAdd (IntPtr cfDictRef, IntPtr result);
 
 		[DllImport (Constants.SecurityLibrary)]
 		internal extern static SecStatusCode SecItemDelete (IntPtr cfDictRef);

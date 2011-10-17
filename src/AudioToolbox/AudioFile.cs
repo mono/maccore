@@ -31,6 +31,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
+using MonoMac.Foundation;
 
 using OSStatus = System.Int32;
 using AudioFileID = System.IntPtr;
@@ -115,6 +116,8 @@ namespace MonoMac.AudioToolbox {
 		EstimatedDuration = 0x65647572,
 		BitRate = 0x62726174,
 		ID3Tag = 0x69643374,
+		SourceBitDepth = 0x73627464,
+		AlbumArtwork = 0x61617274
 	}
 
 	public enum AudioFileLoopDirection {
@@ -685,6 +688,17 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		IntPtr GetIntPtr (AudioFileProperty property)
+		{
+			unsafe {
+				IntPtr val = IntPtr.Zero;
+				int size = sizeof (IntPtr);
+				if (AudioFileGetProperty (handle, property, ref size, (IntPtr) (&val)) == 0)
+					return val;
+				return IntPtr.Zero;
+			}
+		}
+
 		double GetDouble (AudioFileProperty property)
 		{
 			unsafe {
@@ -786,6 +800,12 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		public NSData AlbumArtwork {
+			get {
+				return (NSData) MonoMac.ObjCRuntime.Runtime.GetNSObject (GetIntPtr (AudioFileProperty.AlbumArtwork));
+			}
+		}
+		
 		unsafe static float ReadFloat (IntPtr p, int offset)
 		{
 			float f;

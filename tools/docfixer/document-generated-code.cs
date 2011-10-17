@@ -57,7 +57,7 @@ class DocumentGeneratedCode {
 		
 		string xmldocpath = GetMdocPath (t);
 		if (!File.Exists (xmldocpath)) {
-			Console.WriteLine ("DOC REGEN PENDING for type: {0} no file found {1}", t.FullName, xmldocpath);
+			Console.WriteLine ("DOC REGEN PENDING for type: {0} (File missing={1})", t.FullName, xmldocpath);
 			return null;
 		}
 		

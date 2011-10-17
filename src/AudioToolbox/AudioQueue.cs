@@ -58,8 +58,9 @@ namespace MonoMac.AudioToolbox {
 		InvalidPropertyValue = -66675,
 		PrimeTimedOut        = -66674,
 		CodecNotFound        = -66673,
-		InvalidCodecAccess	= -66672,
+		InvalidCodecAccess   = -66672,
 		QueueInvalidated     = -66671,
+		RecordUnderrun       = -66668,
 		EnqueueDuringReset   = -66632,
 
 		// Not documented, but returned
@@ -153,7 +154,8 @@ namespace MonoMac.AudioToolbox {
 		EnableLevelMetering = 0x61716d65,
 		CurrentLevelMeter = 0x61716d76,
 		CurrentLevelMeterDB = 0x61716d64,
-		DecodeBufferSizeFrames = 0x64636266,
+		DecodeBufferSizeFrames = 0x64636266, 
+		ConverterError = 0x71637665, // 'qcve'
 	}
 	public enum AudioQueueHardwareCodecPolicy {
 		Default = 0,
@@ -819,6 +821,12 @@ namespace MonoMac.AudioToolbox {
 						ret [i] = ptr [i];
 					return ret;
 				}
+			}
+		}
+
+		public uint ConverterError {
+			get {
+				return (uint) GetInt (AudioQueueProperty.ConverterError);
 			}
 		}
 		

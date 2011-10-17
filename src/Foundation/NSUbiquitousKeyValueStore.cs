@@ -20,24 +20,58 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-
 using System;
+using System.Reflection;
+using System.Collections;
+using System.Runtime.InteropServices;
 
-namespace MonoMac.CoreImage {
+using MonoMac.ObjCRuntime;
 
-	public enum CIImageOrientation {
-		TopLeft = 1,
-		TopRight = 2,
-		BottomRight = 3,
-		BottomLeft = 4,
-		LeftTop = 5,
-		RightTop = 6,
-		RightBottom = 7,
-		LeftBottom = 8
+namespace MonoMac.Foundation {
+
+	public partial class NSUbiquitousKeyValueStore {
+		public NSObject this [NSString key] {
+			get {
+				return ObjectForKey (key);
+			}
+			set {
+				SetObjectForKey (value, key);
+			}
+		}
+
+		public void SetString (string key, string value)
+		{
+			_SetString (value, key);
+		}
+
+		public void SetData (string key, NSData value)
+		{
+			_SetData (value, key);
+		}
+
+		public void SetArray (string key, NSObject [] value)
+		{
+			_SetArray (value, key);
+		}
+
+		public void SetDictionary (string key, NSDictionary value)
+		{
+			_SetDictionary (value, key);
+		}
+
+		public void SetLong (string key, long value)
+		{
+			_SetLong (value, key);
+		}
+
+		public void SetDouble (string key, double value)
+		{
+			_SetDouble (value, key);
+		}
+
+		public void SetBool (string key, bool value)
+		{
+			_SetBool (value, key);
+		}
 	}
-
-	public static partial class CIFilterAttributes {}
-	public static partial class CIFilterCategory {}
-	public static partial class CIFilterInputKey {}
-	public static partial class CIFilterOutputKey {}
 }

@@ -554,6 +554,18 @@ namespace MonoMac.Foundation
 
 		[Export ("weekdayOrdinal")]
 		int WeekdayOrdinal { get; set; }
+
+		[Since (5,0)]
+		[Export ("weekOfMonth")]
+		int WeekOfMonth { get; set; }
+
+		[Since (5,0)]
+		[Export ("weekOfYear")]
+		int WeekOfYear { get; set; }
+		
+		[Since (5,0)]
+		[Export ("yearForWeekOfYear")]
+		int YearForWeekOfYear { get; set; }
 	}
 	
 	[BaseType (typeof (NSFormatter))]
@@ -777,7 +789,6 @@ namespace MonoMac.Foundation
 		Class GetClass (string codedName);
 	}
 
-#if MONOMAC
 	[BaseType (typeof (NSObject), Delegates=new string [] { "Delegate" }, Events=new Type [] { typeof (NSMetadataQueryDelegate)})]
 	public interface NSMetadataQuery {
 		[Export ("startQuery")]
@@ -871,6 +882,60 @@ namespace MonoMac.Foundation
 		
 		[Field ("NSMetadataQueryNetworkScope")]
 		NSString QueryNetworkScope { get; }
+
+		[Field ("NSMetadataQueryLocalDocumentsScope")]
+		NSString QueryLocalDocumentsScope { get; }
+
+		[Field ("NSMetadataQueryUbiquitousDocumentsScope")]
+		NSString QueryUbiquitousDocumentsScope { get; }
+
+		[Field ("NSMetadataQueryUbiquitousDataScope")]
+		NSString QueryUbiquitousDataScope { get; }
+
+		[Field ("NSMetadataItemFSNameKey")]
+		NSString ItemFSNameKey { get; }
+
+		[Field ("NSMetadataItemDisplayNameKey")]
+		NSString ItemDisplayNameKey { get; }
+
+		[Field ("NSMetadataItemURLKey")]
+		NSString ItemURLKey { get; }
+
+		[Field ("NSMetadataItemPathKey")]
+		NSString ItemPathKey { get; }
+
+		[Field ("NSMetadataItemFSSizeKey")]
+		NSString ItemFSSizeKey { get; }
+
+		[Field ("NSMetadataItemFSCreationDateKey")]
+		NSString ItemFSCreationDateKey { get; }
+
+		[Field ("NSMetadataItemFSContentChangeDateKey")]
+		NSString ItemFSContentChangeDateKey { get; }
+
+		[Field ("NSMetadataItemIsUbiquitousKey")]
+		NSString ItemIsUbiquitousKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemHasUnresolvedConflictsKey")]
+		NSString UbiquitousItemHasUnresolvedConflictsKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemIsDownloadedKey")]
+		NSString UbiquitousItemIsDownloadedKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemIsDownloadingKey")]
+		NSString UbiquitousItemIsDownloadingKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemIsUploadedKey")]
+		NSString UbiquitousItemIsUploadedKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemIsUploadingKey")]
+		NSString UbiquitousItemIsUploadingKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemPercentDownloadedKey")]
+		NSString UbiquitousItemPercentDownloadedKey { get; }
+
+		[Field ("NSMetadataUbiquitousItemPercentUploadedKey")]
+		NSString UbiquitousItemPercentUploadedKey { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -928,7 +993,6 @@ namespace MonoMac.Foundation
 		NSObject [] Results { get; }
 
 	}
-#endif
 
 	[Since (3,2)]
 	[BaseType (typeof (NSAttributedString))]
@@ -1060,11 +1124,11 @@ namespace MonoMac.Foundation
 		NSDictionary FromDictionary (NSDictionary source);
 
 		[Export ("dictionaryWithObjects:forKeys:count:")]
-		[Static, New, Internal]
+		[Static, Internal]
 		NSDictionary FromObjectsAndKeysInternal ([NullAllowed] NSArray objects, [NullAllowed] NSArray keys, int count);
 
 		[Export ("dictionaryWithObjects:forKeys:")]
-		[Static, New, Internal]
+		[Static, Internal]
 		NSDictionary FromObjectsAndKeysInternal ([NullAllowed] NSArray objects, [NullAllowed] NSArray keys);
 
 		[Export ("initWithDictionary:")]
@@ -1198,7 +1262,6 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSExpression {
-
 		[Static, Export ("expressionForConstantValue:")]
 		NSExpression FromConstant (NSObject obj);
 
@@ -1212,8 +1275,11 @@ namespace MonoMac.Foundation
 		NSExpression FromKeyPath (string keyPath);
 
 		[Static, Export ("expressionForFunction:arguments:")]
-		NSExpression FromFuction (string name, NSExpression[] parameters);
+		NSExpression FromFunction (string name, NSExpression[] parameters);
 
+		[Static, Export ("expressionWithFormat:argumentArray:")]
+		NSExpression FromFormat (string format, NSExpression [] parameters);
+		
 		//+ (NSExpression *)expressionForAggregate:(NSArray *)subexpressions; 
 		[Export ("expressionForAggregate:")]
 		NSExpression FromAggregate (NSExpression [] subexpressions);
@@ -1281,6 +1347,166 @@ namespace MonoMac.Foundation
 	public interface NSNull {
 		[Export ("null"), Static]
 		NSNull Null { get; }
+	}
+
+	delegate void NSLingusticEnumerator (NSString tag, NSRange tokenRange, NSRange sentenceRange, ref bool stop);
+	
+	[BaseType (typeof (NSObject))]
+	interface NSLinguisticTagger {
+		[Export ("initWithTagSchemes:options:")]
+		IntPtr Constructor (NSString [] tagSchemes, NSLinguisticTaggerOptions opts);
+
+		[Export ("tagSchemes")]
+		NSString [] TagSchemes { get; }
+
+		[Static]
+		[Export ("availableTagSchemesForLanguage:")]
+		NSString [] GetAvailableTagSchemesForLanguage (string language);
+
+		[Export ("setOrthography:range:")]
+		void SetOrthographyrange (NSOrthography orthography, NSRange range);
+
+		[Export ("orthographyAtIndex:effectiveRange:"), Internal]
+		NSOrthography GetOrthography (int charIndex, IntPtr effectiveRangePtr);
+
+		[Export ("stringEditedInRange:changeInLength:")]
+		void StringEditedInRange (NSRange newRange, int delta);
+
+		[Export ("enumerateTagsInRange:scheme:options:usingBlock:")]
+		void EnumerateTagsInRange (NSRange range, NSString tagScheme, NSLinguisticTaggerOptions opts, NSLingusticEnumerator enumerator);
+
+		[Export ("sentenceRangeForRange:")]
+		NSRange GetSentenceRangeForRange (NSRange range);
+
+		[Export ("tagAtIndex:scheme:tokenRange:sentenceRange:"), Internal]
+		string GetTag (int charIndex, NSString tagScheme, IntPtr tokenRangePtr, IntPtr sentenceRangePtr);
+
+		[Export ("tagsInRange:scheme:options:tokenRanges:"), Internal]
+		NSString [] GetTangsInRange (NSRange range, NSString tagScheme, NSLinguisticTaggerOptions opts, IntPtr refToNSArrayTokenRanges);
+
+		[Export ("possibleTagsAtIndex:scheme:tokenRange:sentenceRange:scores:"), Internal]
+		NSString [] GetPossibleTags (int charIndex, NSString tagScheme, IntPtr tokenRangePointer, IntPtr sentenceRangePointer, IntPtr IntPtrToReturnArrayScores);
+
+		//Detected properties
+		[Export ("string")]
+		string AnalysisString { get; set; }
+	}
+
+	[Static]
+	public interface NSLinguisticTag {
+		[Field ("NSLinguisticTagSchemeTokenType")]
+		NSString SchemeTokenType { get; }
+
+		[Field ("NSLinguisticTagSchemeLexicalClass")]
+		NSString SchemeLexicalClass { get; }
+
+		[Field ("NSLinguisticTagSchemeNameType")]
+		NSString SchemeNameType { get; }
+
+		[Field ("NSLinguisticTagSchemeNameTypeOrLexicalClass")]
+		NSString SchemeNameTypeOrLexicalClass { get; }
+
+		[Field ("NSLinguisticTagSchemeLemma")]
+		NSString SchemeLemma { get; }
+
+		[Field ("NSLinguisticTagSchemeLanguage")]
+		NSString SchemeLanguage { get; }
+
+		[Field ("NSLinguisticTagSchemeScript")]
+		NSString SchemeScript { get; }
+
+		[Field ("NSLinguisticTagWord")]
+		NSString Word { get; }
+
+		[Field ("NSLinguisticTagPunctuation")]
+		NSString Punctuation { get; }
+
+		[Field ("NSLinguisticTagWhitespace")]
+		NSString Whitespace { get; }
+
+		[Field ("NSLinguisticTagOther")]
+		NSString Other { get; }
+
+		[Field ("NSLinguisticTagNoun")]
+		NSString Noun { get; }
+
+		[Field ("NSLinguisticTagVerb")]
+		NSString Verb { get; }
+
+		[Field ("NSLinguisticTagAdjective")]
+		NSString Adjective { get; }
+
+		[Field ("NSLinguisticTagAdverb")]
+		NSString Adverb { get; }
+
+		[Field ("NSLinguisticTagPronoun")]
+		NSString Pronoun { get; }
+
+		[Field ("NSLinguisticTagDeterminer")]
+		NSString Determiner { get; }
+
+		[Field ("NSLinguisticTagParticle")]
+		NSString Particle { get; }
+
+		[Field ("NSLinguisticTagPreposition")]
+		NSString Preposition { get; }
+
+		[Field ("NSLinguisticTagNumber")]
+		NSString Number { get; }
+
+		[Field ("NSLinguisticTagConjunction")]
+		NSString Conjunction { get; }
+
+		[Field ("NSLinguisticTagInterjection")]
+		NSString Interjection { get; }
+
+		[Field ("NSLinguisticTagClassifier")]
+		NSString Classifier { get; }
+
+		[Field ("NSLinguisticTagIdiom")]
+		NSString Idiom { get; }
+
+		[Field ("NSLinguisticTagOtherWord")]
+		NSString OtherWord { get; }
+
+		[Field ("NSLinguisticTagSentenceTerminator")]
+		NSString SentenceTerminator { get; }
+
+		[Field ("NSLinguisticTagOpenQuote")]
+		NSString OpenQuote { get; }
+
+		[Field ("NSLinguisticTagCloseQuote")]
+		NSString CloseQuote { get; }
+
+		[Field ("NSLinguisticTagOpenParenthesis")]
+		NSString OpenParenthesis { get; }
+
+		[Field ("NSLinguisticTagCloseParenthesis")]
+		NSString CloseParenthesis { get; }
+
+		[Field ("NSLinguisticTagWordJoiner")]
+		NSString WordJoiner { get; }
+
+		[Field ("NSLinguisticTagDash")]
+		NSString Dash { get; }
+
+		[Field ("NSLinguisticTagOtherPunctuation")]
+		NSString OtherPunctuation { get; }
+
+		[Field ("NSLinguisticTagParagraphBreak")]
+		NSString ParagraphBreak { get; }
+
+		[Field ("NSLinguisticTagOtherWhitespace")]
+		NSString OtherWhitespace { get; }
+
+		[Field ("NSLinguisticTagPersonalName")]
+		NSString PersonalName { get; }
+
+		[Field ("NSLinguisticTagPlaceName")]
+		NSString PlaceName { get; }
+
+		[Field ("NSLinguisticTagOrganizationName")]
+		NSString OrganizationName { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -1520,6 +1746,81 @@ namespace MonoMac.Foundation
 		[Export ("timeZoneWithAbbreviation:"), Static]
 		NSTimeZone FromAbbreviation (string abbreviation);
 	}
+
+#if !MONOMAC
+	[BaseType (typeof (NSObject))]
+	interface NSUbiquitousKeyValueStore {
+		[Static]
+		[Export ("defaultStore")]
+		NSUbiquitousKeyValueStore DefaultStore { get; }
+
+		[Export ("objectForKey:"), Internal]
+		NSObject ObjectForKey (string aKey);
+
+		[Export ("setObject:forKey:"), Internal]
+		void SetObjectForKey (NSObject anObject, string aKey);
+
+		[Export ("removeObjectForKey:")]
+		void Remove (string aKey);
+
+		[Export ("stringForKey:")]
+		string GetString (string aKey);
+
+		[Export ("arrayForKey:")]
+		NSObject [] GetArray (string aKey);
+
+		[Export ("dictionaryForKey:")]
+		NSDictionary GetDictionary (string aKey);
+
+		[Export ("dataForKey:")]
+		NSData GetData (string aKey);
+
+		[Export ("longLongForKey:")]
+		long GetLong (string aKey);
+
+		[Export ("doubleForKey:")]
+		double GetDouble (string aKey);
+
+		[Export ("boolForKey:")]
+		bool GetBool (string aKey);
+
+		[Export ("setString:forKey:"), Internal]
+		void _SetString (string aString, string aKey);
+
+		[Export ("setData:forKey:"), Internal]
+		void _SetData (NSData data, string key);
+
+		[Export ("setArray:forKey:"), Internal]
+		void _SetArray (NSObject [] array, string key);
+
+		[Export ("setDictionary:forKey:"), Internal]
+		void _SetDictionary (NSDictionary aDictionary, string aKey);
+
+		[Export ("setLongLong:forKey:"), Internal]
+		void _SetLong (long value, string aKey);
+
+		[Export ("setDouble:forKey:"), Internal]
+		void _SetDouble (double value, string aKey);
+
+		[Export ("setBool:forKey:"), Internal]
+		void _SetBool (bool value, string aKey);
+
+		[Export ("dictionaryRepresentation")]
+		NSDictionary DictionaryRepresentation ();
+
+		[Export ("synchronize")]
+		bool Synchronize ();
+
+		[Field ("NSUbiquitousKeyValueStoreDidChangeExternallyNotification")]
+		NSString DidChangeExternallyNotification { get; }
+
+		[Field ("NSUbiquitousKeyValueStoreChangeReasonKey")]
+		NSString ChangeReasonKey { get; }
+
+		[Field ("NSUbiquitousKeyValueStoreChangedKeysKey")]
+		NSString ChangedKeysKey { get; }
+	}
+#endif
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSUserDefaults {
@@ -1699,6 +2000,9 @@ namespace MonoMac.Foundation
 
 		[Export ("standardizedURL")]
 		NSUrl StandardizedUrl { get; }
+
+		[Export ("URLByAppendingPathComponent:isDirectory:")]
+		NSUrl Append (string pathComponent, bool isDirectory);
 		
 #if MONOMAC && !MONOMAC_BOOTSTRAP
 
@@ -1711,9 +2015,326 @@ namespace MonoMac.Foundation
 		void WriteToPasteboard (NSPasteboard pasteboard);
 		
 #endif
+
+		[Export ("getResourceValue:forKey:error:"), Internal]
+		bool GetResourceValue (out NSObject value, string key, out NSError error);
+
+		[Export ("resourceValuesForKeys:error:")]
+		NSDictionary GetResourceValues (NSString [] keys, out NSError error);
+
+		[Export ("setResourceValue:forKey:error:"), Internal]
+		bool SetResourceValue (NSObject value, string key, out NSError error);
 		
 		//[Export ("port")]
 		//NSNumber Port { get;}
+
+		[Field ("NSURLNameKey")]
+		NSString NameKey { get; }
+
+		[Field ("NSURLLocalizedNameKey")]
+		NSString LocalizedNameKey { get; }
+
+		[Field ("NSURLIsRegularFileKey")]
+		NSString IsRegularFileKey { get; }
+
+		[Field ("NSURLIsDirectoryKey")]
+		NSString IsDirectoryKey { get; }
+
+		[Field ("NSURLIsSymbolicLinkKey")]
+		NSString IsSymbolicLinkKey { get; }
+
+		[Field ("NSURLIsVolumeKey")]
+		NSString IsVolumeKey { get; }
+
+		[Field ("NSURLIsPackageKey")]
+		NSString IsPackageKey { get; }
+
+		[Field ("NSURLIsSystemImmutableKey")]
+		NSString IsSystemImmutableKey { get; }
+
+		[Field ("NSURLIsUserImmutableKey")]
+		NSString IsUserImmutableKey { get; }
+
+		[Field ("NSURLIsHiddenKey")]
+		NSString IsHiddenKey { get; }
+
+		[Field ("NSURLHasHiddenExtensionKey")]
+		NSString HasHiddenExtensionKey { get; }
+
+		[Field ("NSURLCreationDateKey")]
+		NSString CreationDateKey { get; }
+
+		[Field ("NSURLContentAccessDateKey")]
+		NSString ContentAccessDateKey { get; }
+
+		[Field ("NSURLContentModificationDateKey")]
+		NSString ContentModificationDateKey { get; }
+
+		[Field ("NSURLAttributeModificationDateKey")]
+		NSString AttributeModificationDateKey { get; }
+
+		[Field ("NSURLLinkCountKey")]
+		NSString LinkCountKey { get; }
+
+		[Field ("NSURLParentDirectoryURLKey")]
+		NSString ParentDirectoryURLKey { get; }
+
+		[Field ("NSURLVolumeURLKey")]
+		NSString VolumeURLKey { get; }
+
+		[Field ("NSURLTypeIdentifierKey")]
+		NSString TypeIdentifierKey { get; }
+
+		[Field ("NSURLLocalizedTypeDescriptionKey")]
+		NSString LocalizedTypeDescriptionKey { get; }
+
+		[Field ("NSURLLabelNumberKey")]
+		NSString LabelNumberKey { get; }
+
+		[Field ("NSURLLabelColorKey")]
+		NSString LabelColorKey { get; }
+
+		[Field ("NSURLLocalizedLabelKey")]
+		NSString LocalizedLabelKey { get; }
+
+		[Field ("NSURLEffectiveIconKey")]
+		NSString EffectiveIconKey { get; }
+
+		[Field ("NSURLCustomIconKey")]
+		NSString CustomIconKey { get; }
+
+		[Field ("NSURLFileSizeKey")]
+		NSString FileSizeKey { get; }
+
+		[Field ("NSURLFileAllocatedSizeKey")]
+		NSString FileAllocatedSizeKey { get; }
+
+		[Field ("NSURLIsAliasFileKey		")]
+		NSString IsAliasFileKey		 { get; }
+
+		[Field ("NSURLVolumeLocalizedFormatDescriptionKey")]
+		NSString VolumeLocalizedFormatDescriptionKey { get; }
+
+		[Field ("NSURLVolumeTotalCapacityKey")]
+		NSString VolumeTotalCapacityKey { get; }
+
+		[Field ("NSURLVolumeAvailableCapacityKey")]
+		NSString VolumeAvailableCapacityKey { get; }
+
+		[Field ("NSURLVolumeResourceCountKey")]
+		NSString VolumeResourceCountKey { get; }
+
+		[Field ("NSURLVolumeSupportsPersistentIDsKey")]
+		NSString VolumeSupportsPersistentIDsKey { get; }
+
+		[Field ("NSURLVolumeSupportsSymbolicLinksKey")]
+		NSString VolumeSupportsSymbolicLinksKey { get; }
+
+		[Field ("NSURLVolumeSupportsHardLinksKey")]
+		NSString VolumeSupportsHardLinksKey { get; }
+
+		[Field ("NSURLVolumeSupportsJournalingKey")]
+		NSString VolumeSupportsJournalingKey { get; }
+
+		[Field ("NSURLVolumeIsJournalingKey")]
+		NSString VolumeIsJournalingKey { get; }
+
+		[Field ("NSURLVolumeSupportsSparseFilesKey")]
+		NSString VolumeSupportsSparseFilesKey { get; }
+
+		[Field ("NSURLVolumeSupportsZeroRunsKey")]
+		NSString VolumeSupportsZeroRunsKey { get; }
+
+		[Field ("NSURLVolumeSupportsCaseSensitiveNamesKey")]
+		NSString VolumeSupportsCaseSensitiveNamesKey { get; }
+
+		[Field ("NSURLVolumeSupportsCasePreservedNamesKey")]
+		NSString VolumeSupportsCasePreservedNamesKey { get; }
+
+		// 5.0 Additions
+		[Since (5,0)]
+		[Field ("NSURLKeysOfUnsetValuesKey")]
+		NSString KeysOfUnsetValuesKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceIdentifierKey")]
+		NSString FileResourceIdentifierKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIdentifierKey")]
+		NSString VolumeIdentifierKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLPreferredIOBlockSizeKey")]
+		NSString PreferredIOBlockSizeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsReadableKey")]
+		NSString IsReadableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsWritableKey")]
+		NSString IsWritableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsExecutableKey")]
+		NSString IsExecutableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsMountTriggerKey")]
+		NSString IsMountTriggerKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileSecurityKey")]
+		NSString FileSecurityKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeKey")]
+		NSString FileResourceTypeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeNamedPipe")]
+		NSString FileResourceTypeNamedPipe { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeCharacterSpecial")]
+		NSString FileResourceTypeCharacterSpecial { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeDirectory")]
+		NSString FileResourceTypeDirectory { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeBlockSpecial")]
+		NSString FileResourceTypeBlockSpecial { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeRegular")]
+		NSString FileResourceTypeRegular { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeSymbolicLink")]
+		NSString FileResourceTypeSymbolicLink { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeSocket")]
+		NSString FileResourceTypeSocket { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLFileResourceTypeUnknown")]
+		NSString FileResourceTypeUnknown { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLTotalFileSizeKey")]
+		NSString TotalFileSizeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLTotalFileAllocatedSizeKey")]
+		NSString TotalFileAllocatedSizeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsRootDirectoryDatesKey")]
+		NSString VolumeSupportsRootDirectoryDatesKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsVolumeSizesKey")]
+		NSString VolumeSupportsVolumeSizesKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsRenamingKey")]
+		NSString VolumeSupportsRenamingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsAdvisoryFileLockingKey")]
+		NSString VolumeSupportsAdvisoryFileLockingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeSupportsExtendedSecurityKey")]
+		NSString VolumeSupportsExtendedSecurityKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsBrowsableKey")]
+		NSString VolumeIsBrowsableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeMaximumFileSizeKey")]
+		NSString VolumeMaximumFileSizeKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsEjectableKey")]
+		NSString VolumeIsEjectableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsRemovableKey")]
+		NSString VolumeIsRemovableKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsInternalKey")]
+		NSString VolumeIsInternalKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsAutomountedKey")]
+		NSString VolumeIsAutomountedKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsLocalKey")]
+		NSString VolumeIsLocalKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeIsReadOnlyKey")]
+		NSString VolumeIsReadOnlyKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeCreationDateKey")]
+		NSString VolumeCreationDateKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeURLForRemountingKey")]
+		NSString VolumeURLForRemountingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeUUIDStringKey")]
+		NSString VolumeUUIDStringKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeNameKey")]
+		NSString VolumeNameKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLVolumeLocalizedNameKey")]
+		NSString VolumeLocalizedNameKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLIsUbiquitousItemKey")]
+		NSString IsUbiquitousItemKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemHasUnresolvedConflictsKey")]
+		NSString UbiquitousItemHasUnresolvedConflictsKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemIsDownloadedKey")]
+		NSString UbiquitousItemIsDownloadedKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemIsDownloadingKey")]
+		NSString UbiquitousItemIsDownloadingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemIsUploadedKey")]
+		NSString UbiquitousItemIsUploadedKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemIsUploadingKey")]
+		NSString UbiquitousItemIsUploadingKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemPercentDownloadedKey")]
+		NSString UbiquitousItemPercentDownloadedKey { get; }
+
+		[Since (5,0)]
+		[Field ("NSURLUbiquitousItemPercentUploadedKey")]
+		NSString UbiquitousItemPercentUploadedKey { get; }
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLCache")]
@@ -1774,8 +2395,18 @@ namespace MonoMac.Foundation
 	
 		[Export ("sender")]
 		NSUrlConnection Sender { get; }
+
+		[Since (5,0)]
+		[Export ("performDefaultHandlingForAuthenticationChallenge:")]
+		void PerformDefaultHandlingForChallenge (NSUrlAuthenticationChallenge challenge);
+
+		[Since (5,0)]
+		[Export ("rejectProtectionSpaceAndContinueWithChallenge:")]
+		void PejectProtectionSpaceAndContinueWithChallenge (NSUrlAuthenticationChallenge challenge);
 	}
 
+	public delegate void NSUrlConnectionDataResponse (NSUrlResponse response, NSData data, NSError error);
+	
 	[BaseType (typeof (NSObject), Name="NSURLConnection")]
 	public interface NSUrlConnection {
 		[Export ("canHandleRequest:")][Static]
@@ -1811,6 +2442,29 @@ namespace MonoMac.Foundation
 	
 		[Export ("cancelAuthenticationChallenge:")]
 		void CancelAuthenticationChallenge (NSUrlAuthenticationChallenge  challenge);
+
+		[Since (5,0)]
+		[Export ("originalRequest")]
+		NSUrlRequest OriginalRequest { get; }
+
+		[Since (5,0)]
+		[Export ("currentRequest")]
+		NSUrlRequest CurrentRequest { get; }
+
+		[Export ("setDelegateQueue:")]
+		[Since (5,0)]
+		void SetDelegateQueue (NSOperationQueue queue);
+		
+		[Since (5,0)]
+		[Static]
+		[Export ("sendAsynchronousRequest:queue:completionHandler:")]
+		void SendAsynchronousRequest (NSUrlRequest request, NSOperationQueue queue, NSUrlConnectionDataResponse completionHandler);
+		
+#if !MONOMAC
+		// Extension from iOS5, NewsstandKit
+		[Export ("newsstandAssetDownload")]
+		MonoTouch.NewsstandKit.NKAssetDownload NewsstandAssetDownload { get; }
+#endif
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLConnectionDelegate")]
@@ -1853,6 +2507,20 @@ namespace MonoMac.Foundation
 		NSCachedUrlResponse WillCacheResponse (NSUrlConnection connection, NSCachedUrlResponse cachedResponse);
 	}
 
+	[BaseType (typeof (NSUrlConnectionDelegate), Name="NSUrlConnectionDownloadDelegate")]
+	[Model]
+	public interface NSUrlConnectionDownloadDelegate {
+		[Export ("connection:didWriteData:totalBytesWritten:expectedTotalBytes:")]
+		void WroteData (NSUrlConnection connection, long bytesWritten, long totalBytesWritten, long expectedTotalBytes);
+		
+		[Export ("connectionDidResumeDownloading:totalBytesWritten:expectedTotalBytes:")]
+		void ResumedDownloading (NSUrlConnection connection, long totalBytesWritten, long expectedTotalBytes);
+		
+		[Abstract]
+		[Export ("connectionDidFinishDownloading:destinationURL:")]
+		void FinishedDownloading (NSUrlConnection connection, NSUrl destinationUrl);
+	}
+		
 	[BaseType (typeof (NSObject), Name="NSURLCredential")]
 	public interface NSUrlCredential {
 		[Export ("persistence")]
@@ -1999,6 +2667,25 @@ namespace MonoMac.Foundation
 
 		[Field ("NSUndoManagerWillUndoChangeNotification")]
 		NSString WillUndoChangeNotification { get; }
+
+		[Since (5,0)]
+		[Export ("setActionIsDiscardable:")]
+		void SetActionIsDiscardable (bool discardable);
+
+		[Since (5,0)]
+		[Export ("undoActionIsDiscardable")]
+		bool UndoActionIsDiscardable { get; }
+
+		[Since (5,0)]
+		[Export ("redoActionIsDiscardable")]
+		bool RedoActionIsDiscardable { get; }
+
+		[Field ("NSUndoManagerGroupIsDiscardableKey")]
+		NSString GroupIsDiscardableKey { get; }
+
+		[Field ("NSUndoManagerDidCloseUndoGroupNotification")]
+		NSString DidCloseUndoGroupNotification { get; }
+
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLProtectionSpace")]
@@ -2109,7 +2796,7 @@ namespace MonoMac.Foundation
 		NSMutableDictionary FromObjectsAndKeysInternalCount (NSArray objects, NSArray keys, int count);
 
 		[Export ("dictionaryWithObjects:forKeys:")]
-		[Static, Internal]
+		[Static, Internal, New]
 		NSMutableDictionary FromObjectsAndKeysInternal (NSArray objects, NSArray Keys);
 		
 		[Export ("initWithDictionary:")]
@@ -2215,11 +2902,11 @@ namespace MonoMac.Foundation
 		[Wrap ("WeakDelegate")]
 		NSStreamDelegate Delegate { get; set; }
 
-		[Export ("propertyForKey:")]
-		NSObject PropertyForKey (string  key);
+		[Export ("propertyForKey:"), Internal]
+		NSObject PropertyForKey (NSString key);
 	
-		[Export ("setProperty:forKey:")]
-		bool SetPropertyForKey (NSObject property, string key);
+		[Export ("setProperty:forKey:"), Internal]
+		bool SetPropertyForKey (NSObject property, NSString key);
 	
 		[Export ("scheduleInRunLoop:forMode:")]
 		void Schedule (NSRunLoop aRunLoop, string mode);
@@ -2233,10 +2920,75 @@ namespace MonoMac.Foundation
 		[Export ("streamError")]
 		NSError Error { get; }
 
-#if !MONOMAC
+
+		[Field ("NSStreamSocketSecurityLevelKey")]
+		NSString SocketSecurityLevelKey { get; }
+
+		[Field ("NSStreamSocketSecurityLevelNone")]
+		NSString SocketSecurityLevelNone { get; }
+
+		[Field ("NSStreamSocketSecurityLevelSSLv2")]
+		NSString SocketSecurityLevelSslV2 { get; }
+
+		[Field ("NSStreamSocketSecurityLevelSSLv3")]
+		NSString SocketSecurityLevelSslV3 { get; }
+
+		[Field ("NSStreamSocketSecurityLevelTLSv1")]
+		NSString SocketSecurityLevelTlsV1 { get; }
+
+		[Field ("NSStreamSocketSecurityLevelNegotiatedSSL")]
+		NSString SocketSecurityLevelNegotiatedSsl { get; }
+
+		[Field ("NSStreamSOCKSProxyConfigurationKey")]
+		NSString SocksProxyConfigurationKey { get; }
+
+		[Field ("NSStreamSOCKSProxyHostKey")]
+		NSString SocksProxyHostKey { get; }
+
+		[Field ("NSStreamSOCKSProxyPortKey")]
+		NSString SocksProxyPortKey { get; }
+
+		[Field ("NSStreamSOCKSProxyVersionKey")]
+		NSString SocksProxyVersionKey { get; }
+
+		[Field ("NSStreamSOCKSProxyUserKey")]
+		NSString SocksProxyUserKey { get; }
+
+		[Field ("NSStreamSOCKSProxyPasswordKey")]
+		NSString SocksProxyPasswordKey { get; }
+
+		[Field ("NSStreamSOCKSProxyVersion4")]
+		NSString SocksProxyVersion4 { get; }
+
+		[Field ("NSStreamSOCKSProxyVersion5")]
+		NSString SocksProxyVersion5 { get; }
+
+		[Field ("NSStreamDataWrittenToMemoryStreamKey")]
+		NSString DataWrittenToMemoryStreamKey { get; }
+
+		[Field ("NSStreamFileCurrentOffsetKey")]
+		NSString FileCurrentOffsetKey { get; }
+
+		[Field ("NSStreamSocketSSLErrorDomain")]
+		NSString SocketSslErrorDomain { get; }
+
+		[Field ("NSStreamSOCKSErrorDomain")]
+		NSString SocksErrorDomain { get; }
+
+		[Field ("NSStreamNetworkServiceType")]
+		NSString NetworkServiceType { get; }
+
 		[Field ("NSStreamNetworkServiceTypeVoIP")]
 		NSString NetworkServiceTypeVoIP { get; }
-#endif
+
+		[Field ("NSStreamNetworkServiceTypeVideo")]
+		NSString NetworkServiceTypeVideo { get; }
+
+		[Field ("NSStreamNetworkServiceTypeBackground")]
+		NSString NetworkServiceTypeBackground { get; }
+
+		[Field ("NSStreamNetworkServiceTypeVoice")]
+		NSString NetworkServiceTypeVoice { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -2555,6 +3307,35 @@ namespace MonoMac.Foundation
 		[Export ("suspended")]
 		bool Suspended { [Bind ("isSuspended")]get; set; }
 	}
+
+#if !MONOMAC
+	[BaseType (typeof (NSObject))]
+	interface NSOrthography {
+		[Export ("dominantScript")]
+		string DominantScript { get;  }
+
+		[Export ("languageMap")]
+		NSDictionary LanguageMap { get;  }
+
+		[Export ("dominantLanguage")]
+		string DominantLanguage { get;  }
+
+		[Export ("allScripts")]
+		string [] AllScripts { get;  }
+
+		[Export ("allLanguages")]
+		string [] AllLanguages { get;  }
+
+		[Export ("languagesForScript:")]
+		string [] LanguagesForScript (string script);
+
+		[Export ("dominantLanguageForScript:")]
+		string DominantLanguageForScript (string script);
+
+		[Export ("initWithDominantScript:languageMap:")]
+		IntPtr Constructor (string dominantScript, NSDictionary languageMap);
+	}
+#endif
 	
 	[BaseType (typeof (NSStream))]
 	public interface NSOutputStream {
@@ -2656,10 +3437,18 @@ namespace MonoMac.Foundation
 
 		[Export ("cookieAcceptPolicy")]
 		NSHttpCookieAcceptPolicy AcceptPolicy { get; set; }
+
+		[Export ("sortedCookiesUsingDescriptors:")]
+		NSHttpCookie [] GetSortedCookies (NSSortDescriptor [] sortDescriptors);
+		
 	}
 	
 	[BaseType (typeof (NSUrlResponse), Name="NSHTTPURLResponse")]
 	public interface NSHttpUrlResponse {
+		[Since (5,0)]
+		[Export ("initWithURL:statusCode:HTTPVersion:headerFields:")]
+		IntPtr Constructor (NSUrl url, int statusCode, string httpVersion, NSDictionary headerFields);
+		
 		[Export ("statusCode")]
 		int StatusCode { get; }
 
@@ -2853,6 +3642,8 @@ namespace MonoMac.Foundation
 		
 	}
 
+	public delegate void NSRangeIterator (NSRange range, ref bool stop);
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSIndexSet {
 		[Static, Export ("indexSetWithIndex:")]
@@ -2896,6 +3687,39 @@ namespace MonoMac.Foundation
 
 		[Export ("containsIndexes:")]
 		bool Contains (NSIndexSet indexes);
+
+		[Export ("enumerateRangesUsingBlock:")]
+		void EnumerateRanges (NSRangeIterator iterator);
+
+		[Export ("enumerateRangesWithOptions:usingBlock:")]
+		void EnumerateRanges (NSEnumerationOptions opts, NSRangeIterator iterator);
+
+		[Export ("enumerateRangesInRange:options:usingBlock:")]
+		void EnumerateRanges (NSRange range, NSEnumerationOptions opts, NSRangeIterator iterator);
+	}
+
+	[BaseType (typeof (NSObject), Name="NSJSONSerialization")]
+	interface NSJsonSerialization {
+		[Static]
+		[Export ("isValidJSONObject:")]
+		bool IsValidJSONObject (NSObject obj);
+
+		[Static]
+		[Export ("dataWithJSONObject:options:error:")]
+		NSData Serialize (NSObject obj, NSJsonWritingOptions opt, out NSError error);
+
+		[Static]
+		[Export ("JSONObjectWithData:options:error:")]
+		NSObject Deserialize (NSData data, NSJsonReadingOptions opt, NSError error);
+
+		[Static]
+		[Export ("writeJSONObject:toStream:options:error:")]
+		int Serialize (NSObject obj, NSOutputStream stream, NSJsonWritingOptions opt, out NSError error);
+
+		[Static]
+		[Export ("JSONObjectWithStream:options:error:")]
+		NSObject Deserialize (NSInputStream stream, NSJsonReadingOptions opt, out NSError error);
+
 	}
 	
 	[BaseType (typeof (NSIndexSet))]
@@ -3765,30 +4589,39 @@ namespace MonoMac.Foundation
 
 		[Export ("arguments")]
 		string [] Arguments { get; }
+
 		[Export ("environment")]
 		NSDictionary Environment { get; }
+
 		[Export ("processIdentifier")]
 		int ProcessIdentifier { get; }
+
 		[Export ("globallyUniqueString")]
 		string GloballyUniqueString { get; }
+
 		[Export ("processName")]
 		string ProcessName { get; set; }
 
 		[Export ("hostName")]
 		string HostName { get; }
+
 		[Export ("operatingSystem")]
-		uint OperatingSystem { get; }
+		int OperatingSystem { get; }
+
 		[Export ("operatingSystemName")]
 		string OperatingSystemName { get; }
+
 		[Export ("operatingSystemVersionString")]
 		string OperatingSystemVersionString { get; }
 
 		[Export ("physicalMemory")]
-		UInt64 PhysicalMemory { get; }
+		long PhysicalMemory { get; }
+		
 		[Export ("processorCount")]
-		uint ProcessorCount { get; }
+		int ProcessorCount { get; }
+		
 		[Export ("activeProcessorCount")]
-		uint ActiveProcessorCount { get; }
+		int ActiveProcessorCount { get; }
 	}
 
 	[BaseType (typeof (NSMutableData))]
@@ -3797,6 +4630,46 @@ namespace MonoMac.Foundation
 		
 	}
 
+#if !MONOMAC
+	public delegate void NSFileCoordinatorWorker (NSUrl newUrl);
+	public delegate void NSFileCoordinatorWorkerRW (NSUrl newReadingUrl, NSUrl newWritingUrl);
+	
+	[BaseType (typeof (NSObject))]
+	interface NSFileCoordinator {
+		[Export ("addFilePresenter:")]
+		void AddFilePresenter (NSFilePresenter filePresenter);
+
+		[Static]
+		[Export ("removeFilePresenter:")]
+		void RemoveFilePresenter (NSFilePresenter filePresenter);
+
+		[Static]
+		[Export ("filePresenters")]
+		NSFilePresenter [] FilePresenters { get; }
+
+		[Export ("initWithFilePresenter:")]
+		IntPtr Constructor ([NullAllowed] NSFilePresenter filePresenterOrNil);
+
+		[Export ("coordinateReadingItemAtURL:options:error:byAccessor:")]
+		void CoordinateRead (NSUrl itemUrl, NSFileCoordinatorReadingOptions options, out NSError error, NSFileCoordinatorWorker worker);
+
+		[Export ("coordinateWritingItemAtURL:options:error:byAccessor:")]
+		void CoordinateWrite (NSUrl url, NSFileCoordinatorWritingOptions options, out NSError error, NSFileCoordinatorWorker worker);
+
+		[Export ("coordinateReadingItemAtURL:options:writingItemAtURL:options:error:byAccessor:")]
+		void CoordinateReadWrite (NSUrl readingURL, NSFileCoordinatorReadingOptions readingOptions, NSUrl writingURL, NSFileCoordinatorWritingOptions writingOptions, out NSError error, NSFileCoordinatorWorkerRW readWriteWorker);
+
+		[Export ("prepareForReadingItemsAtURLs:options:writingItemsAtURLs:options:error:byAccessor:")]
+		void CoordinateBatc (NSUrl [] readingURLs, NSFileCoordinatorReadingOptions readingOptions, NSUrl [] writingURLs, NSFileCoordinatorWritingOptions writingOptions, NSError error, NSAction batchHandler);
+
+		[Export ("itemAtURL:didMoveToURL:")]
+		void ItemMoved (NSUrl fromUrl, NSUrl toUrl);
+
+		[Export ("cancel")]
+		void Cancel ();
+	}
+#endif
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSFileManager {
 		[Field("NSFileType")]
@@ -3877,6 +4750,23 @@ namespace MonoMac.Foundation
 		[Field("NSFileBusy")]
 		NSString Busy { get; }
 
+		[Field ("NSFileProtectionKey")]
+		NSString FileProtectionKey { get; }
+
+		[Field ("NSFileProtectionNone")]
+		NSString FileProtectionNone { get; }
+
+		[Field ("NSFileProtectionComplete")]
+		NSString FileProtectionComplete { get; }
+
+		[Since (5,0)]
+		[Field ("NSFileProtectionCompleteUnlessOpen")]
+		NSString FileProtectionCompleteUnlessOpen { get; }
+
+		[Since (5,0)]
+		[Field ("NSFileProtectionCompleteUntilFirstUserAuthentication ")]
+		NSString FileProtectionCompleteUntilFirstUserAuthentication  { get; }
+		
 		[Field("NSFileSystemSize")]
 		NSString SystemSize { get; }
 
@@ -4039,6 +4929,37 @@ namespace MonoMac.Foundation
 		//[Export ("stringWithFileSystemRepresentation:length:")]
 		//string StringWithFileSystemRepresentation (const char str, uint len);
 
+		[Since (5,0)]
+                [Export ("createDirectoryAtURL:withIntermediateDirectories:attributes:error:")]
+                bool CreateDirectory (NSUrl url, bool createIntermediates, NSDictionary attributes, out NSError error);
+
+		[Since (5,0)]
+                [Export ("createSymbolicLinkAtURL:withDestinationURL:error:")]
+                bool CreateSymbolicLink (NSUrl url, NSUrl destURL, out NSError error);
+
+		[Since (5,0)]
+                [Export ("setUbiquitous:itemAtURL:destinationURL:error:")]
+                bool SetUbiquitous (bool flag, NSUrl url, NSUrl destinationUrl, out NSError error);
+
+		[Since (5,0)]
+                [Export ("isUbiquitousItemAtURL:")]
+                bool IsUbiquitous (NSUrl url);
+
+		[Since (5,0)]
+                [Export ("startDownloadingUbiquitousItemAtURL:error:")]
+                bool StartDownloadingUbiquitous (NSUrl url, out NSError error);
+
+		[Since (5,0)]
+                [Export ("evictUbiquitousItemAtURL:error:")]
+                bool EvictUbiquitous (NSUrl url, out NSError error);
+
+		[Since (5,0)]
+                [Export ("URLForUbiquityContainerIdentifier:")]
+                NSUrl GetUrlForUbiquityContainer (string containerIdentifier);
+
+		[Since (5,0)]
+                [Export ("URLForPublishingUbiquitousItemAtURL:expirationDate:error:")]
+                NSUrl GetUrlForPublishingUbiquitousItem (NSUrl url, out NSDate expirationDate, out NSError error);
 	}
 
 	[BaseType(typeof(NSObject))]
@@ -4104,7 +5025,134 @@ namespace MonoMac.Foundation
 		[Export ("fileManager:shouldProceedAfterError:removingItemAtPath:")]
 		bool ShouldProceedAfterErrorRemovingItem (NSFileManager fileManager, NSError error, string path);
 	}
-    
+
+#if !MONOMAC
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface NSFilePresenter {
+		[Abstract]
+		[Export ("NSURL*presentedItemURL")]
+		NSUrl PresentedItemURL { get; }
+
+		[Export ("NSOperationQueue*presentedItemOperationQueue")]
+		NSOperationQueue PesentedItemOperationQueue { get; }
+
+#if DOUBLE_BLOCKS
+		[Export ("relinquishPresentedItemToReader:")]
+		void RelinquishPresentedItem (NSAction readerAction);
+
+		[Export ("relinquishPresentedItemToWriter:")]
+		void RelinquishPresentedItem (NSAction writerAction);
+
+		[Export ("savePresentedItemChangesWithCompletionHandler:")]
+		void SavePresentedItemChanges (...);
+
+		[Export ("accommodatePresentedItemDeletionWithCompletionHandler:")]
+		void AccommodatePresentedItem (..);
+#endif
+
+		[Export ("presentedItemDidMoveToURL:")]
+		void PresentedItemMoved (NSUrl newURL);
+
+		[Export ("presentedItemDidChange")]
+		void PresentedItemChanged ();
+
+		[Export ("presentedItemDidGainVersion:")]
+		void PresentedItemGainedVersion (NSFileVersion version);
+
+		[Export ("presentedItemDidLoseVersion:")]
+		void PresentedItemLostVersion (NSFileVersion version);
+
+		[Export ("presentedItemDidResolveConflictVersion:")]
+		void PresentedItemResolveConflictVersion (NSFileVersion version);
+
+#if DOUBLE_BLOCKS
+		[Export ("accommodatePresentedSubitemDeletionAtURL:completionHandler:NSError*errorOrNil))completionHandler")]
+		void AccommodatePresentedSubitemDeletion (NSUrl url, 
+#endif
+		[Export ("presentedSubitemDidAppearAtURL:")]
+		void PresentedSubitemAppeared (NSUrl atUrl);
+
+		[Export ("presentedSubitemAtURL:didMoveToURL:")]
+		void PresentedSubitemMoved (NSUrl oldURL, NSUrl newURL);
+
+		[Export ("presentedSubitemDidChangeAtURL:")]
+		void PresentedSubitemChanged (NSUrl url);
+
+		[Export ("presentedSubitemAtURL:didGainVersion:")]
+		void PresentedSubitemGainedVersion (NSUrl url, NSFileVersion version);
+
+		[Export ("presentedSubitemAtURL:didLoseVersion:")]
+		void PresentedSubitemLostVersion (NSUrl url, NSFileVersion version);
+
+		[Export ("presentedSubitemAtURL:didResolveConflictVersion:")]
+		void PresentedSubitemResolvedConflictVersion (NSUrl url, NSFileVersion version);
+	}
+		
+	[BaseType (typeof (NSObject))]
+	interface NSFileVersion {
+		[Export ("URL")]
+		NSUrl Url { get;  }
+
+		[Export ("localizedName")]
+		string LocalizedName { get;  }
+
+		[Export ("localizedNameOfSavingComputer")]
+		string LocalizedNameOfSavingComputer { get;  }
+
+		[Export ("modificationDate")]
+		NSDate ModificationDate { get;  }
+
+		[Export ("persistentIdentifier")]
+		NSObject PersistentIdentifier { get;  }
+
+		[Export ("conflict")]
+		bool IsConflict { [Bind ("isConflict")] get;  }
+
+		[Export ("resolved")]
+		bool Resolved { [Bind ("isResolved")] get; set;  }
+
+		[Export ("discardable")]
+		bool Discardable { [Bind ("isDiscardable")] get; set;  }
+
+		[Static]
+		[Export ("currentVersionOfItemAtURL:")]
+		NSFileVersion GetCurrentVersion (NSUrl url);
+
+		[Static]
+		[Export ("otherVersionsOfItemAtURL:")]
+		NSFileVersion [] GetOtherVersions (NSUrl url);
+
+		[Static]
+		[Export ("unresolvedConflictVersionsOfItemAtURL:")]
+		NSFileVersion [] GetUnresolvedConflictVersions (NSUrl url);
+
+		[Static]
+		[Export ("versionOfItemAtURL:forPersistentIdentifier:")]
+		NSFileVersion GetSpecificVersion (NSUrl url, NSObject persistentIdentifier);
+
+#if MONOMAC
+		[Static]
+		[Export ("addVersionOfItemAtURL:withContentsOfURL:options:error:")]
+		NSFileVersion AddVersion (NSUrl url, NSUrl contentsURL, NSFileVersionAddingOptions options, out NSError outError);
+
+		[Static]
+		[Export ("temporaryDirectoryURLForNewVersionOfItemAtURL:")]
+		NSUrl TemporaryDirectoryForItem (NSUrl url);
+#endif
+
+		[Export ("replaceItemAtURL:options:error:")]
+		NSUrl ReplaceItem (NSUrl url, NSFileVersionReplacingOptions options, out NSError error);
+
+		[Export ("removeAndReturnError:")]
+		bool Remove (out NSError outError);
+
+		[Static]
+		[Export ("removeOtherVersionsOfItemAtURL:error:")]
+		bool RemoveOtherVersions (NSUrl url, out NSError outError);
+	}
+#endif
+
 	[BaseType (typeof (NSEnumerator))]
 	public interface NSDirectoryEnumerator {
 		[Export ("fileAttributes")]

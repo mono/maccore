@@ -1,4 +1,9 @@
 //
+// AVCaptureConnection: Extensions to the class
+//
+// Authors:
+//   Miguel de Icaza
+//
 // Copyright 2011, Xamarin, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -20,24 +25,25 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+using MonoTouch.ObjCRuntime;
 
-using System;
+namespace MonoTouch.AVFoundation {
+	public partial class AVCaptureConnection {
 
-namespace MonoMac.CoreImage {
+		public bool SupportsVideoMinFrameDuration {
+			get {
+				if (RespondsToSelector (new Selector ("isVideoMinFrameDurationSupported")))
+					return SupportsVideoMinFrameDuration;
+				return false;
+			}
+		}
 
-	public enum CIImageOrientation {
-		TopLeft = 1,
-		TopRight = 2,
-		BottomRight = 3,
-		BottomLeft = 4,
-		LeftTop = 5,
-		RightTop = 6,
-		RightBottom = 7,
-		LeftBottom = 8
+		public bool SupportsVideoMaxFrameDuration {
+			get {
+				if (RespondsToSelector (new Selector ("isVideoMaxFrameDurationSupported")))
+					return SupportsVideoMinFrameDuration;
+				return false;
+			}
+		}
 	}
-
-	public static partial class CIFilterAttributes {}
-	public static partial class CIFilterCategory {}
-	public static partial class CIFilterInputKey {}
-	public static partial class CIFilterOutputKey {}
 }

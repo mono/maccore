@@ -41,10 +41,15 @@ using MonoMac.ObjCRuntime;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreImage;
 using MonoMac.CoreVideo;
+#if !MONOMAC
+using MonoTouch.OpenGLES;
+using MonoTouch.UIKit;
+#endif
 
 namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	public interface CIColor {
 		[Static]
 		[Export ("colorWithCGColor:")]
@@ -89,9 +94,15 @@ namespace MonoMac.CoreImage {
 
 		[Export ("stringRepresentation")]
 		string StringRepresentation ();
+
+#if !MONOMAC
+		[Export ("initWithColor:")]
+		IntPtr Constructor (UIColor color);
+#endif
 	}
 
         [BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	public interface CIContext {
 		// When we bind OpenGL add these:
 		//[Export ("contextWithCGLContext:pixelFormat:colorSpace:options:")]
@@ -100,6 +111,28 @@ namespace MonoMac.CoreImage {
 		[Internal, Static]
 		[Export ("contextWithCGContext:options:")]
 		CIContext FromContext (CGContext ctx, [NullAllowed] NSDictionary options);
+
+#if !MONOMAC
+		[Static]
+		[Export ("contextWithEAGLContext:")]
+		CIContext FromContext (EAGLContext eaglContext);
+
+		[Static, Internal]
+		[Export ("contextWithOptions:")]
+		CIContext FromOptions ([NullAllowed] NSDictionary dictionary);
+
+		[Export ("render:toCVPixelBuffer:")]
+		void Render (CIImage image, CVPixelBuffer buffer);
+
+		[Export ("render:toCVPixelBuffer:bounds:colorSpace:")]
+		void Render (CIImage image, CVPixelBuffer buffer, RectangleF rectangle, CGColorSpace cs);
+
+		[Export ("inputImageMaximumSize")]
+		SizeF InputImageMaximumSize { get; }
+
+		[Export ("outputImageMaximumSize")]
+		SizeF OutputImageMaximumSize { get; }
+#endif
 
 		[Export ("drawImage:atPoint:fromRect:")]
 		void DrawImage (CIImage image, PointF atPoint, RectangleF fromRect);
@@ -111,34 +144,37 @@ namespace MonoMac.CoreImage {
 		CGImage CreateCGImage (CIImage image, RectangleF fromRectangle);
 
 		[Export ("createCGImage:fromRect:format:colorSpace:")]
-		CGImage CreateCGImage (CIImage image, RectangleF fromRect, CIFormat format, CGColorSpace colorSpace);
+		CGImage CreateCGImage (CIImage image, RectangleF fromRect, int ciImageFormat, CGColorSpace colorSpace);
 
 		[Internal, Export ("createCGLayerWithSize:info:")]
 		CGLayer CreateCGLayer (SizeF size, [NullAllowed] NSDictionary info);
 
 		[Export ("render:toBitmap:rowBytes:bounds:format:colorSpace:")]
-		void RenderToBitmap (CIImage image, IntPtr bitmapPtr, int bytesPerRow, RectangleF bounds, CIFormat bitmapFormat, CGColorSpace colorSpace);
+		void RenderToBitmap (CIImage image, IntPtr bitmapPtr, int bytesPerRow, RectangleF bounds, int bitmapFormat, CGColorSpace colorSpace);
 
 		//[Export ("render:toIOSurface:bounds:colorSpace:")]
 		//void RendertoIOSurfaceboundscolorSpace (CIImage im, IOSurfaceRef surface, RectangleF r, CGColorSpaceRef cs, );
 
+#if MONOMAC
 		[Export ("reclaimResources")]
 		void ReclaimResources ();
 
 		[Export ("clearCaches")]
 		void ClearCaches ();
+#endif
 
-		[Internal, Field ("kCIContextOutputColorSpace", "Quartz")]
+		[Internal, Field ("kCIContextOutputColorSpace", "+CoreImage")]
 		NSString OutputColorSpace { get; }
 
-		[Internal, Field ("kCIContextWorkingColorSpace", "Quartz")]
+		[Internal, Field ("kCIContextWorkingColorSpace", "+CoreImage")]
 		NSString WorkingColorSpace { get; }
 		
-		[Internal, Field ("kCIContextUseSoftwareRenderer", "Quartz")]
+		[Internal, Field ("kCIContextUseSoftwareRenderer", "+CoreImage")]
 		NSString UseSoftwareRenderer { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	public interface CIFilter {
 		[Export ("inputKeys")]
 		string [] InputKeys { get; }
@@ -155,9 +191,6 @@ namespace MonoMac.CoreImage {
 		[Export ("name")]
 		string Name { get; set;}
 
-		[Export ("apply:arguments:options:")]
-		CIImage Applyargumentsoptions (CIKernel k, NSArray args, NSDictionary options);
-
 		[Static]
 		[Export ("filterWithName:")]
 		CIFilter FromName (string name);
@@ -167,8 +200,12 @@ namespace MonoMac.CoreImage {
 		string [] FilterNamesInCategory (string category);
 
 		[Static]
-		[Export ("filterNamesInCategories:")]
-		string [] FilterNamesInCategories (string [] categories);
+		[Export ("filterNamesInCategories:"), Internal]
+		string [] _FilterNamesInCategories (string [] categories);
+
+#if MONOMAC
+		[Export ("apply:arguments:options:")]
+		CIImage Apply (CIKernel k, NSArray args, NSDictionary options);
 
 		[Static]
 		[Export ("registerFilterName:constructor:classAttributes:")]
@@ -189,251 +226,301 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("localizedReferenceDocumentationForFilterName:")]
 		NSUrl FilterLocalizedReferenceDocumentation (string filterName);
-
-		[Field ("kCIAttributeFilterName", "Quartz")]
-		NSString AttributeFilterName  { get; }
-
-		[Field ("kCIAttributeFilterDisplayName", "Quartz")]
-		NSString AttributeFilterDisplayName  { get; }
-
-		[Field ("kCIAttributeDescription", "Quartz")]
-		NSString AttributeDescription  { get; }
-
-		[Field ("kCIAttributeReferenceDocumentation", "Quartz")]
-		NSString AttributeReferenceDocumentation  { get; }
-
-		[Field ("kCIAttributeFilterCategories", "Quartz")]
-		NSString AttributeFilterCategories  { get; }
-
-		[Field ("kCIAttributeClass", "Quartz")]
-		NSString AttributeClass  { get; }
-
-		[Field ("kCIAttributeType", "Quartz")]
-		NSString AttributeType  { get; }
-
-		[Field ("kCIAttributeMin", "Quartz")]
-		NSString AttributeMin  { get; }
-
-		[Field ("kCIAttributeMax", "Quartz")]
-		NSString AttributeMax  { get; }
-
-		[Field ("kCIAttributeSliderMin", "Quartz")]
-		NSString AttributeSliderMin  { get; }
-
-		[Field ("kCIAttributeSliderMax", "Quartz")]
-		NSString AttributeSliderMax  { get; }
-
-		[Field ("kCIAttributeDefault", "Quartz")]
-		NSString AttributeDefault  { get; }
-
-		[Field ("kCIAttributeIdentity", "Quartz")]
-		NSString AttributeIdentity  { get; }
-
-		[Field ("kCIAttributeName", "Quartz")]
-		NSString AttributeName  { get; }
-
-		[Field ("kCIAttributeDisplayName", "Quartz")]
-		NSString AttributeDisplayName  { get; }
-
-		[Field ("kCIUIParameterSet", "Quartz")]
-		NSString UIParameterSet  { get; }
-
-		[Field ("kCIUISetBasic", "Quartz")]
-		NSString UISetBasic  { get; }
-
-		[Field ("kCIUISetIntermediate", "Quartz")]
-		NSString UISetIntermediate  { get; }
-
-		[Field ("kCIUISetAdvanced", "Quartz")]
-		NSString UISetAdvanced  { get; }
-
-		[Field ("kCIUISetDevelopment", "Quartz")]
-		NSString UISetDevelopment  { get; }
-
-		[Field ("kCIAttributeTypeTime", "Quartz")]
-		NSString AttributeTypeTime  { get; }
-
-		[Field ("kCIAttributeTypeScalar", "Quartz")]
-		NSString AttributeTypeScalar  { get; }
-
-		[Field ("kCIAttributeTypeDistance", "Quartz")]
-		NSString AttributeTypeDistance  { get; }
-
-		[Field ("kCIAttributeTypeAngle", "Quartz")]
-		NSString AttributeTypeAngle  { get; }
-
-		[Field ("kCIAttributeTypeBoolean", "Quartz")]
-		NSString AttributeTypeBoolean  { get; }
-
-		[Field ("kCIAttributeTypeInteger", "Quartz")]
-		NSString AttributeTypeInteger  { get; }
-
-		[Field ("kCIAttributeTypeCount", "Quartz")]
-		NSString AttributeTypeCount  { get; }
-
-		[Field ("kCIAttributeTypePosition", "Quartz")]
-		NSString AttributeTypePosition  { get; }
-
-		[Field ("kCIAttributeTypeOffset", "Quartz")]
-		NSString AttributeTypeOffset  { get; }
-
-		[Field ("kCIAttributeTypePosition3", "Quartz")]
-		NSString AttributeTypePosition3  { get; }
-
-		[Field ("kCIAttributeTypeRectangle", "Quartz")]
-		NSString AttributeTypeRectangle  { get; }
-
-		[Field ("kCIAttributeTypeOpaqueColor", "Quartz")]
-		NSString AttributeTypeOpaqueColor  { get; }
-
-		[Field ("kCIAttributeTypeGradient", "Quartz")]
-		NSString AttributeTypeGradient  { get; }
-
-		[Field ("kCICategoryDistortionEffect", "Quartz")]
-		NSString CategoryDistortionEffect  { get; }
-
-		[Field ("kCICategoryGeometryAdjustment", "Quartz")]
-		NSString CategoryGeometryAdjustment  { get; }
-
-		[Field ("kCICategoryCompositeOperation", "Quartz")]
-		NSString CategoryCompositeOperation  { get; }
-
-		[Field ("kCICategoryHalftoneEffect", "Quartz")]
-		NSString CategoryHalftoneEffect  { get; }
-
-		[Field ("kCICategoryColorAdjustment", "Quartz")]
-		NSString CategoryColorAdjustment  { get; }
-
-		[Field ("kCICategoryColorEffect", "Quartz")]
-		NSString CategoryColorEffect  { get; }
-
-		[Field ("kCICategoryTransition", "Quartz")]
-		NSString CategoryTransition  { get; }
-
-		[Field ("kCICategoryTileEffect", "Quartz")]
-		NSString CategoryTileEffect  { get; }
-
-		[Field ("kCICategoryGenerator", "Quartz")]
-		NSString CategoryGenerator  { get; }
-
-		[Field ("kCICategoryReduction", "Quartz")]
-		NSString CategoryReduction  { get; }
-
-		[Field ("kCICategoryGradient", "Quartz")]
-		NSString CategoryGradient  { get; }
-
-		[Field ("kCICategoryStylize", "Quartz")]
-		NSString CategoryStylize  { get; }
-
-		[Field ("kCICategorySharpen", "Quartz")]
-		NSString CategorySharpen  { get; }
-
-		[Field ("kCICategoryBlur", "Quartz")]
-		NSString CategoryBlur  { get; }
-
-		[Field ("kCICategoryVideo", "Quartz")]
-		NSString CategoryVideo  { get; }
-
-		[Field ("kCICategoryStillImage", "Quartz")]
-		NSString CategoryStillImage  { get; }
-
-		[Field ("kCICategoryInterlaced", "Quartz")]
-		NSString CategoryInterlaced  { get; }
-
-		[Field ("kCICategoryNonSquarePixels", "Quartz")]
-		NSString CategoryNonSquarePixels  { get; }
-
-		[Field ("kCICategoryHighDynamicRange", "Quartz")]
-		NSString CategoryHighDynamicRange  { get; }
-
-		[Field ("kCICategoryBuiltIn", "Quartz")]
-		NSString CategoryBuiltIn  { get; }
-
-		[Field ("kCICategoryFilterGenerator", "Quartz")]
-		NSString CategoryFilterGenerator  { get; }
-
-		[Field ("kCIApplyOptionExtent", "Quartz")]
-		NSString ApplyOptionExtent  { get; }
-
-		[Field ("kCIApplyOptionDefinition", "Quartz")]
-		NSString ApplyOptionDefinition  { get; }
-
-		[Field ("kCIApplyOptionUserInfo", "Quartz")]
-		NSString ApplyOptionUserInfo  { get; }
-
-		[Field ("kCIOutputImageKey", "Quartz")]
-		NSString OutputImageKey  { get; }
-
-		[Field ("kCIInputBackgroundImageKey", "Quartz")]
-		NSString InputBackgroundImageKey  { get; }
-
-		[Field ("kCIInputImageKey", "Quartz")]
-		NSString InputImageKey  { get; }
-
-		[Field ("kCIInputTimeKey", "Quartz")]
-		NSString InputTimeKey  { get; }
-
-		[Field ("kCIInputTransformKey", "Quartz")]
-		NSString InputTransformKey  { get; }
-
-		[Field ("kCIInputScaleKey", "Quartz")]
-		NSString InputScaleKey  { get; }
-
-		[Field ("kCIInputAspectRatioKey", "Quartz")]
-		NSString InputAspectRatioKey  { get; }
-
-		[Field ("kCIInputCenterKey", "Quartz")]
-		NSString InputCenterKey  { get; }
-
-		[Field ("kCIInputRadiusKey", "Quartz")]
-		NSString InputRadiusKey  { get; }
-
-		[Field ("kCIInputAngleKey", "Quartz")]
-		NSString InputAngleKey  { get; }
-
-		[Field ("kCIInputRefractionKey", "Quartz")]
-		NSString InputRefractionKey  { get; }
-
-		[Field ("kCIInputWidthKey", "Quartz")]
-		NSString InputWidthKey  { get; }
-
-		[Field ("kCIInputSharpnessKey", "Quartz")]
-		NSString InputSharpnessKey  { get; }
-
-		[Field ("kCIInputIntensityKey", "Quartz")]
-		NSString InputIntensityKey  { get; }
-
-		[Field ("kCIInputEVKey", "Quartz")]
-		NSString InputEVKey  { get; }
-
-		[Field ("kCIInputSaturationKey", "Quartz")]
-		NSString InputSaturationKey  { get; }
-
-		[Field ("kCIInputColorKey", "Quartz")]
-		NSString InputColorKey  { get; }
-
-		[Field ("kCIInputBrightnessKey", "Quartz")]
-		NSString InputBrightnessKey  { get; }
-
-		[Field ("kCIInputContrastKey", "Quartz")]
-		NSString InputContrastKey  { get; }
-
-		[Field ("kCIInputGradientImageKey", "Quartz")]
-		NSString InputGradientImageKey  { get; }
-
-		[Field ("kCIInputMaskImageKey", "Quartz")]
-		NSString InputMaskImageKey  { get; }
-
-		[Field ("kCIInputShadingImageKey", "Quartz")]
-		NSString InputShadingImageKey  { get; }
-
-		[Field ("kCIInputTargetImageKey", "Quartz")]
-		NSString InputTargetImageKey  { get; }
-
-		[Field ("kCIInputExtentKey", "Quartz")]
-		NSString InputExtentKey  { get; }
+#else
+		[Export ("outputImage")]
+		CIImage OutputImage { get; }
+#endif
+
+		[Export ("setValue:forKey:"), Internal]
+		void SetValueForKey ([NullAllowed] NSObject value, NSString key);
+
+		[Export ("valueForKey:"), Internal]
+		NSObject ValueForKey (NSString key);
 	}
 
+	[Static]
+	public interface CIFilterOutputKey {
+		[Field ("kCIOutputImageKey", "+CoreImage")]
+		NSString Image  { get; }
+	}
+	
+	[Static]
+	public interface CIFilterInputKey {
+		[Field ("kCIInputBackgroundImageKey", "+CoreImage")]
+		NSString BackgroundImage  { get; }
+
+		[Field ("kCIInputImageKey", "+CoreImage")]
+		NSString Image  { get; }
+
+#if MONOMAC
+		[Field ("kCIInputTimeKey", "+CoreImage")]
+		NSString Time  { get; }
+
+		[Field ("kCIInputTransformKey", "+CoreImage")]
+		NSString Transform  { get; }
+
+		[Field ("kCIInputScaleKey", "+CoreImage")]
+		NSString Scale  { get; }
+
+		[Field ("kCIInputAspectRatioKey", "+CoreImage")]
+		NSString AspectRatio  { get; }
+
+		[Field ("kCIInputCenterKey", "+CoreImage")]
+		NSString Center  { get; }
+
+		[Field ("kCIInputRadiusKey", "+CoreImage")]
+		NSString Radius  { get; }
+
+		[Field ("kCIInputAngleKey", "+CoreImage")]
+		NSString Angle  { get; }
+
+		[Field ("kCIInputRefractionKey", "+CoreImage")]
+		NSString Refraction  { get; }
+
+		[Field ("kCIInputWidthKey", "+CoreImage")]
+		NSString Width  { get; }
+
+		[Field ("kCIInputSharpnessKey", "+CoreImage")]
+		NSString Sharpness  { get; }
+
+		[Field ("kCIInputIntensityKey", "+CoreImage")]
+		NSString Intensity  { get; }
+
+		[Field ("kCIInputEVKey", "+CoreImage")]
+		NSString EV  { get; }
+
+		[Field ("kCIInputSaturationKey", "+CoreImage")]
+		NSString Saturation  { get; }
+
+		[Field ("kCIInputColorKey", "+CoreImage")]
+		NSString Color  { get; }
+
+		[Field ("kCIInputBrightnessKey", "+CoreImage")]
+		NSString Brightness  { get; }
+
+		[Field ("kCIInputContrastKey", "+CoreImage")]
+		NSString Contrast  { get; }
+
+		[Field ("kCIInputGradientImageKey", "+CoreImage")]
+		NSString GradientImage  { get; }
+
+		[Field ("kCIInputMaskImageKey", "+CoreImage")]
+		NSString MaskImage  { get; }
+
+		[Field ("kCIInputShadingImageKey", "+CoreImage")]
+		NSString ShadingImage  { get; }
+
+		[Field ("kCIInputTargetImageKey", "+CoreImage")]
+		NSString TargetImage  { get; }
+
+		[Field ("kCIInputExtentKey", "+CoreImage")]
+		NSString Extent  { get; }
+#endif
+	}
+		
+	[Static]
+	public interface CIFilterAttributes {
+		[Field ("kCIAttributeFilterName", "+CoreImage")]
+		NSString FilterName  { get; }
+
+		[Field ("kCIAttributeFilterDisplayName", "+CoreImage")]
+		NSString FilterDisplayName  { get; }
+
+#if MONOMAC
+		[Field ("kCIAttributeDescription", "+CoreImage")]
+		NSString Description  { get; }
+
+		[Field ("kCIAttributeReferenceDocumentation", "+CoreImage")]
+		NSString ReferenceDocumentation  { get; }
+#endif
+
+		[Field ("kCIAttributeFilterCategories", "+CoreImage")]
+		NSString FilterCategories  { get; }
+
+		[Field ("kCIAttributeClass", "+CoreImage")]
+		NSString Class  { get; }
+
+		[Field ("kCIAttributeType", "+CoreImage")]
+		NSString Type  { get; }
+
+		[Field ("kCIAttributeMin", "+CoreImage")]
+		NSString Min  { get; }
+
+		[Field ("kCIAttributeMax", "+CoreImage")]
+		NSString Max  { get; }
+
+		[Field ("kCIAttributeSliderMin", "+CoreImage")]
+		NSString SliderMin  { get; }
+
+		[Field ("kCIAttributeSliderMax", "+CoreImage")]
+		NSString SliderMax  { get; }
+
+		[Field ("kCIAttributeDefault", "+CoreImage")]
+		NSString Default  { get; }
+
+		[Field ("kCIAttributeIdentity", "+CoreImage")]
+		NSString Identity  { get; }
+
+		[Field ("kCIAttributeName", "+CoreImage")]
+		NSString Name  { get; }
+
+		[Field ("kCIAttributeDisplayName", "+CoreImage")]
+		NSString DisplayName  { get; }
+
+#if MONOMAC
+		[Field ("kCIUIParameterSet", "+CoreImage")]
+		NSString UIParameterSet  { get; }
+
+#endif
+		[Field ("kCIAttributeTypeTime", "+CoreImage")]
+		NSString TypeTime  { get; }
+
+		[Field ("kCIAttributeTypeScalar", "+CoreImage")]
+		NSString TypeScalar  { get; }
+
+		[Field ("kCIAttributeTypeDistance", "+CoreImage")]
+		NSString TypeDistance  { get; }
+
+		[Field ("kCIAttributeTypeAngle", "+CoreImage")]
+		NSString TypeAngle  { get; }
+
+		[Field ("kCIAttributeTypeBoolean", "+CoreImage")]
+		NSString TypeBoolean  { get; }
+
+		[Field ("kCIAttributeTypeInteger", "+CoreImage")]
+		NSString TypeInteger  { get; }
+
+		[Field ("kCIAttributeTypeCount", "+CoreImage")]
+		NSString TypeCount  { get; }
+
+		[Field ("kCIAttributeTypePosition", "+CoreImage")]
+		NSString TypePosition  { get; }
+
+		[Field ("kCIAttributeTypeOffset", "+CoreImage")]
+		NSString TypeOffset  { get; }
+
+		[Field ("kCIAttributeTypePosition3", "+CoreImage")]
+		NSString TypePosition3  { get; }
+
+		[Field ("kCIAttributeTypeRectangle", "+CoreImage")]
+		NSString TypeRectangle  { get; }
+
+		[Field ("kCIAttributeTypeOpaqueColor", "+CoreImage")]
+		NSString TypeOpaqueColor  { get; }
+
+#if MONOMAC
+		[Field ("kCIAttributeTypeGradient", "+CoreImage")]
+		NSString TypeGradient  { get; }
+#else
+		[Field ("kCIAttributeTypeImage", "+CoreImage")]
+		NSString TypeImage  { get; }
+
+		[Field ("kCIAttributeTypeTransform", "+CoreImage")]
+		NSString TypeTransform  { get; }
+#endif
+	}
+
+	[Static]
+	public interface CIFilterCategory {
+		[Field ("kCICategoryDistortionEffect", "+CoreImage")]
+		NSString DistortionEffect  { get; }
+
+		[Field ("kCICategoryGeometryAdjustment", "+CoreImage")]
+		NSString GeometryAdjustment  { get; }
+
+		[Field ("kCICategoryCompositeOperation", "+CoreImage")]
+		NSString CompositeOperation  { get; }
+
+		[Field ("kCICategoryHalftoneEffect", "+CoreImage")]
+		NSString HalftoneEffect  { get; }
+
+		[Field ("kCICategoryColorAdjustment", "+CoreImage")]
+		NSString ColorAdjustment  { get; }
+
+		[Field ("kCICategoryColorEffect", "+CoreImage")]
+		NSString ColorEffect  { get; }
+
+		[Field ("kCICategoryTransition", "+CoreImage")]
+		NSString Transition  { get; }
+
+		[Field ("kCICategoryTileEffect", "+CoreImage")]
+		NSString TileEffect  { get; }
+
+		[Field ("kCICategoryGenerator", "+CoreImage")]
+		NSString Generator  { get; }
+
+		[Field ("kCICategoryReduction", "+CoreImage")]
+		NSString Reduction  { get; }
+
+		[Field ("kCICategoryGradient", "+CoreImage")]
+		NSString Gradient  { get; }
+
+		[Field ("kCICategoryStylize", "+CoreImage")]
+		NSString Stylize  { get; }
+
+		[Field ("kCICategorySharpen", "+CoreImage")]
+		NSString Sharpen  { get; }
+
+		[Field ("kCICategoryBlur", "+CoreImage")]
+		NSString Blur  { get; }
+
+		[Field ("kCICategoryVideo", "+CoreImage")]
+		NSString Video  { get; }
+
+		[Field ("kCICategoryStillImage", "+CoreImage")]
+		NSString StillImage  { get; }
+
+		[Field ("kCICategoryInterlaced", "+CoreImage")]
+		NSString Interlaced  { get; }
+
+		[Field ("kCICategoryNonSquarePixels", "+CoreImage")]
+		NSString NonSquarePixels  { get; }
+
+		[Field ("kCICategoryHighDynamicRange", "+CoreImage")]
+		NSString HighDynamicRange  { get; }
+
+		[Field ("kCICategoryBuiltIn", "+CoreImage")]
+		NSString BuiltIn  { get; }
+
+#if MONOMAC
+		[Field ("kCICategoryFilterGenerator", "+CoreImage")]
+		NSString FilterGenerator  { get; }
+#endif
+	}
+	
+#if MONOMAC
+	[Static]
+	public interface CIUIParameterSet {
+		[Field ("kCIUISetBasic", "+CoreImage")]
+		NSString Basic  { get; }
+
+		[Field ("kCIUISetIntermediate", "+CoreImage")]
+		NSString Intermediate  { get; }
+
+		[Field ("kCIUISetAdvanced", "+CoreImage")]
+		NSString Advanced  { get; }
+
+		[Field ("kCIUISetDevelopment", "+CoreImage")]
+		NSString Development  { get; }
+	}
+
+	[Static]
+	public interface CIFilterApply {
+		[Field ("kCIApplyOptionExtent", "+CoreImage")]
+		NSString OptionExtent  { get; }
+
+		[Field ("kCIApplyOptionDefinition", "+CoreImage")]
+		NSString OptionDefinition  { get; }
+
+		[Field ("kCIApplyOptionUserInfo", "+CoreImage")]
+		NSString OptionUserInfo  { get; }
+
+		[Field ("kCIApplyOptionColorSpace", "+CoreImage")]
+		NSString OptionColorSpace  { get; }
+	}
+#endif
+	
+#if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CIFilterGenerator {
 		[Static, Export ("filterGenerator")]
@@ -477,13 +564,13 @@ namespace MonoMac.CoreImage {
 		[Export ("classAttributes")]
 		NSDictionary ClassAttributes { get; set; }
 
-		[Field ("kCIFilterGeneratorExportedKey", "Quartz")]
+		[Field ("kCIFilterGeneratorExportedKey", "+CoreImage")]
 		NSString ExportedKey { get; }
 
-		[Field ("kCIFilterGeneratorExportedKeyTargetObject", "Quartz")]
+		[Field ("kCIFilterGeneratorExportedKeyTargetObject", "+CoreImage")]
 		NSString ExportedKeyTargetObject { get; }
 
-		[Field ("kCIFilterGeneratorExportedKeyName", "Quartz")]
+		[Field ("kCIFilterGeneratorExportedKeyName", "+CoreImage")]
 		NSString ExportedKeyName { get; }
 	}
 
@@ -513,8 +600,10 @@ namespace MonoMac.CoreImage {
 		[Export ("intersectWithRect:")]
 		CIFilterShape IntersectWithRect (Rectangle rectangle);
 	}
-
+#endif
+	
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	public interface CIImage {
 		[Static]
 		[Export ("imageWithCGImage:")]
@@ -524,6 +613,7 @@ namespace MonoMac.CoreImage {
 		[Export ("imageWithCGImage:options:")]
 		CIImage FromCGImage (CGImage image, NSDictionary d);
 
+#if MONOMAC
 		[Static]
 		[Export ("imageWithCGLayer:")]
 		CIImage FromLayer (CGLayer layer);
@@ -531,14 +621,17 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("imageWithCGLayer:options:")]
 		CIImage FromLayer (CGLayer layer, NSDictionary options);
+#endif
 
 		[Static]
 		[Export ("imageWithBitmapData:bytesPerRow:size:format:colorSpace:")]
-		CIImage FromData (NSData bitmapData, int bpr, SizeF size, CIFormat format, CGColorSpace colorspace);
+		CIImage FromData (NSData bitmapData, int bpr, SizeF size, int ciImageFormat, CGColorSpace colorspace);
 
+#if MONOMAC
 		[Static]
 		[Export ("imageWithTexture:size:flipped:colorSpace:")]
 		CIImage ImageWithTexturesizeflippedcolorSpace (int glTextureName, SizeF size, bool flag, CGColorSpace colorspace);
+#endif
 
 		[Static]
 		[Export ("imageWithContentsOfURL:")]
@@ -599,7 +692,7 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (NSData data, NSDictionary d);
 
 		[Export ("initWithBitmapData:bytesPerRow:size:format:colorSpace:")]
-		IntPtr Constructor (NSData d, int bpr, SizeF size, CIFormat f, CGColorSpace c);
+		IntPtr Constructor (NSData d, int bpr, SizeF size, int f, CGColorSpace c);
 
 		[Export ("initWithTexture:size:flipped:colorSpace:")]
 		IntPtr Constructor (int glTextureName, SizeF size, bool flag, CGColorSpace cs);
@@ -643,21 +736,68 @@ namespace MonoMac.CoreImage {
 
 		[Export ("colorSpace")]
 		CGColorSpace ColorSpace { get; }
+
+#if MONOMAC
+		[Field ("kCIFormatARGB8")]
+		int FormatARGB8 { get; }
+
+		[Field ("kCIFormatRGBA16")]
+		int FormatRGBA16 { get; }
+
+		[Field ("kCIFormatRGBAf")]
+		int FormatRGBAf { get; }
+
+		[Field ("kCIFormatRGBAh")]
+		int FormatRGBAh { get; }
+#else
+		[Field ("kCIFormatBGRA8")]
+		int FormatBGRA8 { get; }
+
+		[Field ("kCIFormatRGBA8")]
+		int FormatRGBA8 { get; }
+
+		// UIKit extensions
+		[Export ("initWithImage:")]
+		IntPtr Constructor (UIImage image);
+
+		[Export ("initWithImage:options")]
+		IntPtr Constructor (UIImage image, NSDictionary options);
+
+		[Field ("kCIImageAutoAdjustFeatures"), Internal]
+		NSString AutoAdjustFeaturesKey { get; }
+
+		[Field ("kCIImageAutoAdjustRedEye"), Internal]
+		NSString AutoAdjustRedEyeKey { get; }
+
+		[Field ("kCIImageAutoAdjustEnhance"), Internal]
+		NSString AutoAdjustEnhanceKey { get; }
+		
+		[Export ("autoAdjustmentFilters"), Internal]
+		NSArray _GetAutoAdjustmentFilters ();
+
+		[Export ("autoAdjustmentFiltersWithOptions:"), Internal]
+		NSArray _GetAutoAdjustmentFilters (NSDictionary opts);
+
+		[Field ("kCGImagePropertyOrientation", "ImageIO"), Internal]
+		NSString ImagePropertyOrientation { get; }
+#endif
+		
 	}
 
+#if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CIImageAccumulator {
 		[Export ("imageAccumulatorWithExtent:format:")]
-		CIImageAccumulator FromRectangle (RectangleF rect, CIFormat format);
+		CIImageAccumulator FromRectangle (RectangleF rect, int ciImageFormat);
 
 		[Export ("initWithExtent:format:")]
-		IntPtr Constructor (RectangleF rectangle, CIFormat format);
+		IntPtr Constructor (RectangleF rectangle, int ciImageFormat);
 
 		[Export ("extent")]
 		RectangleF Extent { get; }
 
 		[Export ("format")]
-		CIFormat Format { get; }
+		int CIImageFormat { get; }
 
 		[Export ("setImage:dirtyRect:")]
 		void SetImageDirty (CIImage image, RectangleF dirtyRect);
@@ -694,7 +834,7 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("loadPlugIn:allowNonExecutable:")]
-		void LoadPlugInallowNonExecutable (NSUrl pluginUrl, bool allowNonExecutable);
+		void LoadPlugIn (NSUrl pluginUrl, bool allowNonExecutable);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -718,26 +858,28 @@ namespace MonoMac.CoreImage {
 		[Export ("extent")]
 		RectangleF Extent { get; }
 
-		[Field ("kCISamplerAffineMatrix", "Quartz"), Internal]
+		[Field ("kCISamplerAffineMatrix", "+CoreImage"), Internal]
 		NSString AffineMatrix { get; }
-		[Field ("kCISamplerWrapMode", "Quartz"), Internal]
+		[Field ("kCISamplerWrapMode", "+CoreImage"), Internal]
 		NSString WrapMode { get; }
-		[Field ("kCISamplerFilterMode", "Quartz"), Internal]
+		[Field ("kCISamplerFilterMode", "+CoreImage"), Internal]
 		NSString FilterMode { get; }
 
-		[Field ("kCISamplerWrapBlack", "Quartz"), Internal]
+		[Field ("kCISamplerWrapBlack", "+CoreImage"), Internal]
 		NSString WrapBlack { get; }
-		[Field ("kCISamplerWrapClamp", "Quartz"), Internal]
+		[Field ("kCISamplerWrapClamp", "+CoreImage"), Internal]
 		NSString WrapClamp { get; }
 		
-		[Field ("kCISamplerFilterNearest", "Quartz"), Internal]
+		[Field ("kCISamplerFilterNearest", "+CoreImage"), Internal]
 		NSString FilterNearest { get; }
 
-		[Field ("kCISamplerFilterLinear", "Quartz"), Internal]
+		[Field ("kCISamplerFilterLinear", "+CoreImage"), Internal]
 		NSString FilterLinear { get; }
 	}
+#endif
 	
 	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
 	interface CIVector {
 		[Static, Internal, Export ("vectorWithValues:count:")]
 		CIVector _FromValues (IntPtr values, int count);
@@ -757,6 +899,20 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("vectorWithX:Y:Z:W:")]
 		CIVector Create (float x, float y, float z, float w);
+
+#if !MONOMAC
+		[Static]
+		[Export ("vectorWithCGPoint:")]
+		CIVector Create (PointF point);
+
+		[Static]
+		[Export ("vectorWithCGRect:")]
+		CIVector Create (RectangleF point);
+
+		[Static]
+		[Export ("vectorWithCGAffineTransform:")]
+		CIVector Create (CGAffineTransform affineTransform);
+#endif
 
 		[Static]
 		[Export ("vectorWithString:")]
@@ -798,9 +954,79 @@ namespace MonoMac.CoreImage {
 		[Export ("W")]
 		float W { get; }
 
+#if !MONOMAC
+		[Export ("CGPointValue")]
+		PointF Point { get; }
+
+		[Export ("CGRectValue")]
+		RectangleF Rectangle { get; }
+
+		[Export ("CGAffineTransformValue")]
+		CGAffineTransform AffineTransform { get; }
+#endif
+
 		[Export ("stringRepresentation"), Internal]
 		string StringRepresentation ();
 
 	}
+
+	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
+	interface CIDetector {
+		[Static, Export ("detectorOfType:context:options:"), Internal]
+		CIDetector FromType (NSString detectorType, CIContext context, [NullAllowed] NSDictionary options);
+
+		[Export ("featuresInImage:")]
+		CIFeature [] FeaturesInImage (CIImage image);
+
+		[Export ("featuresInImage:options:")]
+		CIFeature [] FeaturesInImage (CIImage image, NSDictionary options);
+
+		[Field ("CIDetectorTypeFace"), Internal]
+		NSString TypeFace { get; }
+		
+		[Field ("CIDetectorImageOrientation"), Internal]
+		NSString ImageOrientation { get; }
+
+		[Field ("CIDetectorAccuracy"), Internal]
+		NSString Accuracy { get; }
+
+		[Field ("CIDetectorAccuracyLow"), Internal]
+		NSString AccuracyLow { get; }
+
+		[Field ("CIDetectorAccuracyHigh"), Internal]
+		NSString AccuracyHigh { get; }
+	}
 	
+	[BaseType (typeof (NSObject))]
+	[Since (5,0)]
+	interface CIFeature {
+		[Export ("type")]
+		NSString Type { get; }
+
+		[Export ("bounds")]
+		RectangleF Bounds { get; }
+	}
+
+	[BaseType (typeof (CIFeature))]
+	[Since (5,0)]
+	interface CIFaceFeature {
+		[Export ("hasLeftEyePosition")]
+		bool HasLeftEyePosition { get; }
+		
+		[Export ("leftEyePosition")]
+		PointF LeftEyePosition { get; }
+		
+		[Export ("hasRightEyePosition")]
+		bool HasRightEyePosition { get; }
+		
+		[Export ("rightEyePosition")]
+		PointF RightEyePosition { get; }
+		
+		[Export ("hasMouthPosition")]
+		bool HasMouthPosition { get; }
+		
+		[Export ("mouthPosition")]
+		PointF MouthPosition { get; }
+	}
 }

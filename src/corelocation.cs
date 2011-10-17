@@ -6,6 +6,7 @@
 //   Miguel de Icaza
 //
 // Copyright 2009, Novell, Inc.
+// Copyright 2011, Xamarin, Inc.
 //
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
@@ -21,7 +22,7 @@ namespace MonoMac.CoreLocation {
 
 #if !MONOMAC
 	[BaseType (typeof (NSObject))]
-	interface CLHeading {
+	partial interface CLHeading {
 		[Export ("magneticHeading")]
 		double MagneticHeading { get;  }
 	
@@ -50,7 +51,7 @@ namespace MonoMac.CoreLocation {
 #endif
 	
 	[BaseType (typeof (NSObject))]
-	interface CLLocation {
+	partial interface CLLocation {
 		[Export ("coordinate")]
 		CLLocationCoordinate2D Coordinate { get;  }
 	
@@ -92,10 +93,14 @@ namespace MonoMac.CoreLocation {
 		[Since (4,2)]
 		[Export ("initWithCoordinate:altitude:horizontalAccuracy:verticalAccuracy:course:speed:timestamp:")]
 		IntPtr Constructor (CLLocationCoordinate2D coordinate, double altitude, double hAccuracy, double vAccuracy, double course, double speed, NSDate timestamp);
+
+		[Since (5,0)]
+		[Field ("kCLErrorUserInfoAlternateRegionKey")]
+		NSString ErrorUserInfoAlternateRegionKey { get; }
 	}
 	
 	[BaseType (typeof (NSObject), Delegates=new string [] {"WeakDelegate"}, Events=new Type [] {typeof (CLLocationManagerDelegate)})]
-	interface CLLocationManager {
+	partial interface CLLocationManager {
 		[Wrap ("WeakDelegate")]
 		CLLocationManagerDelegate Delegate { get; set;  }
 
@@ -195,12 +200,15 @@ namespace MonoMac.CoreLocation {
 		[Since (4,2)]
 		[Export ("authorizationStatus")][Static]
 		CLAuthorizationStatus Status { get; }
+
+		[Export ("startMonitoringForRegion:")]
+		void StartMonitoring (CLRegion region);
 #endif
 	}
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface CLLocationManagerDelegate {
+	partial interface CLLocationManagerDelegate {
 		[Export ("locationManager:didUpdateToLocation:fromLocation:"), EventArgs ("CLLocationUpdated")]
 		void UpdatedLocation (CLLocationManager  manager, CLLocation newLocation, CLLocation oldLocation);
 	
@@ -227,6 +235,10 @@ namespace MonoMac.CoreLocation {
 		[Since (4,0)]
 		[Export ("locationManager:monitoringDidFailForRegion:withError:"), EventArgs ("CLRegionError")]
 		void MonitoringFailed (CLLocationManager manager, CLRegion region, NSError error);
+
+		[Since(5,0)]
+		[Export ("locationManager:didStartMonitoringForRegion:")]
+		void DidStartMonitoringForRegion (CLRegion region);
 #endif
 
 		[Since (4,2)]
@@ -237,7 +249,7 @@ namespace MonoMac.CoreLocation {
 #if !MONOMAC
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
-	interface CLRegion {
+	partial interface CLRegion {
 		[Export ("center")]
 		CLLocationCoordinate2D Center { get;  }
 
@@ -253,6 +265,85 @@ namespace MonoMac.CoreLocation {
 		[Export ("containsCoordinate:")]
 		bool Contains (CLLocationCoordinate2D coordinate);
 	}
+
+	[Since (5,0)]
+	[BaseType (typeof (NSObject))]
+	interface CLPlacemark {
+		[Export("addressDictionary")]
+		NSDictionary AddressDictionary { get; }
+
+		[Export("administrativeArea")]
+		string AdministrativeArea { get; }
+
+		[Export("subAdministrativeArea")]
+		string SubAdministrativeArea { get; }
+
+		[Export("subLocality")]
+		string SubLocality { get; }
+
+		[Export("locality")]
+		string Locality { get; }
+
+		[Export("country")]
+		string Country { get; }
+	
+		[Export("postalCode")]
+		string PostalCode { get; }
+
+		[Export("thoroughfare")]
+		string Thoroughfare { get; }
+
+		[Export("subThoroughfare")]
+		string SubThoroughfare { get; }
+
+		[Export ("ISOcountryCode")]
+		string IsoCountryCode { get;  }
+
+		[Export ("areasOfInterest")]
+		string [] AreasOfInterest { get;  }
+
+		[Export ("initWithPlacemark:")]
+		IntPtr Constructor (CLPlacemark placemark);
+
+		[Export ("inlandWater")]
+		string InlandWater { get;  }
+
+		[Export ("location")]
+		CLLocation Location { get; }
+
+		[Export ("name")]
+		string Name { get;  }
+
+		[Export ("ocean")]
+		string Ocean { get;  }
+
+		[Export ("region")]
+		CLRegion Region { get; }
+	}
+
+	delegate void CLGeocodeCompletionHandler (CLPlacemark [] placemarks, NSError error);
+
+	[BaseType (typeof (NSObject))]
+	interface CLGeocoder {
+		[Export ("isGeocoding")]
+		bool Geocoding { get; }
+
+		[Export ("reverseGeocodeLocation:completionHandler:")]
+		void ReverseGeocodeLocation (CLLocation location, CLGeocodeCompletionHandler completionHandler);
+
+		[Export ("geocodeAddressDictionary:completionHandler:")]
+		void GeocodeAddress (NSDictionary addressDictionary, CLGeocodeCompletionHandler completionHandler);
+
+		[Export ("geocodeAddressString:completionHandler:")]
+		void GeocodeAddress (string addressString, CLGeocodeCompletionHandler completionHandler);
+
+		[Export ("geocodeAddressString:inRegion:completionHandler:")]
+		void GeocodeAddress (string addressString, CLRegion region, CLGeocodeCompletionHandler completionHandler);
+
+		[Export ("cancelGeocode")]
+		void CancelGeocode ();
+	}
+
 #endif
 }
 

@@ -111,40 +111,59 @@ namespace MonoMac.Foundation  {
 
 	[Flags]
 	public enum NSCalendarUnit {
-		NSEra = 2, 
-		NSYear = 4,
-		NSMonth = 8,
-		NSDay = 16,
-		NSHour = 32,
-		NSMinute = 64,
-		NSSecond = 128,
-		NSWeek = 256,
-		NSWeekday = 512,
-		NSWeekdayOrdinal = 1024,
-		NSQuarter = 2048,
+		Era = 2, 
+		Year = 4,
+		Month = 8,
+		Day = 16,
+		Hour = 32,
+		Minute = 64,
+		Second = 128,
+		Week = 256,
+		Weekday = 512,
+		WeekdayOrdinal = 1024,
+		Quarter = 2048,
 
+		[Since (5,0)]
+		WeekOfMonth = (1 << 12),
+		[Since (5,0)]
+		WeekOfYear = (1 << 13),
+		[Since (5,0)]
+		YearForWeakOfYear = (1 << 14),
+			 
 		[Since (4,0)]
-		NSCalendar = (1 << 20),
+		Calendar = (1 << 20),
 		[Since (4,0)]
-		NSTimeZone = (1 << 21),
+		TimeZone = (1 << 21),
 	}
 
 	[Flags]
 	public enum NSDataReadingOptions: uint {
 		   Mapped =   1 << 0,
-		   Uncached = 1 << 1
+		   Uncached = 1 << 1,
+
+		   [Since (5,0)]
+		   Coordinated = 1 << 2,
+		   [Since (5,0)]
+		   MappedAlways = 1 << 3
 	}
 
 	[Flags]
 	public enum NSDataWritingOptions : uint {
 		Atomic = 1,
 
+		[Since (5,0)]
+		Coordinated = 1 << 2,
+			
 		[Since (4,0)]
 		FileProtectionNone = 0x10000000,
 		[Since (4,0)]
 		FileProtectionComplete = 0x20000000,
 		[Since (4,0)]
-		NSDataWritingFileProtectionMask = 0xf0000000
+		FileProtectionMask = 0xf0000000,
+		[Since (5,0)]
+		FileProtectionCompleteUnlessOpen = 0x30000000,
+		[Since (5,0)]
+		FileProtectionCompleteUntilFirstUserAuthentication = 0x40000000,
 	}
 	
 	public delegate void NSSetEnumerator (NSObject obj, ref bool stop);
@@ -411,5 +430,51 @@ namespace MonoMac.Foundation  {
 
 	public enum NSNumberFormatterRoundingMode {
 		Ceiling, Floor, Down, Up, HalfEven, HalfDown, HalfUp
+	}
+
+	[Flags]
+	public enum NSFileVersionReplacingOptions {
+		ByMoving = 1 << 0
+	}
+
+	public enum NSFileVersionAddingOptions {
+		ByMoving = 1 << 0
+	}
+
+	[Flags]
+	public enum NSFileCoordinatorReadingOptions {
+		WithoutChanges = 1
+	}
+
+	[Flags]
+	public enum NSFileCoordinatorWritingOptions {
+		ForDeleting = 1,
+		ForMoving = 2,
+		ForMerging = 4
+	}
+
+	[Flags]
+	public enum NSLinguisticTaggerOptions {
+		OmitWords = 1,
+		OmitPunctuation = 2,
+		OmitWhitespace = 4,
+		OmitOther = 8,
+		JoinNames = 16
+	}
+
+	public enum NSUbiquitousKeyValueStoreChangeReason {
+		ServerChange, InitialSyncChange, QuotaViolationChange
+	}
+
+	[Flags]
+	public enum NSJsonReadingOptions {
+		MutableContainers = 1,
+		MutableLeaves = 2,
+		AllowFragments = 4
+	}
+
+	[Flags]
+	public enum NSJsonWritingOptions {
+		PrettyPrinted = 1
 	}
 }
