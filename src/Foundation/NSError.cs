@@ -24,6 +24,7 @@
 // Simple class for passing NSErrors as EventArgs
 //
 using System;
+using MonoTouch.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 	
@@ -38,6 +39,18 @@ namespace MonoMac.Foundation {
 
 	public partial class NSError : NSObject {
 #if !COREBUILD
+		[Obsolete ("Creating NSErrors without arguments can cause your application to crash unexpectedly if you return it back to Objective-C")]
+		[Export ("init")]
+		public NSError () : base (NSObjectFlag.Empty)
+		{
+			Console.WriteLine ("Warning: you created an NSError without a domain, this can crash your application if you return this to Objective-C");
+			if (IsDirectBinding) {
+				Handle = MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);
+			} else {
+				Handle = MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);
+			}
+		}
+		
 		public static NSError FromDomain (NSString domain, int code)
 		{
 			return FromDomain (domain, code, null);

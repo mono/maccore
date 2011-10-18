@@ -336,6 +336,10 @@ public class PrivateDefaultCtorAttribute : Attribute {
 	public PrivateDefaultCtorAttribute () {}
 }
 
+public class DisableDefaultCtorAttribute : Attribute {
+	public DisableDefaultCtorAttribute () {}
+}
+
 // Used for mandatory methods that must be implemented in a [Model].
 public class AbstractAttribute : Attribute {
 	public AbstractAttribute () {} 
@@ -2112,6 +2116,7 @@ public class Generator {
 			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0;
 			bool is_model = type.GetCustomAttributes (typeof (ModelAttribute), true).Length > 0;
 			bool private_default_ctor = type.GetCustomAttributes (typeof (PrivateDefaultCtorAttribute), true).Length > 0;
+			bool disable_default_ctor = type.GetCustomAttributes (typeof (DisableDefaultCtorAttribute), true).Length > 0;
 			object [] btype = type.GetCustomAttributes (typeof (BaseTypeAttribute), true);
 			BaseTypeAttribute bta = btype.Length > 0 ? ((BaseTypeAttribute) btype [0]) : null;
 			Type base_type = bta != null ?  bta.BaseType : typeof (object);
@@ -2157,14 +2162,16 @@ public class Generator {
 				
 				if (TypeName != "NSObject"){
 					if (external) {
-						sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
+						if (!disable_default_ctor)
+							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
 							      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix, ctor_visibility);
 					} else {
-						sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
-							      TypeName,
-							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
-							      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
-							      MainPrefix, ctor_visibility);
+						if (!disable_default_ctor)
+							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
+								      TypeName,
+								      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
+								      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
+								      MainPrefix, ctor_visibility);
 						sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
 							      TypeName,
 							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
