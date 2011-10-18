@@ -76,7 +76,7 @@ namespace MonoMac.CoreText {
 			if (fontUrl == null)
 				throw new ArgumentNullException ("fontUrl");
 			
-			NSError e = new NSError ();
+			NSError e = new NSError (ErrorDomain, 0);
 
 			if (CTFontManagerRegisterFontsForURL (fontUrl.Handle, scope, e.Handle))
 				return null;
@@ -98,7 +98,7 @@ namespace MonoMac.CoreText {
 			var arr = NSArray.FromNSObjects (fontUrls);
 			var _errors = new NSError [fontUrls.Length];
 			for (int i = 0; i < fontUrls.Length; i++)
-				_errors [i] = new NSError ();
+				_errors [i] = new NSError (ErrorDomain, 0);
 			var errors = NSArray.FromNSObjects (_errors);
 
 			if (CTFontManagerRegisterFontsForURLs (arr.Handle, scope, errors.Handle))
@@ -114,7 +114,7 @@ namespace MonoMac.CoreText {
 			if (fontUrl == null)
 				throw new ArgumentNullException ("fontUrl");
 
-			var e = new NSError ();
+			var e = new NSError (ErrorDomain, 0);
 			if (CTFontManagerUnregisterFontsForURLs (fontUrl.Handle, scope, e.Handle))
 				return null;
 			else
@@ -135,7 +135,7 @@ namespace MonoMac.CoreText {
 			var arr = NSArray.FromNSObjects (fontUrls);
 			var _errors = new NSError [fontUrls.Length];
 			for (int i = 0; i < fontUrls.Length; i++)
-				_errors [i] = new NSError ();
+				_errors [i] = new NSError (ErrorDomain, 0);
 			var errors = NSArray.FromNSObjects (_errors);
 
 			if (CTFontManagerUnregisterFontsForURLs (arr.Handle, scope, errors.Handle))

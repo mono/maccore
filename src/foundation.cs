@@ -1184,6 +1184,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
 	public interface NSError {
 		[Static, Export ("errorWithDomain:code:userInfo:")]
 		NSError FromDomain (NSString domain, int code, [NullAllowed] NSDictionary userInfo);
