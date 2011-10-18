@@ -721,7 +721,7 @@ namespace MonoMac.AVFoundation {
 		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
 		[Export ("initWithAudioTracks:audioSettings:")]
-		IntPtr Constructor (AVAssetTrack [] audioTracks, NSDictionary audioSettings);
+		IntPtr Constructor (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
 		[Export ("audioSettings")]
 		NSDictionary AudioSettings { get; }
