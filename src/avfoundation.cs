@@ -571,7 +571,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioMix")]
 		AVAudioMix AudioMix { get; set;  }
 
-		[Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
+		[Static, Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
 		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
 		[Export ("initWithAudioTracks:audioSettings:")]
@@ -713,7 +713,7 @@ namespace MonoMac.AVFoundation {
 		//[Export ("pixelBufferPool")]
 		//CVPixelBufferPoolRef pixelBufferPool { get;  }
 
-		[Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
+		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
 
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
