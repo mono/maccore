@@ -208,42 +208,42 @@ namespace MonoMac.CoreGraphics {
 
 			case 2: // boolean
 				byte b;
-				if (CGPDFObjectGetValue (pdfObj, 1, out b))
+				if (CGPDFObjectGetValue (pdfObj, 2, out b))
 					return b != 0;
 				return null;
 				
 			case 3: // int
 				int i;
-				if (CGPDFObjectGetValue (pdfObj, 2, out i))
+				if (CGPDFObjectGetValue (pdfObj, 3, out i))
 					return i;
 				return null;
 				
 			case 4: // real
 				float f;
-				if (CGPDFObjectGetValue (pdfObj, 3, out f))
+				if (CGPDFObjectGetValue (pdfObj, 4, out f))
 					return f;
 				return null;
 				
 			case 5: // name
-				if (CGPDFObjectGetValue (pdfObj, 4, out ip))
+				if (CGPDFObjectGetValue (pdfObj, 5, out ip))
 					return Marshal.PtrToStringAnsi (ip);
 				return null;
 				
 			case 6: // string
-				if (CGPDFObjectGetValue (pdfObj, 5, out ip))
-					return PdfStringToString (ip);
-				return null;
-				
-			case 7: // array
 				if (CGPDFObjectGetValue (pdfObj, 6, out ip))
+					return CGPDFString.ToString (ip);
+				return null;
+
+			case 7: // array
+				if (CGPDFObjectGetValue (pdfObj, 7, out ip))
 					return new CGPDFArray (ip);
 				return null;
 			case 8: // dictionary
-				if (CGPDFObjectGetValue (pdfObj, 7, out ip))
+				if (CGPDFObjectGetValue (pdfObj, 8, out ip))
 					return new CGPDFDictionary (ip);
 				return null;
 			case 9: // stream
-				if (CGPDFObjectGetValue (pdfObj, 8, out ip))
+				if (CGPDFObjectGetValue (pdfObj, 9, out ip))
 					return new CGPDFStream (ip);
 				return null;
 			}
