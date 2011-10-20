@@ -3234,10 +3234,10 @@ namespace MonoMac.Foundation
 		[Export ("isReady")]
 		bool IsReady { get; }
 
-		[Export ("addDependency:")]
+		[Export ("addDependency:")][PostGet ("Dependencies")]
 		void AddDependency (NSOperation op);
 
-		[Export ("removeDependency:")]
+		[Export ("removeDependency:")][PostGet ("Dependencies")]
 		void RemoveDependency (NSOperation op);
 
 		[Export ("dependencies")]
@@ -3271,13 +3271,13 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
 	public interface NSOperationQueue {
-		[Export ("addOperation:")]
+		[Export ("addOperation:")][PostGet ("Operations")]
 		void AddOperation (NSOperation op);
 
-		[Export ("addOperations:waitUntilFinished:")]
+		[Export ("addOperations:waitUntilFinished:")][PostGet ("Operations")]
 		void AddOperations (NSOperation [] operations, bool waitUntilFinished);
 
-		[Export ("addOperationWithBlock:")]
+		[Export ("addOperationWithBlock:")][PostGet ("Operations")]
 		void AddOperation (NSAction operation);
 
 		[Export ("operations")]
@@ -3289,7 +3289,7 @@ namespace MonoMac.Foundation
 		[Export ("name")]
 		string Name { get; set; }
 
-		[Export ("cancelAllOperations")]
+		[Export ("cancelAllOperations")][PostGet ("Operations")]
 		void CancelAllOperations ();
 
 		[Export ("waitUntilAllOperationsAreFinished")]
@@ -4675,11 +4675,11 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	interface NSFileCoordinator {
-		[Export ("addFilePresenter:")]
+		[Static, Export ("addFilePresenter:")][PostGet ("FilePresenters")]
 		void AddFilePresenter (NSFilePresenter filePresenter);
 
 		[Static]
-		[Export ("removeFilePresenter:")]
+		[Export ("removeFilePresenter:")][PostGet ("FilePresenters")]
 		void RemoveFilePresenter (NSFilePresenter filePresenter);
 
 		[Static]
