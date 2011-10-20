@@ -24,7 +24,7 @@
 // Simple class for passing NSErrors as EventArgs
 //
 using System;
-using MonoTouch.ObjCRuntime;
+using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 	
