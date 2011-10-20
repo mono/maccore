@@ -45,9 +45,9 @@ namespace MonoMac.Foundation {
 		{
 			Console.WriteLine ("Warning: you created an NSError without a domain, this can crash your application if you return this to Objective-C");
 			if (IsDirectBinding) {
-				Handle = MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);
+				Handle = MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);
 			} else {
-				Handle = MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);
+				Handle = MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);
 			}
 		}
 		
