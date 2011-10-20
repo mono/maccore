@@ -1494,6 +1494,7 @@ public class Generator {
 		"MonoMac.CoreLocation", 
 		"MonoMac.QTKit",
 		"MonoMac.CoreVideo",
+		"MonoMac.CoreMedia",
 		"MonoMac.OpenGL",
 #else
 		"MonoTouch",
