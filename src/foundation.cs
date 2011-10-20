@@ -7,6 +7,7 @@
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
+// Copyright 2011, Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,6 +33,7 @@ using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 using MonoMac.CoreGraphics;
+using MonoMac.CoreMedia;
 
 #if MONOMAC
 using MonoMac.AppKit;
@@ -4040,6 +4042,24 @@ namespace MonoMac.Foundation
 		bool IsEqualTo (NSValue value);
 	
 #if MONOMAC
+		[Static, Export ("valueWithCMTime:"), Lion]
+		NSValue FromCMTime (CMTime time);
+		
+		[Export ("CMTimeValue"), Lion]
+		CMTime CMTimeValue { get; }
+		
+		[Static, Export ("valueWithCMTimeMapping:"), Lion]
+		NSValue FromCMTimeMapping (CMTimeMapping timeMapping);
+		
+		[Export ("CMTimeMappingValue"), Lion]
+		CMTimeMapping CMTimeMappingValue { get; }
+		
+		[Static, Export ("valueWithCMTimeRange:"), Lion]
+		NSValue FromCMTimeRange (CMTimeRange timeRange);
+		
+		[Export ("CMTimeRangeValue"), Lion]
+		CMTimeRange CMTimeRangeValue { get; }
+		
 		[Export ("valueWithRect:"), Static]
 		NSValue FromRectangleF (System.Drawing.RectangleF rect);
 
@@ -4058,6 +4078,24 @@ namespace MonoMac.Foundation
 		[Export ("pointValue")]
 		System.Drawing.PointF PointFValue { get; }
 #else
+		[Static, Export ("valueWithCMTime:"), Since (4,0)]
+		NSValue FromCMTime (CMTime time);
+		
+		[Export ("CMTimeValue"), Since (4,0)]
+		CMTime CMTimeValue { get; }
+		
+		[Static, Export ("valueWithCMTimeMapping:"), Since (4,0)]
+		NSValue FromCMTimeMapping (CMTimeMapping timeMapping);
+		
+		[Export ("CMTimeMappingValue"), Since (4,0)]
+		CMTimeMapping CMTimeMappingValue { get; }
+		
+		[Static, Export ("valueWithCMTimeRange:"), Since (4,0)]
+		NSValue FromCMTimeRange (CMTimeRange timeRange);
+		
+		[Export ("CMTimeRangeValue"), Since (4,0)]
+		CMTimeRange CMTimeRangeValue { get; }
+		
 		[Export ("CGAffineTransformValue")]
 		MonoMac.CoreGraphics.CGAffineTransform CGAffineTransformValue { get; }
 		
