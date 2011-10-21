@@ -276,11 +276,11 @@ namespace MonoMac.Security {
 			SecAuthenticationType authenticationType = SecAuthenticationType.Default,
 			string securityDomain = null)
 		{
-			GCHandle serverHandle;
-			GCHandle securityDomainHandle;
-			GCHandle accountHandle;
-			GCHandle pathHandle;
-			GCHandle passwordHandle;
+			GCHandle serverHandle = new GCHandle ();
+			GCHandle securityDomainHandle = new GCHandle ();
+			GCHandle accountHandle = new GCHandle ();
+			GCHandle pathHandle = new GCHandle ();
+			GCHandle passwordHandle = new GCHandle ();
 			
 			int serverNameLength = 0;
 			IntPtr serverNamePtr = IntPtr.Zero;
@@ -371,10 +371,10 @@ namespace MonoMac.Security {
 		{
 			password = null;
 			
-			GCHandle serverHandle;
-			GCHandle securityDomainHandle;
-			GCHandle accountHandle;
-			GCHandle pathHandle;
+			GCHandle serverHandle = new GCHandle ();
+			GCHandle securityDomainHandle = new GCHandle ();
+			GCHandle accountHandle = new GCHandle ();
+			GCHandle pathHandle = new GCHandle ();
 			
 			int serverNameLength = 0;
 			IntPtr serverNamePtr = IntPtr.Zero;
@@ -456,9 +456,9 @@ namespace MonoMac.Security {
 
 		public static SecStatusCode AddGenericPassword (string serviceName, string accountName, byte[] password)
 		{
-			GCHandle serviceHandle;
-			GCHandle accountHandle;
-			GCHandle passwordHandle;
+			GCHandle serviceHandle = new GCHandle ();
+			GCHandle accountHandle = new GCHandle ();
+			GCHandle passwordHandle = new GCHandle ();
 			
 			int serviceNameLength = 0;
 			IntPtr serviceNamePtr = IntPtr.Zero;
@@ -513,8 +513,8 @@ namespace MonoMac.Security {
 		{
 			password = null;
 
-			GCHandle serviceHandle;
-			GCHandle accountHandle;
+			GCHandle serviceHandle = new GCHandle ();
+			GCHandle accountHandle = new GCHandle ();
 			
 			int serviceNameLength = 0;
 			IntPtr serviceNamePtr = IntPtr.Zero;
