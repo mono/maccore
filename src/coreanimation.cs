@@ -117,10 +117,10 @@ namespace MonoMac.CoreAnimation {
 		CADisplayLink Create (NSObject target, Selector sel);
 	
 		[Export ("addToRunLoop:forMode:")]
-		void AddToRunLoop (NSRunLoop runloop, string mode);
+		void AddToRunLoop (NSRunLoop runloop, NSString mode);
 	
 		[Export ("removeFromRunLoop:forMode:")]
-		void RemoveFromRunLoop (NSRunLoop runloop, string  mode);
+		void RemoveFromRunLoop (NSRunLoop runloop, NSString mode);
 	
 		[Export ("invalidate")]
 		void Invalidate ();
