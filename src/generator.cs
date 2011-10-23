@@ -826,7 +826,7 @@ public class Generator {
 					continue;
 				} 
 			} else if (pi.ParameterType.IsValueType){
-				pars.AppendFormat ("{0} {1}", pi.ParameterType.Name, pi.Name);
+				pars.AppendFormat ("{0} {1}", FormatType (null, pi.ParameterType), pi.Name);
 				invoke.AppendFormat ("{0}", pi.Name);
 				continue;
 			}
