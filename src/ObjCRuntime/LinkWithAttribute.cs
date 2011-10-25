@@ -59,6 +59,10 @@ namespace MonoMac.ObjCRuntime {
 			get; set;
 		}
 		
+		public string Frameworks {
+			get; set;
+		}
+		
 		public string LibraryName {
 			get; private set;
 		}
