@@ -1552,8 +1552,80 @@ namespace MonoMac.Foundation
 		[Export ("localeIdentifierFromComponents:")]
 		string LocaleIdentifierFromComponents (NSDictionary dict);
 
+		[Export ("canonicalLanguageIdentifierFromString")]
+		string CanonicalLanguageIdentifierFromString (string str);
+
 		[Export ("canonicalLocaleIdentifierFromString:")]
 		string CanonicalLocaleIdentifierFromString (string str);
+
+		[Export ("characterDirectionForLanguage")]
+		NSLocaleLanguageDirection GetCharacterDirection (string isoLanguageCode);
+
+		[Export ("lineDirectionForLanguage")]
+		NSLocaleLanguageDirection GetLineDirection (string isoLanguageCode);
+
+		[Field ("NSCurrentLocaleDidChangeNotification")]
+		NSString CurrentLocaleDidChangeNotification { get; }
+
+		[Export ("objectForKey:"), Internal]
+		NSObject ObjectForKey (NSString key);
+
+		[Internal, Field ("NSLocaleIdentifier")]
+		NSString _Identifier { get; }
+		
+		[Internal, Field ("NSLocaleLanguageCode")]
+		NSString _LanguageCode { get; }
+		
+		[Internal, Field ("NSLocaleCountryCode")]
+		NSString _CountryCode { get; }
+		
+		[Internal, Field ("NSLocaleScriptCode")]
+		NSString _ScriptCode { get; }
+		
+		[Internal, Field ("NSLocaleVariantCode")]
+		NSString _VariantCode { get; }
+		
+		[Internal, Field ("NSLocaleExemplarCharacterSet")]
+		NSString _ExemplarCharacterSet { get; }
+		
+		[Internal, Field ("NSLocaleCalendar")]
+		NSString _Calendar { get; }
+		
+		[Internal, Field ("NSLocaleCollationIdentifier")]
+		NSString _CollationIdentifier { get; }
+		
+		[Internal, Field ("NSLocaleUsesMetricSystem")]
+		NSString _UsesMetricSystem { get; }
+		
+		[Internal, Field ("NSLocaleMeasurementSystem")]
+		NSString _MeasurementSystem { get; }
+		
+		[Internal, Field ("NSLocaleDecimalSeparator")]
+		NSString _DecimalSeparator { get; }
+		
+		[Internal, Field ("NSLocaleGroupingSeparator")]
+		NSString _GroupingSeparator { get; }
+		
+		[Internal, Field ("NSLocaleCurrencySymbol")]
+		NSString _CurrencySymbol { get; }
+		
+		[Internal, Field ("NSLocaleCurrencyCode")]
+		NSString _CurrencyCode { get; }
+		
+		[Internal, Field ("NSLocaleCollatorIdentifier")]
+		NSString _CollatorIdentifier { get; }
+		
+		[Internal, Field ("NSLocaleQuotationBeginDelimiterKey")]
+		NSString _QuotationBeginDelimiterKey { get; }
+		
+		[Internal, Field ("NSLocaleQuotationEndDelimiterKey")]
+		NSString _QuotationEndDelimiterKey { get; }
+		
+		[Internal, Field ("NSLocaleAlternateQuotationBeginDelimiterKey")]
+		NSString _AlternateQuotationBeginDelimiterKey { get; }
+		
+		[Internal, Field ("NSLocaleAlternateQuotationEndDelimiterKey")]
+		NSString _AlternateQuotationEndDelimiterKey { get; }
 	}
 
 	

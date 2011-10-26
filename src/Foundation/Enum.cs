@@ -477,4 +477,8 @@ namespace MonoMac.Foundation  {
 	public enum NSJsonWritingOptions {
 		PrettyPrinted = 1
 	}
+
+	public enum NSLocaleLanguageDirection {
+		Unknown, LeftToRight, RightToLeft, TopToBottom, BottomToTop,
+	}
 }
