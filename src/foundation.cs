@@ -1522,6 +1522,11 @@ namespace MonoMac.Foundation
 		[Export ("currentLocale")]
 		NSLocale CurrentLocale { get; }
 
+		[Static]
+		[Export ("autoUpdatingCurrentLocale")]
+		NSLocale AutoUpdatingCurrentLocale { get; }
+		
+
 		[Export ("initWithLocaleIdentifier:")]
 		IntPtr Constructor (string identifier);
 
