@@ -1656,11 +1656,19 @@ public class Generator {
 		}
 	}
 	
+	[Flags]
+	public enum BodyOption {
+		None = 0x0,
+		NeedsTempReturn = 0x1,
+		CondStoreRet    = 0x3,
+		MarkRetDirty    = 0x5,
+		StoreRet        = 0x7,
+	}
 	//
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string assign = null)
+	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options)
 	{
 		string selector = SelectorField (sel);
 		var args = new StringBuilder ();
@@ -1784,10 +1792,10 @@ public class Generator {
 
 		Inject (mi, typeof (PreSnippetAttribute));
 		bool has_postget = HasAttribute (mi, typeof (PostGetAttribute));
-		bool use_temp_return =
+		bool use_temp_return  =
 			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
 			(HasAttribute (mi, typeof (FactoryAttribute))) ||
-			(assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ())))) ||
+			((body_options & BodyOption.NeedsTempReturn) == BodyOption.NeedsTempReturn) ||
 			(mi.ReturnType.IsSubclassOf (typeof (Delegate))) ||
 			(HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ProxyAttribute))) ||
 			(mi.Name != "Constructor" && byRefPostProcessing.Length > 0 && mi.ReturnType != typeof (void));
@@ -1827,8 +1835,21 @@ public class Generator {
 
 		if (disposes.Length > 0)
 			print (sw, disposes.ToString ());
-		if (assign != null && (IsWrappedType (mi.ReturnType) || (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType ()))))
-			print ("{0} = ret;", assign);
+		if ((body_options & BodyOption.StoreRet) == BodyOption.StoreRet) {
+			print ("{0} = ret;", var_name);
+		} else if ((body_options & BodyOption.CondStoreRet) == BodyOption.CondStoreRet) {
+#if !MONOMAC
+			print ("if (!IsNewRefcountEnabled ())");
+#endif
+			print ("\t{0} = ret;", var_name);
+		} else if ((body_options & BodyOption.MarkRetDirty) == BodyOption.MarkRetDirty) {
+#if !MONOMAC
+			print ("MarkDirty ();");
+#endif
+			print ("{0} = ret;", var_name);
+		}
+
+
 		if (has_postget) {
 			PostGetAttribute [] attr = (PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true);
 			for (int i = 0; i < attr.Length; i++) {
@@ -1897,6 +1918,19 @@ public class Generator {
 	Dictionary<string,object> generatedEvents = new Dictionary<string,object> ();
 	Dictionary<string,object> generatedDelegates = new Dictionary<string,object> ();
 
+	bool DoesTypeNeedBackingField (Type type) {
+		return IsWrappedType (type) || (type.IsArray && IsWrappedType (type.GetElementType ()));
+	}
+
+	bool DoesPropertyNeedBackingField (PropertyInfo pi) {
+		return DoesTypeNeedBackingField (pi.PropertyType);
+	}
+	
+	bool DoesPropertyNeedDirtyCheck (PropertyInfo pi, ExportAttribute ea) {
+		bool needs_ref = ea.ArgumentSemantic == ArgumentSemantic.Copy || ea.ArgumentSemantic == ArgumentSemantic.Retain;
+		return DoesPropertyNeedBackingField (pi) && needs_ref;		
+	}
+
 	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
 	{
 		string wrap;
@@ -1935,10 +1969,12 @@ public class Generator {
 			print ("}\n");
 			return;
 		}
-				
-		string var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
 
-		if ((IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ())))) {
+		string var_name = null;
+				
+		if (DoesPropertyNeedBackingField (pi)) {
+			var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
+
 			if (is_thread_static)
 				print ("[ThreadStatic]");
 			print ("{1}object {0};", var_name, is_static ? "static " : "");
@@ -1973,8 +2009,18 @@ public class Generator {
 					print ("Console.WriteLine (\"In {0}\");", pi.GetGetMethod ());
 				if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
-				else
-					GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name);
+				else {
+					if (!DoesPropertyNeedBackingField (pi)) {
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None);
+					} else if (is_static) {
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet);
+					} else {
+						if (DoesPropertyNeedDirtyCheck (pi, export))
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet);
+						else
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty);
+					}
+				}
 				print ("}\n");
 			}
 		}
@@ -2004,9 +2050,20 @@ public class Generator {
 				if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed);
-					if (!is_static && (IsWrappedType (pi.PropertyType) || (pi.PropertyType.IsArray && IsWrappedType (pi.PropertyType.GetElementType ()))))
-						print ("\t{0} = value;", var_name);
+					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None);
+					if (!is_static && DoesPropertyNeedBackingField (pi)) {
+						if (DoesPropertyNeedDirtyCheck (pi, export)) {
+#if !MONOMAC
+							print ("\tif (!IsNewRefcountEnabled ())");
+#endif
+							print ("\t\t{0} = value;", var_name);									
+						} else {
+#if !MONOMAC
+							print ("\tMarkDirty ();");
+#endif
+							print ("\t{0} = value;", var_name);
+						}
+					}
 				}
 				print ("}");
 			}
@@ -2080,7 +2137,7 @@ public class Generator {
 			if (is_model)
 				print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
 			else
-				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false);
+				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None);
 			print ("}\n");
 		}
 	}
