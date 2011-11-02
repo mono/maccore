@@ -2940,7 +2940,7 @@ namespace MonoMac.Foundation
 		NSData Body { get; set; }
 
 		[New][Export ("HTTPBodyStream")]
-		NSInputStream BodyStream { get; }
+		NSInputStream BodyStream { get; set; }
 
 		[New][Export ("HTTPShouldHandleCookies")]
 		bool ShouldHandleCookies { get; set; }
