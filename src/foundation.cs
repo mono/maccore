@@ -4154,6 +4154,9 @@ namespace MonoMac.Foundation
 
 		[Export ("pointValue")]
 		System.Drawing.PointF PointFValue { get; }
+
+		[Export ("rangeValue")]
+		NSRange RangeValue { get; }
 #else
 		[Static, Export ("valueWithCMTime:"), Since (4,0)]
 		NSValue FromCMTime (CMTime time);
