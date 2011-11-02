@@ -122,6 +122,27 @@ namespace MonoMac.Foundation
 		NSString FontAttributeName { get; }
 
 #if MONOMAC
+		[Field ("NSUnderlineStyleAttributeName", "AppKit")]
+#else
+		[Field ("NSUnderlineStyleAttributeName")]
+#endif
+		NSString UnderlineStyleAttributeName { get; }
+
+#if MONOMAC
+		[Field ("NSStrikethroughStyleAttributeName", "AppKit")]
+#else
+		[Field ("NSStrikethroughStyleAttributeName")]
+#endif
+		NSString StrikethroughStyleAttributeName { get; }
+
+#if MONOMAC
+		[Field ("NSStrokeWidthAttributeName", "AppKit")]
+#else
+		[Field ("NSStrokeWidthAttributeName")]
+#endif
+		NSString StrokeWidthAttributeName { get; }
+
+#if MONOMAC
 		[Field ("NSParagraphStyleAttributeName", "AppKit")]
 #else
 		[Field ("NSParagraphStyleAttributeName")]
