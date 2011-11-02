@@ -116,7 +116,7 @@ class BindingTouch {
 						throw new Exception ("-link-with=FILE,ID requires a filename.");
 					
 					if (id == null || id.Length == 0)
-						throw new Exception ("-link-with=FILE,ID requires a resource id.");
+						id = Path.GetFileName (path);
 					
 					if (linkwith.Contains (id))
 						throw new Exception ("-link-with=FILE,ID cannot assign the same resource id to multiple libraries.");
