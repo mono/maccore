@@ -245,17 +245,17 @@ class BindingTouch {
 				return 0;
 			}
 
-			cargs = String.Format ("-unsafe -target:library -out:{0} {1} -r:{7} {2} {3} {4} {5} {6} -r:{7} {8} {9}",
-					       outfile,
-					       string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()),
-					       String.Join (" ", g.GeneratedFiles.ToArray ()),
-					       String.Join (" ", core_sources.ToArray ()),
-					       String.Join (" ", sources.Skip (1).ToArray ()),
-					       refs,
-					       unsafef ? "-unsafe" : "",
-					       baselibdll,
-					       String.Join (" ", resources.ToArray ()), 
-					       String.Join (" ", extra_sources.ToArray ())
+			cargs = String.Format ("{0} -target:library -out:{1} {2} {3} {4} {5} {6} {7} -r:{8} {9}",
+					       unsafef ? "-unsafe" : "", /* 0 */
+					       outfile, /* 1 */
+					       string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()), /* 2 */
+					       String.Join (" ", g.GeneratedFiles.ToArray ()), /* 3 */
+					       String.Join (" ", core_sources.ToArray ()), /* 4 */
+					       String.Join (" ", sources.Skip (1).ToArray ()), /* 5 */
+					       String.Join (" ", extra_sources.ToArray ()), /* 6 */
+					       refs, /* 7 */
+					       baselibdll, /* 8 */
+					       String.Join (" ", resources.ToArray ()) /* 9 */
 				);
 
 			si = new ProcessStartInfo (compiler, cargs) {
