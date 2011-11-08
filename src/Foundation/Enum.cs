@@ -481,4 +481,34 @@ namespace MonoMac.Foundation  {
 	public enum NSLocaleLanguageDirection {
 		Unknown, LeftToRight, RightToLeft, TopToBottom, BottomToTop,
 	}
+
+	[Flags]
+	public enum NSAlignmentOptions : long {
+		MinXInward   = 1 << 0,
+		MinYInward   = 1 << 1,
+		MaxXInward   = 1 << 2,
+		MaxYInward   = 1 << 3,
+		WidthInward  = 1 << 4,
+		HeightInward = 1 << 5,
+
+		MinXOutward   = 1 << 8,
+		MinYOutward   = 1 << 9,
+		MaxXOutward   = 1 << 10,
+		MaxYOutward   = 1 << 11,
+		WidthOutward  = 1 << 12,
+		HeightOutward = 1 << 13,
+
+		MinXNearest   = 1 << 16,
+		MinYNearest   = 1 << 17,
+		MaxXNearest   = 1 << 18,
+		MaxYNearest   = 1 << 19,
+		WidthNearest  = 1 << 20,
+		HeightNearest = 1 << 21,
+
+		RectFlipped   = 1 << 63,
+
+		AllEdgesInward = MinXInward|MaxXInward|MinYInward|MaxYInward,
+		AllEdgesOutward = MinXOutward|MaxXOutward|MinYOutward|MaxYOutward,
+		AllEdgesNearest = MinXNearest|MaxXNearest|MinYNearest|MaxYNearest,
+	}
 }
