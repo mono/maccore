@@ -1802,6 +1802,9 @@ namespace MonoMac.Foundation
 		[Export ("initWithName:")]
 		IntPtr Constructor (string name);
 		
+		[Export ("initWithName:data:")]
+		IntPtr Constructor (string name, NSData data);
+
 		[Export ("name")]
 		string Name { get; } 
 
@@ -1826,6 +1829,9 @@ namespace MonoMac.Foundation
 		[Static, Export ("timeZoneWithName:")]
 		NSTimeZone FromName (string tzName);
 
+		[Static, Export ("timeZoneWithName:data:")]
+		NSTimeZone FromName (string tzName, NSData data);
+		
 		[Static, Export ("localTimeZone")]
 		NSTimeZone LocalTimeZone { get; }
 
@@ -1846,6 +1852,12 @@ namespace MonoMac.Foundation
 		
 		[Export ("timeZoneWithAbbreviation:"), Static]
 		NSTimeZone FromAbbreviation (string abbreviation);
+
+		[Export ("knownTimeZoneNames"), Static, Internal]
+		string[] _KnownTimeZoneNames { get; }
+
+		[Export ("timeZoneDataVersion"), Static]
+		string DataVersion { get; }
 	}
 
 #if !MONOMAC
