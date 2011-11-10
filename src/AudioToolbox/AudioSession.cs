@@ -334,6 +334,15 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		static public AudioSessionMode Mode {
+			get {
+				return (AudioSessionMode) GetInt (AudioSessionProperty.Mode);
+			}
+			set {
+				SetInt (AudioSessionProperty.Mode, (int) value);
+			}
+		}
+		
 		static public bool OverrideCategoryDefaultToSpeaker {
 			get {
 				return GetInt (AudioSessionProperty.OverrideCategoryDefaultToSpeaker) != 0;

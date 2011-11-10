@@ -94,7 +94,15 @@ namespace MonoMac.AudioToolbox {
 		OverrideCategoryMixWithOthers = 0x636d6978,
 		OverrideCategoryDefaultToSpeaker = 0x6373706b, //'cspk'
 		OverrideCategoryEnableBluetoothInput = 0x63626c75, //'cblu'
+		Mode = 0x6d6f6465,
 		InterruptionType = 0x2172736d
+	}
+
+	public enum AudioSessionMode {
+		Default = 0x64666c74,
+		VoiceChat = 0x76636374,
+		VoiceRecording = 0x76726364,
+		Measurement = 0x6d736d74
 	}
 }
 
