@@ -101,7 +101,7 @@ namespace MonoMac.AudioToolbox {
 	public enum AudioSessionMode {
 		Default = 0x64666c74,
 		VoiceChat = 0x76636374,
-		VoiceRecording = 0x76726364,
+		VideoRecording = 0x76726364,
 		Measurement = 0x6d736d74
 	}
 }
