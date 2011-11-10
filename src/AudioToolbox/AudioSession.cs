@@ -334,6 +334,25 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		static public bool OverrideCategoryDefaultToSpeaker {
+			get {
+				return GetInt (AudioSessionProperty.OverrideCategoryDefaultToSpeaker) != 0;
+			}
+			set {
+				SetInt (AudioSessionProperty.OverrideCategoryDefaultToSpeaker, value ? 1 : 0);
+			}
+		}
+
+		static public bool OverrideCategoryEnableBluetoothInput {
+			get {
+				return GetInt (AudioSessionProperty.OverrideCategoryEnableBluetoothInput) != 0;
+			}
+			set {
+				SetInt (AudioSessionProperty.OverrideCategoryEnableBluetoothInput, value ? 1 : 0);
+			}
+		}
+		
+
 		delegate void _PropertyListener (IntPtr userData, AudioSessionProperty prop, int size, IntPtr data);
 		public delegate void PropertyListener (AudioSessionProperty prop, int size, IntPtr data);
 		

@@ -92,6 +92,8 @@ namespace MonoMac.AudioToolbox {
 		ServerDied = 0x64696564,
 		OtherMixableAudioShouldDuck = 0x6475636b,
 		OverrideCategoryMixWithOthers = 0x636d6978,
+		OverrideCategoryDefaultToSpeaker = 0x6373706b, //'cspk'
+		OverrideCategoryEnableBluetoothInput = 0x63626c75, //'cblu'
 		InterruptionType = 0x2172736d
 	}
 }
