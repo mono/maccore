@@ -218,6 +218,7 @@ namespace MonoMac.AVFoundation {
 	}	
 	
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
 	interface AVAudioPlayer {
 		[Export ("initWithContentsOfURL:error:")][Internal]
 		IntPtr Constructor (NSUrl url, IntPtr outError);
