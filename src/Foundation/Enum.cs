@@ -511,4 +511,16 @@ namespace MonoMac.Foundation  {
 		AllEdgesOutward = MinXOutward|MaxXOutward|MinYOutward|MaxYOutward,
 		AllEdgesNearest = MinXNearest|MaxXNearest|MinYNearest|MaxYNearest,
 	}
+
+	[Flags]
+	public enum NSFileWrapperReadingOptions {
+		Immediate = 1 << 0,
+		WithoutMapping = 1 << 1
+	}
+
+	[Flags]
+	public enum NSFileWrapperWritingOptions {
+		Atomic = 1 << 0,
+		WithNameUpdating = 1 << 1
+	}
 }

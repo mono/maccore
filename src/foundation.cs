@@ -5305,6 +5305,77 @@ namespace MonoMac.Foundation
 	}
 #endif
 
+	[BaseType (typeof (NSObject))]
+	interface NSFileWrapper {
+		[Export ("initWithURL:options:error:")]
+		IntPtr Constructor (NSUrl url, NSFileWrapperReadingOptions options, out NSError outError);
+
+		[Export ("initDirectoryWithFileWrappers:")]
+		IntPtr Constructor (NSDictionary childrenByPreferredName);
+
+		[Export ("initRegularFileWithContents:")]
+		IntPtr Constructor (NSData contents);
+
+		[Export ("initSymbolicLinkWithDestinationURL:")]
+		IntPtr Constructor (NSUrl urlToSymbolicLink);
+
+		// Constructor clash
+		//[Export ("initWithSerializedRepresentation:")]
+		//IntPtr Constructor (NSData serializeRepresentation);
+
+		[Export ("isDirectory")]
+		bool IsDirectory { get; }
+
+		[Export ("isRegularFile")]
+		bool IsRegularFile { get; }
+
+		[Export ("isSymbolicLink")]
+		bool IsSymbolicLink { get; }
+
+		[Export ("matchesContentsOfURL:")]
+		bool MatchesContentsOfURL (NSUrl url);
+
+		[Export ("readFromURL:options:error:")]
+		bool Read (NSUrl url, NSFileWrapperReadingOptions options, out NSError outError);
+
+		[Export ("writeToURL:options:originalContentsURL:error:")]
+		bool Write (NSUrl url, NSFileWrapperWritingOptions options, NSUrl originalContentsURL, out NSError outError);
+
+		[Export ("serializedRepresentation")]
+		NSData GetSerializedRepresentation ();
+
+		[Export ("addFileWrapper:")]
+		string AddFileWrapper (NSFileWrapper child);
+
+		[Export ("addRegularFileWithContents:preferredFilename:")]
+		string AddRegularFile (NSData dataContents, string preferredFilename);
+
+		[Export ("removeFileWrapper:")]
+		void RemoveFileWrapper (NSFileWrapper child);
+
+		[Export ("fileWrappers")]
+		NSDictionary FileWrappers { get; }
+
+		[Export ("keyForFileWrapper:")]
+		string KeyForFileWrapper (NSFileWrapper child);
+
+		[Export ("regularFileContents")]
+		NSData GetRegularFileContents ();
+
+		[Export ("symbolicLinkDestinationURL")]
+		NSUrl SymbolicLinkDestinationURL { get; }
+
+		//Detected properties
+		[Export ("preferredFilename")]
+		string PreferredFilename { get; set; }
+
+		[Export ("filename")]
+		string Filename { get; set; }
+
+		[Export ("fileAttributes")]
+		NSDictionary FileAttributes { get; set; }
+	}
+
 	[BaseType (typeof (NSEnumerator))]
 	public interface NSDirectoryEnumerator {
 		[Export ("fileAttributes")]
