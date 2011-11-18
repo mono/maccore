@@ -110,7 +110,7 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 		
-		internal CFString (IntPtr handle)
+		public CFString (IntPtr handle)
 			: this (handle, false)
 		{
 		}
