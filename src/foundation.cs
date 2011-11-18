@@ -1105,6 +1105,9 @@ namespace MonoMac.Foundation
 		[Static]
 		NSDate FromTimeIntervalSinceReferenceDate (double secs);
 
+		[Static, Export ("dateWithTimeIntervalSince1970:")]
+		NSDate FromTimeIntervalSince1970 (double secs);
+
 		[Export ("date")]
 		[Static]
 		NSDate Now { get; }
