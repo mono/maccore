@@ -122,6 +122,13 @@ namespace MonoMac.Foundation
 		NSString FontAttributeName { get; }
 
 #if MONOMAC
+		[Field ("NSLinkAttributeName", "AppKit")]
+#else
+		[Field ("NSLinkAttributeName")]
+#endif
+		NSString LinkAttributeName { get; }
+
+#if MONOMAC
 		[Field ("NSUnderlineStyleAttributeName", "AppKit")]
 #else
 		[Field ("NSUnderlineStyleAttributeName")]
