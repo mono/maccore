@@ -3179,6 +3179,18 @@ namespace MonoMac.Foundation
 
 		[Export ("isEqualToString:"), Internal]
 		bool IsEqualTo (IntPtr handle);
+		
+		[Export ("compare:")]
+		NSComparisonResult Compare (NSString aString);
+
+		[Export ("compare:options:")]
+		NSComparisonResult Compare (NSString aString, NSStringCompareOptions mask);
+
+		[Export ("compare:options:range:")]
+		NSComparisonResult Compare (NSString aString, NSStringCompareOptions mask, NSRange range);
+
+		[Export ("compare:options:range:locale:")]
+		NSComparisonResult Compare (NSString aString, NSStringCompareOptions mask, NSRange range, [NullAllowed] NSLocale locale);
 	}
 	
 	[BaseType (typeof (NSStream))]
