@@ -610,7 +610,10 @@ namespace MonoMac.Security {
 		public SecRecord (SecKind secKind)
 		{
 			var kind = SecClass.FromSecKind (secKind);
-			queryDict = NSMutableDictionary.LowlevelFromObjectAndKey (kind, SecClass.SecClassKey);
+			if (kind == SecClass.Identity)
+				queryDict = new NSMutableDictionary ();
+			else
+				queryDict = NSMutableDictionary.LowlevelFromObjectAndKey (kind, SecClass.SecClassKey);
 		}
 
 		public SecRecord Clone ()
@@ -1211,6 +1214,18 @@ namespace MonoMac.Security {
 				if (value == null)
 					throw new ArgumentNullException ("value");
 				SetValue (value, SecItem.ValueData);
+			}
+		}
+		
+		public NSObject ValueRef {
+			get {
+				return FetchObject (SecItem.ValueRef);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecItem.ValueRef);
 			}
 		}
 	}
