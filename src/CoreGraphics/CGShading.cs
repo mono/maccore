@@ -66,7 +66,7 @@ namespace MonoMac.CoreGraphics {
 			if (function.Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("function");
 
-			return new CGShading (CGShadingCreateAxial (colorspace.Handle, start, end, function.Handle, extendStart, extendEnd));
+			return new CGShading (CGShadingCreateAxial (colorspace.Handle, start, end, function.Handle, extendStart, extendEnd), true);
 		}
 		
 		[DllImport(Constants.CoreGraphicsLibrary)]
@@ -86,7 +86,7 @@ namespace MonoMac.CoreGraphics {
 				throw new ObjectDisposedException ("function");
 
 			return new CGShading (CGShadingCreateRadial (colorspace.Handle, start, startRadius, end, endRadius,
-								     function.Handle, extendStart, extendEnd));
+								     function.Handle, extendStart, extendEnd), true);
 		}
 
 		~CGShading ()
