@@ -3191,6 +3191,9 @@ namespace MonoMac.Foundation
 
 		[Export ("compare:options:range:locale:")]
 		NSComparisonResult Compare (NSString aString, NSStringCompareOptions mask, NSRange range, [NullAllowed] NSLocale locale);
+		
+		[Export ("stringByReplacingCharactersInRange:withString:")]
+		NSString Replace (NSRange range, NSString replacement);
 	}
 	
 	[BaseType (typeof (NSStream))]
