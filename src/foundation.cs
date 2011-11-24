@@ -4091,10 +4091,10 @@ namespace MonoMac.Foundation
 		void AddObserver (NSObject observer, Selector selector, string name, string anObject, NSNotificationSuspensionBehavior suspensionBehavior);
 
 		[Export ("postNotificationName:object:userInfo:deliverImmediately:")]
-		void PostNotificationName (string name, string anObject, NSDictionary userInfo, bool deliverImmediately);
+		void PostNotificationName (string name, string anObject, [NullAllowed] NSDictionary userInfo, bool deliverImmediately);
 		
 		[Export ("postNotificationName:object:userInfo:options:")]
-		void PostNotificationName (string name, string anObject, NSDictionary userInfo, NSNotificationFlags options);
+		void PostNotificationName (string name, string anObject, [NullAllowed] NSDictionary userInfo, NSNotificationFlags options);
 
 		[Export ("addObserver:selector:name:object:")]
 		void AddObserver (NSObject observer, Selector aSelector, string aName, string anObject);
@@ -4103,7 +4103,7 @@ namespace MonoMac.Foundation
 		void PostNotificationName (string aName, string anObject);
 
 		[Export ("postNotificationName:object:userInfo:")]
-		void PostNotificationName (string aName, string anObject, NSDictionary aUserInfo);
+		void PostNotificationName (string aName, string anObject, [NullAllowed] NSDictionary aUserInfo);
 
 		[Export ("removeObserver:name:object:")]
 		void RemoveObserver (NSObject observer, string aName, string anObject);
