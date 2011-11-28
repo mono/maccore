@@ -4088,7 +4088,7 @@ namespace MonoMac.Foundation
 		NSObject DefaultCenter { get; }
 
 		[Export ("addObserver:selector:name:object:suspensionBehavior:")]
-		void AddObserver (NSObject observer, Selector selector, string name, string anObject, NSNotificationSuspensionBehavior suspensionBehavior);
+		void AddObserver (NSObject observer, Selector selector, [NullAllowed] string notificationName, [NullAllowed] string notificationSenderc, NSNotificationSuspensionBehavior suspensionBehavior);
 
 		[Export ("postNotificationName:object:userInfo:deliverImmediately:")]
 		void PostNotificationName (string name, string anObject, [NullAllowed] NSDictionary userInfo, bool deliverImmediately);
