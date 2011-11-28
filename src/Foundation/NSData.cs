@@ -65,7 +65,10 @@ namespace MonoMac.Foundation {
 		{
 			if (buffer == null)
 				throw new ArgumentNullException ("buffer");
-
+			
+			if (buffer.Length == 0)
+				return FromBytes (IntPtr.Zero, 0);
+			
 			unsafe {
 				fixed (byte *ptr = &buffer [0]){
 					return FromBytes ((IntPtr) ptr, (uint) buffer.Length);
