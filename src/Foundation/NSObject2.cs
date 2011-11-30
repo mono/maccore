@@ -30,6 +30,7 @@ namespace MonoMac.Foundation {
 		}
 
 		[Export ("conformsToProtocol:")]
+		[Preserve ()]
 		public virtual bool ConformsToProtocol (IntPtr protocol)
 		{
 			bool does;
