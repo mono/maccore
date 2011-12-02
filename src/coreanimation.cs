@@ -218,7 +218,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("sublayerTransform")]
 		CATransform3D SublayerTransform { get; set; }
 
-		[Export ("mask", ArgumentSemantic.Retain)]
+		[Export ("mask", ArgumentSemantic.Retain)][NullAllowed]
 		CALayer Mask { get; set; }
 
 		[Export ("masksToBounds")]
