@@ -5129,7 +5129,7 @@ namespace MonoMac.Foundation
 
 		[Since (5,0)]
                 [Export ("URLForUbiquityContainerIdentifier:")]
-                NSUrl GetUrlForUbiquityContainer (string containerIdentifier);
+                NSUrl GetUrlForUbiquityContainer ([NullAllowed] string containerIdentifier);
 
 		[Since (5,0)]
                 [Export ("URLForPublishingUbiquitousItemAtURL:expirationDate:error:")]
