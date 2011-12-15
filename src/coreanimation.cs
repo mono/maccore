@@ -336,14 +336,15 @@ namespace MonoMac.CoreAnimation {
 		[Export ("layoutSublayers")]
 		void LayoutSublayers ();
 
+		[Static]
 		[Export ("defaultActionForKey:")]
-		CAAction DefaultActionForKey (string eventKey);
+		NSObject DefaultActionForKey (string eventKey);
 
 		[Export ("actionForKey:")]
-		CAAction ActionForKey (string eventKey);
+		NSObject ActionForKey (string eventKey);
 
 		[Export ("actions", ArgumentSemantic.Copy)]
-		CAAction [] Actions { get; set; }
+		NSDictionary Actions { get; set; }
 
 		[Export ("addAnimation:forKey:")]
 		void AddAnimation (CAAnimation animation, [NullAllowed] string key);
@@ -732,7 +733,7 @@ namespace MonoMac.CoreAnimation {
 		void LayoutSublayersOfLayer (CALayer layer);
 
 		[Export ("actionForLayer:forKey:"), EventArgs ("CALayerDelegateAction"), DefaultValue (null)]
-		CAAction ActionForLAyer (CALayer layer, string eventKey);
+		NSObject ActionForLayer (CALayer layer, string eventKey);
 	}
 	
 #if !MONOMAC
