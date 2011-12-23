@@ -4095,22 +4095,22 @@ namespace MonoMac.Foundation
 		void AddObserver (NSObject observer, Selector selector, [NullAllowed] string notificationName, [NullAllowed] string notificationSenderc, NSNotificationSuspensionBehavior suspensionBehavior);
 
 		[Export ("postNotificationName:object:userInfo:deliverImmediately:")]
-		void PostNotificationName (string name, string anObject, [NullAllowed] NSDictionary userInfo, bool deliverImmediately);
+		void PostNotificationName (string name, [NullAllowed] string anObject, [NullAllowed] NSDictionary userInfo, bool deliverImmediately);
 		
 		[Export ("postNotificationName:object:userInfo:options:")]
-		void PostNotificationName (string name, string anObject, [NullAllowed] NSDictionary userInfo, NSNotificationFlags options);
+		void PostNotificationName (string name, [NullAllowed] string anObjecb, [NullAllowed] NSDictionary userInfo, NSNotificationFlags options);
 
 		[Export ("addObserver:selector:name:object:")]
-		void AddObserver (NSObject observer, Selector aSelector, [NullAllowed] string aName, [NullAllowed] string anObject);
+		void AddObserver (NSObject observer, Selector aSelector, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
 
 		[Export ("postNotificationName:object:")]
-		void PostNotificationName (string aName, string anObject);
+		void PostNotificationName (string aName, [NullAllowed] string anObject);
 
 		[Export ("postNotificationName:object:userInfo:")]
-		void PostNotificationName (string aName, string anObject, [NullAllowed] NSDictionary aUserInfo);
+		void PostNotificationName (string aName, [NullAllowed] string anObject, [NullAllowed] NSDictionary aUserInfo);
 
 		[Export ("removeObserver:name:object:")]
-		void RemoveObserver (NSObject observer, string aName, string anObject);
+		void RemoveObserver (NSObject observer, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
 
 		//Detected properties
 		[Export ("suspended")]
