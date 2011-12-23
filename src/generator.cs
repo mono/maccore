@@ -1168,14 +1168,8 @@ public class Generator {
 
 	public void Go ()
 	{
-		if (external){
-			marshal_types.Add (new MarshalType (typeof (CGColor), "IntPtr", "{0}.Handle", "new CGColor ("));
-			marshal_types.Add (new MarshalType (typeof (CGPath), "IntPtr", "{0}.Handle", "new CGPath ("));
-		} else {
-			marshal_types.Add (new MarshalType (typeof (CGColor), "IntPtr", "{0}.handle", "new CGColor ("));
-			marshal_types.Add (new MarshalType (typeof (CGPath), "IntPtr", "{0}.handle", "new CGPath ("));
-		}
-
+		marshal_types.Add (new MarshalType (typeof (CGColor), "IntPtr", "{0}.Handle", "new CGColor ("));
+		marshal_types.Add (new MarshalType (typeof (CGPath), "IntPtr", "{0}.Handle", "new CGPath ("));
 		marshal_types.Add (new MarshalType (typeof (CGContext), "IntPtr", "{0}.Handle", "new CGContext ("));
 		marshal_types.Add (new MarshalType (typeof (CGImage), "IntPtr", "{0}.Handle", "new CGImage ("));
 		marshal_types.Add (new MarshalType (typeof (NSObject), "IntPtr", "{0}.Handle", "Runtime.GetNSObject ("));
