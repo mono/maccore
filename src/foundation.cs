@@ -4101,7 +4101,7 @@ namespace MonoMac.Foundation
 		void PostNotificationName (string name, string anObject, [NullAllowed] NSDictionary userInfo, NSNotificationFlags options);
 
 		[Export ("addObserver:selector:name:object:")]
-		void AddObserver (NSObject observer, Selector aSelector, string aName, string anObject);
+		void AddObserver (NSObject observer, Selector aSelector, [NullAllowed] string aName, [NullAllowed] string anObject);
 
 		[Export ("postNotificationName:object:")]
 		void PostNotificationName (string aName, string anObject);
