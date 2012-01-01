@@ -1021,6 +1021,43 @@ namespace MonoMac.Foundation
 
 	}
 
+	// This API is only supported because a bunch of third-party
+	// APIs are so poorly designed that they expose NSMutableArray
+	// as a public property.
+	[Obsolete ("You really should avoid using NSMutableArray in MonoTouch/MonoMac, this is usually used by poorly designed public APIs")]
+	[BaseType (typeof (NSArray))]
+	public interface NSMutableArray {
+		[Export ("initWithCapacity:")]
+		IntPtr Constructor (int capacity);
+		
+		[Export ("addObject:")]
+		void Add (NSObject obj);
+
+		[Export ("insertObject:atIndex:")]
+		void Insert (NSObject obj, int index);
+
+		[Export ("removeLastObject:")]
+		void RemoveLastObject ();
+
+		[Export ("removeObjectAtIndex:")]
+		void RemoveObject (int index);
+
+		[Export ("replaceObjectAtIndex:withObject:")]
+		void ReplaceObject (int index, NSObject withObject);
+
+		[Export ("removeAllObjects")]
+		void RemoveAllObjects ();
+
+		[Export ("addObjectsFromArray:")]
+		void AddObjects (NSObject [] source);
+
+		[Export ("insertObjects:atIndexes")]
+		void InsertObjects (NSObject [] objects, NSIndexSet atIndexes);
+
+		[Export ("removeObjectsAtIndexes:")]
+		void RemoveObjectsAtIndexes (NSIndexSet indexSet);
+	}
+	
 	[Since (3,2)]
 	[BaseType (typeof (NSAttributedString))]
 	public interface NSMutableAttributedString {
@@ -5328,7 +5365,7 @@ namespace MonoMac.Foundation
 #endif
 
 	[BaseType (typeof (NSObject))]
-	interface NSFileWrapper {
+	public interface NSFileWrapper {
 		[Export ("initWithURL:options:error:")]
 		IntPtr Constructor (NSUrl url, NSFileWrapperReadingOptions options, out NSError outError);
 
