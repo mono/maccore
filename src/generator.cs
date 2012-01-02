@@ -2072,7 +2072,7 @@ public class Generator {
 			if (HasAttribute (pi, typeof (RetainAttribute))){
 				print ("#pragma warning disable 168");
 				print ("{0} __mt_{1}_{2};", pi.ParameterType, mi.Name, pi.Name);
-				print ("#pragma warning enable 168");
+				print ("#pragma warning restore 168");
 			}
 
 		string selector = null;
