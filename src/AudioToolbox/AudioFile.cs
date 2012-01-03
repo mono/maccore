@@ -328,10 +328,10 @@ namespace MonoMac.AudioToolbox {
 				throw new ArgumentException ("startingByte", "<0");
 			int len = buffer.Length;
 			if (offset > len)
-                                throw new ArgumentException ("destination offset is beyond array size");
-                        // reordered to avoid possible integer overflow
-                        if (offset > len - count)
-                                throw new ArgumentException ("Reading would overrun buffer");
+				throw new ArgumentException ("destination offset is beyond array size");
+			// reordered to avoid possible integer overflow
+			if (offset > len - count)
+				throw new ArgumentException ("Reading would overrun buffer");
 
 			unsafe {
 				fixed (byte *p = &buffer [offset]){
@@ -348,12 +348,12 @@ namespace MonoMac.AudioToolbox {
 
 		public int Write (long startingByte, byte [] buffer, int offset, int count, bool useCache)
 		{
-                        if (offset < 0)
-                                throw new ArgumentOutOfRangeException ("offset", "< 0");
-                        if (count < 0)
-                                throw new ArgumentOutOfRangeException ("count", "< 0");
-                        if (offset > buffer.Length - count)
-                                throw new ArgumentException ("Reading would overrun buffer");
+			if (offset < 0)
+				throw new ArgumentOutOfRangeException ("offset", "< 0");
+			if (count < 0)
+				throw new ArgumentOutOfRangeException ("count", "< 0");
+			if (offset > buffer.Length - count)
+				throw new ArgumentException ("Reading would overrun buffer");
 
 			unsafe {
 				fixed (byte *p = &buffer [offset]){
@@ -367,12 +367,12 @@ namespace MonoMac.AudioToolbox {
 
 		public int Write (long startingByte, byte [] buffer, int offset, int count, bool useCache, out int errorCode)
 		{
-                        if (offset < 0)
-                                throw new ArgumentOutOfRangeException ("offset", "< 0");
-                        if (count < 0)
-                                throw new ArgumentOutOfRangeException ("count", "< 0");
-                        if (offset > buffer.Length - count)
-                                throw new ArgumentException ("Reading would overrun buffer");
+			if (offset < 0)
+				throw new ArgumentOutOfRangeException ("offset", "< 0");
+			if (count < 0)
+				throw new ArgumentOutOfRangeException ("count", "< 0");
+			if (offset > buffer.Length - count)
+				throw new ArgumentException ("Reading would overrun buffer");
 
 			unsafe {
 				fixed (byte *p = &buffer [offset]){
@@ -412,10 +412,10 @@ namespace MonoMac.AudioToolbox {
 				throw new ArgumentException ("count", "<0");
 			int len = buffer.Length;
 			if (offset > len)
-                                throw new ArgumentException ("destination offset is beyond array size");
-                        // reordered to avoid possible integer overflow
-                        if (offset > len - count)
-                                throw new ArgumentException ("Reading would overrun buffer");
+				throw new ArgumentException ("destination offset is beyond array size");
+			// reordered to avoid possible integer overflow
+			if (offset > len - count)
+				throw new ArgumentException ("Reading would overrun buffer");
 			return RealReadPacketData (useCache, inStartingPacket, nPackets, buffer, offset, count);
 		}
 
@@ -471,10 +471,10 @@ namespace MonoMac.AudioToolbox {
 				throw new ArgumentException ("count", "<0");
 			int len = buffer.Length;
 			if (offset > len)
-                                throw new ArgumentException ("destination offset is beyond array size");
-                        // reordered to avoid possible integer overflow
-                        if (offset > len - count)
-                                throw new ArgumentException ("Reading would overrun buffer");
+				throw new ArgumentException ("destination offset is beyond array size");
+			// reordered to avoid possible integer overflow
+			if (offset > len - count)
+				throw new ArgumentException ("Reading would overrun buffer");
 			return RealReadFixedPackets (useCache, inStartingPacket, nPackets, buffer, offset, count);
 		}
 
@@ -525,12 +525,12 @@ namespace MonoMac.AudioToolbox {
 				throw new ArgumentNullException ("inPacketDescriptions");
 			if (buffer == null)
 				throw new ArgumentNullException ("buffer");
-                        if (offset < 0)
-                                throw new ArgumentOutOfRangeException ("offset", "< 0");
-                        if (count < 0)
-                                throw new ArgumentOutOfRangeException ("count", "< 0");
-                        if (offset > buffer.Length - count)
-                                throw new ArgumentException ("Reading would overrun buffer");
+			if (offset < 0)
+				throw new ArgumentOutOfRangeException ("offset", "< 0");
+			if (count < 0)
+				throw new ArgumentOutOfRangeException ("count", "< 0");
+			if (offset > buffer.Length - count)
+				throw new ArgumentException ("Reading would overrun buffer");
 
 			int nPackets = packetDescriptions.Length;
 			fixed (byte *bop = &buffer [offset]){
@@ -560,12 +560,12 @@ namespace MonoMac.AudioToolbox {
 				throw new ArgumentNullException ("inPacketDescriptions");
 			if (buffer == null)
 				throw new ArgumentNullException ("buffer");
-                        if (offset < 0)
-                                throw new ArgumentOutOfRangeException ("offset", "< 0");
-                        if (count < 0)
-                                throw new ArgumentOutOfRangeException ("count", "< 0");
-                        if (offset > buffer.Length - count)
-                                throw new ArgumentException ("Reading would overrun buffer");
+			if (offset < 0)
+				throw new ArgumentOutOfRangeException ("offset", "< 0");
+			if (count < 0)
+				throw new ArgumentOutOfRangeException ("count", "< 0");
+			if (offset > buffer.Length - count)
+				throw new ArgumentException ("Reading would overrun buffer");
 
 			int nPackets = packetDescriptions.Length;
 			fixed (byte *bop = &buffer [offset]){
