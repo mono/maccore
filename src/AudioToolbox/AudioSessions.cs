@@ -78,6 +78,7 @@ namespace MonoMac.AudioToolbox {
 		PreferredHardwareIOBufferDuration = 0x696f6264,
 		AudioCategory = 0x61636174,
 		AudioRoute = 0x726f7574,
+		AudioRouteDescription = 0x63726172, // 'crar' 
 		AudioRouteChange = 0x726f6368,
 		CurrentHardwareSampleRate = 0x63687372,
 		CurrentHardwareInputNumberChannels = 0x63686963,
@@ -103,6 +104,28 @@ namespace MonoMac.AudioToolbox {
 		VoiceChat = 0x76636374,
 		VideoRecording = 0x76726364,
 		Measurement = 0x6d736d74
+	}
+	
+	public enum AudioSessionInputRouteKind {
+		None,
+		LineIn,
+		BuiltInMic,
+		HeadsetMic,
+		BluetoothHFP,
+		USBAudio,
+	}
+	
+	public enum AudioSessionOutputRouteKind {
+		None,
+		LineOut,
+		Headphones,
+		BluetoothHFP,
+		BluetoothA2DP,
+		BuiltInReceiver,
+		BuiltInSpeaker,
+		USBAudio,
+		HDMI,
+		AirPlay,
 	}
 }
 
