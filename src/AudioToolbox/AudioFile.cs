@@ -340,10 +340,15 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				fixed (byte *p = &buffer [offset]){
-					if (AudioFileReadBytes (handle, useCache, startingByte, ref count, (IntPtr) p) == 0)
+					var res = AudioFileReadBytes (handle, useCache, startingByte, ref count, (IntPtr) p);
+					
+					if (res == (int) AudioFileError.EndOfFile)
+						return count <= 0 ? -1 : count;
+					
+					if (res == 0)
 						return count;
-					else
-						return -1;
+					
+					return -1;
 				}
 			}
 		}
@@ -448,8 +453,13 @@ namespace MonoMac.AudioToolbox {
 			try {
 				fixed (byte *bop = &buffer [offset]){
 					var r = AudioFileReadPacketData (handle, useCache, ref count, &b, inStartingPacket, ref nPackets, (IntPtr) bop);
-					if (r != 0)
+					
+					if (r == (int) AudioFileError.EndOfFile) {
+						if (count == 0)
+							return null;
+					} else if (r != 0) {
 						return null;
+					}
 				}
 
 				var ret = PacketDescriptionFrom (nPackets, b);
@@ -490,8 +500,12 @@ namespace MonoMac.AudioToolbox {
 			try {
 				fixed (byte *bop = &buffer [offset]){
 					var r = AudioFileReadPacketData (handle, useCache, ref count, &b, inStartingPacket, ref nPackets, (IntPtr) bop);
-					if (r != 0)
+					if (r == (int) AudioFileError.EndOfFile) {
+						if (count == 0)
+							return null;
+					} else if (r != 0) {
 						return null;
+					}
 				}
 				var ret = new AudioStreamPacketDescription [nPackets];
 				int p = 0;
