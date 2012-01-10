@@ -182,5 +182,12 @@ namespace MonoMac.CoreFoundation {
 					return CFStringGetCharacterAtIndex (handle, p);
 			}
 		}
+		
+		public override string ToString ()
+		{
+			if (str != null)
+				return str;
+			return FetchString (handle);
+		}
 	}
 }
