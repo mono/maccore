@@ -2172,13 +2172,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("playbackBufferEmpty")]
 		bool PlaybackBufferEmpty { [Bind ("isPlaybackBufferEmpty")] get;  }
 
-		// TODO: binding
-		//[Export ("seekableTimeRanges")]
-		//CMTimeRange [] seekableTimeRanges { get;  }
+		[Export ("seekableTimeRanges")]
+		CMTimeRange [] SeekableTimeRanges { get;  }
 
-		// TODO; binding
-		//[Export ("loadedTimeRanges")]
-		// NSArray loadedTimeRanges { get;  }
+		[Export ("loadedTimeRanges")]
+		NSValue [] LoadedTimeRanges { get;  }
 
 		[Export ("timedMetadata")]
 		NSObject [] TimedMetadata { get;  }
