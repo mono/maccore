@@ -158,11 +158,9 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentException ("bitsPerComponent");
 			if (bytesPerRow < 0)
 				throw new ArgumentException ("bytesPerRow");
-			if (provider == null)
-				throw new ArgumentNullException ("provider");
 
 			handle = CGImageCreate (width, height, bitsPerComponent, bitsPerPixel, bytesPerRow,
-						colorSpace.Handle, bitmapFlags, provider.Handle,
+						colorSpace.Handle, bitmapFlags, provider == null ? IntPtr.Zero : provider.Handle,
 						decode,
 						shouldInterpolate, intent);
 		}
@@ -183,11 +181,9 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentException ("bitsPerComponent");
 			if (bytesPerRow < 0)
 				throw new ArgumentException ("bytesPerRow");
-			if (provider == null)
-				throw new ArgumentNullException ("provider");
 
 			handle = CGImageCreate (width, height, bitsPerComponent, bitsPerPixel, bytesPerRow,
-						colorSpace.Handle, (CGBitmapFlags) alphaInfo, provider.Handle,
+						colorSpace.Handle, (CGBitmapFlags) alphaInfo, provider == null ? IntPtr.Zero : provider.Handle,
 						decode,
 						shouldInterpolate, intent);
 		}
