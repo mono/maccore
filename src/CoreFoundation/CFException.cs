@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright (C) 2009 Novell, Inc
+// Copyright 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -135,7 +136,7 @@ namespace MonoMac.CoreFoundation {
 		static string ToString (IntPtr cfStringRef, bool release)
 		{
 			var r = CFString.FetchString (cfStringRef);
-			if (release)
+			if (release && (cfStringRef != IntPtr.Zero))
 				CFObject.CFRelease (cfStringRef);
 			return r;
 		}
