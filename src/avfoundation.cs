@@ -2173,7 +2173,7 @@ namespace MonoMac.AVFoundation {
 		bool PlaybackBufferEmpty { [Bind ("isPlaybackBufferEmpty")] get;  }
 
 		[Export ("seekableTimeRanges")]
-		CMTimeRange [] SeekableTimeRanges { get;  }
+		NSValue [] SeekableTimeRanges { get;  }
 
 		[Export ("loadedTimeRanges")]
 		NSValue [] LoadedTimeRanges { get;  }
