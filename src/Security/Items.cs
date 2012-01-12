@@ -100,7 +100,7 @@ namespace MonoMac.Security {
 				IntPtr ptr;
 				status = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (status == SecStatusCode.Success)
-					return new NSData (ptr);
+					return new NSData (ptr, false);
 				return null;
 			}
 		}
@@ -119,9 +119,13 @@ namespace MonoMac.Security {
 				n = null;
 				if (status == SecStatusCode.Success){
 					if (max == 1)
-						return new NSData [] { new NSData (ptr) };
-					else
-						return NSArray.ArrayFromHandle<NSData> (ptr);
+						return new NSData [] { new NSData (ptr, false) };
+
+					var array = new NSArray (ptr);
+					var records = new NSData [array.Count];
+					for (uint i = 0; i < records.Length; i++)
+						records [i] = new NSData (array.ValueAt (i), false);
+					return records;
 				}
 				return null;
 			}
@@ -151,7 +155,7 @@ namespace MonoMac.Security {
 				IntPtr ptr;
 				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (result == SecStatusCode.Success)
-					return new SecRecord (new NSMutableDictionary (new NSDictionary (ptr)));
+					return new SecRecord (new NSMutableDictionary (ptr, false));
 				return null;
 			}
 		}
@@ -169,10 +173,10 @@ namespace MonoMac.Security {
 				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				n = null;
 				if (result == SecStatusCode.Success){
-					var dicts = NSArray.ArrayFromHandle<NSDictionary> (ptr);
-					var records = new SecRecord [dicts.Length];
-					for (int i = 0; i < dicts.Length; i++)
-						records [i] = new SecRecord (new NSMutableDictionary (dicts [i]));
+					var array = new NSArray (ptr);
+					var records = new SecRecord [array.Count];
+					for (uint i = 0; i < records.Length; i++)
+						records [i] = new SecRecord (new NSMutableDictionary (array.ValueAt (i), false));
 					return records;
 				}
 				return null;
@@ -581,7 +585,7 @@ namespace MonoMac.Security {
 				
 				IntPtr ptr;
 				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
-				if (result == SecStatusCode.Success){
+				if ((result == SecStatusCode.Success) && (ptr != IntPtr.Zero)) {
 					int cfType = CFType.GetTypeID (ptr);
 					
 					if (cfType == SecCertificate.GetTypeID ())
