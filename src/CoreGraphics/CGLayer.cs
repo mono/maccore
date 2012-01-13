@@ -87,7 +87,7 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static SizeF CGLayerGetSize (IntPtr layer);
 
-		SizeF Size {
+		public SizeF Size {
 			get {
 				return CGLayerGetSize (handle);
 			}
