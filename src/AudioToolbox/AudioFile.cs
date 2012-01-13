@@ -287,6 +287,11 @@ namespace MonoMac.AudioToolbox {
 			return Open (url, AudioFilePermission.Read, fileTypeHint);
 		}
 		
+		public static AudioFile OpenRead (CFUrl url, AudioFileType fileTypeHint)
+		{
+			return Open (url, AudioFilePermission.Read, fileTypeHint);
+		}
+		
 		public static AudioFile Open (string url, AudioFilePermission permissions, AudioFileType fileTypeHint)
 		{
 			if (url == null)
