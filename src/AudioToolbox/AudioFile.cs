@@ -507,6 +507,17 @@ namespace MonoMac.AudioToolbox {
 			AudioFileID audioFile, bool useCache, int inNumBytes, AudioStreamPacketDescription [] inPacketDescriptions,
                         long inStartingPacket, ref int numPackets, IntPtr buffer);
 
+		public int WritePackets (bool useCache, long inStartingPacket, int numPackets, IntPtr buffer, int count)
+		{
+			if (buffer == IntPtr.Zero)
+				throw new ArgumentNullException ("buffer");
+
+			if (AudioFileWritePackets (handle, useCache, count, null, inStartingPacket, ref numPackets, buffer) == 0)
+				return numPackets;
+
+			return -1;
+		}
+
 		unsafe public int WritePackets (bool useCache, long inStartingPacket, AudioStreamPacketDescription [] inPacketDescriptions, IntPtr buffer, int count)
 		{
 			if (inPacketDescriptions == null)
