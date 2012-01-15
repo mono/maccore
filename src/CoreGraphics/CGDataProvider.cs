@@ -97,7 +97,7 @@ namespace MonoMac.CoreGraphics {
 			if (handle == IntPtr.Zero)
 				return null;
 
-			return new CGDataProvider (handle);
+			return new CGDataProvider (handle, true);
 		}
 
 		public CGDataProvider (string file)
