@@ -22,10 +22,62 @@
 //
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
+using MonoMac.AudioToolbox;
 using System;
 
 namespace MonoMac.AVFoundation {
 
+	public class AVAudioPlayerSettings {
+		NSDictionary dict;
+		
+		internal AVAudioPlayerSettings (NSDictionary dictionary)
+		{
+			dict = dictionary;
+		}
+
+		public AudioChannelLayout AudioChannelLayout {
+			get {
+				var data = dict.ObjectForKey (AVAudioPlayer.AVChannelLayoutKey) as NSData;
+				if (data == null)
+					return new AudioChannelLayout ();
+				return AudioFile.AudioChannelLayoutFromHandle (data.Bytes);
+			}
+		}
+
+		public int EncoderBitRateKey {
+			get {
+				var rate = dict.ObjectForKey (AVAudioPlayer.AVEncoderBitRateKey) as NSNumber;
+				return rate == null ? 0 : rate.Int32Value;
+			}
+		}
+
+		public AudioFormatType AudioFormatType {
+			get {
+				var ft = dict.ObjectForKey (AVAudioPlayer.AVFormatIDKey) as NSNumber;
+				return (AudioFormatType) (ft == null ? -1 : ft.Int32Value);
+			}
+		}
+
+		public int NumberChannels {
+			get {
+				var n =  dict.ObjectForKey (AVAudioPlayer.AVNumberOfChannelsKey) as NSNumber;
+				return n == null ? 1 : n.Int32Value;
+			}
+		}
+
+		public float SampleRate {
+			get {
+				var r = dict.ObjectForKey (AVAudioPlayer.AVSampleRateKey) as NSNumber;
+				return r == null ? 0 : r.FloatValue;
+			}
+		}
+		
+		public static implicit operator NSDictionary (AVAudioPlayerSettings settings)
+		{
+			return settings.dict;
+		}
+	}
+	
 	public partial class AVAudioPlayer {
 
 		public static AVAudioPlayer FromUrl (NSUrl url, out NSError error)
@@ -92,6 +144,12 @@ namespace MonoMac.AVFoundation {
 		public AVAudioPlayer (NSData data, NSError error) : this (data, IntPtr.Zero)
 		{
 			
+		}
+
+		public AVAudioPlayerSettings Settings {
+			get {
+				return new AVAudioPlayerSettings (_Settings);
+			}
 		}
 	}
 }

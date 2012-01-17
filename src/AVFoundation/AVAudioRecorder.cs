@@ -30,7 +30,7 @@ namespace MonoMac.AVFoundation {
 		[Obsolete ("Use the factory AVAudioRecorder.ToUrl as this method had an invalid signature up to MonoMac 1.4.4")]
 		public AVAudioRecorder (NSUrl url, NSDictionary settings, NSError outError)
 		{
-			throw new Exception ("This constructor is no longer supported, use the AVAudioRecorder.ToUrl factory method instead")]
+			throw new Exception ("This constructor is no longer supported, use the AVAudioRecorder.ToUrl factory method instead");
 		}
 
 		public static AVAudioRecorder ToUrl (NSUrl url, NSDictionary settings, out NSError error)

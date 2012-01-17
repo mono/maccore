@@ -292,8 +292,23 @@ namespace MonoMac.AVFoundation {
 		bool PlayAtTimetime (double time);
 
 		[Since (4,0)]
-		[Export ("settings")]
-		NSDictionary Settings { get;  }
+		[Export ("settings"), Internal]
+		NSDictionary _Settings { get;  }
+
+		[Field ("AVChannelLayoutKey"), Internal]
+		NSString AVChannelLayoutKey { get; }
+
+		[Field ("AVEncoderBitRateKey"), Internal]
+		NSString AVEncoderBitRateKey { get; }
+
+		[Field ("AVFormatIDKey"), Internal]
+		NSString AVFormatIDKey { get; }
+
+		[Field ("AVNumberOfChannelsKey"), Internal]
+		NSString AVNumberOfChannelsKey { get; }
+
+		[Field ("AVSampleRateKey"), Internal]
+		NSString AVSampleRateKey { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
