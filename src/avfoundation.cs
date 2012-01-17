@@ -383,6 +383,33 @@ namespace MonoMac.AVFoundation {
 	
 		[Export ("averagePowerForChannel:")]
 		float AveragePower (uint channelNumber);
+
+		[Field ("AVLinearPCMBitDepthKey"), Internal]
+		NSString AVLinearPCMBitDepthKey { get; }
+
+		[Field ("AVLinearPCMIsBigEndianKey"), Internal]
+		NSString AVLinearPCMIsBigEndianKey { get; }
+
+		[Field ("AVLinearPCMIsFloatKey"), Internal]
+		NSString AVLinearPCMIsFloatKey { get; }
+
+		[Field ("AVLinearPCMIsNonInterleaved"), Internal]
+		NSString AVLinearPCMIsNonInterleaved { get; }
+
+		[Field ("AVEncoderAudioQualityKey"), Internal]
+		NSString AVEncoderAudioQualityKey { get; }
+		
+		[Field ("AVEncoderBitRateKey"), Internal]
+		NSString AVEncoderBitRateKey { get; }
+		
+		[Field ("AVEncoderBitRatePerChannelKey"), Internal]
+		NSString AVEncoderBitRatePerChannelKey { get; }
+		
+		[Field ("AVEncoderBitDepthHintKey"), Internal]
+		NSString AVEncoderBitDepthHintKey { get; }
+
+		[Field ("AVSampleRateConverterAudioQualityKey"), Internal]
+		NSString AVSampleRateConverterAudioQualityKey { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
