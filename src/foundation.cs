@@ -4280,6 +4280,12 @@ namespace MonoMac.Foundation
 		[Export ("valueWithUIEdgeInsets:")][Static]
 		NSValue FromUIEdgeInsets (MonoMac.UIKit.UIEdgeInsets insets);
 
+		[Export ("valueWithUIOffset:")][Static]
+		NSValue FromUIOffset (MonoMac.UIKit.UIOffset insets);
+
+		[Export ("UIOffsetValue")]
+		UIOffset UIOffsetValue { get; }
+
 		[Export ("valueWithCGRect:")][Static]
 		NSValue FromRectangleF (System.Drawing.RectangleF rect);
 
@@ -4303,6 +4309,8 @@ namespace MonoMac.Foundation
 
 		[Export ("CATransform3DValue")]
 		MonoMac.CoreAnimation.CATransform3D CATransform3DValue { get; }
+
+		
 #endif
 	}
 	
