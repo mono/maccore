@@ -30,6 +30,7 @@ namespace MonoMac.AVFoundation {
 		[Obsolete ("Use the factory AVAudioRecorder.ToUrl as this method had an invalid signature up to MonoMac 1.4.4")]
 		public AVAudioRecorder (NSUrl url, NSDictionary settings, NSError outError)
 		{
+			throw new Exception ("Use AVAudioRecorder.ToUrl to create instances of AVAudioRecorder");
 		}
 
 		public static AVAudioRecorder ToUrl (NSUrl url, NSDictionary settings, out NSError error)
