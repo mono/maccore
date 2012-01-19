@@ -100,7 +100,7 @@ namespace MonoMac.Security {
 				IntPtr ptr;
 				status = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (status == SecStatusCode.Success)
-					return new NSData (ptr);
+					return new NSData (ptr, false);
 				return null;
 			}
 		}
@@ -119,9 +119,13 @@ namespace MonoMac.Security {
 				n = null;
 				if (status == SecStatusCode.Success){
 					if (max == 1)
-						return new NSData [] { new NSData (ptr) };
-					else
-						return NSArray.ArrayFromHandle<NSData> (ptr);
+						return new NSData [] { new NSData (ptr, false) };
+
+					var array = new NSArray (ptr);
+					var records = new NSData [array.Count];
+					for (uint i = 0; i < records.Length; i++)
+						records [i] = new NSData (array.ValueAt (i), false);
+					return records;
 				}
 				return null;
 			}
@@ -151,7 +155,7 @@ namespace MonoMac.Security {
 				IntPtr ptr;
 				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				if (result == SecStatusCode.Success)
-					return new SecRecord (new NSMutableDictionary (new NSDictionary (ptr)));
+					return new SecRecord (new NSMutableDictionary (ptr, false));
 				return null;
 			}
 		}
@@ -169,10 +173,10 @@ namespace MonoMac.Security {
 				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
 				n = null;
 				if (result == SecStatusCode.Success){
-					var dicts = NSArray.ArrayFromHandle<NSDictionary> (ptr);
-					var records = new SecRecord [dicts.Length];
-					for (int i = 0; i < dicts.Length; i++)
-						records [i] = new SecRecord (new NSMutableDictionary (dicts [i]));
+					var array = new NSArray (ptr);
+					var records = new SecRecord [array.Count];
+					for (uint i = 0; i < records.Length; i++)
+						records [i] = new SecRecord (new NSMutableDictionary (array.ValueAt (i), false));
 					return records;
 				}
 				return null;
@@ -276,11 +280,11 @@ namespace MonoMac.Security {
 			SecAuthenticationType authenticationType = SecAuthenticationType.Default,
 			string securityDomain = null)
 		{
-			GCHandle serverHandle;
-			GCHandle securityDomainHandle;
-			GCHandle accountHandle;
-			GCHandle pathHandle;
-			GCHandle passwordHandle;
+			GCHandle serverHandle = new GCHandle ();
+			GCHandle securityDomainHandle = new GCHandle ();
+			GCHandle accountHandle = new GCHandle ();
+			GCHandle pathHandle = new GCHandle ();
+			GCHandle passwordHandle = new GCHandle ();
 			
 			int serverNameLength = 0;
 			IntPtr serverNamePtr = IntPtr.Zero;
@@ -371,10 +375,10 @@ namespace MonoMac.Security {
 		{
 			password = null;
 			
-			GCHandle serverHandle;
-			GCHandle securityDomainHandle;
-			GCHandle accountHandle;
-			GCHandle pathHandle;
+			GCHandle serverHandle = new GCHandle ();
+			GCHandle securityDomainHandle = new GCHandle ();
+			GCHandle accountHandle = new GCHandle ();
+			GCHandle pathHandle = new GCHandle ();
 			
 			int serverNameLength = 0;
 			IntPtr serverNamePtr = IntPtr.Zero;
@@ -456,9 +460,9 @@ namespace MonoMac.Security {
 
 		public static SecStatusCode AddGenericPassword (string serviceName, string accountName, byte[] password)
 		{
-			GCHandle serviceHandle;
-			GCHandle accountHandle;
-			GCHandle passwordHandle;
+			GCHandle serviceHandle = new GCHandle ();
+			GCHandle accountHandle = new GCHandle ();
+			GCHandle passwordHandle = new GCHandle ();
 			
 			int serviceNameLength = 0;
 			IntPtr serviceNamePtr = IntPtr.Zero;
@@ -513,8 +517,8 @@ namespace MonoMac.Security {
 		{
 			password = null;
 
-			GCHandle serviceHandle;
-			GCHandle accountHandle;
+			GCHandle serviceHandle = new GCHandle ();
+			GCHandle accountHandle = new GCHandle ();
 			
 			int serviceNameLength = 0;
 			IntPtr serviceNamePtr = IntPtr.Zero;
@@ -581,7 +585,7 @@ namespace MonoMac.Security {
 				
 				IntPtr ptr;
 				result = SecItem.SecItemCopyMatching (copy.Handle, out ptr);
-				if (result == SecStatusCode.Success){
+				if ((result == SecStatusCode.Success) && (ptr != IntPtr.Zero)) {
 					int cfType = CFType.GetTypeID (ptr);
 					
 					if (cfType == SecCertificate.GetTypeID ())
@@ -610,7 +614,10 @@ namespace MonoMac.Security {
 		public SecRecord (SecKind secKind)
 		{
 			var kind = SecClass.FromSecKind (secKind);
-			queryDict = NSMutableDictionary.LowlevelFromObjectAndKey (kind, SecClass.SecClassKey);
+			if (kind == SecClass.Identity)
+				queryDict = new NSMutableDictionary ();
+			else
+				queryDict = NSMutableDictionary.LowlevelFromObjectAndKey (kind, SecClass.SecClassKey);
 		}
 
 		public SecRecord Clone ()
@@ -1211,6 +1218,18 @@ namespace MonoMac.Security {
 				if (value == null)
 					throw new ArgumentNullException ("value");
 				SetValue (value, SecItem.ValueData);
+			}
+		}
+		
+		public NSObject ValueRef {
+			get {
+				return FetchObject (SecItem.ValueRef);
+			}
+
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				SetValue (value, SecItem.ValueRef);
 			}
 		}
 	}

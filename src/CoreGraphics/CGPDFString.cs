@@ -5,7 +5,7 @@
 //	Miguel de Icaza <miguel@xamarin.com>
 //	Sebastien Pouliot <sebastien@xamarin.com>
 // 
-// Copyright 2011 Xamarin Inc. All rights reserved
+// Copyright 2011-2012 Xamarin Inc. All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -29,6 +29,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using MonoMac.CoreFoundation;
 
 namespace MonoMac.CoreGraphics {
 	
@@ -36,24 +37,15 @@ namespace MonoMac.CoreGraphics {
 	static class CGPDFString {
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPDFStringGetBytePtr (IntPtr pdfStr);
-
-		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPDFStringGetLength (IntPtr pdfStr);
+		extern static IntPtr /*CFStringRef*/ CGPDFStringCopyTextString (IntPtr /*CGPDFStringRef*/ pdfStr);
 
 		static public string ToString (IntPtr pdfString)
 		{
 			if (pdfString == IntPtr.Zero)
 				return null;
 			
-			int n = (int) CGPDFStringGetLength (pdfString);
-			IntPtr ptr = CGPDFStringGetBytePtr (pdfString);
-			if (ptr == IntPtr.Zero)
-				return null;
-			
-			unsafe {
-				// the returned char* is UTF-8 encoded - see bug #975
-				return new string ((sbyte *) ptr, 0, n, System.Text.Encoding.UTF8);
+			using (var cfs = new CFString (CGPDFStringCopyTextString (pdfString), true)) {
+				return cfs.ToString ();
 			}
 		}
 	}

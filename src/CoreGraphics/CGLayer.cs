@@ -87,7 +87,7 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static SizeF CGLayerGetSize (IntPtr layer);
 
-		SizeF Size {
+		public SizeF Size {
 			get {
 				return CGLayerGetSize (handle);
 			}
@@ -106,7 +106,7 @@ namespace MonoMac.CoreGraphics {
 		extern static IntPtr CGLayerCreateWithContext (IntPtr context, SizeF size, IntPtr dictionary);
 
 		public static CGLayer Create (CGContext context, SizeF size) {
-			return new CGLayer (CGLayerCreateWithContext (context.Handle, size, IntPtr.Zero));
+			return new CGLayer (CGLayerCreateWithContext (context.Handle, size, IntPtr.Zero), true);
 		}
 
 	}

@@ -7,6 +7,7 @@
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
+// Copyright 2011, Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -32,6 +33,7 @@ using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 using MonoMac.CoreGraphics;
+using MonoMac.CoreMedia;
 
 #if MONOMAC
 using MonoMac.AppKit;
@@ -118,6 +120,27 @@ namespace MonoMac.Foundation
 		[Field ("NSFontAttributeName")]
 #endif
 		NSString FontAttributeName { get; }
+
+#if MONOMAC
+		[Field ("NSUnderlineStyleAttributeName", "AppKit")]
+#else
+		[Field ("NSUnderlineStyleAttributeName")]
+#endif
+		NSString UnderlineStyleAttributeName { get; }
+
+#if MONOMAC
+		[Field ("NSStrikethroughStyleAttributeName", "AppKit")]
+#else
+		[Field ("NSStrikethroughStyleAttributeName")]
+#endif
+		NSString StrikethroughStyleAttributeName { get; }
+
+#if MONOMAC
+		[Field ("NSStrokeWidthAttributeName", "AppKit")]
+#else
+		[Field ("NSStrokeWidthAttributeName")]
+#endif
+		NSString StrokeWidthAttributeName { get; }
 
 #if MONOMAC
 		[Field ("NSParagraphStyleAttributeName", "AppKit")]
@@ -485,6 +508,10 @@ namespace MonoMac.Foundation
 
 		[Export ("dataWithContentsOfFile:")][Static]
 		NSData FromFile (string path);
+		
+		[Export ("dataWithContentsOfFile:options:error:")]
+		[Static]
+		NSData FromFile (string path, NSDataReadingOptions mask, out NSError error);
 
 		[Export ("dataWithBytes:length:"), Static]
 		NSData FromBytes (IntPtr bytes, uint size);
@@ -994,6 +1021,43 @@ namespace MonoMac.Foundation
 
 	}
 
+	// This API is only supported because a bunch of third-party
+	// APIs are so poorly designed that they expose NSMutableArray
+	// as a public property.
+	[Obsolete ("You really should avoid using NSMutableArray in MonoTouch/MonoMac, this is usually used by poorly designed public APIs")]
+	[BaseType (typeof (NSArray))]
+	public interface NSMutableArray {
+		[Export ("initWithCapacity:")]
+		IntPtr Constructor (int capacity);
+		
+		[Export ("addObject:")]
+		void Add (NSObject obj);
+
+		[Export ("insertObject:atIndex:")]
+		void Insert (NSObject obj, int index);
+
+		[Export ("removeLastObject:")]
+		void RemoveLastObject ();
+
+		[Export ("removeObjectAtIndex:")]
+		void RemoveObject (int index);
+
+		[Export ("replaceObjectAtIndex:withObject:")]
+		void ReplaceObject (int index, NSObject withObject);
+
+		[Export ("removeAllObjects")]
+		void RemoveAllObjects ();
+
+		[Export ("addObjectsFromArray:")]
+		void AddObjects (NSObject [] source);
+
+		[Export ("insertObjects:atIndexes")]
+		void InsertObjects (NSObject [] objects, NSIndexSet atIndexes);
+
+		[Export ("removeObjectsAtIndexes:")]
+		void RemoveObjectsAtIndexes (NSIndexSet indexSet);
+	}
+	
 	[Since (3,2)]
 	[BaseType (typeof (NSAttributedString))]
 	public interface NSMutableAttributedString {
@@ -1081,6 +1145,9 @@ namespace MonoMac.Foundation
 		[Export ("dateWithTimeIntervalSinceReferenceDate:")]
 		[Static]
 		NSDate FromTimeIntervalSinceReferenceDate (double secs);
+
+		[Static, Export ("dateWithTimeIntervalSince1970:")]
+		NSDate FromTimeIntervalSince1970 (double secs);
 
 		[Export ("date")]
 		[Static]
@@ -1520,6 +1587,11 @@ namespace MonoMac.Foundation
 		[Export ("currentLocale")]
 		NSLocale CurrentLocale { get; }
 
+		[Static]
+		[Export ("autoUpdatingCurrentLocale")]
+		NSLocale AutoUpdatingCurrentLocale { get; }
+		
+
 		[Export ("initWithLocaleIdentifier:")]
 		IntPtr Constructor (string identifier);
 
@@ -1550,8 +1622,80 @@ namespace MonoMac.Foundation
 		[Export ("localeIdentifierFromComponents:")]
 		string LocaleIdentifierFromComponents (NSDictionary dict);
 
+		[Export ("canonicalLanguageIdentifierFromString")]
+		string CanonicalLanguageIdentifierFromString (string str);
+
 		[Export ("canonicalLocaleIdentifierFromString:")]
 		string CanonicalLocaleIdentifierFromString (string str);
+
+		[Export ("characterDirectionForLanguage")]
+		NSLocaleLanguageDirection GetCharacterDirection (string isoLanguageCode);
+
+		[Export ("lineDirectionForLanguage")]
+		NSLocaleLanguageDirection GetLineDirection (string isoLanguageCode);
+
+		[Field ("NSCurrentLocaleDidChangeNotification")]
+		NSString CurrentLocaleDidChangeNotification { get; }
+
+		[Export ("objectForKey:"), Internal]
+		NSObject ObjectForKey (NSString key);
+
+		[Internal, Field ("NSLocaleIdentifier")]
+		NSString _Identifier { get; }
+		
+		[Internal, Field ("NSLocaleLanguageCode")]
+		NSString _LanguageCode { get; }
+		
+		[Internal, Field ("NSLocaleCountryCode")]
+		NSString _CountryCode { get; }
+		
+		[Internal, Field ("NSLocaleScriptCode")]
+		NSString _ScriptCode { get; }
+		
+		[Internal, Field ("NSLocaleVariantCode")]
+		NSString _VariantCode { get; }
+		
+		[Internal, Field ("NSLocaleExemplarCharacterSet")]
+		NSString _ExemplarCharacterSet { get; }
+		
+		[Internal, Field ("NSLocaleCalendar")]
+		NSString _Calendar { get; }
+		
+		[Internal, Field ("NSLocaleCollationIdentifier")]
+		NSString _CollationIdentifier { get; }
+		
+		[Internal, Field ("NSLocaleUsesMetricSystem")]
+		NSString _UsesMetricSystem { get; }
+		
+		[Internal, Field ("NSLocaleMeasurementSystem")]
+		NSString _MeasurementSystem { get; }
+		
+		[Internal, Field ("NSLocaleDecimalSeparator")]
+		NSString _DecimalSeparator { get; }
+		
+		[Internal, Field ("NSLocaleGroupingSeparator")]
+		NSString _GroupingSeparator { get; }
+		
+		[Internal, Field ("NSLocaleCurrencySymbol")]
+		NSString _CurrencySymbol { get; }
+		
+		[Internal, Field ("NSLocaleCurrencyCode")]
+		NSString _CurrencyCode { get; }
+		
+		[Internal, Field ("NSLocaleCollatorIdentifier")]
+		NSString _CollatorIdentifier { get; }
+		
+		[Internal, Field ("NSLocaleQuotationBeginDelimiterKey")]
+		NSString _QuotationBeginDelimiterKey { get; }
+		
+		[Internal, Field ("NSLocaleQuotationEndDelimiterKey")]
+		NSString _QuotationEndDelimiterKey { get; }
+		
+		[Internal, Field ("NSLocaleAlternateQuotationBeginDelimiterKey")]
+		NSString _AlternateQuotationBeginDelimiterKey { get; }
+		
+		[Internal, Field ("NSLocaleAlternateQuotationEndDelimiterKey")]
+		NSString _AlternateQuotationEndDelimiterKey { get; }
 	}
 
 	
@@ -1702,6 +1846,9 @@ namespace MonoMac.Foundation
 		[Export ("initWithName:")]
 		IntPtr Constructor (string name);
 		
+		[Export ("initWithName:data:")]
+		IntPtr Constructor (string name, NSData data);
+
 		[Export ("name")]
 		string Name { get; } 
 
@@ -1726,6 +1873,9 @@ namespace MonoMac.Foundation
 		[Static, Export ("timeZoneWithName:")]
 		NSTimeZone FromName (string tzName);
 
+		[Static, Export ("timeZoneWithName:data:")]
+		NSTimeZone FromName (string tzName, NSData data);
+		
 		[Static, Export ("localTimeZone")]
 		NSTimeZone LocalTimeZone { get; }
 
@@ -1746,6 +1896,12 @@ namespace MonoMac.Foundation
 		
 		[Export ("timeZoneWithAbbreviation:"), Static]
 		NSTimeZone FromAbbreviation (string abbreviation);
+
+		[Export ("knownTimeZoneNames"), Static, Internal]
+		string[] _KnownTimeZoneNames { get; }
+
+		[Export ("timeZoneDataVersion"), Static]
+		string DataVersion { get; }
 	}
 
 #if !MONOMAC
@@ -2861,7 +3017,7 @@ namespace MonoMac.Foundation
 		NSData Body { get; set; }
 
 		[New][Export ("HTTPBodyStream")]
-		NSInputStream BodyStream { get; }
+		NSInputStream BodyStream { get; set; }
 
 		[New][Export ("HTTPShouldHandleCookies")]
 		bool ShouldHandleCookies { get; set; }
@@ -3064,6 +3220,21 @@ namespace MonoMac.Foundation
 
 		[Export ("isEqualToString:"), Internal]
 		bool IsEqualTo (IntPtr handle);
+		
+		[Export ("compare:")]
+		NSComparisonResult Compare (NSString aString);
+
+		[Export ("compare:options:")]
+		NSComparisonResult Compare (NSString aString, NSStringCompareOptions mask);
+
+		[Export ("compare:options:range:")]
+		NSComparisonResult Compare (NSString aString, NSStringCompareOptions mask, NSRange range);
+
+		[Export ("compare:options:range:locale:")]
+		NSComparisonResult Compare (NSString aString, NSStringCompareOptions mask, NSRange range, [NullAllowed] NSLocale locale);
+		
+		[Export ("stringByReplacingCharactersInRange:withString:")]
+		NSString Replace (NSRange range, NSString replacement);
 	}
 	
 	[BaseType (typeof (NSStream))]
@@ -3232,10 +3403,10 @@ namespace MonoMac.Foundation
 		[Export ("isReady")]
 		bool IsReady { get; }
 
-		[Export ("addDependency:")]
+		[Export ("addDependency:")][PostGet ("Dependencies")]
 		void AddDependency (NSOperation op);
 
-		[Export ("removeDependency:")]
+		[Export ("removeDependency:")][PostGet ("Dependencies")]
 		void RemoveDependency (NSOperation op);
 
 		[Export ("dependencies")]
@@ -3269,13 +3440,13 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
 	public interface NSOperationQueue {
-		[Export ("addOperation:")]
+		[Export ("addOperation:")][PostGet ("Operations")]
 		void AddOperation (NSOperation op);
 
-		[Export ("addOperations:waitUntilFinished:")]
+		[Export ("addOperations:waitUntilFinished:")][PostGet ("Operations")]
 		void AddOperations (NSOperation [] operations, bool waitUntilFinished);
 
-		[Export ("addOperationWithBlock:")]
+		[Export ("addOperationWithBlock:")][PostGet ("Operations")]
 		void AddOperation (NSAction operation);
 
 		[Export ("operations")]
@@ -3287,7 +3458,7 @@ namespace MonoMac.Foundation
 		[Export ("name")]
 		string Name { get; set; }
 
-		[Export ("cancelAllOperations")]
+		[Export ("cancelAllOperations")][PostGet ("Operations")]
 		void CancelAllOperations ();
 
 		[Export ("waitUntilAllOperationsAreFinished")]
@@ -3958,25 +4129,25 @@ namespace MonoMac.Foundation
 		NSObject DefaultCenter { get; }
 
 		[Export ("addObserver:selector:name:object:suspensionBehavior:")]
-		void AddObserver (NSObject observer, Selector selector, string name, string anObject, NSNotificationSuspensionBehavior suspensionBehavior);
+		void AddObserver (NSObject observer, Selector selector, [NullAllowed] string notificationName, [NullAllowed] string notificationSenderc, NSNotificationSuspensionBehavior suspensionBehavior);
 
 		[Export ("postNotificationName:object:userInfo:deliverImmediately:")]
-		void PostNotificationName (string name, string anObject, NSDictionary userInfo, bool deliverImmediately);
+		void PostNotificationName (string name, [NullAllowed] string anObject, [NullAllowed] NSDictionary userInfo, bool deliverImmediately);
 		
 		[Export ("postNotificationName:object:userInfo:options:")]
-		void PostNotificationName (string name, string anObject, NSDictionary userInfo, NSNotificationFlags options);
+		void PostNotificationName (string name, [NullAllowed] string anObjecb, [NullAllowed] NSDictionary userInfo, NSNotificationFlags options);
 
 		[Export ("addObserver:selector:name:object:")]
-		void AddObserver (NSObject observer, Selector aSelector, string aName, string anObject);
+		void AddObserver (NSObject observer, Selector aSelector, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
 
 		[Export ("postNotificationName:object:")]
-		void PostNotificationName (string aName, string anObject);
+		void PostNotificationName (string aName, [NullAllowed] string anObject);
 
 		[Export ("postNotificationName:object:userInfo:")]
-		void PostNotificationName (string aName, string anObject, NSDictionary aUserInfo);
+		void PostNotificationName (string aName, [NullAllowed] string anObject, [NullAllowed] NSDictionary aUserInfo);
 
 		[Export ("removeObserver:name:object:")]
-		void RemoveObserver (NSObject observer, string aName, string anObject);
+		void RemoveObserver (NSObject observer, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
 
 		//Detected properties
 		[Export ("suspended")]
@@ -4040,6 +4211,24 @@ namespace MonoMac.Foundation
 		bool IsEqualTo (NSValue value);
 	
 #if MONOMAC
+		[Static, Export ("valueWithCMTime:"), Lion]
+		NSValue FromCMTime (CMTime time);
+		
+		[Export ("CMTimeValue"), Lion]
+		CMTime CMTimeValue { get; }
+		
+		[Static, Export ("valueWithCMTimeMapping:"), Lion]
+		NSValue FromCMTimeMapping (CMTimeMapping timeMapping);
+		
+		[Export ("CMTimeMappingValue"), Lion]
+		CMTimeMapping CMTimeMappingValue { get; }
+		
+		[Static, Export ("valueWithCMTimeRange:"), Lion]
+		NSValue FromCMTimeRange (CMTimeRange timeRange);
+		
+		[Export ("CMTimeRangeValue"), Lion]
+		CMTimeRange CMTimeRangeValue { get; }
+		
 		[Export ("valueWithRect:"), Static]
 		NSValue FromRectangleF (System.Drawing.RectangleF rect);
 
@@ -4057,7 +4246,28 @@ namespace MonoMac.Foundation
 
 		[Export ("pointValue")]
 		System.Drawing.PointF PointFValue { get; }
+
+		[Export ("rangeValue")]
+		NSRange RangeValue { get; }
 #else
+		[Static, Export ("valueWithCMTime:"), Since (4,0)]
+		NSValue FromCMTime (CMTime time);
+		
+		[Export ("CMTimeValue"), Since (4,0)]
+		CMTime CMTimeValue { get; }
+		
+		[Static, Export ("valueWithCMTimeMapping:"), Since (4,0)]
+		NSValue FromCMTimeMapping (CMTimeMapping timeMapping);
+		
+		[Export ("CMTimeMappingValue"), Since (4,0)]
+		CMTimeMapping CMTimeMappingValue { get; }
+		
+		[Static, Export ("valueWithCMTimeRange:"), Since (4,0)]
+		NSValue FromCMTimeRange (CMTimeRange timeRange);
+		
+		[Export ("CMTimeRangeValue"), Since (4,0)]
+		CMTimeRange CMTimeRangeValue { get; }
+		
 		[Export ("CGAffineTransformValue")]
 		MonoMac.CoreGraphics.CGAffineTransform CGAffineTransformValue { get; }
 		
@@ -4069,6 +4279,12 @@ namespace MonoMac.Foundation
 
 		[Export ("valueWithUIEdgeInsets:")][Static]
 		NSValue FromUIEdgeInsets (MonoMac.UIKit.UIEdgeInsets insets);
+
+		[Export ("valueWithUIOffset:")][Static]
+		NSValue FromUIOffset (MonoMac.UIKit.UIOffset insets);
+
+		[Export ("UIOffsetValue")]
+		UIOffset UIOffsetValue { get; }
 
 		[Export ("valueWithCGRect:")][Static]
 		NSValue FromRectangleF (System.Drawing.RectangleF rect);
@@ -4093,6 +4309,8 @@ namespace MonoMac.Foundation
 
 		[Export ("CATransform3DValue")]
 		MonoMac.CoreAnimation.CATransform3D CATransform3DValue { get; }
+
+		
 #endif
 	}
 	
@@ -4637,11 +4855,11 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	interface NSFileCoordinator {
-		[Export ("addFilePresenter:")]
+		[Static, Export ("addFilePresenter:")][PostGet ("FilePresenters")]
 		void AddFilePresenter (NSFilePresenter filePresenter);
 
 		[Static]
-		[Export ("removeFilePresenter:")]
+		[Export ("removeFilePresenter:")][PostGet ("FilePresenters")]
 		void RemoveFilePresenter (NSFilePresenter filePresenter);
 
 		[Static]
@@ -4956,7 +5174,7 @@ namespace MonoMac.Foundation
 
 		[Since (5,0)]
                 [Export ("URLForUbiquityContainerIdentifier:")]
-                NSUrl GetUrlForUbiquityContainer (string containerIdentifier);
+                NSUrl GetUrlForUbiquityContainer ([NullAllowed] string containerIdentifier);
 
 		[Since (5,0)]
                 [Export ("URLForPublishingUbiquitousItemAtURL:expirationDate:error:")]
@@ -5153,6 +5371,77 @@ namespace MonoMac.Foundation
 		bool RemoveOtherVersions (NSUrl url, out NSError outError);
 	}
 #endif
+
+	[BaseType (typeof (NSObject))]
+	public interface NSFileWrapper {
+		[Export ("initWithURL:options:error:")]
+		IntPtr Constructor (NSUrl url, NSFileWrapperReadingOptions options, out NSError outError);
+
+		[Export ("initDirectoryWithFileWrappers:")]
+		IntPtr Constructor (NSDictionary childrenByPreferredName);
+
+		[Export ("initRegularFileWithContents:")]
+		IntPtr Constructor (NSData contents);
+
+		[Export ("initSymbolicLinkWithDestinationURL:")]
+		IntPtr Constructor (NSUrl urlToSymbolicLink);
+
+		// Constructor clash
+		//[Export ("initWithSerializedRepresentation:")]
+		//IntPtr Constructor (NSData serializeRepresentation);
+
+		[Export ("isDirectory")]
+		bool IsDirectory { get; }
+
+		[Export ("isRegularFile")]
+		bool IsRegularFile { get; }
+
+		[Export ("isSymbolicLink")]
+		bool IsSymbolicLink { get; }
+
+		[Export ("matchesContentsOfURL:")]
+		bool MatchesContentsOfURL (NSUrl url);
+
+		[Export ("readFromURL:options:error:")]
+		bool Read (NSUrl url, NSFileWrapperReadingOptions options, out NSError outError);
+
+		[Export ("writeToURL:options:originalContentsURL:error:")]
+		bool Write (NSUrl url, NSFileWrapperWritingOptions options, NSUrl originalContentsURL, out NSError outError);
+
+		[Export ("serializedRepresentation")]
+		NSData GetSerializedRepresentation ();
+
+		[Export ("addFileWrapper:")]
+		string AddFileWrapper (NSFileWrapper child);
+
+		[Export ("addRegularFileWithContents:preferredFilename:")]
+		string AddRegularFile (NSData dataContents, string preferredFilename);
+
+		[Export ("removeFileWrapper:")]
+		void RemoveFileWrapper (NSFileWrapper child);
+
+		[Export ("fileWrappers")]
+		NSDictionary FileWrappers { get; }
+
+		[Export ("keyForFileWrapper:")]
+		string KeyForFileWrapper (NSFileWrapper child);
+
+		[Export ("regularFileContents")]
+		NSData GetRegularFileContents ();
+
+		[Export ("symbolicLinkDestinationURL")]
+		NSUrl SymbolicLinkDestinationURL { get; }
+
+		//Detected properties
+		[Export ("preferredFilename")]
+		string PreferredFilename { get; set; }
+
+		[Export ("filename")]
+		string Filename { get; set; }
+
+		[Export ("fileAttributes")]
+		NSDictionary FileAttributes { get; set; }
+	}
 
 	[BaseType (typeof (NSEnumerator))]
 	public interface NSDirectoryEnumerator {

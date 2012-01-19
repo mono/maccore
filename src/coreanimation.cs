@@ -117,10 +117,10 @@ namespace MonoMac.CoreAnimation {
 		CADisplayLink Create (NSObject target, Selector sel);
 	
 		[Export ("addToRunLoop:forMode:")]
-		void AddToRunLoop (NSRunLoop runloop, string mode);
+		void AddToRunLoop (NSRunLoop runloop, NSString mode);
 	
 		[Export ("removeFromRunLoop:forMode:")]
-		void RemoveFromRunLoop (NSRunLoop runloop, string  mode);
+		void RemoveFromRunLoop (NSRunLoop runloop, NSString mode);
 	
 		[Export ("invalidate")]
 		void Invalidate ();
@@ -218,7 +218,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("sublayerTransform")]
 		CATransform3D SublayerTransform { get; set; }
 
-		[Export ("mask", ArgumentSemantic.Retain)]
+		[Export ("mask", ArgumentSemantic.Retain)][NullAllowed]
 		CALayer Mask { get; set; }
 
 		[Export ("masksToBounds")]
@@ -336,14 +336,15 @@ namespace MonoMac.CoreAnimation {
 		[Export ("layoutSublayers")]
 		void LayoutSublayers ();
 
+		[Static]
 		[Export ("defaultActionForKey:")]
-		CAAction DefaultActionForKey (string eventKey);
+		NSObject DefaultActionForKey (string eventKey);
 
 		[Export ("actionForKey:")]
-		CAAction ActionForKey (string eventKey);
+		NSObject ActionForKey (string eventKey);
 
 		[Export ("actions", ArgumentSemantic.Copy)]
-		CAAction [] Actions { get; set; }
+		NSDictionary Actions { get; set; }
 
 		[Export ("addAnimation:forKey:")]
 		void AddAnimation (CAAnimation animation, [NullAllowed] string key);
@@ -491,7 +492,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("addConstraint:")]
 		void AddConstraint (CAConstraint c);
 
-		[Export ("filter")]
+		[Export ("filters")]
 		CIFilter [] Filters { get; set; }
 #else
 		[Since (3,2)]
@@ -732,7 +733,7 @@ namespace MonoMac.CoreAnimation {
 		void LayoutSublayersOfLayer (CALayer layer);
 
 		[Export ("actionForLayer:forKey:"), EventArgs ("CALayerDelegateAction"), DefaultValue (null)]
-		CAAction ActionForLAyer (CALayer layer, string eventKey);
+		NSObject ActionForLayer (CALayer layer, string eventKey);
 	}
 	
 #if !MONOMAC

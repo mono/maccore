@@ -648,16 +648,23 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("imageWithData:options:")]
 		CIImage FromData (NSData data, NSDictionary d);
-
+#if MONOMAC
 		[Static]
 		[Export ("imageWithCVImageBuffer:")]
 		CIImage FromImageBuffer (CVImageBuffer imageBuffer);
 
-		//
 		[Static]
 		[Export ("imageWithCVImageBuffer:options:")]
 		CIImage FromImageBuffer (CVImageBuffer imageBuffer, NSDictionary dict);
+#else
+		[Static]
+		[Export ("imageWithCVPixelBuffer:")]
+		CIImage FromImageBuffer (CVPixelBuffer buffer);
 
+		[Static]
+		[Export ("imageWithCVPixelBuffer:options:")]
+		CIImage FromImageBuffer (CVPixelBuffer buffer, NSDictionary dict);
+#endif
 		//[Export ("imageWithIOSurface:")]
 		//CIImage ImageWithIOSurface (IOSurfaceRef surface, );
 		//

@@ -848,7 +848,7 @@ namespace MonoMac.CoreData
 		bool SetUrl (NSUrl url, NSPersistentStore store);
 
 		[Export ("addPersistentStoreWithType:configuration:URL:options:error:")]
-		NSPersistentStore AddPersistentStoreWithType (NSString storeType, string configuration, NSUrl storeURL, NSDictionary options, out NSError error);
+		NSPersistentStore AddPersistentStoreWithType (NSString storeType, [NullAllowed] string configuration, NSUrl storeURL, [NullAllowed] NSDictionary options, out NSError error);
 
 		[Export ("removePersistentStore:error:")]
 		bool RemovePersistentStore (NSPersistentStore store, out NSError error);

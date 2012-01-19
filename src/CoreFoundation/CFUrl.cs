@@ -93,6 +93,16 @@ namespace MonoMac.CoreFoundation {
 				return new CFUrl (handle);
 			}
 		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static IntPtr CFURLGetString (IntPtr anURL);
+		
+		public override string ToString ()
+		{
+			using (var str = new CFString (CFURLGetString (handle))) {
+				return str.ToString ();
+			}
+		}
 	}
 	
 }

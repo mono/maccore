@@ -110,7 +110,7 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 		
-		internal CFString (IntPtr handle)
+		public CFString (IntPtr handle)
 			: this (handle, false)
 		{
 		}
@@ -181,6 +181,13 @@ namespace MonoMac.CoreFoundation {
 				else
 					return CFStringGetCharacterAtIndex (handle, p);
 			}
+		}
+		
+		public override string ToString ()
+		{
+			if (str != null)
+				return str;
+			return FetchString (handle);
 		}
 	}
 }

@@ -962,7 +962,7 @@ public partial class DocGenerator {
 				typeRemarks.Value = "";
 			var overview = ExtractTypeOverview (appledocs);
 			typeRemarks.Add (overview);
-			if (overview != null && quick_summaries){ // && typeSummary.Value == "To be added."){
+			if (overview != null && quick_summaries && typeSummary.Value == "To be added."){
 				foreach (var x in (System.Collections.IEnumerable) overview){
 					var xe = x as XElement;
 					if (xe == null)
@@ -1021,9 +1021,6 @@ public partial class DocGenerator {
 				continue;
 			}
 			//Console.WriteLine ("Contents at {0}", p);
-			var summary = ExtractSummary (mDoc);
-			if (summary == null)
-				ReportProblem (t, appledocpath, selector, key);
 
 			//
 			// Now, plug the docs
@@ -1038,8 +1035,14 @@ public partial class DocGenerator {
 			// Summary
 			//
 			var summaryNode = member.XPathSelectElement ("Docs/summary");
-			summaryNode.Value = "";
-			summaryNode.Add (summary);
+			if (summaryNode.Value == "To be added."){
+				var summary = ExtractSummary (mDoc);
+				if (summary == null)
+					ReportProblem (t, appledocpath, selector, key);
+				
+				summaryNode.Value = "";
+				summaryNode.Add (summary);
+			}
 
 			VerifyArgumentSemantic (mDoc, member, t, selector);
 
@@ -1205,7 +1208,7 @@ public partial class DocGenerator {
 	static string assembly_dir;
 
 	// If true, it extracts the first sentence from the remarks and sticks it in the summary.
-	static bool quick_summaries;
+	static bool quick_summaries = true;
 
 	static void Help ()
 	{

@@ -41,6 +41,28 @@ using MonoMac.AppKit;
 namespace MonoMac.CoreAnimation {
 
 	public partial class CATextLayer {
+		public virtual NSAttributedString AttributedString {
+			get {
+				IntPtr h;
+				if (IsDirectBinding)
+					h = ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, selString);
+				else
+					h = ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, selString);
+				
+				return Runtime.GetNSObject (h) as NSAttributedString;
+			}
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				
+				if (IsDirectBinding)
+					ObjCRuntime.Messaging.void_objc_msgSend_IntPtr (this.Handle, selSetString, value.Handle);
+				else
+					ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr (this.SuperHandle, selSetString, value.Handle);
+				
+			}
+		}
+		
 		public void SetFont (string fontName)
 		{
 			if (fontName == null)

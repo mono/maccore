@@ -34,6 +34,14 @@ using System.Collections.Generic;
 
 namespace MonoMac.Foundation {
 	public partial class NSData : IEnumerable, IEnumerable<byte> {
+		
+		// some API, like SecItemCopyMatching, returns a retained NSData
+		internal NSData (IntPtr handle, bool owns)
+			: base (handle)
+		{
+			if (!owns)
+				Release ();
+		}
 
 		IEnumerator IEnumerable.GetEnumerator ()
 		{
@@ -65,7 +73,10 @@ namespace MonoMac.Foundation {
 		{
 			if (buffer == null)
 				throw new ArgumentNullException ("buffer");
-
+			
+			if (buffer.Length == 0)
+				return FromBytes (IntPtr.Zero, 0);
+			
 			unsafe {
 				fixed (byte *ptr = &buffer [0]){
 					return FromBytes ((IntPtr) ptr, (uint) buffer.Length);

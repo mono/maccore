@@ -218,6 +218,7 @@ namespace MonoMac.AVFoundation {
 	}	
 	
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
 	interface AVAudioPlayer {
 		[Export ("initWithContentsOfURL:error:")][Internal]
 		IntPtr Constructor (NSUrl url, IntPtr outError);
@@ -291,8 +292,23 @@ namespace MonoMac.AVFoundation {
 		bool PlayAtTimetime (double time);
 
 		[Since (4,0)]
-		[Export ("settings")]
-		NSDictionary Settings { get;  }
+		[Export ("settings"), Internal]
+		NSDictionary _Settings { get;  }
+
+		[Field ("AVChannelLayoutKey"), Internal]
+		NSString AVChannelLayoutKey { get; }
+
+		[Field ("AVEncoderBitRateKey"), Internal]
+		NSString AVEncoderBitRateKey { get; }
+
+		[Field ("AVFormatIDKey"), Internal]
+		NSString AVFormatIDKey { get; }
+
+		[Field ("AVNumberOfChannelsKey"), Internal]
+		NSString AVNumberOfChannelsKey { get; }
+
+		[Field ("AVSampleRateKey"), Internal]
+		NSString AVSampleRateKey { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -367,6 +383,33 @@ namespace MonoMac.AVFoundation {
 	
 		[Export ("averagePowerForChannel:")]
 		float AveragePower (uint channelNumber);
+
+		[Field ("AVLinearPCMBitDepthKey"), Internal]
+		NSString AVLinearPCMBitDepthKey { get; }
+
+		[Field ("AVLinearPCMIsBigEndianKey"), Internal]
+		NSString AVLinearPCMIsBigEndianKey { get; }
+
+		[Field ("AVLinearPCMIsFloatKey"), Internal]
+		NSString AVLinearPCMIsFloatKey { get; }
+
+		[Field ("AVLinearPCMIsNonInterleaved"), Internal]
+		NSString AVLinearPCMIsNonInterleaved { get; }
+
+		[Field ("AVEncoderAudioQualityKey"), Internal]
+		NSString AVEncoderAudioQualityKey { get; }
+		
+		[Field ("AVEncoderBitRateKey"), Internal]
+		NSString AVEncoderBitRateKey { get; }
+		
+		[Field ("AVEncoderBitRatePerChannelKey"), Internal]
+		NSString AVEncoderBitRatePerChannelKey { get; }
+		
+		[Field ("AVEncoderBitDepthHintKey"), Internal]
+		NSString AVEncoderBitDepthHintKey { get; }
+
+		[Field ("AVSampleRateConverterAudioQualityKey"), Internal]
+		NSString AVSampleRateConverterAudioQualityKey { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -717,11 +760,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioMix", ArgumentSemantic.Copy)]
 		AVAudioMix AudioMix { get; set;  }
 
-		[Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
+		[Static, Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
 		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
 		[Export ("initWithAudioTracks:audioSettings:")]
-		IntPtr Constructor (AVAssetTrack [] audioTracks, NSDictionary audioSettings);
+		IntPtr Constructor (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
 		[Export ("audioSettings")]
 		NSDictionary AudioSettings { get; }
@@ -859,7 +902,7 @@ namespace MonoMac.AVFoundation {
 		//[Export ("pixelBufferPool")]
 		//CVPixelBufferPoolRef pixelBufferPool { get;  }
 
-		[Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
+		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
 
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
@@ -2171,13 +2214,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("playbackBufferEmpty")]
 		bool PlaybackBufferEmpty { [Bind ("isPlaybackBufferEmpty")] get;  }
 
-		// TODO: binding
-		//[Export ("seekableTimeRanges")]
-		//CMTimeRange [] seekableTimeRanges { get;  }
+		[Export ("seekableTimeRanges")]
+		NSValue [] SeekableTimeRanges { get;  }
 
-		// TODO; binding
-		//[Export ("loadedTimeRanges")]
-		// NSArray loadedTimeRanges { get;  }
+		[Export ("loadedTimeRanges")]
+		NSValue [] LoadedTimeRanges { get;  }
 
 		[Export ("timedMetadata")]
 		NSObject [] TimedMetadata { get;  }
