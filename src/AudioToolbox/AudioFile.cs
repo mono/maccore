@@ -278,6 +278,18 @@ namespace MonoMac.AudioToolbox {
 			return null;
 		}
 
+		public static AudioFile Create (NSUrl url, AudioFileType fileType, AudioStreamBasicDescription format, AudioFileFlags inFlags)
+		{
+			if (url == null)
+				throw new ArgumentNullException ("url");
+
+			IntPtr h;
+
+			if (AudioFileCreateWithURL (url.Handle, fileType, ref format, inFlags, out h) == 0)
+				return new AudioFile (h);
+			return null;
+		}
+
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static OSStatus AudioFileOpenURL  (IntPtr cfurlref_infile, byte permissions, AudioFileType fileTypeHint, out IntPtr file_id);
@@ -288,6 +300,11 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		public static AudioFile OpenRead (CFUrl url, AudioFileType fileTypeHint)
+		{
+			return Open (url, AudioFilePermission.Read, fileTypeHint);
+		}
+
+		public static AudioFile OpenRead (NSUrl url, AudioFileType fileTypeHint)
 		{
 			return Open (url, AudioFilePermission.Read, fileTypeHint);
 		}
@@ -302,6 +319,17 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		public static AudioFile Open (CFUrl url, AudioFilePermission permissions, AudioFileType fileTypeHint)
+		{
+			if (url == null)
+				throw new ArgumentNullException ("url");
+			
+			IntPtr h;
+			if (AudioFileOpenURL (url.Handle, (byte) permissions, fileTypeHint, out h) == 0)
+				return new AudioFile (h);
+			return null;
+		}
+
+		public static AudioFile Open (NSUrl url, AudioFilePermission permissions, AudioFileType fileTypeHint)
 		{
 			if (url == null)
 				throw new ArgumentNullException ("url");
