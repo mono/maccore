@@ -132,12 +132,15 @@ namespace MonoMac.AudioToolbox {
 
 		internal AudioQueueException (AudioQueueStatus k) : base (Lookup ((int)k))
 		{
+			ErrorCode = k;
 		}
 		
 		internal AudioQueueException (int k) : base (Lookup (k))
 		{
-			
+			ErrorCode = (AudioQueueStatus) k;
 		}
+
+		public AudioQueueStatus ErrorCode { get; private set; }
 	}
 	
 
