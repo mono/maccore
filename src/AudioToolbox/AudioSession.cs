@@ -80,7 +80,10 @@ namespace MonoMac.AudioToolbox {
 		
 		internal AudioSessionException (int k) : base (Lookup (k))
 		{
+			ErrorCode = (AudioSessionErrors) k;
 		}
+
+		public AudioSessionErrors ErrorCode { get; private set; }
 	}
 	
 	public class AudioSessionPropertyEventArgs :EventArgs {
@@ -130,14 +133,14 @@ namespace MonoMac.AudioToolbox {
 
 		public static void Initialize (CFRunLoop runLoop, string runMode)
 		{
+			CFString s = runMode == null ? null : new CFString (runMode);
+			int k = AudioSessionInitialize (runLoop == null ? IntPtr.Zero : runLoop.Handle, s == null ? IntPtr.Zero : s.Handle, Interruption, IntPtr.Zero);
+			if (k != 0 && k != (int)AudioSessionErrors.AlreadyInitialized)
+				throw new AudioSessionException (k);
+			
 			if (initialized)
 				return;
 
-			CFString s = runMode == null ? null : new CFString (runMode);
-			int k = AudioSessionInitialize (runLoop == null ? IntPtr.Zero : runLoop.Handle, s == null ? IntPtr.Zero : s.Handle, Interruption, IntPtr.Zero);
-			if (k != 0)
-				throw new AudioSessionException (k);
-			
 			IntPtr lib = Dlfcn.dlopen (Constants.AudioToolboxLibrary, 0);
 			
 			AudioRouteKey_Inputs = new NSString (Dlfcn.GetIntPtr (lib, "kAudioSession_AudioRouteKey_Inputs"));
