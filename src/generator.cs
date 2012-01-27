@@ -1347,6 +1347,22 @@ public class Generator {
 			DumpChildren (level+1, c);
 	}
 	
+	// this attribute allows the linker to be more clever in removing unused code in bindings - without risking breaking user code
+	// only generate those for monotouch now since we can ensure they will be linked away before reaching the devices
+	public void GeneratedCode (StreamWriter sw, int tabs)
+	{
+#if !MONOMAC
+		for (int i=0; i < tabs; i++)
+			sw.Write ('\t');
+		sw.WriteLine ("[GeneratedCode (\"btouch\", null)]");
+#endif
+	}
+	
+	public void print_generated_code ()
+	{
+		GeneratedCode (sw, indent);
+	}
+
 	public void print (string format)
 	{
 		print (sw, format);
@@ -1483,6 +1499,7 @@ public class Generator {
 
 	string [] implicit_ns = new string [] {
 		"System", 
+		"System.CodeDom.Compiler",
 		"System.Drawing", 
 		"System.Runtime.InteropServices",
 #if MONOMAC
@@ -1953,6 +1970,7 @@ public class Generator {
 			is_unsafe = true;
 
 		if (wrap != null){
+			print_generated_code ();
 			print ("{0} {1}{2}{3}{4} {5} {{",
 			       is_public ? "public" : "internal",
 			       is_unsafe ? "unsafe " : "",
@@ -1983,6 +2001,7 @@ public class Generator {
 				instance_fields_to_clear_on_dispose.Add (var_name);
 			}
 		}
+		print_generated_code ();
 		print ("{0} {1}{2}{3}{4} {5} {{",
 		       is_public ? "public" : "internal",
 		       is_unsafe ? "unsafe " : "",
@@ -2121,6 +2140,7 @@ public class Generator {
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
 				is_unsafe = true;
 
+		print_generated_code ();
 		print ("{0} {1}{2}{3}{4}{5}",
 		       is_public ? "public" : "internal",
 		       is_unsafe ? "unsafe " : "",
@@ -2220,23 +2240,30 @@ public class Generator {
 				
 				if (TypeName != "NSObject"){
 					if (external) {
-						if (!disable_default_ctor)
+						if (!disable_default_ctor) {
+							GeneratedCode (sw, 2);
 							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
 							      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix, ctor_visibility);
+						}
 					} else {
-						if (!disable_default_ctor)
+						if (!disable_default_ctor) {
+							GeneratedCode (sw, 2);
 							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
 								      TypeName,
 								      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
 								      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
 								      MainPrefix, ctor_visibility);
+						}
+						GeneratedCode (sw, 2);
 						sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
 							      TypeName,
 							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
 							      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
 							      MainPrefix);
 					}
+					GeneratedCode (sw, 2);
 					sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
+					GeneratedCode (sw, 2);
 					sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
 				}
 			}
