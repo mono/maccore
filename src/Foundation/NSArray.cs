@@ -128,7 +128,7 @@ namespace MonoMac.Foundation {
 			string [] ret = new string [c];
 
 			for (uint i = 0; i < c; i++){
-				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex, i);
+				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex_, i);
 				ret [i] = NSString.FromHandle (p);
 			}
 			return ret;
@@ -144,7 +144,7 @@ namespace MonoMac.Foundation {
 			T [] ret = new T [c];
 
 			for (uint i = 0; i < c; i++){
-				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex, i);
+				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex_, i);
 
 				ret [i] = (T) Runtime.GetNSObject (p);
 				ret [i].Handle = p;
@@ -178,7 +178,7 @@ namespace MonoMac.Foundation {
 			T [] ret = new T [c];
 
 			for (uint i = 0; i < c; i++){
-				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex, i);
+				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex_, i);
 
 				ret [i] = createObject (p);
 			}
@@ -194,7 +194,7 @@ namespace MonoMac.Foundation {
 			T [] ret = new T [c];
 
 			for (uint i = 0; i < c; i++){
-				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex, i);
+				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex_, i);
 
 				ret [i] = creator (p);
 			}

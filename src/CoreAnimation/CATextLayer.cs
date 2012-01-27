@@ -56,9 +56,9 @@ namespace MonoMac.CoreAnimation {
 					throw new ArgumentNullException ("value");
 				
 				if (IsDirectBinding)
-					ObjCRuntime.Messaging.void_objc_msgSend_IntPtr (this.Handle, selSetString, value.Handle);
+					ObjCRuntime.Messaging.void_objc_msgSend_IntPtr (this.Handle, selSetString_, value.Handle);
 				else
-					ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr (this.SuperHandle, selSetString, value.Handle);
+					ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr (this.SuperHandle, selSetString_, value.Handle);
 				
 			}
 		}
