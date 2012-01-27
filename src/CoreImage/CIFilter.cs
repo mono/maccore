@@ -61,7 +61,7 @@ namespace MonoMac.CoreImage {
 		internal static IntPtr CreateFilter (string name)
 		{
 			using (var nsname = new NSString (name))
-				return MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, selFilterWithName, nsname.Handle);
+				return MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, selFilterWithName_, nsname.Handle);
 		}
 
 		// helper methods

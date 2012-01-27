@@ -16,7 +16,7 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("kls");
 
 			var nsname = new NSString (name);
-			MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (class_ptr, selSetClassNameForClass, nsname.Handle, kls.Handle);
+			MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (class_ptr, selSetClassNameForClass_, nsname.Handle, kls.Handle);
 			nsname.Dispose ();
 		}
 
@@ -24,7 +24,7 @@ namespace MonoMac.Foundation {
 		{
 			if (kls == null)
 				throw new ArgumentNullException ("kls");
-			return NSString.FromHandle (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, selClassNameForClass, kls.Handle));
+			return NSString.FromHandle (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, selClassNameForClass_, kls.Handle));
 		}
 
 	}
