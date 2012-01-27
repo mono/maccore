@@ -1401,6 +1401,12 @@ public class Generator {
 			} else
 				sb.Append (c);
 		}
+		// if we finish with a ':' then we could have another identical 
+		// selector that does not finish with ':' and that would cause 
+		// an error when compiling the generated code. 
+		// See http://bugzilla.xamarin.com/show_bug.cgi?id=2626
+		if (up)
+			sb.Append ('_');
 		name = sb.ToString ();
 		selector_names [s] = name;
 		return name;
