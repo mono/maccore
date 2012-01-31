@@ -843,7 +843,7 @@ public class Generator {
 			}
 			if (pi.ParameterType == SampleBufferType){
 				pars.AppendFormat ("IntPtr {0}", pi.Name);
-				invoke.AppendFormat ("new CMSampleBuffer ({0})", pi.Name);
+				invoke.AppendFormat ("new CMSampleBuffer ({0}, false)", pi.Name);
 				continue;
 			}
 
