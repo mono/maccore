@@ -7,7 +7,7 @@
 //   Miguel de Icaza
 //
 // Copyright 2009-2010, Novell, Inc.
-// Copyright 2011, Xamarin, Inc.
+// Copyright 2011-2012 Xamarin, Inc.
 //
 //
 // This generator produces various */*.g.cs files based on the
@@ -360,6 +360,11 @@ public class SealedAttribute : Attribute {
 	public SealedAttribute () {} 
 }
 
+// Flags the object as being thread safe
+public class ThreadSafeAttribute : Attribute {
+	public ThreadSafeAttribute () {}
+}
+
 public class EventArgsAttribute : Attribute {
 	public EventArgsAttribute (string s)
 	{
@@ -670,12 +675,27 @@ public class Generator {
 	string [] standard_namespaces = new string [] { "MonoMac.Foundation", "MonoMac.ObjCRuntime", "MonoMac.CoreGraphics" };
 	const string MainPrefix = "MonoMac";
 	const string CoreImageMap = "Quartz";
+	const string UINamespace = "MonoMac.AppKit";
+	const bool ThreadProtection = false;
 #else
 	public Type MessagingType = typeof (MonoTouch.ObjCRuntime.Messaging);
 	public Type SampleBufferType = typeof (MonoTouch.CoreMedia.CMSampleBuffer);
 	string [] standard_namespaces = new string [] { "MonoTouch.Foundation", "MonoTouch.ObjCRuntime", "MonoTouch.CoreGraphics" };
 	const string MainPrefix = "MonoTouch";
 	const string CoreImageMap = "CoreImage";
+	string [] UINamespaces = new string [] {
+		"MonoTouch.UIKit",
+		"MonoTouch.Twitter",
+		"MonoTouch.GameKit",
+		"MonoTouch.NewsstandKit",
+		"MonoTouch.iAd",
+		"MonoTouch.QuickLook",
+		"MonoTouch.EventKitUI",
+		"MonoTouch.AddressBookUI",
+		"MonoTouch.MapKit",
+		"MonoTouch.MessageUI",
+	};
+	const bool ThreadProtection = true;
 #endif
 
 	//
@@ -1687,6 +1707,7 @@ public class Generator {
 	//
 	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options)
 	{
+		bool needs_thread_check = ThreadProtection && type_needs_thread_checks && !HasAttribute (mi, typeof (ThreadSafeAttribute));
 		string selector = SelectorField (sel);
 		var args = new StringBuilder ();
 		var convs = new StringBuilder ();
@@ -1695,6 +1716,9 @@ public class Generator {
 
 		indent++;
 
+		if (needs_thread_check)
+			print ("global::MonoTouch.UIKit.UIApplication.EnsureUIThread ();");
+		
 		Inject (mi, typeof (PrologueSnippetAttribute));
 
 		foreach (var pi in mi.GetParameters ()){
@@ -2171,9 +2195,16 @@ public class Generator {
 			return type.Name;
 		
 	}
+
+	//
+	// We inject thread checks to MonoTouch.UIKit types, unless there is a [ThreadSafe] attribuet on the type.
+	// Set on every call to Generate
+	//
+	bool type_needs_thread_checks;
 	
 	public void Generate (Type type)
 	{
+		type_needs_thread_checks = UINamespaces.Contains (type.Namespace) && !HasAttribute (type, typeof (ThreadSafeAttribute));
 		string TypeName = GetGeneratedTypeName (type);
 
 		string dir = Path.Combine (basedir, type.Namespace.Replace (MainPrefix + ".", ""));
