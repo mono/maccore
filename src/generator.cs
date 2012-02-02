@@ -1354,7 +1354,7 @@ public class Generator {
 #if !MONOMAC
 		for (int i=0; i < tabs; i++)
 			sw.Write ('\t');
-		sw.WriteLine ("[GeneratedCode (\"btouch\", null)]");
+		sw.WriteLine ("[CompilerGenerated]");
 #endif
 	}
 	
@@ -1499,8 +1499,8 @@ public class Generator {
 
 	string [] implicit_ns = new string [] {
 		"System", 
-		"System.CodeDom.Compiler",
 		"System.Drawing", 
+		"System.Runtime.CompilerServices",
 		"System.Runtime.InteropServices",
 #if MONOMAC
 		"MonoMac.CoreFoundation",
