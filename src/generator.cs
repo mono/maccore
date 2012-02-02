@@ -675,7 +675,7 @@ public class Generator {
 	string [] standard_namespaces = new string [] { "MonoMac.Foundation", "MonoMac.ObjCRuntime", "MonoMac.CoreGraphics" };
 	const string MainPrefix = "MonoMac";
 	const string CoreImageMap = "Quartz";
-	const string UINamespaces = new strin [] {
+	string [] UINamespaces = new string [] {
 		"MonoMac.AppKit"
 	};
 	const bool ThreadProtection = false;
