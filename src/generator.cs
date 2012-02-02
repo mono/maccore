@@ -675,7 +675,9 @@ public class Generator {
 	string [] standard_namespaces = new string [] { "MonoMac.Foundation", "MonoMac.ObjCRuntime", "MonoMac.CoreGraphics" };
 	const string MainPrefix = "MonoMac";
 	const string CoreImageMap = "Quartz";
-	const string UINamespace = "MonoMac.AppKit";
+	const string UINamespaces = new strin [] {
+		"MonoMac.AppKit"
+	};
 	const bool ThreadProtection = false;
 #else
 	public Type MessagingType = typeof (MonoTouch.ObjCRuntime.Messaging);
