@@ -79,6 +79,8 @@ namespace MonoMac.AddressBook {
 					return new ABPerson (handle, addressbook);
 				case ABRecordType.Group:
 					return new ABGroup (handle, addressbook);
+				case ABRecordType.Source:
+					return new ABSource (handle, addressbook);
 				default:
 					throw new NotSupportedException ("Could not determine record type.");
 			}
