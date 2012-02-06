@@ -21,12 +21,6 @@
 // 
 // MIDISendSysex
 // 
-// MIDIGetDestination
-// MIDIGetNumberOfDestinations
-// MIDIGetNumberOfSources
-// MIDIGetSource
-// MIDISourceCreate
-// 
 // 
 //
 using System;
@@ -778,6 +772,10 @@ namespace MonoMac.CoreMidi {
 		extern static int MIDIClientCreate (IntPtr str, MidiNotifyProc callback, IntPtr context, out IntPtr handle);
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIClientDispose (IntPtr handle);
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDISourceCreate (IntPtr handle, IntPtr name, out IntPtr endpoint);
+			
 		GCHandle gch;
 
 		internal override void DisposeHandle ()
@@ -807,6 +805,17 @@ namespace MonoMac.CoreMidi {
 		public override string ToString ()
 		{
 			return Name;
+		}
+
+		public MidiEndpoint CreateVirtualSource (string name)
+		{
+			using (var nsstr = new NSString (name)){
+				IntPtr ret;
+				var code = MIDISourceCreate (handle, nsstr.Handle, out ret);
+				if (code != 0)
+					return null;
+				return new MidiEndpoint (ret);
+			}			
 		}
 		
 		public MidiPort CreateInputPort (string name)
@@ -1098,6 +1107,17 @@ namespace MonoMac.CoreMidi {
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static MidiError MIDIReceived (IntPtr handle, IntPtr packetList);
 		
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static IntPtr MIDIGetSource (int sourceIndex);
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static IntPtr MIDIGetDestination (int destinationIndex);
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIGetNumberOfDestinations ();
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIGetNumberOfSources ();
+		
 		internal override void DisposeHandle ()
 		{
 			if (handle != IntPtr.Zero){
@@ -1112,6 +1132,40 @@ namespace MonoMac.CoreMidi {
 		internal MidiEndpoint (IntPtr handle) : base (handle)
 		{
 			EndpointName = "Endpoint from Lookup";
+		}
+
+		internal MidiEndpoint (IntPtr handle, string endpointName) : base (handle)
+		{
+			EndpointName = endpointName;
+		}
+		
+
+		public static MidiEndpoint GetSource (int sourceIndex)
+		{
+			var h = MIDIGetSource (sourceIndex);
+			if (h == IntPtr.Zero)
+				return null;
+			return new MidiEndpoint (h, "Source" + sourceIndex);
+		}
+
+		public static MidiEndpoint GetDestination (int destinationIndex)
+		{
+			var h = MIDIGetDestination (destinationIndex);
+			if (h == IntPtr.Zero)
+				return null;
+			return new MidiEndpoint (h, "Destination" + destinationIndex);
+		}
+
+		public static int DestinationCount {
+			get {
+				return MIDIGetNumberOfDestinations ();
+			}
+		}
+
+		public static int SourceCount {
+			get {
+				return MIDIGetNumberOfSources ();
+			}
 		}
 		
 		internal MidiEndpoint (MidiClient client, string name)
