@@ -21,24 +21,19 @@
 // 
 // MIDISendSysex
 // 
-// MIDIGetExternalDevice
-// MIDIGetNumberOfExternalDevices
-// 
-// 
 // MIDIGetDestination
 // MIDIGetNumberOfDestinations
 // MIDIGetNumberOfSources
 // MIDIGetSource
 // MIDISourceCreate
 // 
-// MIDIDeviceGetEntity
-// MIDIDeviceGetNumberOfEntities
-// MIDIGetDevice
-// MIDIGetNumberOfDevices
 // 
 //
 using System;
 using System.Runtime.InteropServices;
+using MonoTouch.ObjCRuntime;
+using MonoTouch.CoreFoundation;
+using MonoTouch.Foundation;
 
 namespace MonoMac.CoreMidi {
 
@@ -67,15 +62,18 @@ namespace MonoMac.CoreMidi {
 		ExternalMask = 0x10,
 		ExternalDevice = ExternalMask | Device,
 		ExternalEntity = ExternalMask | Entity,
-		ExternalSource = ExternalMask | Source
+		ExternalSource = ExternalMask | Source,
 		ExternalDestination = ExternalMask | Destination,
 	}
 
 	public static class Midi {
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIRestart ();
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static void MIDIRestart ();
 
-		public void Restart ()
+                [DllImport (Constants.SystemLibrary)]
+		extern internal static void memcpy (IntPtr target, IntPtr source, int n);
+
+		public static void Restart ()
 		{
 			MIDIRestart ();
 		}
@@ -96,7 +94,7 @@ namespace MonoMac.CoreMidi {
 				dest += 8;
 				Marshal.WriteInt16 (buffer, dest, packets [i].Length);
 				dest += 2;
-				memcpy (buffer + dest, packets [i].Bytes, packets [i].Length);
+				Midi.memcpy ((IntPtr)((long)buffer + dest), packets [i].Bytes, packets [i].Length);
 				dest += (packets [i].Length+3)&(~3);
 			}
 			return buffer;
@@ -104,7 +102,7 @@ namespace MonoMac.CoreMidi {
 	}
 	
 	public class MidiObject : INativeObject, IDisposable {
-                internal static IntPtr midiLibrary = Dlfcn.dlopen (Constants.MidiLibrary, 0);
+                internal static IntPtr midiLibrary = Dlfcn.dlopen (Constants.CoreMidiLibrary, 0);
                 internal IntPtr handle;
 
 		static IntPtr kMIDIPropertyAdvanceScheduleTimeMuSec;
@@ -154,54 +152,60 @@ namespace MonoMac.CoreMidi {
 
 		static MidiObject ()
 		{
-			kMIDIPropertyAdvanceScheduleTimeMuSec = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyAdvanceScheduleTimeMuSec);
-			kMIDIPropertyCanRoute = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyCanRoute);
-			kMIDIPropertyConnectionUniqueID = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyConnectionUniqueID);
-			kMIDIPropertyDeviceID = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyDeviceID);
-			kMIDIPropertyDisplayName = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyDisplayName);
-			kMIDIPropertyDriverDeviceEditorApp = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyDriverDeviceEditorApp);
-			kMIDIPropertyDriverOwner = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyDriverOwner);
-			kMIDIPropertyDriverVersion = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyDriverVersion);
-			kMIDIPropertyImage = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyImage);
-			kMIDIPropertyIsBroadcast = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyIsBroadcast);
-			kMIDIPropertyIsDrumMachine = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyIsDrumMachine);
-			kMIDIPropertyIsEffectUnit = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyIsEffectUnit);
-			kMIDIPropertyIsEmbeddedEntity = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyIsEmbeddedEntity);
-			kMIDIPropertyIsMixer = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyIsMixer);
-			kMIDIPropertyIsSampler = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyIsSampler);
-			kMIDIPropertyManufacturer = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyManufacturer);
-			kMIDIPropertyMaxReceiveChannels = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyMaxReceiveChannels);
-			kMIDIPropertyMaxSysExSpeed = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyMaxSysExSpeed);
-			kMIDIPropertyMaxTransmitChannels = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyMaxTransmitChannels);
-			kMIDIPropertyModel = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyModel);
-			kMIDIPropertyName = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyName);
-			kMIDIPropertyNameConfiguration = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyNameConfiguration);
-			kMIDIPropertyOffline = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyOffline);
-			kMIDIPropertyPanDisruptsStereo = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyPanDisruptsStereo);
-			kMIDIPropertyPrivate = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyPrivate);
-			kMIDIPropertyReceiveChannels = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyReceiveChannels);
-			kMIDIPropertyReceivesBankSelectLSB = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyReceivesBankSelectLSB);
-			kMIDIPropertyReceivesBankSelectMSB = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyReceivesBankSelectMSB);
-			kMIDIPropertyReceivesClock = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyReceivesClock);
-			kMIDIPropertyReceivesMTC = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyReceivesMTC);
-			kMIDIPropertyReceivesNotes = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyReceivesNotes);
-			kMIDIPropertyReceivesProgramChanges = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyReceivesProgramChanges);
-			kMIDIPropertySingleRealtimeEntity = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertySingleRealtimeEntity);
-			kMIDIPropertySupportsGeneralMIDI = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertySupportsGeneralMIDI);
-			kMIDIPropertySupportsMMC = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertySupportsMMC);
-			kMIDIPropertySupportsShowControl = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertySupportsShowControl);
-			kMIDIPropertyTransmitChannels = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyTransmitChannels);
-			kMIDIPropertyTransmitsBankSelectLSB = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyTransmitsBankSelectLSB);
-			kMIDIPropertyTransmitsBankSelectMSB = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyTransmitsBankSelectMSB);
-			kMIDIPropertyTransmitsClock = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyTransmitsClock);
-			kMIDIPropertyTransmitsMTC = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyTransmitsMTC);
-			kMIDIPropertyTransmitsNotes = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyTransmitsNotes);
-			kMIDIPropertyTransmitsProgramChanges = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyTransmitsProgramChanges);
-			kMIDIPropertyUniqueID = Dlfcn.GetIntPtr (midiLibrary, kMIDIPropertyUniqueID);
+			kMIDIPropertyAdvanceScheduleTimeMuSec = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyAdvanceScheduleTimeMuSec");
+			kMIDIPropertyCanRoute = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyCanRoute");
+			kMIDIPropertyConnectionUniqueID = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyConnectionUniqueID");
+			kMIDIPropertyDeviceID = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyDeviceID");
+			kMIDIPropertyDisplayName = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyDisplayName");
+			kMIDIPropertyDriverDeviceEditorApp = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyDriverDeviceEditorApp");
+			kMIDIPropertyDriverOwner = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyDriverOwner");
+			kMIDIPropertyDriverVersion = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyDriverVersion");
+			kMIDIPropertyImage = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyImage");
+			kMIDIPropertyIsBroadcast = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyIsBroadcast");
+			kMIDIPropertyIsDrumMachine = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyIsDrumMachine");
+			kMIDIPropertyIsEffectUnit = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyIsEffectUnit");
+			kMIDIPropertyIsEmbeddedEntity = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyIsEmbeddedEntity");
+			kMIDIPropertyIsMixer = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyIsMixer");
+			kMIDIPropertyIsSampler = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyIsSampler");
+			kMIDIPropertyManufacturer = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyManufacturer");
+			kMIDIPropertyMaxReceiveChannels = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyMaxReceiveChannels");
+			kMIDIPropertyMaxSysExSpeed = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyMaxSysExSpeed");
+			kMIDIPropertyMaxTransmitChannels = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyMaxTransmitChannels");
+			kMIDIPropertyModel = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyModel");
+			kMIDIPropertyName = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyName");
+			kMIDIPropertyNameConfiguration = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyNameConfiguration");
+			kMIDIPropertyOffline = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyOffline");
+			kMIDIPropertyPanDisruptsStereo = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyPanDisruptsStereo");
+			kMIDIPropertyPrivate = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyPrivate");
+			kMIDIPropertyReceiveChannels = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyReceiveChannels");
+			kMIDIPropertyReceivesBankSelectLSB = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyReceivesBankSelectLSB");
+			kMIDIPropertyReceivesBankSelectMSB = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyReceivesBankSelectMSB");
+			kMIDIPropertyReceivesClock = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyReceivesClock");
+			kMIDIPropertyReceivesMTC = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyReceivesMTC");
+			kMIDIPropertyReceivesNotes = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyReceivesNotes");
+			kMIDIPropertyReceivesProgramChanges = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyReceivesProgramChanges");
+			kMIDIPropertySingleRealtimeEntity = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertySingleRealtimeEntity");
+			kMIDIPropertySupportsGeneralMIDI = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertySupportsGeneralMIDI");
+			kMIDIPropertySupportsMMC = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertySupportsMMC");
+			kMIDIPropertySupportsShowControl = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertySupportsShowControl");
+			kMIDIPropertyTransmitChannels = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyTransmitChannels");
+			kMIDIPropertyTransmitsBankSelectLSB = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyTransmitsBankSelectLSB");
+			kMIDIPropertyTransmitsBankSelectMSB = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyTransmitsBankSelectMSB");
+			kMIDIPropertyTransmitsClock = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyTransmitsClock");
+			kMIDIPropertyTransmitsMTC = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyTransmitsMTC");
+			kMIDIPropertyTransmitsNotes = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyTransmitsNotes");
+			kMIDIPropertyTransmitsProgramChanges = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyTransmitsProgramChanges");
+			kMIDIPropertyUniqueID = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyUniqueID");
+		}
+
+		public IntPtr Handle {
+			get { return handle; }
 		}
 		
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectGetIntegerProperty (IntPtr obj, IntPtr str, out int ret);
+		internal MidiObject () {}
+		
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectGetIntegerProperty (IntPtr obj, IntPtr str, out int ret);
 		int GetInt (IntPtr property)
 		{
 			int val, code;
@@ -212,15 +216,15 @@ namespace MonoMac.CoreMidi {
 			throw new MidiException ((MidiError) code);
 		}
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectSetIntegerProperty (IntPtr obj, IntPtr str, int val);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectSetIntegerProperty (IntPtr obj, IntPtr str, int val);
 		void SetInt (IntPtr property, int value)
 		{
 			MIDIObjectSetIntegerProperty (handle, property, value);
 		}
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectGetDictionaryProperty (IntPtr obj, IntPtr str, out IntPtr dict);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectGetDictionaryProperty (IntPtr obj, IntPtr str, out IntPtr dict);
 		NSDictionary GetDictionary (IntPtr property)
 		{
 			IntPtr val;
@@ -232,15 +236,15 @@ namespace MonoMac.CoreMidi {
 			throw new MidiException ((MidiError) code);
 		}
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectSetDictionaryProperty (IntPtr obj, IntPtr str, IntPtr dict);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectSetDictionaryProperty (IntPtr obj, IntPtr str, IntPtr dict);
 		void SetDictionary (IntPtr property, NSDictionary dict)
 		{
 			MIDIObjectSetDictionaryProperty (handle, property, dict.Handle);
 		}
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectGetDataProperty (IntPtr obj, IntPtr str, out IntPtr data);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectGetDataProperty (IntPtr obj, IntPtr str, out IntPtr data);
 		
 		public NSData GetData (IntPtr property)
 		{
@@ -253,8 +257,8 @@ namespace MonoMac.CoreMidi {
 			throw new MidiException ((MidiError) code);
 		}
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectSetDataProperty (IntPtr obj, IntPtr str, IntPtr data);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectSetDataProperty (IntPtr obj, IntPtr str, IntPtr data);
 
 		public void SetData (IntPtr property, NSData data)
 		{
@@ -263,8 +267,8 @@ namespace MonoMac.CoreMidi {
 			MIDIObjectSetDataProperty (handle, property, data.Handle);
 		}
 		
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectGetStringProperty (IntPtr obj, IntPtr str, out IntPtr data);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectGetStringProperty (IntPtr obj, IntPtr str, out IntPtr data);
 		
 		public string GetString (IntPtr property)
 		{
@@ -280,25 +284,25 @@ namespace MonoMac.CoreMidi {
 			throw new MidiException ((MidiError) code);
 		}
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectSetStringProperty (IntPtr obj, IntPtr str, IntPtr nstr);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectSetStringProperty (IntPtr obj, IntPtr str, IntPtr nstr);
 
 		public void SetString (IntPtr property, string value)
 		{
 			if (value == null)
 				throw new ArgumentNullException ("value");
 			using (var nsval = new NSString (value)){
-				MIDIObjectSetDictionaryProperty (handle, property, value.Handle);
+				MIDIObjectSetDictionaryProperty (handle, property, nsval.Handle);
 			}
 		}
 
 		
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDIObjectRemoveProperty (IntPtr obj, IntPtr str);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static MidiError MIDIObjectRemoveProperty (IntPtr obj, IntPtr str);
 		public MidiError RemoveProperty (string property)
 		{
 			using (var nsstr = new NSString (property)){
-				return MIDIObjectRemoveProperty (handle, nsstr.handle);
+				return MIDIObjectRemoveProperty (handle, nsstr.Handle);
 			}			
 		}
 
@@ -544,7 +548,7 @@ namespace MonoMac.CoreMidi {
 				return GetInt (kMIDIPropertyReceivesBankSelectMSB) != 0;
 			}
 			set {
-				Set (kMIDIPropertyReceivesBankSelectMSB, value ? 1 : 0);
+				SetInt (kMIDIPropertyReceivesBankSelectMSB, value ? 1 : 0);
 			}
 		}
 
@@ -568,7 +572,7 @@ namespace MonoMac.CoreMidi {
 
 		public bool ReceivesNotes {
 			get {
-				return Get (kMIDIPropertyReceivesNotesInt) != 0;
+				return GetInt (kMIDIPropertyReceivesNotes) != 0;
 			}
 			set {
 				SetInt (kMIDIPropertyReceivesNotes, value ? 1 : 0);
@@ -649,7 +653,7 @@ namespace MonoMac.CoreMidi {
 
 		public bool TransmitsClock {
 			get {
-				return Get (kMIDIPropertyTransmitsClockInt) != 0;
+				return GetInt (kMIDIPropertyTransmitsClock) != 0;
 			}
 			set {
 				SetInt (kMIDIPropertyTransmitsClock, value ? 1 : 0);
@@ -706,7 +710,11 @@ namespace MonoMac.CoreMidi {
                         Dispose (false);
                 }
 
-		internal abstract void DisposeHandle ();
+		// Default implementation, not all Midi* objects have a native dispose mechanism,
+		internal virtual void DisposeHandle ()
+		{
+			handle = IntPtr.Zero;
+		}
 
 		public void Dispose ()
 		{
@@ -714,37 +722,48 @@ namespace MonoMac.CoreMidi {
 			GC.SuppressFinalize (this);
 		}
 		
-		virtual void Dispose (bool disposing)
+		public virtual void Dispose (bool disposing)
 		{
 			DisposeHandle ();
 		}
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static int MIDIObjectFindByUniqueID (int uniqueId, out IntPtr object, out int objectType);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static MidiError MIDIObjectFindByUniqueID (int uniqueId, out IntPtr obj, out MidiObjectType objectType);
 		
 		static MidiError FindByUniqueId (int uniqueId, out MidiObject result)
 		{
 			IntPtr handle;
 			MidiObjectType type;
-			int code = MIDIObjectFindByUniqueID (uniqueId, out handle, out type);
-
+			var code = MIDIObjectFindByUniqueID (uniqueId, out handle, out type);
+			result = null;
+			if (code != MidiError.Ok)
+				return code;
+			
 			switch (type & (~MidiObjectType.ExternalMask)){
 			case MidiObjectType.Other:
-				return new MidiObject (handle);
-			case MidiObject.Device:
-				return new MidiDevice (handle);
-			case MidiObject.Entity:
-				return new MidiEntity (handle);
-			case MidiObject.Source:
-				return new MidiEndpoint (handle);
-			case MidiObject.Destination:
-				return new MidiEndpoint (handle);
+				result = new MidiObject (handle);
+				break;
+			case MidiObjectType.Device:
+				result = new MidiDevice (handle);
+				break;
+			case MidiObjectType.Entity:
+				result = new MidiEntity (handle);
+				break;
+			case MidiObjectType.Source:
+				result = new MidiEndpoint (handle);
+				break;
+			case MidiObjectType.Destination:
+				result = new MidiEndpoint (handle);
+				break;
+			default:
+				throw new Exception ("Unknown MidiObjectType " + (int) type);
 			}
+			return code;
 		}
 	}
 
-	public MidiException : Exception {
-		internal int MidiException (MidiError code) : base (code.ToString ())
+	public class MidiException : Exception {
+		internal MidiException (MidiError code) : base (code.ToString ())
 		{
 			ErrorCode = code;
 		}
@@ -755,9 +774,9 @@ namespace MonoMac.CoreMidi {
 	delegate void MidiNotifyProc (IntPtr message, IntPtr context);
 	
 	public class MidiClient : MidiObject {
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIClientCreate (IntPtr str, MidiNotifyProc callback, IntPtr context, out IntPtr handle);
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIClientDispose (IntPtr handle);
 		GCHandle gch;
 
@@ -769,12 +788,12 @@ namespace MonoMac.CoreMidi {
 				gch.Free ();
 			}
 		}
-		
-		public MidiClient (string name)
+
+		public MidiClient (string name) 
 		{
 			using (var nsstr = new NSString (name)){
 				gch = GCHandle.Alloc (this);
-				int code = MIDIClientCreate (nsstr.handle, ClientCallback, GCHandle.ToIntPtr (gch), out handle);
+				int code = MIDIClientCreate (nsstr.Handle, ClientCallback, GCHandle.ToIntPtr (gch), out handle);
 				if (code != 0){
 					gch.Free ();
 					handle = IntPtr.Zero;
@@ -829,15 +848,18 @@ namespace MonoMac.CoreMidi {
 			Bytes = bytes;
 		}
 	}
+
+	delegate void MidiReadProc (IntPtr packetList, IntPtr context, IntPtr srcPtr);
 	
 	public class MidiPort : MidiObject {
-		[DllImport (Constants.MidiLibrary)]
+		
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIInputPortCreate (IntPtr client, IntPtr portName, MidiReadProc readProc, IntPtr context, out IntPtr midiPort);
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIOutputPortCreate (IntPtr client, IntPtr portName, out IntPtr midiPort);
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIPortDispose (IntPtr port);
 		
 		GCHandle gch;
@@ -845,14 +867,14 @@ namespace MonoMac.CoreMidi {
 		
 		internal MidiPort (MidiClient client, string portName, bool input)
 		{
-			using (var nsstr = new NSString (name)){
+			using (var nsstr = new NSString (portName)){
 				GCHandle gch = GCHandle.Alloc (this);
 				int code;
 				
 				if (input)
-					code = MIDIInputPortCreate (client.handle, nsstr.handle, Read, gch.ToIntPtr (), out handle);
+					code = MIDIInputPortCreate (client.handle, nsstr.Handle, Read, GCHandle.ToIntPtr (gch), out handle);
 				else
-					code = MIDIOutputPortCreate (client.handle, nsstr.handle, out handle);
+					code = MIDIOutputPortCreate (client.handle, nsstr.Handle, out handle);
 				
 				if (code != 0){
 					gch.Free ();
@@ -866,7 +888,7 @@ namespace MonoMac.CoreMidi {
 		}
 
 		public MidiClient Client { get; private set; }
-		public string PortName { get; privaset set; }
+		public string PortName { get; private set; }
 		
 		internal override void DisposeHandle ()
 		{
@@ -882,9 +904,9 @@ namespace MonoMac.CoreMidi {
 			int npackets = Marshal.ReadInt32 (packetList);
 			int p = 4;
 			var packets = new MidiPacket [npackets];
-			for (int i = 0; i < packets; i++){
-				int len = Marshal.ReadInt16 (p+8);
-				packets [i] = new MidiPacket (Marshal.ReadInt64 (packetList, p), len, packetList + 10);
+			for (int i = 0; i < npackets; i++){
+				short len = Marshal.ReadInt16 (p, 8);
+				packets [i] = new MidiPacket (Marshal.ReadInt64 (packetList, p), len, (IntPtr)((long)packetList + 10));
 				p += 10 + len;
 			}
 			return packets;
@@ -899,16 +921,16 @@ namespace MonoMac.CoreMidi {
 			// FIXME: Raise event with the packets array
 		}
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIPortConnectSource (IntPtr port, IntPtr endpoint, IntPtr context);
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIPortDisconnectSource (IntPtr port, IntPtr endpoint);
 
 		public void ConnectSource (MidiEndpoint endpoint)
 		{
 			if (endpoint == null)
 				throw new ArgumentNullException ("endpoint");
-			int code = MIDIPortConnectSource (handle, endpoint.handle, gch.ToIntPtr ());
+			int code = MIDIPortConnectSource (handle, endpoint.handle, GCHandle.ToIntPtr (gch));
 			if (code != 0)
 				throw new MidiException ((MidiError) code);
 		}
@@ -924,11 +946,11 @@ namespace MonoMac.CoreMidi {
 		
 		public override string ToString ()
 		{
-			return (input ? "[input:" : "[output:"] + Client + ":" + PortName + "]";
+			return (input ? "[input:" : "[output:") + Client + ":" + PortName + "]";
 		}
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static MIDISend (IntPtr port, IntPtr endpoint, IntPtr packets);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static MidiError MIDISend (IntPtr port, IntPtr endpoint, IntPtr packets);
 
 		public MidiError Send (MidiEndpoint endpoint, MidiPacket [] packets)
 		{
@@ -937,21 +959,22 @@ namespace MonoMac.CoreMidi {
 			if (packets == null)
 				throw new ArgumentNullException ("packets");
 			var p = Midi.EncodePackets (packets);
-			MIDISend (handle, endpoint.handle, p);
+			var code = MIDISend (handle, endpoint.handle, p);
 			Marshal.FreeHGlobal (p);
+			return code;
 		}
 		
 	}
 
 	public class MidiEntity : MidiObject {
-		MidiEntity (IntPtr handle) : base (handle)
+		internal MidiEntity (IntPtr handle) : base (handle)
 		{
 		}
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static IntPtr MIDIEntityGetDestination (IntPtr entity, int idx);
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static IntPtr MIDIEntityGetSource (IntPtr entity, int idx);
 		
 		public MidiEndpoint GetDestination (int idx)
@@ -970,7 +993,7 @@ namespace MonoMac.CoreMidi {
 			return new MidiEndpoint (handle);
 		}
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIEntityGetNumberOfDestinations (IntPtr entity);
 
 		public int Destinations {
@@ -979,7 +1002,7 @@ namespace MonoMac.CoreMidi {
 			}
 		}
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIEntityGetNumberOfSources (IntPtr entity);
 
 		public int Sources {
@@ -988,7 +1011,7 @@ namespace MonoMac.CoreMidi {
 			}
 		}
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIEntityGetDevice (IntPtr handle, out IntPtr devRef);
 
 		public MidiDevice Device {
@@ -1000,21 +1023,80 @@ namespace MonoMac.CoreMidi {
 			}
 		}
 	}
+
+	public class MidiDevice : MidiObject {
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static IntPtr MIDIGetExternalDevice (int item);
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static IntPtr MIDIDeviceGetEntity (IntPtr handle, int item);
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static IntPtr MIDIGetDevice (int item);
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIGetNumberOfExternalDevices ();
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIGetNumberOfDevices ();
+
+		public static MidiDevice GetDevice (int deviceIndex)
+		{
+			var h = MIDIGetDevice (deviceIndex);
+			if (h == IntPtr.Zero)
+				return null;
+			return new MidiDevice (h);
+		}
+
+		public static MidiDevice GetExternalDevice (int deviceIndex)
+		{
+			var h = MIDIGetExternalDevice (deviceIndex);
+			if (h == IntPtr.Zero)
+				return null;
+			return new MidiDevice (h);
+		}
+		
+		public static int ExternalDeviceCount {
+			get {
+				return MIDIGetNumberOfExternalDevices ();
+			}
+		}
+
+		public static int DeviceCount {
+			get {
+				return MIDIGetNumberOfDevices ();
+			}
+		}
+
+		public MidiEntity GetEntity (int entityIndex)
+		{
+			if (handle == IntPtr.Zero)
+				throw new ObjectDisposedException ("handle");
+			var h = MIDIDeviceGetEntity (handle, entityIndex);
+			if (h == IntPtr.Zero)
+				return null;
+			return new MidiEntity (h);
+		}
+		
+		internal MidiDevice (IntPtr handle) : base (handle)
+		{
+		}
+	}
 	
 	public class MidiEndpoint : MidiObject {
 		GCHandle gch;
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIEndpointDispose (IntPtr handle);
 		
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIDestinationCreate (IntPtr client, IntPtr name, MidiReadProc readProc, IntPtr context, out IntPtr midiEndpoint);
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIFlushOutput (IntPtr handle);
 
-		[DllImport (Constants.MidiLibrary)]
-		extern static int MIDIReceived (IntPtr handle, IntPtr packetList);
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static MidiError MIDIReceived (IntPtr handle, IntPtr packetList);
 		
 		internal override void DisposeHandle ()
 		{
@@ -1038,7 +1120,7 @@ namespace MonoMac.CoreMidi {
 				GCHandle gch = GCHandle.Alloc (this);
 				int code;
 				
-				code = MIDIDestinationCreate (client.handle, nsstr.handle, Read, out handle);
+				code = MIDIDestinationCreate (client.handle, nsstr.Handle, Read, GCHandle.ToIntPtr (gch), out handle);
 				
 				if (code != 0){
 					gch.Free ();
@@ -1063,21 +1145,18 @@ namespace MonoMac.CoreMidi {
 			MIDIFlushOutput (handle);
 		}
 
-                [DllImport (Constants.SystemLibrary)]
-		extern static void memcpy (IntPtr target, IntPtr source, int n);
-
 		public MidiError Received (MidiPacket [] packets)
 		{
 			if (packets == null)
 				throw new ArgumentNullException ("packets");
 
 			var block = Midi.EncodePackets (packets);
-			var code = MIDIReceived (handle, buffer);
+			var code = MIDIReceived (handle, block);
 			Marshal.FreeHGlobal (block);
 			return code;
 		}
 
-		[DllImport (Constants.MidiLibrary)]
+		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIEndpointGetEntity (IntPtr endpoint, out IntPtr entity);
 		
 		public MidiEntity Entity {
