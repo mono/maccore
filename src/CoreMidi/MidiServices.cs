@@ -25,9 +25,9 @@
 //
 using System;
 using System.Runtime.InteropServices;
-using MonoTouch.ObjCRuntime;
-using MonoTouch.CoreFoundation;
-using MonoTouch.Foundation;
+using MonoMac.ObjCRuntime;
+using MonoMac.CoreFoundation;
+using MonoMac.Foundation;
 
 namespace MonoMac.CoreMidi {
 
