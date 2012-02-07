@@ -1360,7 +1360,7 @@ namespace MonoMac.CoreMidi {
 	public class MidiPacketsEventArgs : EventArgs {
 		IntPtr packetList;
 		
-		MidiPortPacketEventArgs (IntPtr packetList)
+		internal MidiPacketsEventArgs (IntPtr packetList)
 		{
 			
 		}
