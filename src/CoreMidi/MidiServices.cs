@@ -723,7 +723,25 @@ namespace MonoMac.CoreMidi {
 
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static MidiError MIDIObjectFindByUniqueID (int uniqueId, out IntPtr obj, out MidiObjectType objectType);
-		
+
+		static internal MidiObject MidiObjectFromType (MidiObjectType type, IntPtr handle)
+		{
+			switch (type & (~MidiObjectType.ExternalMask)){
+			case MidiObjectType.Other:
+				return new MidiObject (handle);
+			case MidiObjectType.Device:
+				return new MidiDevice (handle);
+			case MidiObjectType.Entity:
+				return new MidiEntity (handle);
+			case MidiObjectType.Source:
+				return new MidiEndpoint (handle);
+			case MidiObjectType.Destination:
+				return new MidiEndpoint (handle);
+			default:
+				throw new Exception ("Unknown MidiObjectType " + (int) type);
+			}
+		}
+
 		static MidiError FindByUniqueId (int uniqueId, out MidiObject result)
 		{
 			IntPtr handle;
@@ -732,26 +750,8 @@ namespace MonoMac.CoreMidi {
 			result = null;
 			if (code != MidiError.Ok)
 				return code;
-			
-			switch (type & (~MidiObjectType.ExternalMask)){
-			case MidiObjectType.Other:
-				result = new MidiObject (handle);
-				break;
-			case MidiObjectType.Device:
-				result = new MidiDevice (handle);
-				break;
-			case MidiObjectType.Entity:
-				result = new MidiEntity (handle);
-				break;
-			case MidiObjectType.Source:
-				result = new MidiEndpoint (handle);
-				break;
-			case MidiObjectType.Destination:
-				result = new MidiEndpoint (handle);
-				break;
-			default:
-				throw new Exception ("Unknown MidiObjectType " + (int) type);
-			}
+
+			result = MidiObjectFromType (type, handle);
 			return code;
 		}
 	}
@@ -827,6 +827,14 @@ namespace MonoMac.CoreMidi {
 		{
 			return new MidiPort (this, name, false);
 		}
+
+		public event EventHandler SetupChanged;
+		public event EventHandler<ObjectAddedOrRemovedEventArgs> ObjectAdded;
+		public event EventHandler<ObjectAddedOrRemovedEventArgs> ObjectRemoved;
+		public event EventHandler<ObjectPropertyChangedEventArgs> PropertyChanged;
+		public event EventHandler ThruConnectionsChanged;
+		public event EventHandler SerialPortOwnerChanged;
+		public event EventHandler<IOErrorEventArgs> IOError;
 		
 #if !MONOMAC
 		[MonoPInvokeCallback (typeof (MidiNotifyProc))]
@@ -836,9 +844,86 @@ namespace MonoMac.CoreMidi {
 			GCHandle gch = GCHandle.FromIntPtr (context);
 			MidiClient client = (MidiClient) gch.Target;
 
-			// FIXME: Raise the event
+			var id = (MidiNotificationMessageId) Marshal.ReadInt32 (message);
+			switch (id){
+			case MidiNotificationMessageId.SetupChanged:
+				var esc = client.SetupChanged;
+				if (esc != null)
+					esc (client, EventArgs.Empty);
+				break;
+			case MidiNotificationMessageId.ObjectAdded:
+				var eoa = client.ObjectAdded;
+				if (eoa != null){
+					var data = (MidiObjectAddRemoveNotification) Marshal.PtrToStructure (message, typeof (MidiObjectAddRemoveNotification));
+					eoa (client, new ObjectAddedOrRemovedEventArgs (MidiObjectFromType (data.ParentType, data.Parent),
+											MidiObjectFromType (data.ChildType, data.Child)));
+				}
+				break;
+			case MidiNotificationMessageId.ObjectRemoved:
+				var eor = client.ObjectRemoved;
+				if (eor != null){
+					var data = (MidiObjectAddRemoveNotification) Marshal.PtrToStructure (message, typeof (MidiObjectAddRemoveNotification));
+					eor (client, new ObjectAddedOrRemovedEventArgs (MidiObjectFromType (data.ParentType, data.Parent),
+											MidiObjectFromType (data.ChildType, data.Child)));
+				}
+				break;
+			case MidiNotificationMessageId.PropertyChanged:
+				var epc = client.PropertyChanged;
+				if (epc != null){
+					var data = (MidiObjectPropertyChangeNotification) Marshal.PtrToStructure (message, typeof (MidiObjectPropertyChangeNotification));
+					epc (client, new ObjectPropertyChangedEventArgs (
+						     MidiObjectFromType (data.ObjectType, data.ObjectHandle), NSString.FromHandle (data.PropertyName)));
+				}
+				break;
+			case MidiNotificationMessageId.ThruConnectionsChanged:
+				var e = client.ThruConnectionsChanged;
+				if (e != null)
+					e (client, EventArgs.Empty);
+				break;
+			case MidiNotificationMessageId.SerialPortOwnerChanged:
+				e = client.SerialPortOwnerChanged;
+				if (e != null)
+					e (client, EventArgs.Empty);
+				break;
+			case MidiNotificationMessageId.IOError:
+				var eio = client.IOError;
+				if (eio != null){
+					var data = (MidiIOErrorNotification) Marshal.PtrToStructure (message, typeof (MidiIOErrorNotification));
+					eio (client, new IOErrorEventArgs (new MidiDevice (data.DeviceRef), data.ErrorCode));
+				}
+				break;
+			default:
+				Console.WriteLine ("Unknown message received: {0}", id);
+				break;
+			}
 		}
 
+		[StructLayout (LayoutKind.Sequential)]
+		struct MidiObjectAddRemoveNotification {
+			MidiNotificationMessageId id;
+			int messageSize;
+			public IntPtr Parent;
+			public MidiObjectType ParentType;
+			public IntPtr Child;
+			public MidiObjectType ChildType;
+		}
+	
+		[StructLayout (LayoutKind.Sequential)]
+		struct MidiObjectPropertyChangeNotification {
+			MidiNotificationMessageId id;
+			int messageSize;
+			public IntPtr ObjectHandle;
+			public MidiObjectType ObjectType;
+			public IntPtr PropertyName;
+		}
+	
+		[StructLayout (LayoutKind.Sequential)]
+		struct MidiIOErrorNotification {
+			MidiNotificationMessageId id;
+			int messageSize;
+			public IntPtr DeviceRef;
+			public int ErrorCode;
+		}
 	}
 
 	//
@@ -1223,5 +1308,48 @@ namespace MonoMac.CoreMidi {
 				throw new MidiException ((MidiError) code);
 			}
 		}
+	}
+
+	enum MidiNotificationMessageId {
+		SetupChanged = 1,
+		ObjectAdded,
+		ObjectRemoved,
+		PropertyChanged,
+		ThruConnectionsChanged,
+		SerialPortOwnerChanged,
+		IOError,
+	}
+
+	//
+	// The notification EventArgs
+	//
+	public class ObjectAddedOrRemovedEventArgs : EventArgs {
+		public ObjectAddedOrRemovedEventArgs (MidiObject parent, MidiObject child)
+		{
+			Parent = parent;
+			Child = child;
+		}
+		public MidiObject Parent { get; private set; }
+		public MidiObject Child { get; private set; }
+	}
+
+	public class ObjectPropertyChangedEventArgs : EventArgs {
+		public ObjectPropertyChangedEventArgs (MidiObject midiObject, string propertyName)
+		{
+			MidiObject = midiObject;
+			propertyName = propertyName;
+		}
+		public MidiObject MidiObject { get; private set; }
+		public string PropertyName { get; private set; }
+	}
+
+	public class IOErrorEventArgs : EventArgs {
+		public IOErrorEventArgs (MidiDevice device, int errorCode)
+		{
+			Device = device;
+			ErrorCode = errorCode;
+		}
+		public MidiDevice Device { get; set; }
+		public int ErrorCode { get; set; }
 	}
 }
