@@ -7,8 +7,6 @@
 // Copyright 2012 Xamarin Inc
 //
 // TODO:
-//   * Raise the events when we read data (there are FIXMEs in the source for that)
-//   
 //   * Each MidiObject should be added to a static hashtable so we can always
 //     obtain objects that have already been created from the handle, and avoid
 //     having two managed objects referencing the same unmanaged object.
@@ -1005,14 +1003,17 @@ namespace MonoMac.CoreMidi {
 			}
 			return packets;
 		}
+
+		public event EventHandler<MidiPacketsEventArgs> MessageReceived;
 		
 		static void Read (IntPtr packetList, IntPtr context, IntPtr srcPtr)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (context);
 			MidiPort port = (MidiPort) gch.Target;
 
-			var packets = ToPackets (packetList);
-			// FIXME: Raise event with the packets array
+			var e = port.MessageReceived;
+			if (e != null)
+				e (port, new MidiPacketsEventArgs (packetList));
 		}
 
 		[DllImport (Constants.CoreMidiLibrary)]
@@ -1270,13 +1271,16 @@ namespace MonoMac.CoreMidi {
 			}
 		}
 
+		public event EventArgs<MidiPacketsEventArgs> MessageReceived;
+		
 		static void Read (IntPtr packetList, IntPtr context, IntPtr srcPtr)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (context);
 			MidiEndpoint port = (MidiEndpoint) gch.Target;
 
-			var packets = MidiPort.ToPackets (packetList);
-			// FIXME: Raise event with the packets array
+			var e = port.MessageReceived;
+			if (e != null)
+				e (port, new MidiPacketsEventArgs (packetList));
 		}
 
 		public void FlushOutput ()
@@ -1351,5 +1355,26 @@ namespace MonoMac.CoreMidi {
 		}
 		public MidiDevice Device { get; set; }
 		public int ErrorCode { get; set; }
+	}
+
+	public class MidiPacketsEventArgs : EventArgs {
+		IntPtr packetList;
+		
+		MidiPortPacketEventArgs (IntPtr packetList)
+		{
+			
+		}
+
+		public IntPtr PacketListRaw {
+			get {
+				return packetList;
+			}
+		}
+
+		public MidiPacket [] Packets {
+			get {
+				return MidiPort.ToPackets (packetList);
+			}
+		}
 	}
 }
