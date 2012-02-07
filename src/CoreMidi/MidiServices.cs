@@ -896,6 +896,18 @@ namespace MonoMac.CoreMidi {
 			}
 		}
 
+		public override void Dispose (bool disposing)
+		{
+			SetupChanged = null;
+			ObjectAdded = null;
+			ObjectRemoved = null;
+			PropertyChanged = null;
+			ThruConnectionsChanged = null;
+			SerialPortOwnerChanged = null;
+			IOError = null;
+			base.Dispose (disposing);
+		}
+		
 		[StructLayout (LayoutKind.Sequential)]
 		struct MidiObjectAddRemoveNotification {
 			public MidiNotificationMessageId id;
@@ -1004,6 +1016,12 @@ namespace MonoMac.CoreMidi {
 			return packets;
 		}
 
+		public override void Dispose (bool disposing)
+		{
+			MessageReceived = null;
+			base.Dispose (disposing);
+		}
+		
 		public event EventHandler<MidiPacketsEventArgs> MessageReceived;
 		
 		static void Read (IntPtr packetList, IntPtr context, IntPtr srcPtr)
@@ -1271,6 +1289,12 @@ namespace MonoMac.CoreMidi {
 			}
 		}
 
+		public override void Dispose (bool disposing)
+		{
+			MessageReceived = null;
+			base.Dispose (disposing);
+		}
+		
 		public event EventHandler<MidiPacketsEventArgs> MessageReceived;
 		
 		static void Read (IntPtr packetList, IntPtr context, IntPtr srcPtr)
