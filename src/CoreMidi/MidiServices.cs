@@ -898,8 +898,8 @@ namespace MonoMac.CoreMidi {
 
 		[StructLayout (LayoutKind.Sequential)]
 		struct MidiObjectAddRemoveNotification {
-			MidiNotificationMessageId id;
-			int messageSize;
+			public MidiNotificationMessageId id;
+			public int MessageSize;
 			public IntPtr Parent;
 			public MidiObjectType ParentType;
 			public IntPtr Child;
@@ -908,8 +908,8 @@ namespace MonoMac.CoreMidi {
 	
 		[StructLayout (LayoutKind.Sequential)]
 		struct MidiObjectPropertyChangeNotification {
-			MidiNotificationMessageId id;
-			int messageSize;
+			public MidiNotificationMessageId id;
+			public int MessageSize;
 			public IntPtr ObjectHandle;
 			public MidiObjectType ObjectType;
 			public IntPtr PropertyName;
@@ -917,8 +917,8 @@ namespace MonoMac.CoreMidi {
 	
 		[StructLayout (LayoutKind.Sequential)]
 		struct MidiIOErrorNotification {
-			MidiNotificationMessageId id;
-			int messageSize;
+			public MidiNotificationMessageId id;
+			public int MessageSize;
 			public IntPtr DeviceRef;
 			public int ErrorCode;
 		}
@@ -1271,7 +1271,7 @@ namespace MonoMac.CoreMidi {
 			}
 		}
 
-		public event EventArgs<MidiPacketsEventArgs> MessageReceived;
+		public event EventHandler<MidiPacketsEventArgs> MessageReceived;
 		
 		static void Read (IntPtr packetList, IntPtr context, IntPtr srcPtr)
 		{
@@ -1341,7 +1341,7 @@ namespace MonoMac.CoreMidi {
 		public ObjectPropertyChangedEventArgs (MidiObject midiObject, string propertyName)
 		{
 			MidiObject = midiObject;
-			propertyName = propertyName;
+			PropertyName = propertyName;
 		}
 		public MidiObject MidiObject { get; private set; }
 		public string PropertyName { get; private set; }
@@ -1362,7 +1362,7 @@ namespace MonoMac.CoreMidi {
 		
 		internal MidiPacketsEventArgs (IntPtr packetList)
 		{
-			
+			this.packetList = packetList;
 		}
 
 		public IntPtr PacketListRaw {
