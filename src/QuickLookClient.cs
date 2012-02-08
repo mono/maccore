@@ -1,11 +1,10 @@
 //
 // quicklookclient.cs: Binds the quicklook thumbnail client function
 //
-// Authors:
-//   Geoff Norton
-//   Miguel de Icaza
+// Author:
+//   Jean-Louis Fuchs
 //
-// Copyright 2009, Novell, Inc.
+// Copyright 2012
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,15 +25,11 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreFoundation;
-#if MONOMAC
-using MonoMac.AppKit;
-#else
-using MonoMac.UIKit;
-#endif
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
