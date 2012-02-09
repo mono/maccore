@@ -1317,7 +1317,7 @@ public class Generator {
 						if (mi.DeclaringType == t)
 							need_abstract [t] = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute)
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute)
 						continue;
 					else 
 						Console.WriteLine ("Error: Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -1703,13 +1703,19 @@ public class Generator {
 		MarkRetDirty    = 0x5,
 		StoreRet        = 0x7,
 	}
+
+	public enum ThreadCheck {
+		Off,
+		On,
+	}
+	
 	//
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options)
+	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck)
 	{
-		bool needs_thread_check = ThreadProtection && type_needs_thread_checks && !HasAttribute (mi, typeof (ThreadSafeAttribute));
+		bool needs_thread_check = ThreadProtection && type_needs_thread_checks && threadCheck == ThreadCheck.On;
 		string selector = SelectorField (sel);
 		var args = new StringBuilder ();
 		var convs = new StringBuilder ();
@@ -2037,6 +2043,7 @@ public class Generator {
 		       pi.Name);
 		indent++;
 
+		ThreadCheck threadCheck = HasAttribute (pi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		if (pi.CanRead){
 			var getter = pi.GetGetMethod ();
 			var ba = GetBindAttribute (getter);
@@ -2056,14 +2063,14 @@ public class Generator {
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					if (!DoesPropertyNeedBackingField (pi)) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck);
 					} else if (is_static) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck);
 					} else {
 						if (DoesPropertyNeedDirtyCheck (pi, export))
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck);
 						else
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck);
 					}
 				}
 				print ("}\n");
@@ -2095,7 +2102,7 @@ public class Generator {
 				if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None);
+					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck);
 					if (!is_static && DoesPropertyNeedBackingField (pi)) {
 						if (DoesPropertyNeedDirtyCheck (pi, export)) {
 #if !MONOMAC
@@ -2155,6 +2162,7 @@ public class Generator {
 		if (is_static)
 			virtual_method = false;
 
+		ThreadCheck threadCheck = HasAttribute (mi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		bool is_abstract = HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
 		bool is_public = !HasAttribute (mi, typeof (InternalAttribute));
 		bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
@@ -2183,7 +2191,7 @@ public class Generator {
 			if (is_model)
 				print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
 			else
-				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None);
+				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck);
 			print ("}\n");
 		}
 	}
