@@ -3159,7 +3159,7 @@ namespace MonoMac.Foundation
 	public interface NSString2 {
 #if MONOMAC
 		[Bind ("sizeWithAttributes:")]
-		SizeF StringSize (NSDictionary attributedStringAttributes);
+		SizeF StringSize ([NullAllowed] NSDictionary attributedStringAttributes);
 		
 		[Bind ("boundingRectWithSize:options:attributes:")]
 		SizeF BoundingRectWithSize (SizeF size, NSStringDrawingOptions options, NSDictionary attributes);
