@@ -2491,7 +2491,9 @@ public class Generator {
 						
 						if (mi.ReturnType == typeof (void)){
 							string eaname;
-								
+
+							if (debug)
+								print ("Console.WriteLine (\"Method {0}.{1} invoked\");", dtype.Name, mi.Name);
 							if (pars.Length != minPars){
 								eaname = GetEventArgName (mi);
 								if (!generatedEvents.ContainsKey (eaname) && !eventArgTypes.ContainsKey (eaname)){
@@ -2534,6 +2536,8 @@ public class Generator {
 								generatedDelegates.Add (delname, null);
 								delegateTypes.Add (delname, mi);
 							}
+							if (debug)
+								print ("Console.WriteLine (\"Method {0}.{1} invoked\");", dtype.Name, mi.Name);
 							
 							print ("if ({0} != null)", PascalCase (mi.Name));
 							print ("	return {0} ({1}{2});",
