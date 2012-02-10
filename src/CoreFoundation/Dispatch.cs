@@ -226,27 +226,32 @@ namespace MonoMac.CoreFoundation {
 				return new DispatchQueue (dispatch_get_global_queue ((IntPtr) DispatchQueuePriority.Default, IntPtr.Zero), false);
 			}
 		}
-#if !MONOMAC	
+#if MONOMAC
+		static void DispatchQueue PInvokeDispatchGetMainQueue ()
+		{
+			return new DispatchQueue (dispatch_get_main_queue (), false);
+		}
+
+#else
 		static IntPtr main_q;
 #endif
 		static object lockobj = new object ();
 
 		public static DispatchQueue MainQueue {
 			get {
-#if !MONOMAC
-				if (Runtime.Arch == Arch.DEVICE) {
-					lock (lockobj) {
-						if (main_q == IntPtr.Zero) {
-							var h = Dlfcn.dlopen ("/usr/lib/libSystem.dylib", 0x0);
-							main_q = Dlfcn.GetIndirect (h, "_dispatch_main_q");
-							Dlfcn.dlclose (h);
-						}
+				lock (lockobj) {
+					if (main_q == IntPtr.Zero) {
+						var h = Dlfcn.dlopen ("/usr/lib/libSystem.dylib", 0x0);
+						main_q = Dlfcn.GetIndirect (h, "_dispatch_main_q");
+						Dlfcn.dlclose (h);
 					}
-
-					return new DispatchQueue (main_q, false);
-				} else
+				}
+#if MONOMAC
+				// For Snow Leopard
+				if (main_q == IntPtr.Zero)
+					return PInvokeDispatchGetMainQueue ();
 #endif
-					return new DispatchQueue (dispatch_get_main_queue (), false);
+				return new DispatchQueue (main_q, false);
 			}
 		}
 
