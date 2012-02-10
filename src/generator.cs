@@ -53,6 +53,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreVideo;
 using MonoMac.OpenGL;
+using MonoMac.CoreMidi;
 #else
 using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
@@ -60,6 +61,7 @@ using MonoTouch.CoreFoundation;
 using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
 using MonoTouch.CoreVideo;
+using MonoTouch.CoreMidi;
 #endif
 
 public static class ReflectionExtensions {
@@ -678,7 +680,7 @@ public class Generator {
 	string [] UINamespaces = new string [] {
 		"MonoMac.AppKit"
 	};
-	const bool ThreadProtection = false;
+	static bool ThreadProtection = false;
 #else
 	public Type MessagingType = typeof (MonoTouch.ObjCRuntime.Messaging);
 	public Type SampleBufferType = typeof (MonoTouch.CoreMedia.CMSampleBuffer);
@@ -697,7 +699,7 @@ public class Generator {
 		"MonoTouch.MapKit",
 		"MonoTouch.MessageUI",
 	};
-	const bool ThreadProtection = true;
+	static bool ThreadProtection = true;
 #endif
 
 	//
@@ -1201,6 +1203,7 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CFRunLoop), "IntPtr", "{0}.Handle", "new CFRunLoop ("));
 		marshal_types.Add (new MarshalType (typeof (CGColorSpace), "IntPtr", "{0}.Handle", "new CGColorSpace ("));
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
+		marshal_types.Add (new MarshalType (typeof (MidiEndpoint), "IntPtr", "{0}.Handle", "new MidiEndpoint ("));
 #if MONOMAC
 		marshal_types.Add (new MarshalType (typeof (CGLContext), "IntPtr", "{0}.Handle", "new CGLContext ("));
 		marshal_types.Add (new MarshalType (typeof (CGLPixelFormat), "IntPtr", "{0}.Handle", "new CGLPixelFormat ("));
