@@ -227,14 +227,13 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 #if MONOMAC
-		static void DispatchQueue PInvokeDispatchGetMainQueue ()
+		static DispatchQueue PInvokeDispatchGetMainQueue ()
 		{
 			return new DispatchQueue (dispatch_get_main_queue (), false);
 		}
 
-#else
-		static IntPtr main_q;
 #endif
+		static IntPtr main_q;
 		static object lockobj = new object ();
 
 		public static DispatchQueue MainQueue {
