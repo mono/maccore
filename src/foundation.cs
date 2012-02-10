@@ -5250,10 +5250,10 @@ namespace MonoMac.Foundation
 	[Model]
 	interface NSFilePresenter {
 		[Abstract]
-		[Export ("NSURL*presentedItemURL")]
+		[Export ("presentedItemURL")]
 		NSUrl PresentedItemURL { get; }
 
-		[Export ("NSOperationQueue*presentedItemOperationQueue")]
+		[Export ("presentedItemOperationQueue")]
 		NSOperationQueue PesentedItemOperationQueue { get; }
 
 #if DOUBLE_BLOCKS
