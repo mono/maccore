@@ -340,6 +340,15 @@ public class DisableDefaultCtorAttribute : Attribute {
 	public DisableDefaultCtorAttribute () {}
 }
 
+//
+// If this attribute is applied to a property, we do not generate a
+// backing field.   See bugzilla #3359 and Assistly 7032 for some
+// background information
+//
+public class TransientAttribute : Attribute {
+	public TransientAttribute () {}
+}
+
 // Used for mandatory methods that must be implemented in a [Model].
 public class AbstractAttribute : Attribute {
 	public AbstractAttribute () {} 
@@ -1923,7 +1932,7 @@ public class Generator {
 	}
 
 	bool DoesPropertyNeedBackingField (PropertyInfo pi) {
-		return DoesTypeNeedBackingField (pi.PropertyType);
+		return DoesTypeNeedBackingField (pi.PropertyType) && !HasAttribute (pi, typeof (TransientAttribute));
 	}
 	
 	bool DoesPropertyNeedDirtyCheck (PropertyInfo pi, ExportAttribute ea) {
