@@ -1972,7 +1972,8 @@ public class Generator {
 
 		string var_name = null;
 				
-		if (DoesPropertyNeedBackingField (pi)) {
+		// [Model] has properties that only throws, so there's no point in adding unused backing fields
+		if (!is_model && DoesPropertyNeedBackingField (pi)) {
 			var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
 
 			if (is_thread_static)
