@@ -29,7 +29,7 @@ using System.Runtime.InteropServices;
 
 namespace MonoMac.Foundation {
 
-	public class NSFormatterDelegate : NSFormatter {
+	public abstract class NSFormatterDelegate : NSFormatter {
 
 		public NSFormatterDelegate (IntPtr handle) : base (handle)
 		{
@@ -56,9 +56,8 @@ namespace MonoMac.Foundation {
 			return ret;
 		}
 		
-		public virtual bool ObjectFor (ref NSObject objectFor, string forString, bool needsErrorDescription, ref string errorDescription)
-		{
-			throw new NotImplementedException();
-		}
+		public override abstract string StringFor (NSObject value);
+		public abstract bool ObjectFor (ref NSObject objectFor, string forString, bool needsErrorDescription, ref string errorDescription);
+
 	}
 }
