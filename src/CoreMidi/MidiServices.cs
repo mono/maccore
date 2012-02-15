@@ -105,7 +105,7 @@ namespace MonoMac.CoreMidi {
 			for (int i = 0; i < packets.Length; i++){
 				Marshal.WriteInt64 (buffer, dest, packets [i].TimeStamp);
 				dest += 8;
-				Marshal.WriteInt16 (buffer, dest, packets [i].Length);
+				Marshal.WriteInt16 (buffer, dest, (short) packets [i].Length);
 				dest += 2;
 				Midi.memcpy ((IntPtr)((long)buffer + dest), packets [i].Bytes, packets [i].Length);
 				dest += (packets [i].Length+3)&(~3);
@@ -964,16 +964,58 @@ namespace MonoMac.CoreMidi {
 	// We do not pack this structure since we do not really actually marshal it,
 	// we manually encode it and decode it using Marshal.{Read|Write}
 	//
-	public struct MidiPacket {
+	public class MidiPacket {
 		public long  TimeStamp;
-		public IntPtr Bytes;
-		public short Length;
+		IntPtr byteptr;
+		byte [] bytes;
+		int    start;
+		public ushort Length;
 
-		public MidiPacket (long timestamp, short length, IntPtr bytes)
+		public MidiPacket (long timestamp, ushort length, IntPtr bytes)
 		{
 			TimeStamp = timestamp;
 			Length = length;
-			Bytes = bytes;
+			byteptr = bytes;
+		}
+
+		public MidiPacket (long timestamp, byte [] bytes) : this (timestamp, bytes, 0, bytes.Length, false)
+		{
+		}
+
+		public MidiPacket (long timestamp, byte [] bytes, int start, int len) : this (timestamp, bytes, start, len, true)
+		{
+		}
+		
+		MidiPacket (long timestamp, byte [] bytes, int start, int length, bool check)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			if (length > UInt16.MaxValue)
+				throw new ArgumentException ("lenght is bigger than 64k");
+			
+			if (check){
+				if (start < 0 || start >= bytes.Length)
+					throw new ArgumentException ("range is not within bytes");
+				if (start+length > bytes.Length)
+					throw new ArgumentException ("range is not within bytes");
+			}
+			
+			TimeStamp = timestamp;
+			Length = (ushort) length;
+			this.start = start;
+			this.bytes = bytes;
+		}
+
+		public IntPtr Bytes {
+			get {
+				if (bytes == null)
+					return byteptr;
+				unsafe {
+					fixed (byte *p = &bytes [start]){
+						return (IntPtr) p;
+					}
+				}
+			}
 		}
 	}
 
@@ -1033,7 +1075,7 @@ namespace MonoMac.CoreMidi {
 			int p = 4;
 			var packets = new MidiPacket [npackets];
 			for (int i = 0; i < npackets; i++){
-				short len = Marshal.ReadInt16 (p, 8);
+				ushort len = (ushort) Marshal.ReadInt16 (p, 8);
 				packets [i] = new MidiPacket (Marshal.ReadInt64 (packetList, p), len, (IntPtr)((long)packetList + 10));
 				p += 10 + len;
 			}
