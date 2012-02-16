@@ -14,9 +14,6 @@
 //     Currently a few lookup functions end up creating objects that might have
 //     already been surfaced (new MidiEndpoint (handle) for example)
 //
-// properties:
-// MIDIObjectGetProperties -- needs cfpropertylist
-// 
 // MIDISendSysex
 // 
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -711,6 +708,18 @@ namespace MonoMac.CoreMidi {
 				SetInt (kMIDIPropertyUniqueID, value);
 			}
 		}
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIObjectGetProperties (IntPtr obj, out IntPtr dict, bool deep);
+		
+		public NSDictionary GetDictionaryProperties (bool deep)
+		{
+			IntPtr val;
+			if (MIDIObjectGetProperties (handle, out val, deep) != 0)
+				return null;
+			return (NSDictionary) Runtime.GetNSObject (val);
+		}
+		
 #endif
 		
                 public MidiObject (IntPtr handle)
@@ -1398,6 +1407,20 @@ namespace MonoMac.CoreMidi {
 				throw new MidiException ((MidiError) code);
 			}
 		}
+
+#if !COREBUILD
+		public bool IsNetworkSession {
+			get {
+				using (var dict =  GetDictionaryProperties (true)){
+					if (dict == null)
+						return false;
+					
+					using (var key = new NSString ("apple.midirtp.session"))
+						return dict.ContainsKey (key);
+				}
+			}
+		}
+#endif
 	}
 
 	enum MidiNotificationMessageId {
