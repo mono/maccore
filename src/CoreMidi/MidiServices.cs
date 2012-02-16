@@ -1105,22 +1105,18 @@ namespace MonoMac.CoreMidi {
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIPortDisconnectSource (IntPtr port, IntPtr endpoint);
 
-		public void ConnectSource (MidiEndpoint endpoint)
+		public MidiError ConnectSource (MidiEndpoint endpoint)
 		{
 			if (endpoint == null)
 				throw new ArgumentNullException ("endpoint");
-			int code = MIDIPortConnectSource (handle, endpoint.handle, GCHandle.ToIntPtr (gch));
-			if (code != 0)
-				throw new MidiException ((MidiError) code);
+			return (MidiError) MIDIPortConnectSource (handle, endpoint.handle, GCHandle.ToIntPtr (gch));
 		}
 
-		public void Disconnect (MidiEndpoint endpoint)
+		public MidiError Disconnect (MidiEndpoint endpoint)
 		{
 			if (endpoint == null)
 				throw new ArgumentNullException ("endpoint");
-			int code = MIDIPortDisconnectSource (handle, endpoint.handle);
-			if (code != 0)
-				throw new MidiException ((MidiError) code);
+			return (MidiError) MIDIPortDisconnectSource (handle, endpoint.handle);
 		}
 		
 		public override string ToString ()
