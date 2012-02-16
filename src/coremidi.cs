@@ -59,6 +59,10 @@ namespace MonoMac.CoreMidi {
 		[Export ("hostWithName:netServiceName:netServiceDomain:")]
 		MidiNetworkHost Create (string hostName, string netServiceName, string netServiceDomain);
 
+		[Static]
+		[Export ("hostWithName:address:port:")]
+		MidiNetworkHost Create (string hostName, string address, int port);
+
 		[Export ("hasSameAddressAs:")]
 		bool HasSameAddressAs (MidiNetworkHost other);
 	}
