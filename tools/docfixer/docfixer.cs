@@ -737,6 +737,19 @@ public partial class DocGenerator {
 			notfound.Add (t.Name);
 			return;
 		}
+		var indexContent = File.ReadAllText (appledocpath);
+		if (indexContent.IndexOf ("<meta id=\"refresh\"") != -1){
+			var p = indexContent.IndexOf ("0; URL=");
+			if (p == -1){
+				notfound.Add (t.Name);
+				Console.WriteLine ("Error, got an index.html file but can not find its refresh page for {0} and {1}", t.Name, appledocpath);
+				return;
+			}
+			p += 7;
+			var l = indexContent.IndexOf ("\"", p);
+			appledocpath = Path.Combine (Path.GetDirectoryName (appledocpath), indexContent.Substring (p, l-p));
+			Console.WriteLine ("Got: {0}", appledocpath);
+		}
 		
 		string xmldocpath = GetMdocPath (t);
 		if (!File.Exists (xmldocpath)) {
