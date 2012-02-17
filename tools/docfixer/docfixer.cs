@@ -14,233 +14,28 @@ using System.Xml.XPath;
 using System.Xml;
 using System.Text;
 using System.Text.RegularExpressions;
+using SQLite;
 
 using HtmlAgilityPack;
 
 public partial class DocGenerator {
 	static string DocBase = GetMostRecentDocBase ();
 	public static bool DebugDocs;
-	
-	//
-	// {0} is the DocBase
-	// {1} is the framework name (Cocoa, GraphicsImaging, etc) without the MonoTouch/MonoMac prefix.
-	// {2} is the TypeName
-	// {3} is the first alternate name (for example fx=CoreAnimation sets alt=QuartzCore)
-	// {4} is the second alternate name
-	// {5} is the typename with 2 letters removed from the front (UIView -> View)
-	static string [] patterns = {
-		"{0}/{1}/Reference/{2}_Ref/Introduction/Introduction.html",
-		"{0}/{1}/Reference/{2}/Introduction/Introduction.html",
-		"{0}/{1}/Reference/{2}_Class/{2}/{2}.html",
-		"{0}/{1}/Reference/{2}_Class/{2}.html",
-		"{0}/{1}/Reference/{2}Request_Class/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Class/{2}ClassReference/{2}ClassReference.html",
-		"{0}/{1}/Reference/{2}_Class/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Class/Reference/{5}.html",
-		"{0}/{1}/Reference/{2}_Class/Reference/{2}.html",                           // UIKit/Reference/UIDevice_Class/Reference/UIDevice.html
-		"{0}/{1}/Reference/{2}_Class/Reference.html",
-		"{0}/{1}/Reference/{2}_ClassRef/Reference/{2}.html",
-		"{0}/{1}/Reference/{2}_ClassRef/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}ClassRef/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Protocol/Introduction/Introduction.html",
-		"{0}/{1}/Reference/{2}_Protocol/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Protocol/Reference/{2}.html",
-		"{0}/{1}/Reference/{2}_Protocol/Reference.html",
-		"{0}/{1}/Reference/{2}_Protocol/{2}/{2}.html",
-		"{0}/{1}/Reference/{4}_Protocol/{2}/{2}.html",                              // UIModalViewDelegate_Protocol/UIActionSheetDelegate/UIActionSheetDelegate.html
-		"{0}/{1}/Reference/Foundation/Classes/{2}_Class/{2}.html",
-		"{0}/{1}/Reference/Foundation/Classes/{2}_Class/Reference/{2}.html",
-		"{0}/{1}/Reference/Foundation/Classes/{2}_Class/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Class/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Class/Introduction/Introduction.html",
-		"{0}/{1}/Reference/{2}Ref/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}ClassRef/{2}ClassReference/{2}ClassReference.html",
-		"{0}/{1}/Reference/{2}_ClassReference/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Reference/Reference/Reference.html",                 // SKProduct_Reference/Reference/Reference.html
-		"{0}/{1}/Reference/{2}/Reference/Reference.html",                           // SKProductsRequest/Reference/Reference.html
-
-		"{0}/{1}/Reference/{2}_Ref/Reference/Reference.html",                       // GameKit/Reference/GKLeaderboard_Ref/Reference/Reference.html
-		
-
-		"{0}/{1}/Reference/{2}ClassReference/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}ProtocolReference/Reference/Reference.html",
-		"{0}/{1}/Reference/{4}_Protocol/{1}/{1}.html",
-		"{0}/{1}/Reference/{3}/Protocols/{2}_Protocol/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_ProtocolReference/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Protocol/Reference/Reference.html",
-		"{0}/iPhone/Reference/{2}_Class/{2}.html",
-		"{0}/iPhone/Reference/{2}_Class/Reference/Reference.html", 		// UILocalReference
-		"{0}/{1}/Reference/{2}ClassReferenceClassRef/{2}ClassReference.html",
-		"{0}/{1}/Reference/{2}ProtocolRef/{2}.html",
-		"{0}/{1}/Reference/{2}_Class/Reference/{5}.html",
-		"{0}/{3}/Reference/{2}_Class/{2}.html",
-		"{0}/{3}/Reference/{2}_class/Reference/{2}.html",
-		"{0}/{3}/Reference/{1}Framework/Classes/{2}_Class/Reference/{2}.html",
-		"{0}/{3}/Reference/{1}Framework/Classes/{2}_Class/{2}.html",
-		"{0}/{1}/Reference/{2}_ProtocolRef/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Class/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}_Ref/Reference/Reference.html",
-		"{0}/{1}/Reference/{2}ProtocolRef/Reference/Reference.html",
-		"FOO",
-		
-		// AppKit-style
-		"{0}/{1}/Reference/{3}/Classes/{2}_Class/Reference/Reference.html",
-		"{0}/{1}/Reference/{3}/Classes/{2}_Class/Reference/{2}.html",
-		"{0}/{1}/Reference/{3}/{2}_h/Classes/{2}/index.html",
-		"{0}/{3}/Reference/{2}_Protocol_iPhoneOS/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}_Protocol/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}_Class/{2}/{2}.html",
-		"{0}/{3}/Reference/{2}_ClassRef/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}_Class/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}ClassRef/Reference/Reference.html",
-		"{0}/{3}/Reference/{2}_Class/{4}/{4}.html",
-		"{0}/{3}/Reference/{2}_ClassRef/Reference/Reference.html",
-		"{0}/{4}/Reference/{2}/Reference/Reference.html",
-		"{0}/{4}/Reference/{2}/{2}_Reference.html",
-		"{0}/{4}/Reference/{2}_Protocol/Reference/Reference.html",
-		"{0}/{4}/Reference/{2}_Class/Introduction/Introduction.html",
-		"{0}/{4}/Reference/{2}_Class/{2}/{2}_Reference.html",
-		"{0}/{4}/Reference/{2}_Class/{2}_Reference.html",
-		"{0}/{4}/Reference/{2}_Class/{2}_Ref.html",
-		"{0}/{4}/Reference/{2}ClassRef/Reference/Reference.html",
-		"{0}/{4}/Reference/{2}_Class/Reference/Reference.html",
-		"{0}/{4}/Reference/{2}Ref/Reference/Reference.html",
-		"{0}/{4}/Reference/{2}_Protocol/{2}_Reference.html"
-	};
 
 	static Type export_attribute_type;
 	
+	public class StoredPath {
+		public string ZKPATH { get; set; }
+	}
+
+	// Extract the path from Apple's Database
 	public static string GetAppleDocFor (Type t)
 	{
-		string fx = t.Namespace;
-		string alt = "", alt2 ="";
-
-		if (fx.StartsWith (BaseNamespace))
-			fx = fx.Substring (BaseNamespace.Length+1);
-
-		if (fx == "CoreWlan"){
-			fx = "Networking";
-			alt = "CoreWLanFrameworkRef";
-		}
-		if (fx == "Foundation"){
-			fx = "Cocoa";
-			alt = "Foundation";
-		}
-		if (fx == "CoreAnimation"){
-			fx = "GraphicsImaging";
-			alt = "QuartzCore";
-			alt2 = "Cocoa";
-		}
-		if (fx == "QuickLook"){
-			alt = "NetworkingInternet";
-		}
-		if (fx == "EventKit"){
-			alt = "DataManagement";
-			alt2 = "EventKitUI";
-		}
-		if (fx == "CoreTelephony"){
-			alt = "NetworkingInternet";
-		}
-		if (fx == "iAd")
-			fx = "UserExperience";
-		if (t.Name == "CAEAGLLayer")
-			alt2 = "CAEGLLayer";
-		if (t.Name == "UIActionSheetDelegate")
-			alt2 = "UIModalViewDelegate";
-		if (fx == "AppKit"){
-			fx = "Cocoa";
-			alt = "ApplicationKit";
-			alt2 = "AppKit";
-		}
-		if (fx == "CoreData"){
-			alt = "Cocoa";
-		}
-		if (fx == "CoreImage"){
-			fx = "GraphicsImaging";
-			alt = "QuartzCoreFramework";
-			alt2 = "CoreImage";
-		}
-		if (fx == "ImageKit"){
-			fx = "Quartz";
-		        alt2 = "GraphicsImaging";
-			alt = "QuartzCoreFramework";
-		}
-		if (fx == "QTKit"){
-			fx = "QuickTime";
-			alt = "QTKitFramework";
-		}
-		if (fx == "WebKit"){
-			fx = "Cocoa";
-			alt = "WebKit";
-		}
-		if (fx == "PdfKit"){
-			fx = "GraphicsImaging";
-			alt = "QuartzFramework";
-		}
-		if (fx == "NewsstandKit"){
-			alt = "StoreKit";
-		}
-
-		string shortName = t.Name;
-
-		// Some types are stored in a different file, deal with those
-		switch (t.FullName){
-		case "MonoTouch.UIKit.UIRotationGestureRecognizer":
-			shortName = "UIRotateGestureRecognizer";
-			break;
-
-		case "MonoTouch.Twitter.TWTweetComposeViewController":
-			shortName = "TWTweetSheetViewController";
-			break;
-
-		case "MonoTouch.GLKit.GLKReflectionMapEffect":
-			shortName = "GLKReflectionEffect";
-			break;
-		}
-			
-		foreach (string pattern in patterns){
-			foreach (var fxname in new string [] { fx, alt, alt2 }){
-				string path = String.Format (pattern, DocBase, fxname, shortName, alt, alt2, shortName.Substring (2));
-	
-				if (File.Exists (path))
-					return path;
-			}
-		}
-
-		// Ignore known missing documents
-		switch (t.Name){
-		case "CAAnimationDelegate":
-		case "UITableViewSource":
-			// This one was invented by us.
+		var l = db.Query<StoredPath> ("select zkpath from znode join ztoken on znode.z_pk == ztoken.zparentnode where ztoken.ztokenname like \"" + t.Name + "\"");
+		if (l.Count == 0)
 			return null;
-		case "CLHeading":
-			// This seems to be an internal Apple API, not documeted, but in the header files.
-			return null;
-		// public "delegate"/protocol types w/o explicit documentation
-		case "CALayerDelegate":
-		case "NSKeyedArchiverDelegate":
-		case "NSKeyedUnarchiverDelegate":
-		case "NSUrlConnectionDelegate":
-			return null;
-		// renames of ObjC types
-		case "NSNetServiceDelegate":        // ObjC NSNetServiceDelegateMethods [no docs]
-		case "NSNetServiceBrowserDelegate": // ObjC NSNetServiceBrowserDelegateMethods [no docs]
-			return null;
-		case "UIPickerViewModel":
-			// This was invented by us.
-			return null;
-		}
-
-		Console.WriteLine ("NOT FOUND: {0}", t);
-		if (DebugDocs){
-			Console.WriteLine ("DocBase: {0}", DocBase);
-			foreach (string pattern in patterns){
-				string path = String.Format (pattern, "", fx, shortName, alt, alt2, shortName.Substring (2));
-				Console.WriteLine ("    Tried: {0}", path);
-			}
-		}
-		return null;
+		
+		return Path.Combine (DocBase, "..", l [0].ZKPATH);
 	}
 
 	public static bool KnownIssues (string type, string selector)
@@ -933,13 +728,16 @@ public partial class DocGenerator {
 	}
 
 	static string appledocpath;
+	static List<string> notfound = new List<string> ();
 	
 	public static void ProcessNSO (Type t)
 	{
 		appledocpath = GetAppleDocFor (t);
-		if (appledocpath == null)
+		if (appledocpath == null || !File.Exists (appledocpath)){
+			notfound.Add (t.Name);
 			return;
-
+		}
+		
 		string xmldocpath = GetMdocPath (t);
 		if (!File.Exists (xmldocpath)) {
 			Console.WriteLine ("DOC REGEN PENDING for type: {0}", t.FullName);
@@ -1205,6 +1003,7 @@ public partial class DocGenerator {
 		return appledocs;
 	}
 
+	static SQLiteConnection db;
 	static string assembly_dir;
 
 	// If true, it extracts the first sentence from the remarks and sticks it in the summary.
@@ -1214,7 +1013,7 @@ public partial class DocGenerator {
 	{
 		Console.WriteLine ("Usage is: docfixer [--summary] path-to-files");
 	}
-	
+
 	public static int Main (string [] args)
 	{
 		string dir = null;
@@ -1237,6 +1036,12 @@ public partial class DocGenerator {
 			return 1;
 		}
 
+		var dbPath = Path.Combine (DocBase, "../../docSet.dsidx");
+		db = new SQLiteConnection (dbPath);
+		Console.WriteLine (dbPath);
+		if (db == null)
+			throw new Exception ("Could not initialize SQLite");
+		
 		var debug = Environment.GetEnvironmentVariable ("DOCFIXER");
 		DebugDocs = debug != null;
 
@@ -1267,12 +1072,19 @@ public partial class DocGenerator {
 				//continue;
 				try {
 					ProcessNSO (t);
-				} catch {
-					Console.WriteLine ("Problem with {0}", t.FullName);
+				} catch (Exception e){
+					Console.WriteLine ("Problem with {0} {1}", t.FullName, e);
 				}
 			}
 		}
 
+		if (notfound.Count > 90){
+			Console.WriteLine ("Too many types were not found on this run, should be around 60-70 (mostly CoreImage, 3 UIKits, 2 CoreAnimation, 1 Foundation, 1 Bluetooth, 1 iAd");
+			foreach (var s in notfound)
+				Console.WriteLine (s);
+			return 1;
+		}
+		
 		return 0;
 	}
 }
