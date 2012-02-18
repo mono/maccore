@@ -1049,6 +1049,11 @@ public partial class DocGenerator {
 			return 1;
 		}
 
+		if (DocBase == null){
+			Console.Error.WriteLine ("Docfixer was not able to find the iOS documentation on /Library/Developer/Shared/Documentation/DocSets/ for any iOS known version (4_0, 3_2, 3_1 or 5_0");
+			return 1;
+		}
+		
 		var dbPath = Path.Combine (DocBase, "../../docSet.dsidx");
 		db = new SQLiteConnection (dbPath);
 		Console.WriteLine (dbPath);
