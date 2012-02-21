@@ -1,5 +1,6 @@
 //
 // Copyright 2009-2010, Novell, Inc.
+// Copyright 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,6 +27,7 @@ namespace MonoMac.Foundation {
 
 	public delegate void NSAction ();
 
+	// Use this for synchronous operations
 	[Register ("__MonoMac_NSActionDispatcher")]
 	internal class NSActionDispatcher : NSObject {
 
@@ -43,6 +45,27 @@ namespace MonoMac.Foundation {
 		public void Apply ()
 		{
 			action ();
+		}
+	}
+
+	// Use this for asynchronous operations
+	[Register ("__MonoMac_NSAsyncActionDispatcher")]
+	internal class NSAsyncActionDispatcher : NSObject {
+		GCHandle gch;
+		NSAction action;
+
+		public NSActionDispatcher (NSAction action)
+		{
+			this.action = action;
+			gch = GCHandle.Alloc (this);
+		}
+
+		[Export ("apply")]
+		[Preserve (Conditional = true)]
+		public void Apply ()
+		{
+			action ();
+			gch.Free ();
 		}
 	}
 }
