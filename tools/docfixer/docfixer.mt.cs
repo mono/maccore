@@ -17,7 +17,7 @@ public partial class DocGenerator {
 		var versions = new [] { "5_0" };
 		var base_paths = new [] {
 			"/Library/Developer/Shared/Documentation/DocSets/com.apple.adc.documentation.AppleiOS{0}.iOSLibrary.docset/Contents/Resources/Documents/documentation",
-			"/Developer/Platforms/iPhoneOS.platform/Developer/Documentation/DocSets/com.apple.adc.documentation.AppleiOS{0}.iOSLibrary.docset/Contents/Resources/Documents/documentation",
+			"/Developer/Platforms/iPhoneOS.platform/Developer/Documentation/DocSets/com.apple.adc.documentation.AppleiOS{0}.iOSLibrary.docset/Contents/Resources/Documents/documentation",e
 		};
 
 		foreach (var p in base_paths){
