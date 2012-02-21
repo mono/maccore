@@ -21,6 +21,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
@@ -54,7 +55,7 @@ namespace MonoMac.Foundation {
 		GCHandle gch;
 		NSAction action;
 
-		public NSActionDispatcher (NSAction action)
+		public NSAsyncActionDispatcher (NSAction action)
 		{
 			this.action = action;
 			gch = GCHandle.Alloc (this);
