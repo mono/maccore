@@ -593,10 +593,10 @@ namespace MonoMac.CoreAnimation {
 		[Export ("layer"), New, Static]
 		CALayer Create ();
 
-		[Export ("path")]
+		[Export ("path")] [NullAllowed]
 		CGPath Path { get; set; }
 
-		[Export ("fillColor")]
+		[Export ("fillColor")] [NullAllowed]
 		CGColor FillColor { get; set; }
 
 		[Export ("fillRule", ArgumentSemantic.Copy)]
@@ -605,7 +605,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("lineCap", ArgumentSemantic.Copy)]
 		NSString LineCap { get; set; }
 
-		[Export ("lineDashPattern", ArgumentSemantic.Copy)]
+		[Export ("lineDashPattern", ArgumentSemantic.Copy)] [NullAllowed]
 		NSNumber [] LineDashPattern { get; set; }
 
 		[Export ("lineDashPhase")]
@@ -620,7 +620,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("miterLimit")]
 		float MiterLimit { get; set; }
 
-		[Export ("strokeColor")]
+		[Export ("strokeColor")] [NullAllowed]
 		CGColor StrokeColor { get; set; }
 
 		[Since (4,2)]
