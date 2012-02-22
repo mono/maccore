@@ -65,8 +65,11 @@ namespace MonoMac.Foundation {
 		[Preserve (Conditional = true)]
 		public void Apply ()
 		{
-			action ();
-			gch.Free ();
+			try {
+				action ();
+			} finally {
+				gch.Free ();
+			}
 		}
 	}
 }
