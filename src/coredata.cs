@@ -883,7 +883,55 @@ namespace MonoMac.CoreData
 		
 		[Field ("NSInMemoryStoreType")]
 		NSString InMemoryStoreType { get; }
-		
+
+		[Field ("NSStoreUUIDKey")]
+		NSString StoreUUIDKey { get; }
+
+		[Field ("NSAddedPersistentStoresKey")]
+		NSString AddedPersistentStoresKey { get; }
+
+		[Field ("NSRemovedPersistentStoresKey")]
+		NSString RemovedPersistentStoresKey { get; }
+
+		[Field ("NSUUIDChangedPersistentStoresKey")]
+		NSString UUIDChangedPersistentStoresKey { get; }
+
+		[Field ("NSReadOnlyPersistentStoreOption")]
+		NSString ReadOnlyPersistentStoreOption { get; }
+
+		[Field ("NSValidateXMLStoreOption")]
+		NSString ValidateXMLStoreOption { get; }
+
+		[Field ("NSPersistentStoreTimeoutOption")]
+		NSString PersistentStoreTimeoutOption { get; }
+
+		[Field ("NSSQLitePragmasOption")]
+		NSString SQLitePragmasOption { get; }
+
+		[Field ("NSSQLiteAnalyzeOption")]
+		NSString SQLiteAnalyzeOption { get; }
+
+		[Field ("NSSQLiteManualVacuumOption")]
+		NSString SQLiteManualVacuumOption { get; }
+
+		[Field ("NSIgnorePersistentStoreVersioningOption")]
+		NSString IgnorePersistentStoreVersioningOption { get; }
+
+		[Field ("NSMigratePersistentStoresAutomaticallyOption")]
+		NSString MigratePersistentStoresAutomaticallyOption { get; }
+
+		[Field ("NSInferMappingModelAutomaticallyOption")]
+		NSString InferMappingModelAutomaticallyOption { get; }
+
+		[Field ("NSStoreModelVersionHashesKey")]
+		NSString StoreModelVersionHashesKey { get; }
+
+		[Field ("NSStoreModelVersionIdentifiersKey")]
+		NSString StoreModelVersionIdentifiersKey { get; }
+
+		[Field ("NSPersistentStoreOSCompatibility")]
+		NSString PersistentStoreOSCompatibility { get; }
+
 		[Field ("NSStoreTypeKey")]
 		NSString StoreTypeKey { get; }
 
@@ -902,6 +950,14 @@ namespace MonoMac.CoreData
 		NSString DidImportUbiquitousContentChangesNotification { get; }
 
 		
+		[Field ("NSPersistentStoreUbiquitousContentNameKey")]
+		NSString PersistentStoreUbiquitousContentNameKey { get; }
+
+		[Field ("NSPersistentStoreUbiquitousContentUrlLKey")]
+		NSString PersistentStoreUbiquitousContentUrlLKey { get; }
+
+		[Field ("NSPersistentStoreFileProtectionKey")]
+		NSString PersistentStoreFileProtectionKey { get; }
 	}
 
 	[BaseType (typeof (NSObject))]

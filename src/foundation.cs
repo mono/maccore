@@ -3374,6 +3374,12 @@ namespace MonoMac.Foundation
 		[Export ("commitEditingWithDelegate:didCommitSelector:contextInfo:")]
 		//void CommitEditingWithDelegateDidCommitSelectorContextInfo (NSObject objDelegate, Selector didCommitSelector, IntPtr contextInfo);
 		void CommitEditing (NSObject objDelegate, Selector didCommitSelector, IntPtr contextInfo);
+
+		[Export ("copy")]
+		NSObject Copy ();
+		
+		[Export ("mutableCopy")]
+		NSObject MutableCopy ();
 	}
 	
 	[BaseType (typeof (NSObject))]
