@@ -2720,7 +2720,31 @@ namespace MonoMac.Foundation
 		NSUrlCredential FromTrust (IntPtr SecTrustRef_trust);
 	
 	}
-		
+
+	[BaseType (typeof (NSObject), Name="NSURLCredentialStorage")]
+	public interface NSUrlCredentialStorage {
+		[Export ("sharedCredentialStorage")]
+		NSUrlCredentialStorage SharedCredentialStorage { get; }
+
+		[Export ("credentialsForProtectionSpace:")]
+		NSDictionary GetCredentials (NSUrlProtectionSpace forProtectionSpace);
+
+		[Export ("allCredentials")]
+		NSDictionary AllCredentials { get; }
+
+		[Export ("setCredential:forProtectionSpace:")]
+		void SetCredential (NSUrlCredential credential, NSUrlProtectionSpace forProtectionSpace);
+
+		[Export ("removeCredential:forProtectionSpace:")]
+		void RemoveCredential (NSUrlCredential credential, NSUrlProtectionSpace forProtectionSpace);
+
+		[Export ("defaultCredentialForProtectionSpace:")]
+		NSUrlCredential GetDefaultCredential (NSUrlProtectionSpace forProtectionSpace);
+
+		[Export ("setDefaultCredential:forProtectionSpace:")]
+		void SetDefaultCredential (NSUrlCredential credential, NSUrlProtectionSpace forProtectionSpace);
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSUndoManager {
 		[Export ("beginUndoGrouping")]
@@ -2886,6 +2910,45 @@ namespace MonoMac.Foundation
 		// NSURLProtectionSpace(NSServerTrustValidationSpace)
 		[Export ("serverTrust")]
 		IntPtr ServerTrust { get ; }
+
+		[Field ("NSURLProtectionSpaceHTTP")]
+		NSString HTTP { get; }
+		[Field ("NSURLProtectionSpaceHTTPS")]
+		NSString HTTPS { get; }
+		[Field ("NSURLProtectionSpaceFTP")]
+		NSString FTP { get; }
+		[Field ("NSURLProtectionSpaceHTTPProxy;")]
+		NSString HTTPProxy { get; }
+		[Field ("NSURLProtectionSpaceHTTPSProxy;")]
+		NSString HTTPSProxy { get; }
+		[Field ("NSURLProtectionSpaceFTPProxy;")]
+		NSString FTPProxy { get; }
+		[Field ("NSURLProtectionSpaceSOCKSProxy;")]
+		NSString SOCKSProxy { get; }
+
+		[Field ("NSURLAuthenticationMethodDefault;")]
+		NSString AuthenticationMethodDefault { get; }
+
+		[Field ("NSURLAuthenticationMethodHTTPBasic")]
+		NSString AuthenticationMethodHTTPBasic { get; }
+
+		[Field ("NSURLAuthenticationMethodHTTPDigest")]
+		NSString AuthenticationMethodHTTPDigest { get; }
+
+		[Field ("NSURLAuthenticationMethodHTMLForm")]
+		NSString AuthenticationMethodHTMLForm { get; }
+
+		[Field ("NSURLAuthenticationMethodNTL")]
+		NSString AuthenticationMethodNTL { get; }
+
+		[Field ("NSURLAuthenticationMethodNegotiat")]
+		NSString AuthenticationMethodNegotiat { get; }
+
+		[Field ("NSURLAuthenticationMethodClientCertificat")]
+		NSString AuthenticationMethodClientCertificat { get; }
+
+		[Field ("NSURLAuthenticationMethodServerTrus")]
+		NSString AuthenticationMethodServerTrus { get; }
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLRequest")]

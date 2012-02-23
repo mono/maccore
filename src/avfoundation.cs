@@ -289,7 +289,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (4,0)]
 		[Export ("playAtTime:")]
-		bool PlayAtTimetime (double time);
+		bool PlayAtTime (double time);
 
 		[Since (4,0)]
 		[Export ("settings"), Internal]
@@ -1080,6 +1080,786 @@ namespace MonoMac.AVFoundation {
 		NSObject PropertyList { get; }
 	}
 
+	[Static]
+	interface AVMetadata {
+		[Field ("AVMetadataKeySpaceCommon")]
+		NSString KeySpaceCommon { get; }
+		
+		[Field ("AVMetadataCommonKeyTitle")]
+		NSString CommonKeyTitle { get; }
+		
+		[Field ("AVMetadataCommonKeyCreator")]
+		NSString CommonKeyCreator { get; }
+		
+		[Field ("AVMetadataCommonKeySubject")]
+		NSString CommonKeySubject { get; }
+		
+		[Field ("AVMetadataCommonKeyDescription")]
+		NSString CommonKeyDescription { get; }
+		
+		[Field ("AVMetadataCommonKeyPublisher")]
+		NSString CommonKeyPublisher { get; }
+		
+		[Field ("AVMetadataCommonKeyContributor")]
+		NSString CommonKeyContributor { get; }
+		
+		[Field ("AVMetadataCommonKeyCreationDate")]
+		NSString CommonKeyCreationDate { get; }
+		
+		[Field ("AVMetadataCommonKeyLastModifiedDate")]
+		NSString CommonKeyLastModifiedDate { get; }
+		
+		[Field ("AVMetadataCommonKeyType")]
+		NSString CommonKeyType { get; }
+		
+		[Field ("AVMetadataCommonKeyFormat")]
+		NSString CommonKeyFormat { get; }
+		
+		[Field ("AVMetadataCommonKeyIdentifier")]
+		NSString CommonKeyIdentifier { get; }
+		
+		[Field ("AVMetadataCommonKeySource")]
+		NSString CommonKeySource { get; }
+		
+		[Field ("AVMetadataCommonKeyLanguage")]
+		NSString CommonKeyLanguage { get; }
+		
+		[Field ("AVMetadataCommonKeyRelation")]
+		NSString CommonKeyRelation { get; }
+		
+		[Field ("AVMetadataCommonKeyLocation")]
+		NSString CommonKeyLocation { get; }
+		
+		[Field ("AVMetadataCommonKeyCopyrights")]
+		NSString CommonKeyCopyrights { get; }
+		
+		[Field ("AVMetadataCommonKeyAlbumName")]
+		NSString CommonKeyAlbumName { get; }
+		
+		[Field ("AVMetadataCommonKeyAuthor")]
+		NSString CommonKeyAuthor { get; }
+		
+		[Field ("AVMetadataCommonKeyArtist")]
+		NSString CommonKeyArtist { get; }
+		
+		[Field ("AVMetadataCommonKeyArtwork")]
+		NSString CommonKeyArtwork { get; }
+		
+		[Field ("AVMetadataCommonKeyMake")]
+		NSString CommonKeyMake { get; }
+		
+		[Field ("AVMetadataCommonKeyModel")]
+		NSString CommonKeyModel { get; }
+		
+		[Field ("AVMetadataCommonKeySoftware")]
+		NSString CommonKeySoftware { get; }
+
+		[Field ("AVMetadataFormatQuickTimeUserData")]
+		NSString FormatQuickTimeUserData { get; }
+		
+		[Field ("AVMetadataKeySpaceQuickTimeUserData")]
+		NSString KeySpaceQuickTimeUserData { get; }
+	
+		[Field ("AVMetadataQuickTimeUserDataKeyAlbum")]
+		NSString QuickTimeUserDataKeyAlbum { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyArranger")]
+		NSString QuickTimeUserDataKeyArranger { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyArtist")]
+		NSString QuickTimeUserDataKeyArtist { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyAuthor")]
+		NSString QuickTimeUserDataKeyAuthor { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyChapter")]
+		NSString QuickTimeUserDataKeyChapter { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyComment")]
+		NSString QuickTimeUserDataKeyComment { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyComposer")]
+		NSString QuickTimeUserDataKeyComposer { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyCopyright")]
+		NSString QuickTimeUserDataKeyCopyright { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyCreationDate")]
+		NSString QuickTimeUserDataKeyCreationDate { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyDescription")]
+		NSString QuickTimeUserDataKeyDescription { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyDirector")]
+		NSString QuickTimeUserDataKeyDirector { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyDisclaimer")]
+		NSString QuickTimeUserDataKeyDisclaimer { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyEncodedBy")]
+		NSString QuickTimeUserDataKeyEncodedBy { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyFullName")]
+		NSString QuickTimeUserDataKeyFullName { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyGenre")]
+		NSString QuickTimeUserDataKeyGenre { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyHostComputer")]
+		NSString QuickTimeUserDataKeyHostComputer { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyInformation")]
+		NSString QuickTimeUserDataKeyInformation { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyKeywords")]
+		NSString QuickTimeUserDataKeyKeywords { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyMake")]
+		NSString QuickTimeUserDataKeyMake { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyModel")]
+		NSString QuickTimeUserDataKeyModel { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyOriginalArtist")]
+		NSString QuickTimeUserDataKeyOriginalArtist { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyOriginalFormat")]
+		NSString QuickTimeUserDataKeyOriginalFormat { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyOriginalSource")]
+		NSString QuickTimeUserDataKeyOriginalSource { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyPerformers")]
+		NSString QuickTimeUserDataKeyPerformers { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyProducer")]
+		NSString QuickTimeUserDataKeyProducer { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyPublisher")]
+		NSString QuickTimeUserDataKeyPublisher { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyProduct")]
+		NSString QuickTimeUserDataKeyProduct { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeySoftware")]
+		NSString QuickTimeUserDataKeySoftware { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeySpecialPlaybackRequirements")]
+		NSString QuickTimeUserDataKeySpecialPlaybackRequirements { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyTrack")]
+		NSString QuickTimeUserDataKeyTrack { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyWarning")]
+		NSString QuickTimeUserDataKeyWarning { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyWriter")]
+		NSString QuickTimeUserDataKeyWriter { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyURLLink")]
+		NSString QuickTimeUserDataKeyURLLink { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyLocationISO6709")]
+		NSString QuickTimeUserDataKeyLocationISO6709 { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyTrackName")]
+		NSString QuickTimeUserDataKeyTrackName { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyCredits")]
+		NSString QuickTimeUserDataKeyCredits { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyPhonogramRights")]
+		NSString QuickTimeUserDataKeyPhonogramRights { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyTaggedCharacteristic")]
+		NSString QuickTimeUserDataKeyTaggedCharacteristic { get; }
+		
+		[Field ("AVMetadataISOUserDataKeyCopyright")]
+		NSString ISOUserDataKeyCopyright { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyCopyright")]
+		NSString K3GPUserDataKeyCopyright { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyAuthor")]
+		NSString K3GPUserDataKeyAuthor { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyPerformer")]
+		NSString K3GPUserDataKeyPerformer { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyGenre")]
+		NSString K3GPUserDataKeyGenre { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyRecordingYear")]
+		NSString K3GPUserDataKeyRecordingYear { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyLocation")]
+		NSString K3GPUserDataKeyLocation { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyTitle")]
+		NSString K3GPUserDataKeyTitle { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyDescription")]
+		NSString K3GPUserDataKeyDescription { get; }
+		
+
+		[Field ("AVMetadataFormatQuickTimeMetadata")]
+		NSString FormatQuickTimeMetadata { get; }
+		
+		[Field ("AVMetadataKeySpaceQuickTimeMetadata")]
+		NSString KeySpaceQuickTimeMetadata { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyAuthor")]
+		NSString QuickTimeMetadataKeyAuthor { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyComment")]
+		NSString QuickTimeMetadataKeyComment { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCopyright")]
+		NSString QuickTimeMetadataKeyCopyright { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCreationDate")]
+		NSString QuickTimeMetadataKeyCreationDate { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDirector")]
+		NSString QuickTimeMetadataKeyDirector { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDisplayName")]
+		NSString QuickTimeMetadataKeyDisplayName { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyInformation")]
+		NSString QuickTimeMetadataKeyInformation { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyKeywords")]
+		NSString QuickTimeMetadataKeyKeywords { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyProducer")]
+		NSString QuickTimeMetadataKeyProducer { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyPublisher")]
+		NSString QuickTimeMetadataKeyPublisher { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyAlbum")]
+		NSString QuickTimeMetadataKeyAlbum { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyArtist")]
+		NSString QuickTimeMetadataKeyArtist { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyArtwork")]
+		NSString QuickTimeMetadataKeyArtwork { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDescription")]
+		NSString QuickTimeMetadataKeyDescription { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeySoftware")]
+		NSString QuickTimeMetadataKeySoftware { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyYear")]
+		NSString QuickTimeMetadataKeyYear { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyGenre")]
+		NSString QuickTimeMetadataKeyGenre { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyiXML")]
+		NSString QuickTimeMetadataKeyiXML { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationISO6709")]
+		NSString QuickTimeMetadataKeyLocationISO6709 { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyMake")]
+		NSString QuickTimeMetadataKeyMake { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyModel")]
+		NSString QuickTimeMetadataKeyModel { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyArranger")]
+		NSString QuickTimeMetadataKeyArranger { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyEncodedBy")]
+		NSString QuickTimeMetadataKeyEncodedBy { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyOriginalArtist")]
+		NSString QuickTimeMetadataKeyOriginalArtist { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyPerformer")]
+		NSString QuickTimeMetadataKeyPerformer { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyComposer")]
+		NSString QuickTimeMetadataKeyComposer { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCredits")]
+		NSString QuickTimeMetadataKeyCredits { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyPhonogramRights")]
+		NSString QuickTimeMetadataKeyPhonogramRights { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCameraIdentifier")]
+		NSString QuickTimeMetadataKeyCameraIdentifier { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCameraFrameReadoutTime")]
+		NSString QuickTimeMetadataKeyCameraFrameReadoutTime { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyTitle")]
+		NSString QuickTimeMetadataKeyTitle { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCollectionUser")]
+		NSString QuickTimeMetadataKeyCollectionUser { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyRatingUser")]
+		NSString QuickTimeMetadataKeyRatingUser { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationName")]
+		NSString QuickTimeMetadataKeyLocationName { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationBody")]
+		NSString QuickTimeMetadataKeyLocationBody { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationNote")]
+		NSString QuickTimeMetadataKeyLocationNote { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationRole")]
+		NSString QuickTimeMetadataKeyLocationRole { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationDate")]
+		NSString QuickTimeMetadataKeyLocationDate { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDirectionFacing")]
+		NSString QuickTimeMetadataKeyDirectionFacing { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDirectionMotion")]
+		NSString QuickTimeMetadataKeyDirectionMotion { get; }
+		
+		[Field ("AVMetadataFormatiTunesMetadata")]
+		NSString FormatiTunesMetadata { get; }
+		
+		[Field ("AVMetadataKeySpaceiTunes")]
+		NSString KeySpaceiTunes { get; }
+		
+
+		[Field ("AVMetadataiTunesMetadataKeyAlbum")]
+		NSString iTunesMetadataKeyAlbum { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyArtist")]
+		NSString iTunesMetadataKeyArtist { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyUserComment")]
+		NSString iTunesMetadataKeyUserComment { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyCoverArt")]
+		NSString iTunesMetadataKeyCoverArt { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyCopyright")]
+		NSString iTunesMetadataKeyCopyright { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyReleaseDate")]
+		NSString iTunesMetadataKeyReleaseDate { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyEncodedBy")]
+		NSString iTunesMetadataKeyEncodedBy { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPredefinedGenre")]
+		NSString iTunesMetadataKeyPredefinedGenre { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyUserGenre")]
+		NSString iTunesMetadataKeyUserGenre { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeySongName")]
+		NSString iTunesMetadataKeySongName { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyTrackSubTitle")]
+		NSString iTunesMetadataKeyTrackSubTitle { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyEncodingTool")]
+		NSString iTunesMetadataKeyEncodingTool { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyComposer")]
+		NSString iTunesMetadataKeyComposer { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAlbumArtist")]
+		NSString iTunesMetadataKeyAlbumArtist { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAccountKind")]
+		NSString iTunesMetadataKeyAccountKind { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAppleID")]
+		NSString iTunesMetadataKeyAppleID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyArtistID")]
+		NSString iTunesMetadataKeyArtistID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeySongID")]
+		NSString iTunesMetadataKeySongID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyDiscCompilation")]
+		NSString iTunesMetadataKeyDiscCompilation { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyDiscNumber")]
+		NSString iTunesMetadataKeyDiscNumber { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyGenreID")]
+		NSString iTunesMetadataKeyGenreID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyGrouping")]
+		NSString iTunesMetadataKeyGrouping { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPlaylistID")]
+		NSString iTunesMetadataKeyPlaylistID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyContentRating")]
+		NSString iTunesMetadataKeyContentRating { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyBeatsPerMin")]
+		NSString iTunesMetadataKeyBeatsPerMin { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyTrackNumber")]
+		NSString iTunesMetadataKeyTrackNumber { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyArtDirector")]
+		NSString iTunesMetadataKeyArtDirector { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyArranger")]
+		NSString iTunesMetadataKeyArranger { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAuthor")]
+		NSString iTunesMetadataKeyAuthor { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyLyrics")]
+		NSString iTunesMetadataKeyLyrics { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAcknowledgement")]
+		NSString iTunesMetadataKeyAcknowledgement { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyConductor")]
+		NSString iTunesMetadataKeyConductor { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyDescription")]
+		NSString iTunesMetadataKeyDescription { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyDirector")]
+		NSString iTunesMetadataKeyDirector { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyEQ")]
+		NSString iTunesMetadataKeyEQ { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyLinerNotes")]
+		NSString iTunesMetadataKeyLinerNotes { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyRecordCompany")]
+		NSString iTunesMetadataKeyRecordCompany { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyOriginalArtist")]
+		NSString iTunesMetadataKeyOriginalArtist { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPhonogramRights")]
+		NSString iTunesMetadataKeyPhonogramRights { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyProducer")]
+		NSString iTunesMetadataKeyProducer { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPerformer")]
+		NSString iTunesMetadataKeyPerformer { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPublisher")]
+		NSString iTunesMetadataKeyPublisher { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeySoundEngineer")]
+		NSString iTunesMetadataKeySoundEngineer { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeySoloist")]
+		NSString iTunesMetadataKeySoloist { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyCredits")]
+		NSString iTunesMetadataKeyCredits { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyThanks")]
+		NSString iTunesMetadataKeyThanks { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyOnlineExtras")]
+		NSString iTunesMetadataKeyOnlineExtras { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyExecProducer")]
+		NSString iTunesMetadataKeyExecProducer { get; }
+		
+		[Field ("AVMetadataFormatID3Metadata")]
+		NSString FormatID3Metadata { get; }
+		
+		[Field ("AVMetadataKeySpaceID3")]
+		NSString KeySpaceID3 { get; }
+		
+
+		[Field ("AVMetadataID3MetadataKeyAudioEncryption")]
+		NSString ID3MetadataKeyAudioEncryption { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyAttachedPicture")]
+		NSString ID3MetadataKeyAttachedPicture { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyAudioSeekPointIndex")]
+		NSString ID3MetadataKeyAudioSeekPointIndex { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyComments")]
+		NSString ID3MetadataKeyComments { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyCommerical")]
+		NSString ID3MetadataKeyCommerical { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEncryption")]
+		NSString ID3MetadataKeyEncryption { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEqualization")]
+		NSString ID3MetadataKeyEqualization { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEqualization2")]
+		NSString ID3MetadataKeyEqualization2 { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEventTimingCodes")]
+		NSString ID3MetadataKeyEventTimingCodes { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyGeneralEncapsulatedObject")]
+		NSString ID3MetadataKeyGeneralEncapsulatedObject { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyGroupIdentifier")]
+		NSString ID3MetadataKeyGroupIdentifier { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInvolvedPeopleList")]
+		NSString ID3MetadataKeyInvolvedPeopleList { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLink")]
+		NSString ID3MetadataKeyLink { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMusicCDIdentifier")]
+		NSString ID3MetadataKeyMusicCDIdentifier { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMPEGLocationLookupTable")]
+		NSString ID3MetadataKeyMPEGLocationLookupTable { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOwnership")]
+		NSString ID3MetadataKeyOwnership { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPrivate")]
+		NSString ID3MetadataKeyPrivate { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPlayCounter")]
+		NSString ID3MetadataKeyPlayCounter { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPopularimeter")]
+		NSString ID3MetadataKeyPopularimeter { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPositionSynchronization")]
+		NSString ID3MetadataKeyPositionSynchronization { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRecommendedBufferSize")]
+		NSString ID3MetadataKeyRecommendedBufferSize { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRelativeVolumeAdjustment")]
+		NSString ID3MetadataKeyRelativeVolumeAdjustment { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRelativeVolumeAdjustment2")]
+		NSString ID3MetadataKeyRelativeVolumeAdjustment2 { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyReverb")]
+		NSString ID3MetadataKeyReverb { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySeek")]
+		NSString ID3MetadataKeySeek { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySignature")]
+		NSString ID3MetadataKeySignature { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySynchronizedLyric")]
+		NSString ID3MetadataKeySynchronizedLyric { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySynchronizedTempoCodes")]
+		NSString ID3MetadataKeySynchronizedTempoCodes { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyAlbumTitle")]
+		NSString ID3MetadataKeyAlbumTitle { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyBeatsPerMinute")]
+		NSString ID3MetadataKeyBeatsPerMinute { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyComposer")]
+		NSString ID3MetadataKeyComposer { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyContentType")]
+		NSString ID3MetadataKeyContentType { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyCopyright")]
+		NSString ID3MetadataKeyCopyright { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyDate")]
+		NSString ID3MetadataKeyDate { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEncodingTime")]
+		NSString ID3MetadataKeyEncodingTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPlaylistDelay")]
+		NSString ID3MetadataKeyPlaylistDelay { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalReleaseTime")]
+		NSString ID3MetadataKeyOriginalReleaseTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRecordingTime")]
+		NSString ID3MetadataKeyRecordingTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyReleaseTime")]
+		NSString ID3MetadataKeyReleaseTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTaggingTime")]
+		NSString ID3MetadataKeyTaggingTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEncodedBy")]
+		NSString ID3MetadataKeyEncodedBy { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLyricist")]
+		NSString ID3MetadataKeyLyricist { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyFileType")]
+		NSString ID3MetadataKeyFileType { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTime")]
+		NSString ID3MetadataKeyTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyContentGroupDescription")]
+		NSString ID3MetadataKeyContentGroupDescription { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTitleDescription")]
+		NSString ID3MetadataKeyTitleDescription { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySubTitle")]
+		NSString ID3MetadataKeySubTitle { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInitialKey")]
+		NSString ID3MetadataKeyInitialKey { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLanguage")]
+		NSString ID3MetadataKeyLanguage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLength")]
+		NSString ID3MetadataKeyLength { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMusicianCreditsList")]
+		NSString ID3MetadataKeyMusicianCreditsList { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMediaType")]
+		NSString ID3MetadataKeyMediaType { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMood")]
+		NSString ID3MetadataKeyMood { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalAlbumTitle")]
+		NSString ID3MetadataKeyOriginalAlbumTitle { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalFilename")]
+		NSString ID3MetadataKeyOriginalFilename { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalLyricist")]
+		NSString ID3MetadataKeyOriginalLyricist { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalArtist")]
+		NSString ID3MetadataKeyOriginalArtist { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalReleaseYear")]
+		NSString ID3MetadataKeyOriginalReleaseYear { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyFileOwner")]
+		NSString ID3MetadataKeyFileOwner { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLeadPerformer")]
+		NSString ID3MetadataKeyLeadPerformer { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyBand")]
+		NSString ID3MetadataKeyBand { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyConductor")]
+		NSString ID3MetadataKeyConductor { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyModifiedBy")]
+		NSString ID3MetadataKeyModifiedBy { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPartOfASet")]
+		NSString ID3MetadataKeyPartOfASet { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyProducedNotice")]
+		NSString ID3MetadataKeyProducedNotice { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPublisher")]
+		NSString ID3MetadataKeyPublisher { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTrackNumber")]
+		NSString ID3MetadataKeyTrackNumber { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRecordingDates")]
+		NSString ID3MetadataKeyRecordingDates { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInternetRadioStationName")]
+		NSString ID3MetadataKeyInternetRadioStationName { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInternetRadioStationOwner")]
+		NSString ID3MetadataKeyInternetRadioStationOwner { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySize")]
+		NSString ID3MetadataKeySize { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyAlbumSortOrder")]
+		NSString ID3MetadataKeyAlbumSortOrder { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPerformerSortOrder")]
+		NSString ID3MetadataKeyPerformerSortOrder { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTitleSortOrder")]
+		NSString ID3MetadataKeyTitleSortOrder { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInternationalStandardRecordingCode")]
+		NSString ID3MetadataKeyInternationalStandardRecordingCode { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEncodedWith")]
+		NSString ID3MetadataKeyEncodedWith { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySetSubtitle")]
+		NSString ID3MetadataKeySetSubtitle { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyYear")]
+		NSString ID3MetadataKeyYear { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyUserText")]
+		NSString ID3MetadataKeyUserText { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyUniqueFileIdentifier")]
+		NSString ID3MetadataKeyUniqueFileIdentifier { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTermsOfUse")]
+		NSString ID3MetadataKeyTermsOfUse { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyUnsynchronizedLyric")]
+		NSString ID3MetadataKeyUnsynchronizedLyric { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyCommercialInformation")]
+		NSString ID3MetadataKeyCommercialInformation { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyCopyrightInformation")]
+		NSString ID3MetadataKeyCopyrightInformation { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialAudioFileWebpage")]
+		NSString ID3MetadataKeyOfficialAudioFileWebpage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialArtistWebpage")]
+		NSString ID3MetadataKeyOfficialArtistWebpage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialAudioSourceWebpage")]
+		NSString ID3MetadataKeyOfficialAudioSourceWebpage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialInternetRadioStationHomepage")]
+		NSString ID3MetadataKeyOfficialInternetRadioStationHomepage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPayment")]
+		NSString ID3MetadataKeyPayment { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialPublisherWebpage")]
+		NSString ID3MetadataKeyOfficialPublisherWebpage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyUserURL")]
+		NSString ID3MetadataKeyUserURL { get; }
+	}
+	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVMetadataItem {
