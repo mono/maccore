@@ -69,23 +69,7 @@ public partial class DocGenerator {
 		if (l.Count == 0)
 			return null;
 		
-		var path = Path.Combine (DocBase, "..", l [0].ZKPATH);
-		if (!File.Exists (path))
-			return null;
-
-		var indexContent = File.ReadAllText (path);
-		if (indexContent.IndexOf ("<meta id=\"refresh\"") != -1){
-			var p = indexContent.IndexOf ("0; URL=");
-			if (p == -1){
-				notfound.Add (t.Name);
-				Console.WriteLine ("Error, got an index.html file but can not find its refresh page for {0} and {1}", t.Name, path);
-				return null;
-			}
-			p += 7;
-			var quote = indexContent.IndexOf ("\"", p);
-			return Path.Combine (Path.GetDirectoryName (path), indexContent.Substring (p, quote-p));
-		}
-		return null;
+		return Path.Combine (DocBase, "..", l [0].ZKPATH);
 	}
 
 	public static bool KnownIssues (string type, string selector)
@@ -760,12 +744,41 @@ public partial class DocGenerator {
 			).FirstOrDefault ();
 	}
 
+	static string FixAppleDocPath (Type t, string appledocpath)
+	{
+		var indexContent = File.ReadAllText (appledocpath);
+		if (indexContent.IndexOf ("<meta id=\"refresh\"") != -1){
+			var p = indexContent.IndexOf ("0; URL=");
+			if (p == -1){
+				notfound.Add (t.Name);
+				Console.WriteLine ("Error, got an index.html file but can not find its refresh page for {0} and {1}", t.Name, appledocpath);
+				return appledocpath;
+			}
+			p += 7;
+			var l = indexContent.IndexOf ("\"", p);
+			appledocpath = Path.Combine (Path.GetDirectoryName (appledocpath), indexContent.Substring (p, l-p));
+			Console.WriteLine ("Fixed URL: {0}", appledocpath);
+			docPaths[t.FullName] = appledocpath;
+			return appledocpath;
+		}
+		return appledocpath;
+	}
+	
 	public static void ProcessNSO (Type t)
 	{
-		appledocpath = GetAppleDocFor (t);
-		if (appledocpath == null){
-			notfound.Add (t.Name);
-			return;
+		currentlyProcessedType = t;
+
+		if (docPaths.ContainsKey (t.FullName)) {
+			appledocpath = docPaths[t.FullName];
+			if (appledocpath == null)
+				return;
+		} else {
+			appledocpath = GetAppleDocFor (t);
+			if (appledocpath == null || !File.Exists (appledocpath)){
+				notfound.Add (t.Name);
+				return;
+			}
+			appledocpath = FixAppleDocPath (t, appledocpath);
 		}
 		
 		string xmldocpath = GetMdocPath (t);
@@ -990,11 +1003,22 @@ public partial class DocGenerator {
 
 	public static IEnumerable<XElement> GetAppleDocumentationSources (Type t)
 	{
-		var path = GetAppleDocFor (t);
+		string path = null;
+		if (docPaths.ContainsKey (t.FullName))
+			path = docPaths[t.FullName];
+		else {
+			path = GetAppleDocFor (t);
+			path = FixAppleDocPath (t, path);
+		}
 		if (path != null)
 			yield return LoadAppleDocumentation (path);
 		while ((t = t.BaseType) != typeof (object) && t != null) {
-			path = GetAppleDocFor (t);
+			if (docPaths.ContainsKey (t.FullName))
+				path = docPaths[t.FullName];
+			else {
+				path = GetAppleDocFor (t);
+				path = FixAppleDocPath (t, path);
+			}
 			if (path != null)
 				yield return LoadAppleDocumentation (path);
 		}
