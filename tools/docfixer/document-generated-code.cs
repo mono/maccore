@@ -113,7 +113,7 @@ class DocumentGeneratedCode {
 		var returnType = field.XPathSelectElement ("ReturnValue/ReturnType");
 		var summary = field.XPathSelectElement ("Docs/summary");
 		var remarks = field.XPathSelectElement ("Docs/remarks");
-
+		var example = field.XPathSelectElement ("Docs/remarks/example");
 		if (mergeAppledocs){
 			if (returnType.Value == "MonoMac.Foundation.NSString" && export.EndsWith ("Notification")){
 				var mdoc = DocGenerator.GetAppleMemberDocs (t, export);
@@ -136,6 +136,8 @@ class DocumentGeneratedCode {
 				remarks.Add (skipOne);
 				foreach (var n in skipOne)
 					n.Remove ();
+				if (example != null)
+					remarks.Add (example);
 			}
 		}
 	}

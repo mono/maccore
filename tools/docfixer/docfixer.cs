@@ -35,7 +35,23 @@ public partial class DocGenerator {
 		if (l.Count == 0)
 			return null;
 		
-		return Path.Combine (DocBase, "..", l [0].ZKPATH);
+		var path = Path.Combine (DocBase, "..", l [0].ZKPATH);
+		if (!File.Exists (path))
+			return null;
+
+		var indexContent = File.ReadAllText (path);
+		if (indexContent.IndexOf ("<meta id=\"refresh\"") != -1){
+			var p = indexContent.IndexOf ("0; URL=");
+			if (p == -1){
+				notfound.Add (t.Name);
+				Console.WriteLine ("Error, got an index.html file but can not find its refresh page for {0} and {1}", t.Name, path);
+				return null;
+			}
+			p += 7;
+			var quote = indexContent.IndexOf ("\"", p);
+			return Path.Combine (Path.GetDirectoryName (path), indexContent.Substring (p, quote-p));
+		}
+		return null;
 	}
 
 	public static bool KnownIssues (string type, string selector)
@@ -733,22 +749,9 @@ public partial class DocGenerator {
 	public static void ProcessNSO (Type t)
 	{
 		appledocpath = GetAppleDocFor (t);
-		if (appledocpath == null || !File.Exists (appledocpath)){
+		if (appledocpath == null){
 			notfound.Add (t.Name);
 			return;
-		}
-		var indexContent = File.ReadAllText (appledocpath);
-		if (indexContent.IndexOf ("<meta id=\"refresh\"") != -1){
-			var p = indexContent.IndexOf ("0; URL=");
-			if (p == -1){
-				notfound.Add (t.Name);
-				Console.WriteLine ("Error, got an index.html file but can not find its refresh page for {0} and {1}", t.Name, appledocpath);
-				return;
-			}
-			p += 7;
-			var l = indexContent.IndexOf ("\"", p);
-			appledocpath = Path.Combine (Path.GetDirectoryName (appledocpath), indexContent.Substring (p, l-p));
-			Console.WriteLine ("Got: {0}", appledocpath);
 		}
 		
 		string xmldocpath = GetMdocPath (t);
@@ -955,6 +958,10 @@ public partial class DocGenerator {
 	public static XElement GetAppleMemberDocs(Type t, string selector)
 	{
 		foreach (var appledocs in GetAppleDocumentationSources (t)) {
+			//Console.WriteLine ("docs: {0}", appledocs);
+			//foreach (var j in appledocs.Descendants ("h3"))
+			//Console.WriteLine (j);
+			
 			var mDoc = appledocs.Descendants ("h3").Where (e => e.Value == selector).FirstOrDefault ();
 			if (mDoc == null) {
 				// Many read-only properties have an 'is' prefix on the selector
