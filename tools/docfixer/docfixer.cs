@@ -21,8 +21,42 @@ using HtmlAgilityPack;
 public partial class DocGenerator {
 	static string DocBase = GetMostRecentDocBase ();
 	public static bool DebugDocs;
+	static SampleRepository samples;
 
-	static Type export_attribute_type;
+	static Type export_attribute_type;	
+	static string appledocpath;
+	static Type currentlyProcessedType;
+	static List<string> notfound = new List<string> ();
+	// This is a cache of the apple documentation path (value) corresponding to a type name (key)
+	static Dictionary<string, string> docPaths = new Dictionary<string, string> ();
+
+	static Regex selectorInHref = new Regex ("(?<type>[^/]+)/(?<selector>[^/]+)$");
+	static Regex propertyAttrs = new Regex (@"^@property\((?<attrs>[^)]*)\)");
+
+	static SQLiteConnection db;
+	static string assembly_dir;
+
+	// If true, it extracts the first sentence from the remarks and sticks it in the summary.
+	static bool quick_summaries = true;
+
+	// If true, when we encounter a obj-c sample we try to get it's equivalent from sample repository (user point of view)
+	// If false, we register it as a new sample (xamarinista point of view)
+	static bool importSamples = false;
+
+	static Dictionary<string, Func<XElement, bool, object>> HtmlToMdocElementMapping = new Dictionary<string, Func<XElement, bool, object>> {
+		{ "section",(e, i) => new [] {new XElement ("para", HtmlToMdoc ((XElement)e.FirstNode))}.Concat (HtmlToMdoc (e.Nodes ().Skip (1), i)) },
+		{ "a",      (e, i) => ConvertLink (e, i) },
+		{ "code",   (e, i) => ConvertCode (e, i) },
+		{ "div",    (e, i) => ConvertDiv (e, i) },
+		{ "em",     (e, i) => new XElement ("i", HtmlToMdoc (e.Nodes (), i)) },
+		{ "li",     (e, i) => new XElement ("item", new XElement ("term", HtmlToMdoc (e.Nodes (), i))) },
+		{ "ol",     (e, i) => new XElement ("list", new XAttribute ("type", "number"), HtmlToMdoc (e.Nodes ())) },
+		{ "p",      (e, i) => new XElement ("para", HtmlToMdoc (e.Nodes (), i)) },
+		{ "span",   (e, i) => HtmlToMdoc (e.Nodes (), i) },
+		{ "strong", (e, i) => new XElement ("i", HtmlToMdoc (e.Nodes (), i)) },
+		{ "tt",     (e, i) => new XElement ("c", HtmlToMdoc (e.Nodes (), i)) },
+		{ "ul",     (e, i) => new XElement ("list", new XAttribute ("type", "bullet"), HtmlToMdoc (e.Nodes ())) },
+	};
 	
 	public class StoredPath {
 		public string ZKPATH { get; set; }
@@ -436,23 +470,6 @@ public partial class DocGenerator {
 		Console.WriteLine ();
 	}
 
-	static Dictionary<string, Func<XElement, bool, object>> HtmlToMdocElementMapping = new Dictionary<string, Func<XElement, bool, object>> {
-		{ "section",(e, i) => new [] {new XElement ("para", HtmlToMdoc ((XElement)e.FirstNode))}.Concat (HtmlToMdoc (e.Nodes ().Skip (1), i)) },
-		{ "a",      (e, i) => ConvertLink (e, i) },
-		{ "code",   (e, i) => ConvertCode (e, i) },
-		{ "div",    (e, i) => HtmlToMdoc (e.Nodes (), i) },
-		{ "em",     (e, i) => new XElement ("i", HtmlToMdoc (e.Nodes (), i)) },
-		{ "li",     (e, i) => new XElement ("item", new XElement ("term", HtmlToMdoc (e.Nodes (), i))) },
-		{ "ol",     (e, i) => new XElement ("list", new XAttribute ("type", "number"), HtmlToMdoc (e.Nodes ())) },
-		{ "p",      (e, i) => new XElement ("para", HtmlToMdoc (e.Nodes (), i)) },
-		{ "span",   (e, i) => HtmlToMdoc (e.Nodes (), i) },
-		{ "strong", (e, i) => new XElement ("i", HtmlToMdoc (e.Nodes (), i)) },
-		{ "tt",     (e, i) => new XElement ("c", HtmlToMdoc (e.Nodes (), i)) },
-		{ "ul",     (e, i) => new XElement ("list", new XAttribute ("type", "bullet"), HtmlToMdoc (e.Nodes ())) },
-	};
-
-	static Regex selectorInHref = new Regex ("(?<type>[^/]+)/(?<selector>[^/]+)$");
-
 	static object ConvertLink (XElement e, bool insideFormat)
 	{
 		var href = e.Attribute ("href");
@@ -743,9 +760,6 @@ public partial class DocGenerator {
 			).FirstOrDefault ();
 	}
 
-	static string appledocpath;
-	static List<string> notfound = new List<string> ();
-	
 	public static void ProcessNSO (Type t)
 	{
 		appledocpath = GetAppleDocFor (t);
@@ -766,7 +780,6 @@ public partial class DocGenerator {
 
 		//Console.WriteLine ("Opened {0}", appledocpath);
 		var appledocs = LoadAppleDocumentation (appledocpath);
-
 		
 		var typeRemarks = xmldoc.Element ("Type").Element ("Docs").Element ("remarks");
 		var typeSummary = xmldoc.Element ("Type").Element ("Docs").Element ("summary");
@@ -921,8 +934,6 @@ public partial class DocGenerator {
 		}
 	}
 
-	static Regex propertyAttrs = new Regex (@"^@property\((?<attrs>[^)]*)\)");
-
 	static void VerifyArgumentSemantic (XElement mDoc, XElement member, Type t, string selector)
 	{
 		// ArgumentSemantic validation
@@ -1022,12 +1033,6 @@ public partial class DocGenerator {
 		loadedAppleDocs [path] = appledocs;
 		return appledocs;
 	}
-
-	static SQLiteConnection db;
-	static string assembly_dir;
-
-	// If true, it extracts the first sentence from the remarks and sticks it in the summary.
-	static bool quick_summaries = true;
 
 	static void Help ()
 	{
