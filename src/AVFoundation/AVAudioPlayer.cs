@@ -156,7 +156,7 @@ namespace MonoMac.AVFoundation {
 		[Obsolete ("This method was incorrectly named, use PlayAtTime instead")]
 		public bool PlayAtTimetime (double time)
 		{
-			PlayAtTime (time);
+			return PlayAtTime (time);
 		}
 	}
 }
