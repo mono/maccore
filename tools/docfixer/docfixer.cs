@@ -541,6 +541,28 @@ public partial class DocGenerator {
 		return new XElement ("c", HtmlToMdoc (e.Nodes (), insideFormat));
 	}
 
+	// This method checks if the div is a code sample and if it's the case process it in a special way.
+	// if it's not the case it just delegate to HtmlToMdoc
+	static object ConvertDiv (XElement e, bool insideFormat)
+	{
+		var cls = e.Attribute ("class");
+		if (cls == null || !cls.Value.Contains ("codesample"))
+			return HtmlToMdoc (e.Nodes (), insideFormat);
+
+		string content = e.Descendants ("tr").Select (tr => tr.Value).Aggregate ((l1, l2) => l1 + Environment.NewLine + l2);
+		XElement result = null;
+
+		if (importSamples) {
+			SampleDesc desc;
+			string snippet = samples.GetSampleFromContent (content, out desc);
+			result = new XElement ("example", new XElement ("code", new XAttribute ("lang", desc.Language), new XAttribute (XNamespace.Xml + "space", "preserve"), snippet));
+		} else {
+			var id = samples.RegisterSample (content, new SampleDesc { DocumentationFilePath = appledocpath, Language = "obj-c", FullTypeName = currentlyProcessedType.FullName } );
+			result = new XElement ("sample", new XAttribute ("external-id", id));
+		}
+		return result;
+	}
+
 	static IEnumerable<object> HtmlToMdoc (IEnumerable<XNode> rest)
 	{
 		return HtmlToMdoc (rest, false);
@@ -856,8 +878,10 @@ public partial class DocGenerator {
 						// don't report property setters
 						!(prop && method.Name.StartsWith ("set_")) &&
 						// don't report overriding methods
-						!overrides)
+				    !overrides) {
+					Console.WriteLine ("While getting Apple Doc");
 					ReportProblem (t, appledocpath, selector, key);
+				}
 				continue;
 			}
 			//Console.WriteLine ("Contents at {0}", p);
@@ -1060,7 +1084,7 @@ public partial class DocGenerator {
 
 	static void Help ()
 	{
-		Console.WriteLine ("Usage is: docfixer [--summary] path-to-files");
+		Console.WriteLine ("Usage is: docfixer [--summary] [--import-samples] path-to-files");
 	}
 
 	public static int Main (string [] args)
@@ -1075,6 +1099,11 @@ public partial class DocGenerator {
 			}
 			if (arg == "--summary"){
 				quick_summaries = true;
+				continue;
+			}
+			if (arg == "--import-samples") {
+				importSamples = true;
+				Console.WriteLine ("importing samples");
 				continue;
 			}
 			dir = arg;
@@ -1113,6 +1142,9 @@ public partial class DocGenerator {
 			return 1;
 		}
 
+		var samplesPath = Path.Combine (dir, "samples.zip");
+		samples = File.Exists (samplesPath) ? SampleRepository.LoadFrom (samplesPath) : new SampleRepository (samplesPath);
+
 		foreach (Type t in assembly.GetTypes ()){
 			if (t.IsNotPublic || t.IsNested)
 				continue;
@@ -1132,13 +1164,17 @@ public partial class DocGenerator {
 			}
 		}
 
+		// Only clean up if we are doing a full scan
+		if (!importSamples)
+			samples.Close (string.IsNullOrEmpty (debug));
+
 		if (notfound.Count > 90){
 			Console.WriteLine ("Too many types were not found on this run, should be around 60-70 (mostly CoreImage, 3 UIKits, 2 CoreAnimation, 1 Foundation, 1 Bluetooth, 1 iAd");
 			foreach (var s in notfound)
 				Console.WriteLine (s);
 			return 1;
 		}
-		
+
 		return 0;
 	}
 }
