@@ -766,7 +766,7 @@ namespace MonoMac.Foundation
 		
 		[Export ("archiveRootObject:toFile:")]
 		[Static]
-		NSData ArchiveRootObjectToFile (NSObject root, string file);
+		bool ArchiveRootObjectToFile (NSObject root, string file);
 
 		[Export ("finishEncoding")]
 		void FinishEncoding ();
