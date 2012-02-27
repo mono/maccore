@@ -13,6 +13,11 @@ public struct SampleDesc {
 	public string FullTypeName { get; set; }
 	public string DocumentationFilePath { get; set; }
 	public string Language { get; set; } // e.g 'obj-c' when taken from Apple otherwise a value understood by mdoc like 'C#'
+
+	public override string ToString ()
+	{
+		return string.Format ("{0}: {1} '{2}' in {3}", ID, FullTypeName, DocumentationFilePath, Language);
+	}
 }
 
 public class SampleRepository
@@ -49,6 +54,15 @@ public class SampleRepository
 		return hash;
 	}
 
+	public void OverwriteSample (string hash, string content, SampleDesc newDesc)
+	{
+		if (!archive.ContainsEntry (hash))
+			return;
+
+		archive.UpdateEntry (hash, content);
+		index[hash] = newDesc;
+	}
+
 	public string GetSampleFromID (string id, out SampleDesc desc)
 	{
 		desc = new SampleDesc ();
@@ -64,6 +78,11 @@ public class SampleRepository
 	public string GetSampleFromContent (string content, out SampleDesc desc)
 	{
 		return GetSampleFromID (StringHash (content), out desc);
+	}
+
+	public SampleDesc GetSampleDescFromID (string id)
+	{
+		return index[id];
 	}
 
 	public static SampleRepository LoadFrom (string file)
@@ -96,6 +115,11 @@ public class SampleRepository
 		}
 	}
 
+	public bool IsValidID (string id)
+	{
+		return index.ContainsKey (id);
+	}
+
 	string StringHash (String input)
 	{
 		// TODO: Reuse byte array
@@ -108,7 +132,7 @@ public class SampleRepository
 		}
 	}
 
-#if STANDALONE
+#if STANDALONE_EXPORTER
 	public static void Main (string[] args)
 	{
 		string samplesPath = args[0];
@@ -137,10 +161,56 @@ public class SampleRepository
 				Directory.CreateDirectory (path);
 			if (!Directory.Exists (path))
 				Directory.CreateDirectory (path);
-			path = Path.Combine (path, id + ".native");
+			path = Path.Combine (path, id + (desc.Language == "xml" ? ".xml" : ".native"));
 
 			File.WriteAllText (path, content);
 		}
+	}
+#elif STANDALONE_IMPORTER
+	public static void Main (string[] args)
+	{
+		string samplesPath = args[0];
+		string inDir = args[1];
+
+		if (!File.Exists (samplesPath)) {
+			Console.WriteLine ("Couldn't find samples repository at {0}");
+			return;
+		}
+		if (!Directory.Exists (inDir)) {
+			Console.WriteLine ("Couldn't find input snippet directory");
+			return;
+		}
+
+		var langExtensions = new Dictionary<string, string> () {
+			{ ".xml", "XML" },
+			{ ".cs", "C#" }
+		};
+
+		SampleRepository samples = SampleRepository.LoadFrom (samplesPath);
+
+		foreach (var file in Directory.EnumerateFiles (inDir, "*", SearchOption.AllDirectories)) {
+			var extension = Path.GetExtension (file);
+			var id = Path.GetFileNameWithoutExtension (file);
+			if (string.IsNullOrEmpty (extension) || string.IsNullOrEmpty (id))
+				continue;
+
+			string lang;
+			if (!langExtensions.TryGetValue (extension, out lang) || !samples.IsValidID (id)) {
+				Console.WriteLine ("Not processed: {0}", Path.GetFileName (file));
+				continue;
+			}
+			
+			SampleDesc oldDesc = samples.GetSampleDescFromID (id);
+			samples.OverwriteSample (id, File.ReadAllText (file), new SampleDesc { 
+				ID = id,
+				Language = lang,
+				DocumentationFilePath = oldDesc.DocumentationFilePath,
+				FullTypeName = oldDesc.FullTypeName
+			});
+			Console.WriteLine ("Done: {0}", id);
+		}
+
+		samples.Close (false);
 	}
 #endif
 }
