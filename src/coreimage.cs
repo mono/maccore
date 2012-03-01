@@ -44,6 +44,8 @@ using MonoMac.CoreVideo;
 #if !MONOMAC
 using MonoTouch.OpenGLES;
 using MonoTouch.UIKit;
+#else
+using MonoMac.AppKit;
 #endif
 
 namespace MonoMac.CoreImage {
@@ -678,7 +680,7 @@ namespace MonoMac.CoreImage {
 		[Static]
 		[Export ("emptyImage")]
 		CIImage EmptyImage { get; }
-
+		
 		[Export ("initWithCGImage:")]
 		IntPtr Constructor (CGImage image);
 
@@ -688,7 +690,7 @@ namespace MonoMac.CoreImage {
 		// FIXME: bindingneeded
 		[Export ("initWithCGLayer:")]
 		IntPtr Constructor (CGLayer layer);
-		
+
 		[Export ("initWithCGLayer:options:")]
 		NSObject IntPtr (CGLayer layer, NSDictionary d);
 
@@ -725,6 +727,17 @@ namespace MonoMac.CoreImage {
 
 		[Export ("initWithColor:")]
 		IntPtr Constructor (CIColor color);
+
+#if MONOMAC
+		[Export ("initWithBitmapImageRep:")]
+		IntPtr Constructor (NSImageRep imageRep);
+		
+		[Export ("drawAtPoint:fromRect:operation:fraction:")]
+		void Draw (PointF point, RectangleF srcRect, NSCompositingOperation op, float delta); 
+
+		[Export ("drawInRect:fromRect:operation:fraction:")]
+		void Draw (RectangleF dstRect, RectangleF srcRect, NSCompositingOperation op, float delta); 
+#endif
 
 		[Export ("imageByApplyingTransform:")]
 		CIImage ImageByApplyingTransform (CGAffineTransform matrix);
