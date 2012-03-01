@@ -6,6 +6,7 @@
 //   Miguel de Icaza
 //
 // Copyright 2009, Novell, Inc.
+// Copyright 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,6 +39,7 @@ using System;
 using System.Drawing;
 
 namespace MonoMac.QuickLook {
+#if !MONOMAC
 	[Since (4,0)]
 	[BaseType (typeof (UIViewController), Delegates = new string [] { "WeakDelegate" }, Events=new Type [] { typeof (QLPreviewControllerDelegate)})]
 	interface QLPreviewController {
@@ -96,7 +98,7 @@ namespace MonoMac.QuickLook {
 		[Export ("previewController:shouldOpenURL:forPreviewItem:"), DelegateName ("QLOpenUrl"), DefaultValue (false)]
 		bool ShouldOpenUrl (QLPreviewController controller, NSUrl url, QLPreviewItem item);
 	}
-
+	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	[Model]
@@ -108,5 +110,15 @@ namespace MonoMac.QuickLook {
 		[Abstract]
 		[Export ("previewItemTitle")]
 		string ItemTitle { get; }
+	}
+#endif
+
+	[Static]
+	interface QLThumbnailImage {
+		[Internal, Field ("kQLThumbnailOptionScaleFactorKey")]
+		NSString OptionScaleFactorKey { get; }
+
+		[Internal, Field ("kQLThumbnailOptionIconModeKey")]
+		NSString OptionIconModeKey { get; }
 	}
 }
