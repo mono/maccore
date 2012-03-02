@@ -2945,16 +2945,16 @@ namespace MonoMac.Foundation
 		[Field ("NSURLAuthenticationMethodHTMLForm")]
 		NSString AuthenticationMethodHTMLForm { get; }
 
-		[Field ("NSURLAuthenticationMethodNTL")]
+		[Field ("NSURLAuthenticationMethodNTLM")]
 		NSString AuthenticationMethodNTL { get; }
 
-		[Field ("NSURLAuthenticationMethodNegotiat")]
+		[Field ("NSURLAuthenticationMethodNegotiate")]
 		NSString AuthenticationMethodNegotiat { get; }
 
-		[Field ("NSURLAuthenticationMethodClientCertificat")]
-		NSString AuthenticationMethodClientCertificat { get; }
+		[Field ("NSURLAuthenticationMethodClientCertificate")]
+		NSString AuthenticationMethodClientCertificate { get; }
 
-		[Field ("NSURLAuthenticationMethodServerTrus")]
+		[Field ("NSURLAuthenticationMethodServerTrust")]
 		NSString AuthenticationMethodServerTrus { get; }
 	}
 	
