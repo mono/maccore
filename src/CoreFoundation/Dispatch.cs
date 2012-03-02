@@ -240,9 +240,16 @@ namespace MonoMac.CoreFoundation {
 			get {
 				lock (lockobj) {
 					if (main_q == IntPtr.Zero) {
-						var h = Dlfcn.dlopen ("/usr/lib/libSystem.dylib", 0x0);
-						main_q = Dlfcn.GetIndirect (h, "_dispatch_main_q");
-						Dlfcn.dlclose (h);
+						// Try loading the symbol from our address space first, should work everywhere
+						main_q = Dlfcn.dlsym ((IntPtr) -2, "_dispatch_main_q");
+
+						// Last case: this is technically not right for the simulator, as this path
+						// actually points to the MacOS library, not the one in the SDK.
+						if (main_q == IntPtr.Zero){
+							var h = Dlfcn.dlopen ("/usr/lib/libSystem.dylib", 0x0);
+							main_q = Dlfcn.GetIndirect (h, "_dispatch_main_q");
+							Dlfcn.dlclose (h);
+						}
 					}
 				}
 #if MONOMAC
