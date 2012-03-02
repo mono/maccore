@@ -241,7 +241,7 @@ namespace MonoMac.CoreFoundation {
 				lock (lockobj) {
 					if (main_q == IntPtr.Zero) {
 						// Try loading the symbol from our address space first, should work everywhere
-						main_q = Dlfcn.dlsym ((IntPtr) -2, "_dispatch_main_q");
+						main_q = Dlfcn.dlsym ((IntPtr) (-2), "_dispatch_main_q");
 
 						// Last case: this is technically not right for the simulator, as this path
 						// actually points to the MacOS library, not the one in the SDK.
