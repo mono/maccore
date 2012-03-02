@@ -42,7 +42,7 @@ namespace MonoMac.ObjCRuntime {
 		public static extern IntPtr dlopen (string path, int mode);
 
 		[DllImport (Constants.SystemLibrary)]
-		static extern IntPtr dlsym (IntPtr handle, string symbol);
+		public static extern IntPtr dlsym (IntPtr handle, string symbol);
 
 		[DllImport (Constants.SystemLibrary)]
 		public static extern string dlerror ();
