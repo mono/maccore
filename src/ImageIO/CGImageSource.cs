@@ -193,10 +193,8 @@ namespace MonoMac.ImageIO {
 			if (url == null)
 				throw new ArgumentNullException ("url");
 
-			var dict = options == null ? null : options.ToDictionary ();
-			var ret = new CGImageSource (CGImageSourceCreateWithURL (url.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
-			dict.Dispose ();
-			return ret;
+			using (var dict = options == null ? null : options.ToDictionary ())
+				return new CGImageSource (CGImageSourceCreateWithURL (url.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -211,10 +209,8 @@ namespace MonoMac.ImageIO {
 			if (provider == null)
 				throw new ArgumentNullException ("provider");
 
-			var dict = options == null ? null : options.ToDictionary ();
-			var ret = new CGImageSource (CGImageSourceCreateWithDataProvider (provider.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
-			dict.Dispose ();
-			return ret;
+			using (var dict = options == null ? null : options.ToDictionary ())
+				return new CGImageSource (CGImageSourceCreateWithDataProvider (provider.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -229,10 +225,8 @@ namespace MonoMac.ImageIO {
 			if (data == null)
 				throw new ArgumentNullException ("data");
 
-			var dict = options == null ? null : options.ToDictionary ();
-			var ret = new CGImageSource (CGImageSourceCreateWithData (data.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
-			dict.Dispose ();
-			return ret;
+			using (var dict = options == null ? null : options.ToDictionary ())
+				return new CGImageSource (CGImageSourceCreateWithData (data.Handle, dict == null ? IntPtr.Zero : dict.Handle), true);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -277,30 +271,28 @@ namespace MonoMac.ImageIO {
 		extern static IntPtr CGImageSourceCreateImageAtIndex(IntPtr isrc, int index, IntPtr options);
 		public CGImage CreateImage (int index, CGImageOptions options)
 		{
-			var dict = options == null ? null : options.ToDictionary ();
-			var ret = CGImageSourceCreateImageAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
-			dict.Dispose ();
-			return new CGImage (ret, true);
+			using (var dict = options == null ? null : options.ToDictionary ()) {
+				var ret = CGImageSourceCreateImageAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
+				return new CGImage (ret, true);
+			}
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCreateThumbnailAtIndex (IntPtr isrc, int index, IntPtr options);
 		public CGImage CreateThumbnail (int index, CGImageThumbnailOptions options)
 		{
-			var dict = options == null ? null : options.ToDictionary ();
-			var ret = CGImageSourceCreateThumbnailAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
-			dict.Dispose ();
-			return new CGImage (ret, true);
+			using (var dict = options == null ? null : options.ToDictionary ()) {
+				var ret = CGImageSourceCreateThumbnailAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
+				return new CGImage (ret, true);
+			}
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCreateIncremental (IntPtr options);
 		public static CGImageSource CreateIncremental (CGImageOptions options)
 		{
-			var dict = options == null ? null : options.ToDictionary ();
-			var ret = new CGImageSource (CGImageSourceCreateIncremental (dict == null ? IntPtr.Zero : dict.Handle), true);
-			dict.Dispose ();
-			return ret;
+			using (var dict = options == null ? null : options.ToDictionary ())
+				return new CGImageSource (CGImageSourceCreateIncremental (dict == null ? IntPtr.Zero : dict.Handle), true);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
