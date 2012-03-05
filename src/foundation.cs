@@ -2499,6 +2499,10 @@ namespace MonoMac.Foundation
 		[Since (5,0)]
 		[Field ("NSURLUbiquitousItemPercentUploadedKey")]
 		NSString UbiquitousItemPercentUploadedKey { get; }
+		
+		[Since (5,1)]
+		[Field ("NSURLIsExcludedFromBackupKey")]
+		NSString IsExcludedFromBackupKey { get; }
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLCache")]
