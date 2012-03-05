@@ -33,6 +33,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
+using MonoMac.ObjCRuntime;
 
 namespace MonoMac.AudioToolbox {
 	public enum AudioFormatType {
@@ -68,7 +69,9 @@ namespace MonoMac.AudioToolbox {
 		DVIIntelIMA             = 0x6d730011,
 		MicrosoftGSM            = 0x6d730031,
 		AES3                    = 0x61657333,
-		MPEG4AAC_ELD		= 0x61616365
+		MPEG4AAC_ELD            = 0x61616365,
+		[Since (5,1)]
+		MPEG4AAC_ELD_V2         = 0x61616367,			// 'aacg'
 	}
 
 	[Flags]
