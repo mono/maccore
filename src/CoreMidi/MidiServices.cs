@@ -109,6 +109,40 @@ namespace MonoMac.CoreMidi {
 			}
 			return buffer;
 		}
+
+		public static int DestinationCount {
+			get {
+				return MIDIGetNumberOfDestinations ();
+			}
+		}
+
+		public static int SourceCount {
+			get {
+				return MIDIGetNumberOfSources ();
+			}
+		}
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIGetNumberOfDestinations ();
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIGetNumberOfSources ();
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIGetNumberOfExternalDevices ();
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static int MIDIGetNumberOfDevices ();
+
+		public static int ExternalDeviceCount {
+			get {
+				return MIDIGetNumberOfExternalDevices ();
+			}
+		}
+
+		public static int DeviceCount {
+			get {
+				return MIDIGetNumberOfDevices ();
+			}
+		}
 	}
 	
 	public class MidiObject : INativeObject, IDisposable {
@@ -1218,12 +1252,6 @@ namespace MonoMac.CoreMidi {
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static IntPtr MIDIGetDevice (int item);
 
-		[DllImport (Constants.CoreMidiLibrary)]
-		extern static int MIDIGetNumberOfExternalDevices ();
-
-		[DllImport (Constants.CoreMidiLibrary)]
-		extern static int MIDIGetNumberOfDevices ();
-
 		public static MidiDevice GetDevice (int deviceIndex)
 		{
 			var h = MIDIGetDevice (deviceIndex);
@@ -1239,19 +1267,6 @@ namespace MonoMac.CoreMidi {
 				return null;
 			return new MidiDevice (h);
 		}
-		
-		public static int ExternalDeviceCount {
-			get {
-				return MIDIGetNumberOfExternalDevices ();
-			}
-		}
-
-		public static int DeviceCount {
-			get {
-				return MIDIGetNumberOfDevices ();
-			}
-		}
-
 		public MidiEntity GetEntity (int entityIndex)
 		{
 			if (handle == IntPtr.Zero)
@@ -1288,11 +1303,6 @@ namespace MonoMac.CoreMidi {
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static IntPtr MIDIGetDestination (int destinationIndex);
 
-		[DllImport (Constants.CoreMidiLibrary)]
-		extern static int MIDIGetNumberOfDestinations ();
-		[DllImport (Constants.CoreMidiLibrary)]
-		extern static int MIDIGetNumberOfSources ();
-		
 		internal override void DisposeHandle ()
 		{
 			if (handle != IntPtr.Zero){
@@ -1331,18 +1341,6 @@ namespace MonoMac.CoreMidi {
 			return new MidiEndpoint (h, "Destination" + destinationIndex);
 		}
 
-		public static int DestinationCount {
-			get {
-				return MIDIGetNumberOfDestinations ();
-			}
-		}
-
-		public static int SourceCount {
-			get {
-				return MIDIGetNumberOfSources ();
-			}
-		}
-		
 		internal MidiEndpoint (MidiClient client, string name)
 		{
 			using (var nsstr = new NSString (name)){
