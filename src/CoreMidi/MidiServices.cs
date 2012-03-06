@@ -143,6 +143,27 @@ namespace MonoMac.CoreMidi {
 				return MIDIGetNumberOfDevices ();
 			}
 		}
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static IntPtr MIDIGetExternalDevice (int item);
+
+		[DllImport (Constants.CoreMidiLibrary)]
+		extern static IntPtr MIDIGetDevice (int item);
+
+		public static MidiDevice GetDevice (int deviceIndex)
+		{
+			var h = MIDIGetDevice (deviceIndex);
+			if (h == IntPtr.Zero)
+				return null;
+			return new MidiDevice (h);
+		}
+
+		public static MidiDevice GetExternalDevice (int deviceIndex)
+		{
+			var h = MIDIGetExternalDevice (deviceIndex);
+			if (h == IntPtr.Zero)
+				return null;
+			return new MidiDevice (h);
+		}
 	}
 	
 	public class MidiObject : INativeObject, IDisposable {
@@ -1243,30 +1264,13 @@ namespace MonoMac.CoreMidi {
 	}
 
 	public class MidiDevice : MidiObject {
+		
 		[DllImport (Constants.CoreMidiLibrary)]
-		extern static IntPtr MIDIGetExternalDevice (int item);
-
+		extern static int MIDIDeviceGetNumberOfEntities (IntPtr handle);
+		
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static IntPtr MIDIDeviceGetEntity (IntPtr handle, int item);
 
-		[DllImport (Constants.CoreMidiLibrary)]
-		extern static IntPtr MIDIGetDevice (int item);
-
-		public static MidiDevice GetDevice (int deviceIndex)
-		{
-			var h = MIDIGetDevice (deviceIndex);
-			if (h == IntPtr.Zero)
-				return null;
-			return new MidiDevice (h);
-		}
-
-		public static MidiDevice GetExternalDevice (int deviceIndex)
-		{
-			var h = MIDIGetExternalDevice (deviceIndex);
-			if (h == IntPtr.Zero)
-				return null;
-			return new MidiDevice (h);
-		}
 		public MidiEntity GetEntity (int entityIndex)
 		{
 			if (handle == IntPtr.Zero)
@@ -1275,6 +1279,12 @@ namespace MonoMac.CoreMidi {
 			if (h == IntPtr.Zero)
 				return null;
 			return new MidiEntity (h);
+		}
+
+		public int EntityCount {
+			get {
+				return MIDIDeviceGetNumberOfEntities (handle);
+			}
 		}
 		
 		internal MidiDevice (IntPtr handle) : base (handle)
@@ -1401,8 +1411,7 @@ namespace MonoMac.CoreMidi {
 				var code = MIDIEndpointGetEntity (handle, out entity);
 				if (code == 0)
 					return new MidiEntity (entity);
-
-				throw new MidiException ((MidiError) code);
+				return null;
 			}
 		}
 
