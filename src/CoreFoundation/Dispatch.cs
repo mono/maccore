@@ -206,7 +206,7 @@ namespace MonoMac.CoreFoundation {
 				if (handle == IntPtr.Zero)
 					throw new ObjectDisposedException ("DispatchQueue");
 				
-				return dispatch_queue_get_label (handle);
+				return Marshal.PtrToStringAnsi (dispatch_queue_get_label (handle));
 			}
 		}
 
@@ -309,13 +309,16 @@ namespace MonoMac.CoreFoundation {
 		extern static IntPtr dispatch_get_current_queue ();
 
 		[DllImport ("libc")]
+		// dispatch_queue_t dispatch_get_global_queue (long priority, unsigned long flags);
+		// IntPtr used for 32/64 bits
 		extern static IntPtr dispatch_get_global_queue (IntPtr priority, IntPtr flags);
 
 		[DllImport ("libc")]
 		extern static IntPtr dispatch_get_main_queue ();
 
 		[DllImport ("libc")]
-		extern static string dispatch_queue_get_label (IntPtr queue);
+		// this returns a "const char*" so we cannot make a string out of it since it will be freed (and crash)
+		extern static IntPtr dispatch_queue_get_label (IntPtr queue);
 
 #if MONOMAC
 		//
