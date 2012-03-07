@@ -272,7 +272,7 @@ namespace MonoMac.CoreFoundation {
 		static void static_dispatcher_to_managed (IntPtr context)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (context);
-                        var action = gch.Target as NSAction;
+			var action = gch.Target as NSAction;
 			if (action != null)
 				action ();
 			gch.Free ();
