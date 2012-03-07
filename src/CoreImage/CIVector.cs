@@ -45,7 +45,7 @@ namespace MonoMac.CoreImage {
 			}
 		}
 		
-		public CIVector (float [] values) : base (GetPtr (values))
+		public CIVector (float [] values) : this (GetPtr (values), values.Length)
 		{
 		}
 	
