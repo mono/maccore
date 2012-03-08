@@ -59,6 +59,11 @@ namespace MonoMac.ImageIO {
 			Dlfcn.dlclose (lib);
 		}
 
+		public CGImageOptions ()
+		{
+			ShouldCache = true;
+		}
+		
 		public string BestGuessTypeIdentifier { get; set; }
 		public bool ShouldCache { get; set; }
 		public bool ShouldAllowFloat { get; set; }
@@ -68,14 +73,13 @@ namespace MonoMac.ImageIO {
 			Init ();
 			
 			var dict = new NSMutableDictionary ();
-			IntPtr thandle = CFBoolean.TrueObject.Handle;
 			
 			if (BestGuessTypeIdentifier != null)
 				dict.LowlevelSetObject (new NSString (BestGuessTypeIdentifier), kTypeIdentifierHint);
-			if (ShouldCache)
-				dict.LowlevelSetObject (thandle, kShouldCache);
+			if (!ShouldCache)
+				dict.LowlevelSetObject (CFBoolean.FalseObject.Handle, kShouldCache);
 			if (ShouldAllowFloat)
-				dict.LowlevelSetObject (thandle, kShouldAllowFloat);
+				dict.LowlevelSetObject (CFBoolean.TrueObject.Handle, kShouldAllowFloat);
 
 			return dict;
 		}
