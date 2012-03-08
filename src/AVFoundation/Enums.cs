@@ -167,7 +167,7 @@ namespace MonoMac.AVFoundation {
 		EncoderTemporarilyUnavailable = -11840,
 		InvalidVideoComposition = -11841,
 		MediaServicesWereReset = -11820,
-		[Since (5,1)]
+		//[Since (5,1)]
 		InvalidOutputURLPathExtension = -11843
 	}
 

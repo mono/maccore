@@ -117,9 +117,9 @@ namespace MonoMac.CoreVideo {
 		CV30RGB = 0x5231306b,
 		CV4444AYpCbCr8   = 0x79343038,
 		CV4444AYpCbCr16  = 0x79343136,
-		[Since (5,1)]
+		//[Since (5,1)]
 		OneComponent8 = 0x4C303038,
-		[Since (5,1)]
+		//[Since (5,1)]
 		TwoComponent8 = 0x32433038
 	}
 
