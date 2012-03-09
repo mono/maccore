@@ -56,35 +56,27 @@ namespace MonoMac.CoreImage {
 				n++;
 			if (n == 0)
 				return null;
-			var keys = new NSString [n];
-			var values = new NSObject [n];
+			
+			NSMutableDictionary dict = new NSMutableDictionary ();
 
-			int i = 0;
 			if (Enhance.HasValue && Enhance.Value == false){
-				keys [i] = CIImage.AutoAdjustEnhanceKey;
-				values [i] = CFBoolean.FalseObject;
-				i++;
+				dict.LowlevelSetObject (CFBoolean.False.Handle, CIImage.AutoAdjustEnhanceKey.Handle);
 			}
 			if (RedEye.HasValue && RedEye.Value == false){
-				keys [i] = CIImage.AutoAdjustRedEyeKey;
-				values [i] = CFBoolean.FalseObject;
-				i++;
+				dict.LowlevelSetObject (CFBoolean.False.Handle, CIImage.AutoAdjustRedEyeKey.Handle);
 			}
 			if (Features != null && Features.Length != 0){
-				keys [i] = CIImage.AutoAdjustFeaturesKey;
-				values [i] = NSArray.FromObjects (Features);
-				i++;
+				dict.LowlevelSetObject (NSArray.FromObjects (Features), CIImage.AutoAdjustFeaturesKey.Handle);
 			}
 			if (ImageOrientation.HasValue){
-				keys [i] = CIImage.ImagePropertyOrientation;
-				values [i] = new NSNumber ((int)ImageOrientation.Value);
-				i++;
+				dict.LowlevelSetObject (new NSNumber ((int)ImageOrientation.Value), CIImage.ImagePropertyOrientation.Handle);
 			}
+#if false
 			for (i = 0; i < n; i++){
 				Console.WriteLine ("{0} {1}-{2}", i, keys [i], values [i]);
 			}
-			
-			return NSDictionary.FromObjectsAndKeys (values, keys);
+#endif
+			return dict;
 		}
 	}
 	

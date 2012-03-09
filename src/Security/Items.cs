@@ -781,7 +781,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsInvisible);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrIsInvisible);
 			}
 		}
 
@@ -791,7 +791,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsNegative);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrIsNegative);
 			}
 		}
 
@@ -984,7 +984,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrIsPermanent);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrIsPermanent);
 			}
 		}
 
@@ -1040,7 +1040,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanEncrypt);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrCanEncrypt);
 			}
 		}
 
@@ -1050,7 +1050,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanDecrypt);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrCanDecrypt);
 			}
 		}
 
@@ -1060,7 +1060,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanDerive);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrCanDerive);
 			}
 		}
 
@@ -1070,7 +1070,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanSign);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrCanSign);
 			}
 		}
 
@@ -1080,7 +1080,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanVerify);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrCanVerify);
 			}
 		}
 
@@ -1090,7 +1090,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanWrap);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrCanWrap);
 			}
 		}
 
@@ -1100,7 +1100,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecAttributeKey.AttrCanUnwrap);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecAttributeKey.AttrCanUnwrap);
 			}
 		}
 
@@ -1183,7 +1183,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value), SecItem.MatchCaseInsensitive);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecItem.MatchCaseInsensitive);
 			}
 		}
 
@@ -1193,7 +1193,7 @@ namespace MonoMac.Security {
 			}
 			
 			set {
-				SetValue (CFBoolean.GetBoolObject (value).Handle, SecItem.MatchTrustedOnly);
+				SetValue (CFBoolean.FromBoolean (value).Handle, SecItem.MatchTrustedOnly);
 			}
 		}
 
