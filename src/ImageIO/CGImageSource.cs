@@ -77,9 +77,9 @@ namespace MonoMac.ImageIO {
 			if (BestGuessTypeIdentifier != null)
 				dict.LowlevelSetObject (new NSString (BestGuessTypeIdentifier), kTypeIdentifierHint);
 			if (!ShouldCache)
-				dict.LowlevelSetObject (CFBoolean.FalseObject.Handle, kShouldCache);
+				dict.LowlevelSetObject (CFBoolean.False.Handle, kShouldCache);
 			if (ShouldAllowFloat)
-				dict.LowlevelSetObject (CFBoolean.TrueObject.Handle, kShouldAllowFloat);
+				dict.LowlevelSetObject (CFBoolean.True.Handle, kShouldAllowFloat);
 
 			return dict;
 		}
@@ -116,7 +116,7 @@ namespace MonoMac.ImageIO {
 			Init ();
 			
 			var dict = base.ToDictionary ();
-			IntPtr thandle = CFBoolean.TrueObject.Handle;
+			IntPtr thandle = CFBoolean.True.Handle;
 
 			if (CreateThumbnailFromImageIfAbsent)
 				dict.LowlevelSetObject (thandle, kCreateThumbnailFromImageIfAbsent);
