@@ -41,13 +41,13 @@ namespace MonoMac.QuickLook {
 
 		public static CGImage Create (NSUrl url, SizeF maxThumbnailSize, float scaleFactor = 1, bool iconMode = false)
 		{
-			NSDictionary dictionary;
+			NSMutableDictionary dictionary = null;
 
-			if (scaleFactor != 1 && iconMode != false){
-				dictionary = NSDictionary.FromObjectsAndKeys (new NSObject [] { (NSNumber) scaleFactor, iconMode ? CFBoolean.TrueObject : CFBoolean.FalseObject },
-									      new NSObject [] { OptionScaleFactorKey, OptionIconModeKey });
-			} else
-				dictionary = null;
+			if (scaleFactor != 1 && iconMode != false) {
+				dictionary = new NSMutableDictionary ();
+				dictionary.LowlevelSetObject ((NSNumber) scaleFactor, OptionScaleFactorKey.Handle);
+				dictionary.LowlevelSetObject (iconMode ? CFBoolean.True.Handle : CFBoolean.False.Handle, OptionIconModeKey.Handle);
+			}
 			
 			var handle = QLThumbnailImageCreate (IntPtr.Zero, url.Handle, maxThumbnailSize, dictionary == null ? IntPtr.Zero : dictionary.Handle);
 			GC.KeepAlive (dictionary);
