@@ -248,8 +248,11 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject), Name="NSCachedURLResponse")]
 	public interface NSCachedUrlResponse {
 		[Export ("initWithResponse:data:userInfo:storagePolicy:")]
-		IntPtr Constructor (NSUrlResponse response, NSData data, NSDictionary userInfo, NSUrlCacheStoragePolicy storagePolicy);
+		IntPtr Constructor (NSUrlResponse response, NSData data, [NullAllowed] NSDictionary userInfo, NSUrlCacheStoragePolicy storagePolicy);
 
+		[Export ("initWithResponse:data:")]
+		IntPtr Constructor (NSUrlResponse response, NSData data);
+          
 		[Export ("response")]
 		NSUrlResponse Response { get; }
 
