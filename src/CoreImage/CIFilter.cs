@@ -23,6 +23,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Diagnostics;
 using MonoMac.Foundation;
 #if !MONOMAC
 using MonoTouch.UIKit;
@@ -221,7 +222,7 @@ namespace MonoMac.CoreImage {
 			case "CIFaceBalance":
 				return new CIFaceBalance (handle);
 			default:
-				Console.WriteLine ("Unknown filter type returned: `{0}', returning a default CIFilter", filterName);
+				Debug.WriteLine (String.Format ("Unknown filter type returned: `{0}', returning a default CIFilter", filterName));
 				return new CIFilter ();
 			}
 		}

@@ -24,6 +24,7 @@
 // Simple class for passing NSErrors as EventArgs
 //
 using System;
+using System.Diagnostics;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
@@ -43,7 +44,7 @@ namespace MonoMac.Foundation {
 		[Export ("init")]
 		public NSError () : base (NSObjectFlag.Empty)
 		{
-			Console.WriteLine ("Warning: you created an NSError without a domain, this can crash your application if you return this to Objective-C");
+			Debug.WriteLine ("Warning: you created an NSError without a domain, this can crash your application if you return this to Objective-C");
 			if (IsDirectBinding) {
 				Handle = MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);
 			} else {
