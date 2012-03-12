@@ -36,6 +36,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
@@ -979,7 +980,7 @@ namespace MonoMac.CoreMidi {
 				}
 				break;
 			default:
-				Console.WriteLine ("Unknown message received: {0}", id);
+				Debug.WriteLine (String.Format ("Unknown message received: {0}", id));
 				break;
 			}
 		}
