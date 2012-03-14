@@ -703,10 +703,10 @@ namespace MonoMac.AVFoundation {
 		AVAssetReaderOutput [] Outputs { get;  }
 
 		[Static, Export ("assetReaderWithAsset:error:")]
-		AVAssetReader _FromAsset (AVAsset asset, IntPtr ptrToNsError);
+		AVAssetReader FromAsset (AVAsset asset, out NSError error);
 
 		[Export ("initWithAsset:error:")]
-		IntPtr Constructor (AVAsset asset, IntPtr ptrToNsError);
+		IntPtr Constructor (AVAsset asset, out NSError error);
 
 		[Export ("canAddOutput:")]
 		bool CanAddOutput (AVAssetReaderOutput output);
@@ -817,10 +817,10 @@ namespace MonoMac.AVFoundation {
 		AVMetadataItem [] Metadata { get; set;  }
 
 		[Static, Export ("assetWriterWithURL:fileType:error:")]
-		AVAssetWriter FromUrl (NSUrl outputUrl, string outputFileType, IntPtr ptrToNSError);
+		AVAssetWriter FromUrl (NSUrl outputUrl, string outputFileType, out NSError error);
 
 		[Export ("initWithURL:fileType:error:")]
-		IntPtr Constructor (NSUrl outputUrl, string outputFileType, IntPtr ptrToNSError);
+		IntPtr Constructor (NSUrl outputUrl, string outputFileType, out NSError error);
 
 		[Export ("canApplyOutputSettings:forMediaType:")]
 		bool CanApplyOutputSettings (NSDictionary outputSettings, string toMediaType);
@@ -1909,7 +1909,7 @@ namespace MonoMac.AVFoundation {
 		CMTime Duration { get; }
 
                 [Export ("statusOfValueForKey:error:")]
-                AVKeyValueStatus StatusOfValueForKeyerror (string key, IntPtr outError);
+                AVKeyValueStatus StatusOfValueForKeyerror (string key, out NSError error);
 
                 [Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
                 void LoadValuesAsynchronously (string [] keys, NSAction handler);
@@ -2022,7 +2022,7 @@ namespace MonoMac.AVFoundation {
 		AVMutableComposition Create ();
 
 		[Export ("insertTimeRange:ofAsset:atTime:error:")]
-		bool Insert (CMTimeRange insertTimeRange, AVAsset sourceAsset, CMTime atTime, NSError outError);
+		bool Insert (CMTimeRange insertTimeRange, AVAsset sourceAsset, CMTime atTime, out NSError error);
 
 		[Export ("insertEmptyTimeRange:")]
 		void InserEmptyTimeRange (CMTimeRange timeRange);
