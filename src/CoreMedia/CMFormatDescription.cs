@@ -1,9 +1,13 @@
 // 
 // CMFormatDescription.cs: Implements the managed CMFormatDescription
 //
-// Authors: Mono Team
+// Authors:
+//   Miguel de Icaza (miguel@xamarin.com)
+//   Frank Krueger
+//   Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2012 Xamarin Inc
 //
 using System;
 using System.Runtime.InteropServices;
@@ -12,6 +16,9 @@ using MonoMac;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
+#if !COREBUILD
+using MonoMac.AudioToolbox;
+#endif
 
 namespace MonoMac.CoreMedia {
 
@@ -111,5 +118,70 @@ namespace MonoMac.CoreMedia {
 		{
 			return CMFormatDescriptionGetTypeID ();
 		}
+#if !COREBUILD
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static IntPtr CMAudioFormatDescriptionGetStreamBasicDescription (IntPtr handle);
+
+		public AudioStreamBasicDescription? AudioStreamBasicDescription {
+			get {
+				var ret = CMAudioFormatDescriptionGetStreamBasicDescription (handle);
+				if (ret != IntPtr.Zero){
+					unsafe {
+						return *((AudioStreamBasicDescription *) ret);
+					}
+				}
+				return null;
+			}
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static IntPtr CMAudioFormatDescriptionGetChannelLayout (IntPtr handle, out int size);
+			
+		public AudioChannelLayout AudioChannelLayout {
+			get {
+				int size;
+				var res = CMAudioFormatDescriptionGetChannelLayout (handle, out size);
+				if (res == IntPtr.Zero)
+					return null;
+				return AudioFile.AudioChannelLayoutFromHandle (handle);
+			}
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static IntPtr CMAudioFormatDescriptionGetFormatList (IntPtr handle, out int size);
+		public AudioFormat [] AudioFormats {
+			get {
+				unsafe {
+					int size;
+					var v = CMAudioFormatDescriptionGetFormatList (handle, out size);
+					if (v == IntPtr.Zero)
+						return null;
+					var items = size / sizeof (AudioFormat);
+					var ret = new AudioFormat [items];
+					var ptr = (AudioFormat *) v;
+					for (int i = 0; i < items; i++)
+						ret [i] = ptr [i];
+					return ret;
+				}
+			}
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static IntPtr CMAudioFormatDescriptionGetMagicCookie (IntPtr handle, out int size);
+
+		public byte [] AudioMagicCookie {
+			get {
+				int size;
+				var h = CMAudioFormatDescriptionGetMagicCookie (handle, out size);
+				if (h == IntPtr.Zero)
+					return null;
+
+				var result = new byte [size];
+				for (int i = 0; i < size; i++)
+					result [i] = Marshal.ReadByte (h, i);
+				return result;
+			}
+		}
+#endif
 	}
 }
