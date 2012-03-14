@@ -2,7 +2,7 @@
 // AudioFile.cs:
 //
 // Authors:
-//    Miguel de Icaza (miguel@novell.com)
+//    Miguel de Icaza (miguel@xamarin.com)
 //     
 // Copyright 2009 Novell, Inc
 //
@@ -806,7 +806,27 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		// TODO: kAudioFilePropertyFormatList
+		public AudioFormat [] AudioFormats {
+			get {
+				unsafe {
+					int size;
+					var r = GetProperty (AudioFileProperty.FormatList, out size);
+					var records = (AudioFormat *) r;
+					if (r == IntPtr.Zero)
+						return null;
+					int itemSize = sizeof (AudioFormat);
+					int items = size/itemSize;
+					var ret = new AudioFormat [items];
+					
+					for (int i = 0; i < items; i++)
+						ret [i] = records [i];
+
+					Marshal.FreeHGlobal (r);
+					return ret;
+				}
+			}
+		}
+		
 		public bool IsOptimized {
 			get {
 				return GetInt (AudioFileProperty.IsOptimized) == 1;
