@@ -182,6 +182,34 @@ namespace MonoMac.CoreMedia {
 				return result;
 			}
 		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static IntPtr CMAudioFormatDescriptionGetMostCompatibleFormat (IntPtr handle);
+
+		public AudioFormat AudioMostCompatibleFormat {
+			get {
+				unsafe {
+					var ret = (AudioFormat *) CMAudioFormatDescriptionGetMostCompatibleFormat (handle);
+					if (ret == null)
+						return new AudioFormat ();
+					return *ret;
+				}
+			}
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static IntPtr CMAudioFormatDescriptionGetRichestDecodableFormat (IntPtr handle);
+
+		public AudioFormat AudioRichestDecodableFormat {
+			get {
+				unsafe {
+					var ret = (AudioFormat *) CMAudioFormatDescriptionGetRichestDecodableFormat (handle);
+					if (ret == null)
+						return new AudioFormat ();
+					return *ret;
+				}
+			}
+		}
 #endif
 	}
 }
