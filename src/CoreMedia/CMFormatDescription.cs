@@ -11,7 +11,7 @@
 //
 using System;
 using System.Runtime.InteropServices;
-
+using System.Drawing;
 using MonoMac;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
@@ -210,6 +210,49 @@ namespace MonoMac.CoreMedia {
 				}
 			}
 		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static Size CMVideoFormatDescriptionGetDimensions (IntPtr handle);
+		public Size  VideoDimensions {
+			get {
+				return CMVideoFormatDescriptionGetDimensions (handle);
+			}
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static RectangleF CMVideoFormatDescriptionGetCleanAperture (IntPtr handle, bool originIsAtTopLeft);
+
+		public RectangleF GetVideoCleanAperture (bool originIsAtTopLeft)
+		{
+			return CMVideoFormatDescriptionGetCleanAperture (handle);
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static IntPtr CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers ();
+		public static NSObject [] GetExtensionKeysCommonWithImageBuffers ()
+		{
+			var arr = CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers ();
+			return NSArray.ArrayFromHandle<NSString> (arr);
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static SizeF CMVideoFormatDescriptionGetPresentationDimensions (IntPtr handle, bool usePixelAspectRatio, bool useCleanAperture);
+
+		public SizeF GetVideoPresentationDimensions (bool usePixelAspectRatio, bool useCleanAperture)
+		{
+			return CMVideoFormatDescriptionGetPresentationDimensions (handle, usePixelAspectRatio, useCleanAperture);
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static int CMVideoFormatDescriptionMatchesImageBuffer (IntPtr handle, IntPtr imageBufferRef);
+
+		public VideoMatchesImageBuffer (CVImageBuffer imageBuffer)
+		{
+			if (imageBuffer == null)
+				throw new ArgumentNullException ("imageBuffer");
+			return CMVideoFormatDescriptionMatchesImageBuffer (handle, imageBuffer.Handle) != 0;
+		}
+			
 #endif
 	}
 }
