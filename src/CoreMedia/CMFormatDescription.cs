@@ -16,6 +16,7 @@ using MonoMac;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
+using MonoMac.CoreVideo;
 #if !COREBUILD
 using MonoMac.AudioToolbox;
 #endif
@@ -224,7 +225,7 @@ namespace MonoMac.CoreMedia {
 
 		public RectangleF GetVideoCleanAperture (bool originIsAtTopLeft)
 		{
-			return CMVideoFormatDescriptionGetCleanAperture (handle);
+			return CMVideoFormatDescriptionGetCleanAperture (handle, originIsAtTopLeft);
 		}
 
 		[DllImport (Constants.CoreMediaLibrary)]
@@ -246,7 +247,7 @@ namespace MonoMac.CoreMedia {
 		[DllImport (Constants.CoreMediaLibrary)]
 		extern static int CMVideoFormatDescriptionMatchesImageBuffer (IntPtr handle, IntPtr imageBufferRef);
 
-		public VideoMatchesImageBuffer (CVImageBuffer imageBuffer)
+		public bool VideoMatchesImageBuffer (CVImageBuffer imageBuffer)
 		{
 			if (imageBuffer == null)
 				throw new ArgumentNullException ("imageBuffer");
