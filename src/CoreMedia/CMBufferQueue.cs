@@ -239,45 +239,4 @@ namespace MonoMac.CoreMedia {
 		}
 
 	}
-
-	public class CMBuffer : INativeObject, IDisposable {
-		internal IntPtr handle;
-
-		internal CMBuffer (IntPtr handle)
-		{
-			this.handle = handle;
-		}
-
-		[Preserve (Conditional=true)]
-		internal CMBuffer (IntPtr handle, bool owns)
-		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-
-			this.handle = handle;
-		}
-		
-		~CMBuffer ()
-		{
-			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-	
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-	}
 }
