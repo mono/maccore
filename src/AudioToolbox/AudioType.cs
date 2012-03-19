@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.AudioToolbox {
 	public enum AudioFormatType {
@@ -399,11 +400,84 @@ namespace MonoMac.AudioToolbox {
 		public int Bitmap;
 		public AudioChannelDescription [] Channels ;
 
+		static internal AudioChannelLayout FromHandle (IntPtr h)
+		{
+			var layout = new AudioChannelLayout ();
+			layout.AudioTag  = (AudioChannelLayoutTag) Marshal.ReadInt32 (h, 0);
+			layout.Bitmap = Marshal.ReadInt32 (h, 4);
+			layout.Channels = new AudioChannelDescription [Marshal.ReadInt32 (h, 8)];
+			int p = 12;
+			for (int i = 0; i < layout.Channels.Length; i++){
+				var desc = new AudioChannelDescription ();
+				desc.Label = (AudioChannelLabel) Marshal.ReadInt32 (h, p);
+				desc.Flags = (AudioChannelFlags) Marshal.ReadInt32 (h, p+4);
+				desc.Coords = new float [3];
+				desc.Coords [0] = ReadFloat (h, p+8);
+				desc.Coords [1] = ReadFloat (h, p+12);
+				desc.Coords [2] = ReadFloat (h, p+16);
+				layout.Channels [i] = desc;
+				
+				p += 20;
+			}
+
+			return layout;
+		}
+		
 		public override string ToString ()
 		{
 			return String.Format ("AudioChannelLayout: Tag={0} Bitmap={1} Channels={2}", AudioTag, Bitmap, Channels.Length);
 		}
 
+		unsafe static float ReadFloat (IntPtr p, int offset)
+		{
+			byte *src = ((byte *)p) + offset;
+
+			return *(float *) src;
+		}
+
+		unsafe static void WriteFloat (IntPtr p, int offset, float f)
+		{
+			byte *dest = ((byte *)p) + offset;
+			*((float *) dest) = f;
+		}
+		
+		// The returned block must be released with FreeHGbloal
+		static internal IntPtr ToBlock (AudioChannelLayout layout, out int size)
+		{
+			if (layout == null)
+				throw new ArgumentNullException ("layout");
+			if (layout.Channels == null)
+				throw new ArgumentNullException ("layout.Channels");
+			
+			size = 12 + layout.Channels.Length * 20;
+			IntPtr buffer = Marshal.AllocHGlobal (size);
+			int p;
+			Marshal.WriteInt32 (buffer, 0, (int) layout.AudioTag);
+			Marshal.WriteInt32 (buffer, 4, layout.Bitmap);
+			Marshal.WriteInt32 (buffer, 8, layout.Channels.Length);
+			p = 12;
+			foreach (var desc in layout.Channels){
+				Marshal.WriteInt32 (buffer, p, (int) desc.Label);
+				Marshal.WriteInt32 (buffer, p + 4, (int) desc.Flags);
+				WriteFloat (buffer, p + 8, desc.Coords [0]);
+				WriteFloat (buffer, p + 12, desc.Coords [1]);
+				WriteFloat (buffer, p + 16, desc.Coords [2]);
+
+				p += 20;
+			}
+			
+			return buffer;
+		}
+
+		public NSData AsData ()
+		{
+			int size;
+			
+			var p = ToBlock (this, out size);
+			var result = NSData.FromBytes (p, (uint) size);
+			Marshal.FreeHGlobal (p);
+			return result;
+		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]

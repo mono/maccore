@@ -752,7 +752,7 @@ namespace MonoMac.AudioToolbox {
 				if (h == IntPtr.Zero)
 					return null;
 				
-				var layout = AudioFile.AudioChannelLayoutFromHandle (h);
+				var layout = AudioChannelLayout.FromHandle (h);
 				Marshal.FreeHGlobal (h);
 
 				return layout;
@@ -760,7 +760,7 @@ namespace MonoMac.AudioToolbox {
 
 			set {
 				int size;
-				var h = AudioFile.AudioChannelLayoutToBlock (value, out size);
+				var h = AudioChannelLayout.ToBlock (value, out size);
 				SetProperty (AudioQueueProperty.ChannelLayout, size, h);
 				Marshal.FreeHGlobal (h);
 			}

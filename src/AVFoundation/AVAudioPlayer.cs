@@ -41,7 +41,7 @@ namespace MonoMac.AVFoundation {
 				var data = dict.ObjectForKey (AVAudioPlayer.AVChannelLayoutKey) as NSData;
 				if (data == null)
 					return new AudioChannelLayout ();
-				return AudioFile.AudioChannelLayoutFromHandle (data.Bytes);
+				return AudioChannelLayout.FromHandle (data.Bytes);
 			}
 		}
 

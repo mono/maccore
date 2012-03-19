@@ -144,7 +144,7 @@ namespace MonoMac.CoreMedia {
 				var res = CMAudioFormatDescriptionGetChannelLayout (handle, out size);
 				if (res == IntPtr.Zero)
 					return null;
-				return AudioFile.AudioChannelLayoutFromHandle (handle);
+				return AudioChannelLayout.FromHandle (handle);
 			}
 		}
 
