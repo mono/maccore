@@ -106,7 +106,7 @@ class BindingTouch {
 			{ "s=", "Adds a source file required to build the API", v => core_sources.Add (v) },
 			{ "v", "Sets verbose mode", v => verbose = true },
 			{ "x=", "Adds the specified file to the build, used after the core files are compiled", v => extra_sources.Add (v) },
-			{ "e", "Sets external mode", v => external = true },
+			{ "e", "Generates smaller classes that can not be subclassed (previously called 'external mode')", v => external = true },
 			{ "p", "Sets private mode", v => pmode = false },
 			{ "baselib=", "Sets the base library", v => baselibdll = v },
 #if !MONOMAC
