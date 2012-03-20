@@ -3259,5 +3259,46 @@ namespace MonoMac.AVFoundation {
 		[Export ("removeAllItems")]
 		void RemoveAllItems ();
 	}
+
+	public static class AVAudioSettings {
+		[Field ("AVFormatIDKey")]
+		NSString AVFormatIDKey { get; }
+		
+		[Field ("AVSampleRateKey")]
+		NSString AVSampleRateKey { get; }
+		
+		[Field ("AVNumberOfChannelsKey")]
+		NSString AVNumberOfChannelsKey { get; }
+		
+		[Field ("AVLinearPCMBitDepthKey")]
+		NSString AVLinearPCMBitDepthKey { get; }
+		
+		[Field ("AVLinearPCMIsBigEndianKey")]
+		NSString AVLinearPCMIsBigEndianKey { get; }
+		
+		[Field ("AVLinearPCMIsFloatKey")]
+		NSString AVLinearPCMIsFloatKey { get; }
+		
+		[Field ("AVLinearPCMIsNonInterleaved")]
+		NSString AVLinearPCMIsNonInterleaved { get; }
+		
+		[Field ("AVEncoderAudioQualityKey")]
+		NSString AVEncoderAudioQualityKey { get; }
+		
+		[Field ("AVEncoderBitRateKey")]
+		NSString AVEncoderBitRateKey { get; }
+		
+		[Field ("AVEncoderBitRatePerChannelKey")]
+		NSString AVEncoderBitRatePerChannelKey { get; }
+		
+		[Field ("AVEncoderBitDepthHintKey")]
+		NSString AVEncoderBitDepthHintKey { get; }
+		
+		[Field ("AVSampleRateConverterAudioQualityKey")]
+		NSString AVSampleRateConverterAudioQualityKey { get; }
+		
+		[Field ("AVChannelLayoutKey")]
+		NSString AVChannelLayoutKey { get; }
+	}
 	
 }

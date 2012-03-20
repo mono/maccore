@@ -35,23 +35,6 @@ namespace MonoMac.AVFoundation {
 		Max = 0x7F
 	}
 
-	public static class AVAudioSettings {
-
-		public static readonly NSString AVFormatIDKey = new NSString ("AVFormatIDKey");
-		public static readonly NSString AVSampleRateKey = new NSString ("AVSampleRateKey");
-		public static readonly NSString AVNumberOfChannelsKey = new NSString ("AVNumberOfChannelsKey");
-
-		public static readonly NSString AVLinearPCMBitDepthKey = new NSString ("AVLinearPCMBitDepthKey");
-		public static readonly NSString AVLinearPCMIsBigEndianKey = new NSString ("AVLinearPCMIsBigEndianKey");
-		public static readonly NSString AVLinearPCMIsFloatKey = new NSString ("AVLinearPCMIsFloatKey");
-
-		public static readonly NSString AVEncoderAudioQualityKey = new NSString ("AVEncoderAudioQualityKey");
-		public static readonly NSString AVEncoderBitRateKey = new NSString ("AVEncoderBitRateKey");
-		public static readonly NSString AVEncoderBitDepthHintKey = new NSString ("AVEncoderBitDepthHintKey");
-
-		public static readonly NSString AVSampleRateConverterAudioQualityKey = new NSString ("AVSampleRateConverterAudioQualityKey");
-	}
-
 	[Since (4,0)]
 	public enum AVAssetExportSessionStatus {
 		Unknown,
