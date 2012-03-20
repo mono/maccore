@@ -2276,10 +2276,7 @@ public class Generator {
 			
 			if (!is_model){
 				foreach (var ea in selectors [type]){
-					if (external || IsBtouch)
-						print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
-					else
-						print ("static IntPtr {0} = Selector.sel_registerName (\"{1}\");", SelectorField (ea), ea);
+					print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 				}
 			}
 			print ("");
