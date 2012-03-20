@@ -3260,7 +3260,8 @@ namespace MonoMac.AVFoundation {
 		void RemoveAllItems ();
 	}
 
-	public static class AVAudioSettings {
+	[Static]
+	public interface AVAudioSettings {
 		[Field ("AVFormatIDKey")]
 		NSString AVFormatIDKey { get; }
 		

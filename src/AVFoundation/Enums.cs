@@ -35,6 +35,10 @@ namespace MonoMac.AVFoundation {
 		Max = 0x7F
 	}
 
+	// Just to disable generating the public ctor
+	public static partial class AVAudioSettings {
+	}
+
 	[Since (4,0)]
 	public enum AVAssetExportSessionStatus {
 		Unknown,
