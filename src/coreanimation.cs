@@ -248,7 +248,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("containsPoint:")]
 		bool Contains (PointF p);
 
-		[Export ("contents", ArgumentSemantic.Retain)]
+		[Export ("contents", ArgumentSemantic.Retain), NullAllowed]
 		CGImage Contents { get; set; }
 
 #if MONOMAC
