@@ -47,6 +47,8 @@ using System.Drawing;
 
 namespace MonoMac.Foundation
 {
+	public delegate int NSComparator (NSObject obj1, NSObject obj2);
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSArray {
 		[Export ("count")]
@@ -69,6 +71,12 @@ namespace MonoMac.Foundation
 
 		[Export ("arrayWithContentsOfFile:")][Static]
 		NSArray FromFile (string path);
+		
+		[Export ("sortedArrayUsingComparator:")]
+		NSArray Sort (NSComparator cmptr);
+		
+		[Export ("filteredArrayUsingPredicate:")]
+		NSArray Filter (NSPredicate predicate);
 	}
 
 	[Since (3,2)]
