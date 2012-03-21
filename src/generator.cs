@@ -537,15 +537,16 @@ public class Tuple<A,B> {
 // The Invoke contains the invocation steps necessary to invoke the method
 //
 public class TrampolineInfo {
-	public string UserDelegate, DelegateName, TrampolineName, Parameters, Invoke;
+	public string UserDelegate, DelegateName, TrampolineName, Parameters, Invoke, ReturnType;
 
-	public TrampolineInfo (string userDelegate, string delegateName, string trampolineName, string pars, string invoke)
+	public TrampolineInfo (string userDelegate, string delegateName, string trampolineName, string pars, string invoke, string returnType)
 	{
 		UserDelegate = userDelegate;
 		DelegateName = delegateName;
 		Parameters = pars;
 		TrampolineName = trampolineName;
 		Invoke = invoke;
+		ReturnType = returnType;
 	}
 
 	public string StaticName {
@@ -878,7 +879,8 @@ public class Generator {
 		var ti = new TrampolineInfo (t.FullName,
 					     "Inner" + t.Name,
 					     "Trampoline" + t.Name,
-					     pars.ToString (), invoke.ToString ());
+					     pars.ToString (), invoke.ToString (),
+					     mi.ReturnType.ToString ());
 
 		trampolines [t] = ti;
 		return ti.StaticName;
@@ -2547,14 +2549,14 @@ public class Generator {
 			// Now the trampolines
 			//
 			foreach (var ti in trampolines.Values){
-				print ("internal delegate void {0} ({1});", ti.DelegateName, ti.Parameters);
+				print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
 				print ("static {0} {1} = new {0} ({2});", ti.DelegateName, ti.StaticName, ti.TrampolineName);
 				print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
-				print ("static unsafe void {0} ({1}) {{", ti.TrampolineName, ti.Parameters);
+				print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
 				indent++;
 				print ("var descriptor = (BlockLiteral *) block;");
 				print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
-				print ("del ({0});", ti.Invoke);
+				print ("{0}del ({1});", ti.ReturnType == "System.Void" ? String.Empty : "return ", ti.Invoke);
 				indent--;
 				print ("}");
 				print ("");
