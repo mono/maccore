@@ -71,8 +71,8 @@ namespace MonoMac.AVFoundation {
 	public enum AVCaptureVideoOrientation {
 		Portrait = 1,
 		PortraitUpsideDown,
-		LandscapeLeft,
 		LandscapeRight,
+		LandscapeLeft,
 	}
 
 	[Since (4,0)]
