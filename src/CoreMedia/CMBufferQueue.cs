@@ -88,7 +88,7 @@ namespace MonoMac.CoreMedia {
 				CFObject.CFRelease (handle);
 				handle = IntPtr.Zero;
 			}
-			if (gch != null)
+			if (gch.IsAllocated)
 				gch.Free ();
 		}
 
