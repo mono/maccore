@@ -78,6 +78,16 @@ namespace MonoMac.CoreGraphics {
 			if (!owns)
 				CGPDFDocumentRetain (handle);
 		}
+
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFDocumentCreateWithProvider (IntPtr /* CGDataProviderRef */ provider);
+		
+		public CGPDFDocument (CGDataProvider provider)
+		{
+			if (provider == null)
+				throw new ArgumentNullException ("provider");
+			handle = CGPDFDocumentCreateWithProvider (provider.Handle);
+		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGPDFDocumentCreateWithURL (IntPtr url);
