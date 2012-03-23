@@ -172,50 +172,50 @@ namespace MonoMac.CoreMidi {
                 internal IntPtr handle;
 
 #if !COREBUILD
-		static IntPtr kMIDIPropertyAdvanceScheduleTimeMuSec;
-		static IntPtr kMIDIPropertyCanRoute;
-		static IntPtr kMIDIPropertyConnectionUniqueID;
-		static IntPtr kMIDIPropertyDeviceID;
-		static IntPtr kMIDIPropertyDisplayName;
-		static IntPtr kMIDIPropertyDriverDeviceEditorApp;
-		static IntPtr kMIDIPropertyDriverOwner;
-		static IntPtr kMIDIPropertyDriverVersion;
-		static IntPtr kMIDIPropertyImage;
-		static IntPtr kMIDIPropertyIsBroadcast;
-		static IntPtr kMIDIPropertyIsDrumMachine;
-		static IntPtr kMIDIPropertyIsEffectUnit;
-		static IntPtr kMIDIPropertyIsEmbeddedEntity;
-		static IntPtr kMIDIPropertyIsMixer;
-		static IntPtr kMIDIPropertyIsSampler;
-		static IntPtr kMIDIPropertyManufacturer;
-		static IntPtr kMIDIPropertyMaxReceiveChannels;
-		static IntPtr kMIDIPropertyMaxSysExSpeed;
-		static IntPtr kMIDIPropertyMaxTransmitChannels;
-		static IntPtr kMIDIPropertyModel;
-		static IntPtr kMIDIPropertyName;
-		static IntPtr kMIDIPropertyNameConfiguration;
-		static IntPtr kMIDIPropertyOffline;
-		static IntPtr kMIDIPropertyPanDisruptsStereo;
-		static IntPtr kMIDIPropertyPrivate;
-		static IntPtr kMIDIPropertyReceiveChannels;
-		static IntPtr kMIDIPropertyReceivesBankSelectLSB;
-		static IntPtr kMIDIPropertyReceivesBankSelectMSB;
-		static IntPtr kMIDIPropertyReceivesClock;
-		static IntPtr kMIDIPropertyReceivesMTC;
-		static IntPtr kMIDIPropertyReceivesNotes;
-		static IntPtr kMIDIPropertyReceivesProgramChanges;
-		static IntPtr kMIDIPropertySingleRealtimeEntity;
-		static IntPtr kMIDIPropertySupportsGeneralMIDI;
-		static IntPtr kMIDIPropertySupportsMMC;
-		static IntPtr kMIDIPropertySupportsShowControl;
-		static IntPtr kMIDIPropertyTransmitChannels;
-		static IntPtr kMIDIPropertyTransmitsBankSelectLSB;
-		static IntPtr kMIDIPropertyTransmitsBankSelectMSB;
-		static IntPtr kMIDIPropertyTransmitsClock;
-		static IntPtr kMIDIPropertyTransmitsMTC;
-		static IntPtr kMIDIPropertyTransmitsNotes;
-		static IntPtr kMIDIPropertyTransmitsProgramChanges;
-		static IntPtr kMIDIPropertyUniqueID;
+		internal static IntPtr kMIDIPropertyAdvanceScheduleTimeMuSec;
+		internal static IntPtr kMIDIPropertyCanRoute;
+		internal static IntPtr kMIDIPropertyConnectionUniqueID;
+		internal static IntPtr kMIDIPropertyDeviceID;
+		internal static IntPtr kMIDIPropertyDisplayName;
+		internal static IntPtr kMIDIPropertyDriverDeviceEditorApp;
+		internal static IntPtr kMIDIPropertyDriverOwner;
+		internal static IntPtr kMIDIPropertyDriverVersion;
+		internal static IntPtr kMIDIPropertyImage;
+		internal static IntPtr kMIDIPropertyIsBroadcast;
+		internal static IntPtr kMIDIPropertyIsDrumMachine;
+		internal static IntPtr kMIDIPropertyIsEffectUnit;
+		internal static IntPtr kMIDIPropertyIsEmbeddedEntity;
+		internal static IntPtr kMIDIPropertyIsMixer;
+		internal static IntPtr kMIDIPropertyIsSampler;
+		internal static IntPtr kMIDIPropertyManufacturer;
+		internal static IntPtr kMIDIPropertyMaxReceiveChannels;
+		internal static IntPtr kMIDIPropertyMaxSysExSpeed;
+		internal static IntPtr kMIDIPropertyMaxTransmitChannels;
+		internal static IntPtr kMIDIPropertyModel;
+		internal static IntPtr kMIDIPropertyName;
+		internal static IntPtr kMIDIPropertyNameConfiguration;
+		internal static IntPtr kMIDIPropertyOffline;
+		internal static IntPtr kMIDIPropertyPanDisruptsStereo;
+		internal static IntPtr kMIDIPropertyPrivate;
+		internal static IntPtr kMIDIPropertyReceiveChannels;
+		internal static IntPtr kMIDIPropertyReceivesBankSelectLSB;
+		internal static IntPtr kMIDIPropertyReceivesBankSelectMSB;
+		internal static IntPtr kMIDIPropertyReceivesClock;
+		internal static IntPtr kMIDIPropertyReceivesMTC;
+		internal static IntPtr kMIDIPropertyReceivesNotes;
+		internal static IntPtr kMIDIPropertyReceivesProgramChanges;
+		internal static IntPtr kMIDIPropertySingleRealtimeEntity;
+		internal static IntPtr kMIDIPropertySupportsGeneralMIDI;
+		internal static IntPtr kMIDIPropertySupportsMMC;
+		internal static IntPtr kMIDIPropertySupportsShowControl;
+		internal static IntPtr kMIDIPropertyTransmitChannels;
+		internal static IntPtr kMIDIPropertyTransmitsBankSelectLSB;
+		internal static IntPtr kMIDIPropertyTransmitsBankSelectMSB;
+		internal static IntPtr kMIDIPropertyTransmitsClock;
+		internal static IntPtr kMIDIPropertyTransmitsMTC;
+		internal static IntPtr kMIDIPropertyTransmitsNotes;
+		internal static IntPtr kMIDIPropertyTransmitsProgramChanges;
+		internal static IntPtr kMIDIPropertyUniqueID;
 
 		static MidiObject ()
 		{
@@ -275,7 +275,7 @@ namespace MonoMac.CoreMidi {
 #if !COREBUILD
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIObjectGetIntegerProperty (IntPtr obj, IntPtr str, out int ret);
-		int GetInt (IntPtr property)
+		internal int GetInt (IntPtr property)
 		{
 			int val, code;
 
@@ -287,14 +287,14 @@ namespace MonoMac.CoreMidi {
 
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIObjectSetIntegerProperty (IntPtr obj, IntPtr str, int val);
-		void SetInt (IntPtr property, int value)
+		internal void SetInt (IntPtr property, int value)
 		{
 			MIDIObjectSetIntegerProperty (handle, property, value);
 		}
 
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIObjectGetDictionaryProperty (IntPtr obj, IntPtr str, out IntPtr dict);
-		NSDictionary GetDictionary (IntPtr property)
+		internal NSDictionary GetDictionary (IntPtr property)
 		{
 			IntPtr val;
 			int code;
@@ -307,7 +307,7 @@ namespace MonoMac.CoreMidi {
 
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIObjectSetDictionaryProperty (IntPtr obj, IntPtr str, IntPtr dict);
-		void SetDictionary (IntPtr property, NSDictionary dict)
+		internal void SetDictionary (IntPtr property, NSDictionary dict)
 		{
 			MIDIObjectSetDictionaryProperty (handle, property, dict.Handle);
 		}
@@ -350,7 +350,7 @@ namespace MonoMac.CoreMidi {
 				CFObject.CFRelease (val);
 				return ret;
 			}
-			throw new MidiException ((MidiError) code);
+			return null;
 		}
 
 		[DllImport (Constants.CoreMidiLibrary)]
@@ -375,395 +375,6 @@ namespace MonoMac.CoreMidi {
 			}			
 		}
 
-		public int AdvanceScheduleTimeMuSec {
-			get {
-				return GetInt (kMIDIPropertyAdvanceScheduleTimeMuSec);
-			}
-			set {
-				SetInt (kMIDIPropertyAdvanceScheduleTimeMuSec, value);
-			}
-		}
-
-		public bool CanRoute {
-			get {
-				return GetInt (kMIDIPropertyCanRoute) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyCanRoute, value ? 1 : 0);
-			}
-		}
-
-		public int ConnectionUniqueIDInt {
-			get {
-				return GetInt (kMIDIPropertyConnectionUniqueID);
-			}
-			set {
-				SetInt (kMIDIPropertyConnectionUniqueID, value);
-			}
-		}
-
-		public NSData ConnectionUniqueIDData {
-			get {
-				return GetData (kMIDIPropertyConnectionUniqueID);
-			}
-			set {
-				SetData (kMIDIPropertyConnectionUniqueID, value);
-			}
-		}
-
-		public int DeviceID {
-			get {
-				return GetInt (kMIDIPropertyDeviceID);
-			}
-			set {
-				SetInt (kMIDIPropertyDeviceID, value);
-			}
-		}
-
-		public string DisplayName {
-			get {
-				return GetString (kMIDIPropertyDisplayName);
-			}
-			set {
-				SetString (kMIDIPropertyDisplayName, value);
-			}
-		}
-
-		public string DriverDeviceEditorApp {
-			get {
-				return GetString (kMIDIPropertyDriverDeviceEditorApp);
-			}
-			set {
-				SetString (kMIDIPropertyDriverDeviceEditorApp, value);
-			}
-		}
-
-		public string DriverOwner {
-			get {
-				return GetString (kMIDIPropertyDriverOwner);
-			}
-			set {
-				SetString (kMIDIPropertyDriverOwner, value);
-			}
-		}
-
-		public int DriverVersion {
-			get {
-				return GetInt (kMIDIPropertyDriverVersion);
-			}
-			set {
-				SetInt (kMIDIPropertyDriverVersion, value);
-			}
-		}
-
-		public string Image {
-			get {
-				return GetString (kMIDIPropertyImage);
-			}
-			set {
-				SetString (kMIDIPropertyImage, value);
-			}
-		}
-
-		public int IsBroadcast {
-			get {
-				return GetInt (kMIDIPropertyIsBroadcast);
-			}
-			set {
-				SetInt (kMIDIPropertyIsBroadcast, value);
-			}
-		}
-
-		public bool IsDrumMachine {
-			get {
-				return GetInt (kMIDIPropertyIsDrumMachine) != 0;
-			}
-		}
-
-		public bool IsEffectUnit {
-			get {
-				return GetInt (kMIDIPropertyIsEffectUnit) != 0;
-			}
-		}
-
-		public bool IsEmbeddedEntity {
-			get {
-				return GetInt (kMIDIPropertyIsEmbeddedEntity) != 0;
-			}
-		}
-
-		public bool IsMixer {
-			get {
-				return GetInt (kMIDIPropertyIsMixer) != 0;
-			}
-		}
-
-		public bool IsSampler {
-			get {
-				return GetInt (kMIDIPropertyIsSampler) != 0;
-			}
-		}
-
-		public string Manufacturer {
-			get {
-				return GetString (kMIDIPropertyManufacturer);
-			}
-			set {
-				SetString (kMIDIPropertyManufacturer, value);
-			}
-		}
-
-		public int MaxReceiveChannels {
-			get {
-				return GetInt (kMIDIPropertyMaxReceiveChannels);
-			}
-			//set {
-			//SetInt (kMIDIPropertyMaxReceiveChannels, value);
-			//}
-		}
-
-		public int MaxSysExSpeed {
-			get {
-				return GetInt (kMIDIPropertyMaxSysExSpeed);
-			}
-			set {
-				SetInt (kMIDIPropertyMaxSysExSpeed, value);
-			}
-		}
-
-		public int MaxTransmitChannels {
-			get {
-				return GetInt (kMIDIPropertyMaxTransmitChannels);
-			}
-			set {
-				SetInt (kMIDIPropertyMaxTransmitChannels, value);
-			}
-		}
-
-		public string Model {
-			get {
-				return GetString (kMIDIPropertyModel);
-			}
-			set {
-				SetString (kMIDIPropertyModel, value);
-			}
-		}
-
-		public string Name {
-			get {
-				return GetString (kMIDIPropertyName);
-			}
-			set {
-				SetString (kMIDIPropertyName, value);
-			}
-		}
-
-		public NSDictionary NameConfiguration {
-			get {
-				return GetDictionary (kMIDIPropertyNameConfiguration);
-			}
-			set {
-				SetDictionary (kMIDIPropertyNameConfiguration, value);
-			}
-		}
-
-		public bool Offline {
-			get {
-				return GetInt (kMIDIPropertyOffline) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyOffline, value ? 1 : 0);
-			}
-		}
-
-		public bool PanDisruptsStereo {
-			get {
-				return GetInt (kMIDIPropertyPanDisruptsStereo) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyPanDisruptsStereo, value ? 1 : 0);
-			}
-		}
-
-		public bool Private {
-			get {
-				return GetInt (kMIDIPropertyPrivate) != 0;
-			}
-			//set {
-			//SetInt (kMIDIPropertyPrivate, value);
-			//}
-		}
-
-		public int ReceiveChannels {
-			get {
-				return GetInt (kMIDIPropertyReceiveChannels);
-			}
-			set {
-				SetInt (kMIDIPropertyReceiveChannels, value);
-			}
-		}
-
-		public bool ReceivesBankSelectLSB {
-			get {
-				return GetInt (kMIDIPropertyReceivesBankSelectLSB) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyReceivesBankSelectLSB, value ? 1 : 0);
-			}
-		}
-
-		public bool ReceivesBankSelectMSB {
-			get {
-				return GetInt (kMIDIPropertyReceivesBankSelectMSB) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyReceivesBankSelectMSB, value ? 1 : 0);
-			}
-		}
-
-		public bool ReceivesClock {
-			get {
-				return GetInt (kMIDIPropertyReceivesClock) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyReceivesClock, value ? 1 : 0);
-			}
-		}
-
-		public bool ReceivesMTC {
-			get {
-				return GetInt (kMIDIPropertyReceivesMTC) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyReceivesMTC, value ? 1 : 0);
-			}
-		}
-
-		public bool ReceivesNotes {
-			get {
-				return GetInt (kMIDIPropertyReceivesNotes) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyReceivesNotes, value ? 1 : 0);
-			}
-		}
-
-		public bool ReceivesProgramChanges {
-			get {
-				return GetInt (kMIDIPropertyReceivesProgramChanges) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyReceivesProgramChanges, value ? 1 : 0);
-			}
-		}
-
-		public int SingleRealtimeEntity {
-			get {
-				return GetInt (kMIDIPropertySingleRealtimeEntity);
-			}
-			set {
-				SetInt (kMIDIPropertySingleRealtimeEntity, value);
-			}
-		}
-
-		public bool SupportsGeneralMidi {
-			get {
-				return GetInt (kMIDIPropertySupportsGeneralMIDI) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertySupportsGeneralMIDI, value ? 1 : 0);
-			}
-		}
-
-		public bool SupportsMMC {
-			get {
-				return GetInt (kMIDIPropertySupportsMMC) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertySupportsMMC, value ? 1 : 0);
-			}
-		}
-
-		public bool SupportsShowControl {
-			get {
-				return GetInt (kMIDIPropertySupportsShowControl) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertySupportsShowControl, value ? 1 : 0);
-			}
-		}
-
-		public int TransmitChannels {
-			get {
-				return GetInt (kMIDIPropertyTransmitChannels);
-			}
-			set {
-				SetInt (kMIDIPropertyTransmitChannels, value);
-			}
-		}
-
-		public bool TransmitsBankSelectLSB {
-			get {
-				return GetInt (kMIDIPropertyTransmitsBankSelectLSB) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyTransmitsBankSelectLSB, value ? 1 : 0);
-			}
-		}
-
-		public bool TransmitsBankSelectMSB {
-			get {
-				return GetInt (kMIDIPropertyTransmitsBankSelectMSB) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyTransmitsBankSelectMSB, value ? 1 : 0);
-			}
-		}
-
-		public bool TransmitsClock {
-			get {
-				return GetInt (kMIDIPropertyTransmitsClock) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyTransmitsClock, value ? 1 : 0);
-			}
-		}
-
-		public bool TransmitsMTC {
-			get {
-				return GetInt (kMIDIPropertyTransmitsMTC) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyTransmitsMTC, value ? 1 : 0);
-			}
-		}
-
-		public bool TransmitsNotes {
-			get {
-				return GetInt (kMIDIPropertyTransmitsNotes) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyTransmitsNotes, value ? 1 : 0);
-			}
-		}
-
-		public bool TransmitsProgramChanges {
-			get {
-				return GetInt (kMIDIPropertyTransmitsProgramChanges) != 0;
-			}
-			set {
-				SetInt (kMIDIPropertyTransmitsProgramChanges, value ? 1 : 0);
-			}
-		}
-
-		public int UniqueID {
-			get {
-				return GetInt (kMIDIPropertyUniqueID);
-			}
-			set {
-				SetInt (kMIDIPropertyUniqueID, value);
-			}
-		}
 
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIObjectGetProperties (IntPtr obj, out IntPtr dict, bool deep);
@@ -1262,6 +873,335 @@ namespace MonoMac.CoreMidi {
 				return null;
 			}
 		}
+
+#if !COREBUILD
+		public int AdvanceScheduleTimeMuSec {
+			get {
+				return GetInt (kMIDIPropertyAdvanceScheduleTimeMuSec);
+			}
+			set {
+				SetInt (kMIDIPropertyAdvanceScheduleTimeMuSec, value);
+			}
+		}
+
+		public bool CanRoute {
+			get {
+				return GetInt (kMIDIPropertyCanRoute) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyCanRoute, value ? 1 : 0);
+			}
+		}
+
+		public int ConnectionUniqueIDInt {
+			get {
+				return GetInt (kMIDIPropertyConnectionUniqueID);
+			}
+			set {
+				SetInt (kMIDIPropertyConnectionUniqueID, value);
+			}
+		}
+
+		public NSData ConnectionUniqueIDData {
+			get {
+				return GetData (kMIDIPropertyConnectionUniqueID);
+			}
+			set {
+				SetData (kMIDIPropertyConnectionUniqueID, value);
+			}
+		}
+
+		public int DeviceID {
+			get {
+				return GetInt (kMIDIPropertyDeviceID);
+			}
+			set {
+				SetInt (kMIDIPropertyDeviceID, value);
+			}
+		}
+
+		public string DisplayName {
+			get {
+				return GetString (kMIDIPropertyDisplayName);
+			}
+			set {
+				SetString (kMIDIPropertyDisplayName, value);
+			}
+		}
+
+		public string DriverOwner {
+			get {
+				return GetString (kMIDIPropertyDriverOwner);
+			}
+			set {
+				SetString (kMIDIPropertyDriverOwner, value);
+			}
+		}
+
+		public int DriverVersion {
+			get {
+				return GetInt (kMIDIPropertyDriverVersion);
+			}
+			set {
+				SetInt (kMIDIPropertyDriverVersion, value);
+			}
+		}
+
+		public int IsBroadcast {
+			get {
+				return GetInt (kMIDIPropertyIsBroadcast);
+			}
+			set {
+				SetInt (kMIDIPropertyIsBroadcast, value);
+			}
+		}
+
+		public bool IsDrumMachine {
+			get {
+				return GetInt (kMIDIPropertyIsDrumMachine) != 0;
+			}
+		}
+
+		public bool IsEffectUnit {
+			get {
+				return GetInt (kMIDIPropertyIsEffectUnit) != 0;
+			}
+		}
+
+		public bool IsEmbeddedEntity {
+			get {
+				return GetInt (kMIDIPropertyIsEmbeddedEntity) != 0;
+			}
+		}
+
+		public bool IsMixer {
+			get {
+				return GetInt (kMIDIPropertyIsMixer) != 0;
+			}
+		}
+
+		public bool IsSampler {
+			get {
+				return GetInt (kMIDIPropertyIsSampler) != 0;
+			}
+		}
+
+		public int MaxReceiveChannels {
+			get {
+				return GetInt (kMIDIPropertyMaxReceiveChannels);
+			}
+			//set {
+			//SetInt (kMIDIPropertyMaxReceiveChannels, value);
+			//}
+		}
+
+		public int MaxSysExSpeed {
+			get {
+				return GetInt (kMIDIPropertyMaxSysExSpeed);
+			}
+			set {
+				SetInt (kMIDIPropertyMaxSysExSpeed, value);
+			}
+		}
+
+		public int MaxTransmitChannels {
+			get {
+				return GetInt (kMIDIPropertyMaxTransmitChannels);
+			}
+			set {
+				SetInt (kMIDIPropertyMaxTransmitChannels, value);
+			}
+		}
+
+		public string Model {
+			get {
+				return GetString (kMIDIPropertyModel);
+			}
+			set {
+				SetString (kMIDIPropertyModel, value);
+			}
+		}
+
+		public string Name {
+			get {
+				return GetString (kMIDIPropertyName);
+			}
+			set {
+				SetString (kMIDIPropertyName, value);
+			}
+		}
+
+		public NSDictionary NameConfiguration {
+			get {
+				return GetDictionary (kMIDIPropertyNameConfiguration);
+			}
+			set {
+				SetDictionary (kMIDIPropertyNameConfiguration, value);
+			}
+		}
+
+		public bool Offline {
+			get {
+				return GetInt (kMIDIPropertyOffline) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyOffline, value ? 1 : 0);
+			}
+		}
+
+		public bool PanDisruptsStereo {
+			get {
+				return GetInt (kMIDIPropertyPanDisruptsStereo) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyPanDisruptsStereo, value ? 1 : 0);
+			}
+		}
+
+		public bool Private {
+			get {
+				return GetInt (kMIDIPropertyPrivate) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyPrivate, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesBankSelectLSB {
+			get {
+				return GetInt (kMIDIPropertyReceivesBankSelectLSB) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesBankSelectLSB, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesBankSelectMSB {
+			get {
+				return GetInt (kMIDIPropertyReceivesBankSelectMSB) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesBankSelectMSB, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesClock {
+			get {
+				return GetInt (kMIDIPropertyReceivesClock) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesClock, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesMTC {
+			get {
+				return GetInt (kMIDIPropertyReceivesMTC) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesMTC, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesNotes {
+			get {
+				return GetInt (kMIDIPropertyReceivesNotes) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesNotes, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesProgramChanges {
+			get {
+				return GetInt (kMIDIPropertyReceivesProgramChanges) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesProgramChanges, value ? 1 : 0);
+			}
+		}
+
+		public bool SupportsGeneralMidi {
+			get {
+				return GetInt (kMIDIPropertySupportsGeneralMIDI) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertySupportsGeneralMIDI, value ? 1 : 0);
+			}
+		}
+
+		public bool SupportsMMC {
+			get {
+				return GetInt (kMIDIPropertySupportsMMC) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertySupportsMMC, value ? 1 : 0);
+			}
+		}
+
+		public bool SupportsShowControl {
+			get {
+				return GetInt (kMIDIPropertySupportsShowControl) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertySupportsShowControl, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsBankSelectLSB {
+			get {
+				return GetInt (kMIDIPropertyTransmitsBankSelectLSB) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsBankSelectLSB, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsBankSelectMSB {
+			get {
+				return GetInt (kMIDIPropertyTransmitsBankSelectMSB) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsBankSelectMSB, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsClock {
+			get {
+				return GetInt (kMIDIPropertyTransmitsClock) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsClock, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsMTC {
+			get {
+				return GetInt (kMIDIPropertyTransmitsMTC) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsMTC, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsNotes {
+			get {
+				return GetInt (kMIDIPropertyTransmitsNotes) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsNotes, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsProgramChanges {
+			get {
+				return GetInt (kMIDIPropertyTransmitsProgramChanges) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsProgramChanges, value ? 1 : 0);
+			}
+		}
+#endif
 	}
 
 	public class MidiDevice : MidiObject {
@@ -1287,7 +1227,372 @@ namespace MonoMac.CoreMidi {
 				return MIDIDeviceGetNumberOfEntities (handle);
 			}
 		}
-		
+
+#if !COREBUILD
+		public string Image {
+			get {
+				return GetString (kMIDIPropertyImage);
+			}
+			set {
+				SetString (kMIDIPropertyImage, value);
+			}
+		}
+
+		public string DriverDeviceEditorApp {
+			get {
+				return GetString (kMIDIPropertyDriverDeviceEditorApp);
+			}
+			set {
+				SetString (kMIDIPropertyDriverDeviceEditorApp, value);
+			}
+		}
+
+		public int SingleRealtimeEntity {
+			get {
+				return GetInt (kMIDIPropertySingleRealtimeEntity);
+			}
+			set {
+				SetInt (kMIDIPropertySingleRealtimeEntity, value);
+			}
+		}
+
+		public int UniqueID {
+			get {
+				return GetInt (kMIDIPropertyUniqueID);
+			}
+			set {
+				SetInt (kMIDIPropertyUniqueID, value);
+			}
+		}
+
+		public int AdvanceScheduleTimeMuSec {
+			get {
+				return GetInt (kMIDIPropertyAdvanceScheduleTimeMuSec);
+			}
+			set {
+				SetInt (kMIDIPropertyAdvanceScheduleTimeMuSec, value);
+			}
+		}
+
+		public bool CanRoute {
+			get {
+				return GetInt (kMIDIPropertyCanRoute) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyCanRoute, value ? 1 : 0);
+			}
+		}
+
+		public int ConnectionUniqueIDInt {
+			get {
+				return GetInt (kMIDIPropertyConnectionUniqueID);
+			}
+			set {
+				SetInt (kMIDIPropertyConnectionUniqueID, value);
+			}
+		}
+
+		public NSData ConnectionUniqueIDData {
+			get {
+				return GetData (kMIDIPropertyConnectionUniqueID);
+			}
+			set {
+				SetData (kMIDIPropertyConnectionUniqueID, value);
+			}
+		}
+
+		public int DeviceID {
+			get {
+				return GetInt (kMIDIPropertyDeviceID);
+			}
+			set {
+				SetInt (kMIDIPropertyDeviceID, value);
+			}
+		}
+
+		public string DisplayName {
+			get {
+				return GetString (kMIDIPropertyDisplayName);
+			}
+			set {
+				SetString (kMIDIPropertyDisplayName, value);
+			}
+		}
+
+		public string DriverOwner {
+			get {
+				return GetString (kMIDIPropertyDriverOwner);
+			}
+			set {
+				SetString (kMIDIPropertyDriverOwner, value);
+			}
+		}
+
+		public int DriverVersion {
+			get {
+				return GetInt (kMIDIPropertyDriverVersion);
+			}
+			set {
+				SetInt (kMIDIPropertyDriverVersion, value);
+			}
+		}
+
+		public bool IsDrumMachine {
+			get {
+				return GetInt (kMIDIPropertyIsDrumMachine) != 0;
+			}
+		}
+
+		public bool IsEffectUnit {
+			get {
+				return GetInt (kMIDIPropertyIsEffectUnit) != 0;
+			}
+		}
+
+		public bool IsEmbeddedEntity {
+			get {
+				return GetInt (kMIDIPropertyIsEmbeddedEntity) != 0;
+			}
+		}
+
+		public bool IsMixer {
+			get {
+				return GetInt (kMIDIPropertyIsMixer) != 0;
+			}
+		}
+
+		public bool IsSampler {
+			get {
+				return GetInt (kMIDIPropertyIsSampler) != 0;
+			}
+		}
+
+		public string Manufacturer {
+			get {
+				return GetString (kMIDIPropertyManufacturer);
+			}
+			set {
+				SetString (kMIDIPropertyManufacturer, value);
+			}
+		}
+
+		public int MaxReceiveChannels {
+			get {
+				return GetInt (kMIDIPropertyMaxReceiveChannels);
+			}
+			//set {
+			//SetInt (kMIDIPropertyMaxReceiveChannels, value);
+			//}
+		}
+
+		public int MaxSysExSpeed {
+			get {
+				return GetInt (kMIDIPropertyMaxSysExSpeed);
+			}
+			set {
+				SetInt (kMIDIPropertyMaxSysExSpeed, value);
+			}
+		}
+
+		public int MaxTransmitChannels {
+			get {
+				return GetInt (kMIDIPropertyMaxTransmitChannels);
+			}
+			set {
+				SetInt (kMIDIPropertyMaxTransmitChannels, value);
+			}
+		}
+
+		public string Model {
+			get {
+				return GetString (kMIDIPropertyModel);
+			}
+			set {
+				SetString (kMIDIPropertyModel, value);
+			}
+		}
+
+		public string Name {
+			get {
+				return GetString (kMIDIPropertyName);
+			}
+			set {
+				SetString (kMIDIPropertyName, value);
+			}
+		}
+
+		public NSDictionary NameConfiguration {
+			get {
+				return GetDictionary (kMIDIPropertyNameConfiguration);
+			}
+			set {
+				SetDictionary (kMIDIPropertyNameConfiguration, value);
+			}
+		}
+
+		public bool Offline {
+			get {
+				return GetInt (kMIDIPropertyOffline) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyOffline, value ? 1 : 0);
+			}
+		}
+
+		public bool PanDisruptsStereo {
+			get {
+				return GetInt (kMIDIPropertyPanDisruptsStereo) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyPanDisruptsStereo, value ? 1 : 0);
+			}
+		}
+
+		public bool Private {
+			get {
+				return GetInt (kMIDIPropertyPrivate) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyPrivate, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesBankSelectLSB {
+			get {
+				return GetInt (kMIDIPropertyReceivesBankSelectLSB) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesBankSelectLSB, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesBankSelectMSB {
+			get {
+				return GetInt (kMIDIPropertyReceivesBankSelectMSB) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesBankSelectMSB, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesClock {
+			get {
+				return GetInt (kMIDIPropertyReceivesClock) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesClock, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesMTC {
+			get {
+				return GetInt (kMIDIPropertyReceivesMTC) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesMTC, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesNotes {
+			get {
+				return GetInt (kMIDIPropertyReceivesNotes) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesNotes, value ? 1 : 0);
+			}
+		}
+
+		public bool ReceivesProgramChanges {
+			get {
+				return GetInt (kMIDIPropertyReceivesProgramChanges) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyReceivesProgramChanges, value ? 1 : 0);
+			}
+		}
+
+		public bool SupportsGeneralMidi {
+			get {
+				return GetInt (kMIDIPropertySupportsGeneralMIDI) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertySupportsGeneralMIDI, value ? 1 : 0);
+			}
+		}
+
+		public bool SupportsMMC {
+			get {
+				return GetInt (kMIDIPropertySupportsMMC) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertySupportsMMC, value ? 1 : 0);
+			}
+		}
+
+		public bool SupportsShowControl {
+			get {
+				return GetInt (kMIDIPropertySupportsShowControl) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertySupportsShowControl, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsBankSelectLSB {
+			get {
+				return GetInt (kMIDIPropertyTransmitsBankSelectLSB) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsBankSelectLSB, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsBankSelectMSB {
+			get {
+				return GetInt (kMIDIPropertyTransmitsBankSelectMSB) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsBankSelectMSB, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsClock {
+			get {
+				return GetInt (kMIDIPropertyTransmitsClock) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsClock, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsMTC {
+			get {
+				return GetInt (kMIDIPropertyTransmitsMTC) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsMTC, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsNotes {
+			get {
+				return GetInt (kMIDIPropertyTransmitsNotes) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsNotes, value ? 1 : 0);
+			}
+		}
+
+		public bool TransmitsProgramChanges {
+			get {
+				return GetInt (kMIDIPropertyTransmitsProgramChanges) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitsProgramChanges, value ? 1 : 0);
+			}
+		}
+#endif
+	
 		internal MidiDevice (IntPtr handle) : base (handle)
 		{
 		}
@@ -1428,6 +1733,143 @@ namespace MonoMac.CoreMidi {
 				}
 			}
 		}
+
+		public int AdvanceScheduleTimeMuSec {
+			get {
+				return GetInt (kMIDIPropertyAdvanceScheduleTimeMuSec);
+			}
+			set {
+				SetInt (kMIDIPropertyAdvanceScheduleTimeMuSec, value);
+			}
+		}
+
+		public int ConnectionUniqueIDInt {
+			get {
+				return GetInt (kMIDIPropertyConnectionUniqueID);
+			}
+			set {
+				SetInt (kMIDIPropertyConnectionUniqueID, value);
+			}
+		}
+
+		public NSData ConnectionUniqueIDData {
+			get {
+				return GetData (kMIDIPropertyConnectionUniqueID);
+			}
+			set {
+				SetData (kMIDIPropertyConnectionUniqueID, value);
+			}
+		}
+
+		public string DisplayName {
+			get {
+				return GetString (kMIDIPropertyDisplayName);
+			}
+			set {
+				SetString (kMIDIPropertyDisplayName, value);
+			}
+		}
+
+		public string DriverOwner {
+			get {
+				return GetString (kMIDIPropertyDriverOwner);
+			}
+			set {
+				SetString (kMIDIPropertyDriverOwner, value);
+			}
+		}
+
+		public int DriverVersion {
+			get {
+				return GetInt (kMIDIPropertyDriverVersion);
+			}
+			set {
+				SetInt (kMIDIPropertyDriverVersion, value);
+			}
+		}
+
+		public int IsBroadcast {
+			get {
+				return GetInt (kMIDIPropertyIsBroadcast);
+			}
+			set {
+				SetInt (kMIDIPropertyIsBroadcast, value);
+			}
+		}
+
+		public string Manufacturer {
+			get {
+				return GetString (kMIDIPropertyManufacturer);
+			}
+			set {
+				SetString (kMIDIPropertyManufacturer, value);
+			}
+		}
+
+		public int MaxSysExSpeed {
+			get {
+				return GetInt (kMIDIPropertyMaxSysExSpeed);
+			}
+			set {
+				SetInt (kMIDIPropertyMaxSysExSpeed, value);
+			}
+		}
+
+		public string Name {
+			get {
+				return GetString (kMIDIPropertyName);
+			}
+			set {
+				SetString (kMIDIPropertyName, value);
+			}
+		}
+
+		public NSDictionary NameConfiguration {
+			get {
+				return GetDictionary (kMIDIPropertyNameConfiguration);
+			}
+			set {
+				SetDictionary (kMIDIPropertyNameConfiguration, value);
+			}
+		}
+
+		public bool Offline {
+			get {
+				return GetInt (kMIDIPropertyOffline) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyOffline, value ? 1 : 0);
+			}
+		}
+
+		public bool Private {
+			get {
+				return GetInt (kMIDIPropertyPrivate) != 0;
+			}
+			set {
+				SetInt (kMIDIPropertyPrivate, value ? 1 : 0);
+			}
+		}
+
+		public int ReceiveChannels {
+			get {
+				return GetInt (kMIDIPropertyReceiveChannels);
+			}
+			set {
+				SetInt (kMIDIPropertyReceiveChannels, value);
+			}
+		}
+
+		public int TransmitChannels {
+			get {
+				return GetInt (kMIDIPropertyTransmitChannels);
+			}
+			set {
+				SetInt (kMIDIPropertyTransmitChannels, value);
+			}
+		}
+
+// MidiEndpoint 
 #endif
 	}
 
