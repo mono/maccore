@@ -318,26 +318,38 @@ public class ProxyAttribute : Attribute {
 	public ProxyAttribute () {}
 }
 
+// When applied to a member, generates the member as static
 public class StaticAttribute : Attribute {
 	public StaticAttribute () {}
 }
 
+// flags the backing field for the property to with .NET's [ThreadStatic] property
 public class IsThreadStaticAttribute : Attribute {
 	public IsThreadStaticAttribute () {}
 }
 
+// When applied to a member, generates the member as static
+// and passes IntPtr.Zero or null if the parameter is null
 public class NullAllowedAttribute : Attribute {
 	public NullAllowedAttribute () {}
 }
 
+// When applied to a method or property, flags the resulting generated code as internal
 public class InternalAttribute : Attribute {
 	public InternalAttribute () {}
 }
 
+// When this attribute is applied to the interface definition it will
+// flag the default constructor as private.  This means that you can
+// still instantiate object of this class internally from your
+// extension file, but it just wont be accessible to users of your
+// class.
 public class PrivateDefaultCtorAttribute : Attribute {
 	public PrivateDefaultCtorAttribute () {}
 }
 
+// When this attribute is applied to the interface definition it will
+// prevent the generator from producing the default constructor.
 public class DisableDefaultCtorAttribute : Attribute {
 	public DisableDefaultCtorAttribute () {}
 }
@@ -439,6 +451,45 @@ public class DefaultValueFromArgumentAttribute : Attribute {
 	public string Argument { get; set; }
 }
 
+// Apply to strings parameters that are merely retained or assigned,
+// not copied this is an exception as it is advised in the coding
+// standard for Objective-C to avoid this, but a few properties do use
+// this.  Use this attribtue for properties flagged with `retain' or
+// `assign', which look like this:
+//
+// @property (retain) NSString foo;
+// @property (assign) NSString assigned;
+//
+// This forced the generator to create an NSString before calling the
+// API instead of using the fast string marshalling code.
+public class DisableZeroCopyAttribute : Attribute {
+	public DisableZeroCopyAttribute () {}
+}
+
+//
+// By default, the generator will not do Zero Copying of strings, as most
+// third party libraries do not follow Apple's design guidelines of making
+// string properties and parameters copy parameters, instead many libraries
+// "retain" as a broken optimization [1].
+//
+// The consumer of the genertor can force this by passing
+// --use-zero-copy or setting the [assebly:ZeroCopyStrings] attribute.
+// When these are set, the generator assumes the library perform
+// copies over any NSStrings it keeps instead of retains/assigns and
+// that any property that happens to be a retain/assign has the
+// [DisableZeroCopyAttribute] attribute applied.
+//
+// [1] It is broken becase consumer code can pass an NSMutableString, the
+// library retains the value, but does not have a way of noticing changes
+// that might happen to the mutable string behind its back.
+//
+// In the ZeroCopy case it is a problem because we pass handles to stack-allocated
+// strings that stop existing after the invocation is over.
+//
+[AttributeUsage(AttributeTargets.Assembly|AttributeTargets.Method|AttributeTargets.Interface, AllowMultiple=true)]
+public class ZeroCopyStringsAttribute : Attribute {
+}
+
 [AttributeUsage(AttributeTargets.Method|AttributeTargets.Property, AllowMultiple=true)]
 public class SnippetAttribute : Attribute {
 	public SnippetAttribute (string s)
@@ -497,11 +548,16 @@ public class MarshalInfo {
 	public bool PlainString;
 	public Type Type;
 
+ 	// This is set on a string parameter if the argument parameters are set to
+ 	// Copy.   This means that we can do fast string passing.
+	public bool ZeroCopyStringMarshal;
+
 	// Used for parameters
 	public MarshalInfo (ParameterInfo pi)
 	{
 		PlainString = pi.GetCustomAttributes (typeof (PlainStringAttribute), true).Length > 0;
 		Type = pi.ParameterType;
+		ZeroCopyStringMarshal = (Type == typeof (string)) && PlainString == false && !Generator.HasAttribute (pi, (typeof (DisableZeroCopyAttribute))) && Generator.SharedGenerator.type_wants_zero_copy;
 	}
 
 	// Used to return values
@@ -673,6 +729,9 @@ public class Generator {
 	// Where the assembly messaging is located (core)
 	public string CoreMessagingNS = "MonoTouch.ObjCRuntime";
 
+	// Whether to use ZeroCopy for strings, defaults to false
+	public bool ZeroCopyStrings;
+	
 	// This can be plugged by the user when using btouch/bmac for their own bindings
 	public string MessagingNS = "MonoTouch.ObjCRuntime";
 	
@@ -712,6 +771,17 @@ public class Generator {
 	static bool ThreadProtection = true;
 #endif
 
+	//
+	// We inject thread checks to MonoTouch.UIKit types, unless there is a [ThreadSafe] attribuet on the type.
+	// Set on every call to Generate
+	//
+	bool type_needs_thread_checks;
+
+	//
+	// If set, the members of this type will get zero copy
+	// 
+	internal bool type_wants_zero_copy;
+	
 	//
 	// Used by the public binding generator to populate the
 	// class with types that do not exist
@@ -934,13 +1004,23 @@ public class Generator {
 			return pi.Name;
 
 		if (pi.ParameterType == typeof (string)){
-			if (MarshalInfo.UseString (pi))
+			var mai = new MarshalInfo (pi);
+			if (mai.PlainString)
 				return pi.Name;
 			else {
-				if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
-					return String.Format ("ns{0} == null ? IntPtr.Zero : ns{0}.Handle", pi.Name);
-				else 
-					return "ns" + pi.Name + ".Handle";
+				bool allow_null = null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute));
+				
+				if (mai.ZeroCopyStringMarshal){
+					if (allow_null)
+						return String.Format ("{0} == null ? IntPtr.Zero : (IntPtr)(&_s{0})", pi.Name);
+					else
+						return String.Format ("(IntPtr)(&_s{0})", pi.Name);
+				} else {
+					if (allow_null)
+						return String.Format ("ns{0} == null ? IntPtr.Zero : ns{0}.Handle", pi.Name);
+					else 
+						return "ns" + pi.Name + ".Handle";
+				}
 			}
 		}
 
@@ -1027,7 +1107,7 @@ public class Generator {
 		return GetAttribute (mi, typeof (BindAttribute)) as BindAttribute;
 	}
 	
-	public bool HasAttribute (ICustomAttributeProvider i, Type t)
+	public static bool HasAttribute (ICustomAttributeProvider i, Type t)
 	{
 		return i.GetCustomAttributes (t, true).Length > 0;
 	}
@@ -1192,6 +1272,8 @@ public class Generator {
 		return new ExportAttribute ("set" + Char.ToUpper (source.Selector [0]) + source.Selector.Substring (1) + ":");
 	}
 
+	public static Generator SharedGenerator;
+	
 	public Generator (bool btouch, bool external, bool debug, Type [] types)
 	{
 		Generator.IsBtouch = btouch;
@@ -1199,6 +1281,7 @@ public class Generator {
 		this.debug = debug;
 		this.types = types;
 		basedir = ".";
+		SharedGenerator = this;
 	}
 
 	public void Go ()
@@ -1578,16 +1661,23 @@ public class Generator {
 	void GenerateInvoke (bool stret, bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static)
 	{
 		string target_name = "this";
-
+		string handle = supercall ? ".SuperHandle" : ".Handle";
+		
 		// If we have supercall == false, we can be a Bind methdo that has a [Target]
 		if (supercall == false && !is_static){
 			foreach (var pi in mi.GetParameters ()){
 				if (IsTarget (pi)){
 					if (pi.ParameterType == typeof (string)){
-						if (new MarshalInfo (pi).PlainString){
+						var mai = new MarshalInfo (pi);
+						if (mai.PlainString){
 							Console.WriteLine ("Trying to use a string as a [Target]");
 						}
-						target_name = "ns" + pi.Name;
+						if (mai.ZeroCopyStringMarshal){
+							target_name = "(IntPtr)(&_s" + pi.Name + ")";
+							handle = "";
+						} else {
+							target_name = "ns" + pi.Name;
+						}
 					} else
 						target_name = pi.Name;
 					break;
@@ -1605,9 +1695,9 @@ public class Generator {
 		
 		if (stret){
 			if (is_static)
-				print ("{0} (out ret, class_ptr, {3}{4});", sig, target_name, supercall ? "Super" : "", selector, args);
+				print ("{0} (out ret, class_ptr, {3}{4});", sig, "/*unusued*/", "/*unusued*/", selector, args);
 			else
-				print ("{0} (out ret, {1}.{2}Handle, {3}{4});", sig, target_name, supercall ? "Super" : "", selector, args);
+				print ("{0} (out ret, {1}{2}, {3}{4});", sig, target_name, handle, selector, args);
 		} else {
 			bool returns = mi.ReturnType != typeof (void) && mi.Name != "Constructor";
 
@@ -1649,13 +1739,13 @@ public class Generator {
 				print ("{0}{1}{2} (class_ptr, {5}{6}){7};",
 				       returns ? (assign_to_temp ? "ret = " : "return ") : "",
 				       cast_a, sig, target_name, 
-				       supercall ? "Super" : "",
+				       "/*unusued3*/", //supercall ? "Super" : "",
 				       selector, args, cast_b);
 			else
-				print ("{0}{1}{2} ({3}.{4}Handle, {5}{6}){7};",
+				print ("{0}{1}{2} ({3}{4}, {5}{6}){7};",
 				       returns ? (assign_to_temp ? "ret = " : "return ") : "",
-				       cast_a, sig, target_name, 
-				       supercall ? "Super" : "",
+				       cast_a, sig, target_name,
+				       handle,
 				       selector, args, cast_b);
 		}
 	}
@@ -1724,6 +1814,62 @@ public class Generator {
 	}
 	
 	//
+	// generates the code to marshal a string from C# to Objective-C:
+	//
+	// @probe_null: determines whether null is allowed, and
+	// whether we need to generate code to handle this
+	//
+	// @must_copy: determines whether to create a new NSString, necessary
+	// for NSString properties that are flagged with "retain" instead of "copy"
+	//
+	// @prefix: prefix to prepend on each line
+	//
+	// @property: the name of the property
+	//
+	public string GenerateMarshalString (bool probe_null, bool must_copy)
+	{
+		if (must_copy){
+			if (probe_null)
+				return "var ns{0} = {0} == null ? null : new NSString ({0});\n";
+			else
+				return "var ns{0} = new NSString ({0});\n";
+		}
+		return
+			CoreMessagingNS + ".NSStringStruct _s{0};\n" +
+			"_s{0}.ClassPtr = " + CoreMessagingNS + ".NSStringStruct.ReferencePtr;\n" +
+			"_s{0}.Flags = 2000;\n" +
+			"_s{0}.UnicodePtr = _p{0};\n" + 
+			"_s{0}.Length = " + (probe_null ? "{0} == null ? 0 : {0}.Length;" : "{0}.Length;\n");
+	}
+	
+	public string GenerateDisposeString (bool probe_null, bool must_copy)
+	{
+		if (must_copy){
+			if (probe_null)
+				return "if (ns{0} != null)\n" + "\tns{0}.Dispose ();";
+			else
+				return "ns{0}.Dispose ();\n";
+		} else
+			return "";
+	}
+
+	List<string> CollectFastStringMarshalParameters (MethodInfo mi)
+	{
+		List<string> stringParameters = null;
+		
+		foreach (var pi in mi.GetParameters ()){
+ 			var mai = new MarshalInfo (pi);
+
+ 			if (mai.ZeroCopyStringMarshal){
+ 				if (stringParameters == null)
+ 					stringParameters = new List<string>();
+ 				stringParameters.Add (pi.Name);
+ 			}
+ 		}
+		return stringParameters;
+	}
+	
+	//
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
@@ -1743,6 +1889,9 @@ public class Generator {
 		
 		Inject (mi, typeof (PrologueSnippetAttribute));
 
+		// Collect all strings that can be fast-marshalled
+		List<string> stringParameters = CollectFastStringMarshalParameters (mi);
+		
 		foreach (var pi in mi.GetParameters ()){
 			MarshalInfo mai = new MarshalInfo (pi);
 
@@ -1754,13 +1903,10 @@ public class Generator {
 
 			// Construct conversions
 			if (mai.Type == typeof (string) && !mai.PlainString){
-				if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
-					convs.AppendFormat ("var ns{0} = {0} == null ? null : new NSString ({0});\n", pi.Name);
-					disposes.AppendFormat ("if (ns{0} != null)\n\tns{0}.Dispose ();", pi.Name);
-				} else {
-					convs.AppendFormat ("var ns{0} = new NSString ({0});\n", pi.Name);
-					disposes.AppendFormat ("ns{0}.Dispose ();\n", pi.Name);
-				}
+				bool probe_null = null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute));
+
+				convs.AppendFormat (GenerateMarshalString (probe_null, !mai.ZeroCopyStringMarshal), pi.Name);
+				disposes.AppendFormat (GenerateDisposeString (probe_null, !mai.ZeroCopyStringMarshal), pi.Name);
 			}
 
 			if (mai.Type.IsArray){
@@ -1849,6 +1995,12 @@ public class Generator {
 					print ("__mt_{0}_var.Remove ({1});", rla.WrapName, pi.Name);
 			}
 		}
+
+ 		if (stringParameters != null){
+ 			print ("fixed (char * {0}){{",
+ 			       stringParameters.Select (name => "_p" + name + " = " + name).Aggregate ((first,second) => first + ", " + second));
+ 			indent++;
+ 		}
 
 		if (convs.Length > 0)
 			print (sw, convs.ToString ());
@@ -1940,7 +2092,10 @@ public class Generator {
 				print ("return ret;");
 			}
 		}
-
+		if (stringParameters != null){
+			print ("}");
+			indent--;
+		}
 		indent--;
 	}
 
@@ -2218,17 +2373,11 @@ public class Generator {
 			return ((BindAttribute) bindOnType [0]).Selector;
 		else
 			return type.Name;
-		
 	}
 
-	//
-	// We inject thread checks to MonoTouch.UIKit types, unless there is a [ThreadSafe] attribuet on the type.
-	// Set on every call to Generate
-	//
-	bool type_needs_thread_checks;
-	
 	public void Generate (Type type)
 	{
+		type_wants_zero_copy = HasAttribute (type, typeof (ZeroCopyStringsAttribute)) || ZeroCopyStrings;
 		type_needs_thread_checks = UINamespaces.Contains (type.Namespace) && !HasAttribute (type, typeof (ThreadSafeAttribute));
 		string TypeName = GetGeneratedTypeName (type);
 
@@ -2269,7 +2418,7 @@ public class Generator {
 			if (is_model)
 				print ("[Model]");
 
-			print ("public {0}partial class {1} {2} {{",
+			print ("public unsafe {0}partial class {1} {2} {{",
 			       need_abstract.ContainsKey (type) ? "abstract " : "",
 			       TypeName,
 			       base_type != typeof (object) && TypeName != "NSObject" ? ": " + FormatType (type, base_type) : "");

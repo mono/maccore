@@ -62,6 +62,7 @@ class BindingTouch {
 	static int Main (string [] args)
 	{
 		bool show_help = false;
+		bool zero_copy = false;
 		bool alpha = false;
 		string basedir = null;
 		string tmpdir = null;
@@ -109,6 +110,7 @@ class BindingTouch {
 			{ "e", "Generates smaller classes that can not be subclassed (previously called 'external mode')", v => external = true },
 			{ "p", "Sets private mode", v => pmode = false },
 			{ "baselib=", "Sets the base library", v => baselibdll = v },
+			{ "use-zero-copy", v=> zero_copy = true },
 #if !MONOMAC
 			{ "link-with=,", "Link with a native library {0:FILE} to the binding, embedded as a resource named {1:ID}",
 				(path, id) => {
@@ -225,6 +227,7 @@ class BindingTouch {
 				BindThirdPartyLibrary = binding_third_party,
 				CoreNSObject = CoreObject,
 				BaseDir = basedir != null ? basedir : tmpdir,
+				ZeroCopyStrings = zero_copy,
 #if MONOMAC
 				OnlyX86 = true,
 #endif
