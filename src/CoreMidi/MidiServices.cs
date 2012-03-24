@@ -766,6 +766,9 @@ namespace MonoMac.CoreMidi {
 		
 		public event EventHandler<MidiPacketsEventArgs> MessageReceived;
 		
+#if !MONOMAC
+		[MonoPInvokeCallback (typeof (MidiReadProc))]
+#endif
 		static void Read (IntPtr packetList, IntPtr context, IntPtr srcPtr)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (context);
@@ -1681,7 +1684,10 @@ namespace MonoMac.CoreMidi {
 		}
 		
 		public event EventHandler<MidiPacketsEventArgs> MessageReceived;
-		
+
+#if !MONOMAC
+		[MonoPInvokeCallback (typeof (MidiReadProc))]
+#endif
 		static void Read (IntPtr packetList, IntPtr context, IntPtr srcPtr)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (context);
