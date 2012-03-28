@@ -35,6 +35,7 @@ using MonoMac.AppKit;
 using MonoMac.UIKit;
 #endif
 using System;
+using System.ComponentModel;
 using System.Drawing;
 
 namespace MonoMac.QuickLook {
@@ -95,6 +96,18 @@ namespace MonoMac.QuickLook {
 
 		[Export ("previewController:shouldOpenURL:forPreviewItem:"), DelegateName ("QLOpenUrl"), DefaultValue (false)]
 		bool ShouldOpenUrl (QLPreviewController controller, NSUrl url, QLPreviewItem item);
+
+#if !MONOMAC
+		// UIView and UIImage do not exists in MonoMac
+		
+		[Since (4,2)]
+		[Export ("previewController:frameForPreviewItem:inSourceView:"), DelegateName ("QLFrame"), DefaultValue (null)]
+		RectangleF FrameForPreviewItem (QLPreviewItem item, [NullAllowed] UIView view);
+		
+		[Since (4,2)]
+		[Export ("previewController:transitionImageForPreviewItem:contentRect:"), DelegateName ("QLTransition"), DefaultValue (null)]
+		UIImage TransitionImageForPreviewItem (QLPreviewItem item, RectangleF contentRect);
+#endif
 	}
 
 	[Since (4,0)]
