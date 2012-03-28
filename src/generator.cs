@@ -473,7 +473,7 @@ public class DisableZeroCopyAttribute : Attribute {
 // "retain" as a broken optimization [1].
 //
 // The consumer of the genertor can force this by passing
-// --use-zero-copy or setting the [assebly:ZeroCopyStrings] attribute.
+// --use-zero-copy or setting the [assembly:ZeroCopyStrings] attribute.
 // When these are set, the generator assumes the library perform
 // copies over any NSStrings it keeps instead of retains/assigns and
 // that any property that happens to be a retain/assign has the
@@ -553,11 +553,13 @@ public class MarshalInfo {
 	public bool ZeroCopyStringMarshal;
 
 	// Used for parameters
-	public MarshalInfo (ParameterInfo pi)
+	public MarshalInfo (MethodInfo mi, ParameterInfo pi)
 	{
 		PlainString = pi.GetCustomAttributes (typeof (PlainStringAttribute), true).Length > 0;
 		Type = pi.ParameterType;
 		ZeroCopyStringMarshal = (Type == typeof (string)) && PlainString == false && !Generator.HasAttribute (pi, (typeof (DisableZeroCopyAttribute))) && Generator.SharedGenerator.type_wants_zero_copy;
+		if (ZeroCopyStringMarshal && Generator.HasAttribute (mi, typeof (DisableZeroCopyAttribute)))
+			ZeroCopyStringMarshal = false;
 	}
 
 	// Used to return values
@@ -567,14 +569,9 @@ public class MarshalInfo {
 		Type = mi.ReturnType;
 	}
 
-	public static bool UseString (ParameterInfo pi)
+	public static bool UseString (MethodInfo mi, ParameterInfo pi)
 	{
-		return new MarshalInfo (pi).PlainString;
-	}
-
-	public static implicit operator MarshalInfo (ParameterInfo pi)
-	{
-		return new MarshalInfo (pi);
+		return new MarshalInfo (mi, pi).PlainString;
 	}
 
 	public static implicit operator MarshalInfo (MethodInfo mi)
@@ -984,7 +981,7 @@ public class Generator {
 	// Returns the actual way in which the type t must be marshalled
 	// for example "UIView foo" is generated as  "foo.Handle"
 	//
-	public string MarshalParameter (ParameterInfo pi, bool null_allowed_override)
+	public string MarshalParameter (MethodInfo mi, ParameterInfo pi, bool null_allowed_override)
 	{
 		if (pi.ParameterType.IsByRef && pi.ParameterType.GetElementType ().IsValueType == false){
 			return pi.Name + "Ptr";
@@ -1004,7 +1001,7 @@ public class Generator {
 			return pi.Name;
 
 		if (pi.ParameterType == typeof (string)){
-			var mai = new MarshalInfo (pi);
+			var mai = new MarshalInfo (mi, pi);
 			if (mai.PlainString)
 				return pi.Name;
 			else {
@@ -1140,7 +1137,7 @@ public class Generator {
 				continue;
 			sb.Append ("_");
 			try {
-				sb.Append (ParameterGetMarshalType (new MarshalInfo (pi)).Replace (' ', '_'));
+				sb.Append (ParameterGetMarshalType (new MarshalInfo (mi, pi)).Replace (' ', '_'));
 			} catch {
 				Console.WriteLine ("  in parameter `{0}' from {1}.{2}", pi.Name, mi.DeclaringType, mi.Name);
 				throw;
@@ -1166,7 +1163,7 @@ public class Generator {
 			b.Append (", ");
 
 			try {
-				b.Append (ParameterGetMarshalType (pi));
+				b.Append (ParameterGetMarshalType (new MarshalInfo (mi, pi)));
 			} catch {
 				Console.WriteLine ("  in parameter {0} of {1}.{2}", pi.Name, mi.DeclaringType, mi.Name);
 			}
@@ -1668,7 +1665,8 @@ public class Generator {
 			foreach (var pi in mi.GetParameters ()){
 				if (IsTarget (pi)){
 					if (pi.ParameterType == typeof (string)){
-						var mai = new MarshalInfo (pi);
+						var mai = new MarshalInfo (mi, pi);
+						
 						if (mai.PlainString){
 							Console.WriteLine ("Trying to use a string as a [Target]");
 						}
@@ -1835,9 +1833,9 @@ public class Generator {
 				return "var ns{0} = new NSString ({0});\n";
 		}
 		return
-			CoreMessagingNS + ".NSStringStruct _s{0};\n" +
+			CoreMessagingNS + ".NSStringStruct _s{0}; Console.WriteLine (\"" + CurrentMethod + ": Marshalling: {{0}}\", {0}); \n" +
 			"_s{0}.ClassPtr = " + CoreMessagingNS + ".NSStringStruct.ReferencePtr;\n" +
-			"_s{0}.Flags = 2000;\n" +
+			"_s{0}.Flags = 0x010007d1; // RefCount=1, Unicode, InlineContents = 0\n" +
 			"_s{0}.UnicodePtr = _p{0};\n" + 
 			"_s{0}.Length = " + (probe_null ? "{0} == null ? 0 : {0}.Length;" : "{0}.Length;\n");
 	}
@@ -1849,8 +1847,8 @@ public class Generator {
 				return "if (ns{0} != null)\n" + "\tns{0}.Dispose ();";
 			else
 				return "ns{0}.Dispose ();\n";
-		} else
-			return "";
+		} else 
+			return "if (_s{0}.Flags != 0x010007d1) throw new Exception (\"String was retained, not copied\");";
 	}
 
 	List<string> CollectFastStringMarshalParameters (MethodInfo mi)
@@ -1858,7 +1856,7 @@ public class Generator {
 		List<string> stringParameters = null;
 		
 		foreach (var pi in mi.GetParameters ()){
- 			var mai = new MarshalInfo (pi);
+ 			var mai = new MarshalInfo (mi, pi);
 
  			if (mai.ZeroCopyStringMarshal){
  				if (stringParameters == null)
@@ -1868,6 +1866,8 @@ public class Generator {
  		}
 		return stringParameters;
 	}
+
+	string CurrentMethod;
 	
 	//
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
@@ -1875,6 +1875,8 @@ public class Generator {
 	//
 	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck)
 	{
+		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
+		
 		bool needs_thread_check = ThreadProtection && type_needs_thread_checks && threadCheck == ThreadCheck.On;
 		string selector = SelectorField (sel);
 		var args = new StringBuilder ();
@@ -1893,12 +1895,12 @@ public class Generator {
 		List<string> stringParameters = CollectFastStringMarshalParameters (mi);
 		
 		foreach (var pi in mi.GetParameters ()){
-			MarshalInfo mai = new MarshalInfo (pi);
+			MarshalInfo mai = new MarshalInfo (mi, pi);
 
 			if (!IsTarget (pi)){
 				// Construct invocation
 				args.Append (", ");
-				args.Append (MarshalParameter (pi, null_allowed_override));
+				args.Append (MarshalParameter (mi, pi, null_allowed_override));
 			}
 
 			// Construct conversions
@@ -2093,8 +2095,8 @@ public class Generator {
 			}
 		}
 		if (stringParameters != null){
-			print ("}");
 			indent--;
+			print ("}");
 		}
 		indent--;
 	}
