@@ -1835,7 +1835,7 @@ public class Generator {
 		return
 			CoreMessagingNS + ".NSStringStruct _s{0}; Console.WriteLine (\"" + CurrentMethod + ": Marshalling: {{0}}\", {0}); \n" +
 			"_s{0}.ClassPtr = " + CoreMessagingNS + ".NSStringStruct.ReferencePtr;\n" +
-			"_s{0}.Flags = 0x010007d1; // RefCount=1, Unicode, InlineContents = 0\n" +
+			"_s{0}.Flags = 0x010007d1; // RefCount=1, Unicode, InlineContents = 0, DontFreeContents\n" +
 			"_s{0}.UnicodePtr = _p{0};\n" + 
 			"_s{0}.Length = " + (probe_null ? "{0} == null ? 0 : {0}.Length;" : "{0}.Length;\n");
 	}
