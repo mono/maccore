@@ -71,12 +71,14 @@ namespace MonoMac.Foundation {
 	public partial class NSString : NSObject {
 		static IntPtr selUTF8String = Selector.sel_registerName ("UTF8String");
 		static IntPtr selInitWithUTF8String = Selector.sel_registerName ("initWithUTF8String:");
+		static IntPtr selInitWithCharactersLength = Selector.sel_registerName ("initWithCharacters:length:");
 		
 #if GENERATOR && !MONOMAC
 		public NSString (IntPtr handle) : base (handle) {
 		}
 #endif
 
+#if false
 		public NSString (string str) {
 			if (str == null)
 				throw new ArgumentNullException ("str");
@@ -87,7 +89,20 @@ namespace MonoMac.Foundation {
 
 			Marshal.FreeHGlobal (bytes);
 		}
+#else
+	
+		public NSString (string str) {
+			if (str == null)
+				throw new ArgumentNullException ("str");
 
+			unsafe {
+				fixed (char *ptrFirstChar = str){
+					Handle = Messaging.intptr_objc_msgsend_intptr_int (Handle, selInitWithCharactersLength, (IntPtr) ptrFirstChar, str.Length);
+				}
+			}
+		}
+#endif
+	
 		public unsafe override string ToString ()
 		{
 			if (Handle == IntPtr.Zero)
