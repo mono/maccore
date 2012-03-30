@@ -70,7 +70,7 @@ class BindingTouch {
 		string outfile = null;
 		bool delete_temp = true, debug = false;
 		bool verbose = false;
-		bool unsafef = false;
+		bool unsafef = true;
 		bool external = false;
 		bool pmode = true;
 		List<string> sources;
