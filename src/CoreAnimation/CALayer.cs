@@ -26,6 +26,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
+using System.Drawing;
 
 using MonoMac.Foundation; 
 using MonoMac.ObjCRuntime;
@@ -56,6 +57,12 @@ namespace MonoMac.CoreAnimation {
 		public double CFTimeInterval {
 			get { return BeginTime; }
 			set { BeginTime = value; }
+		}
+		
+		[Obsolete ("Use ConvertRectFromLayer instead")]
+		RectangleF ConvertRectfromLayer (RectangleF rect, CALayer layer)
+		{
+			return ConvertRectFromLayer (rect, layer);
 		}
 	}
 
