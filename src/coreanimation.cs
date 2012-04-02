@@ -225,22 +225,22 @@ namespace MonoMac.CoreAnimation {
 		bool MasksToBounds { get; set; }
 
 		[Export ("convertPoint:fromLayer:")]
-		PointF ConvertPointFromLayer (PointF point, CALayer layer);
+		PointF ConvertPointFromLayer (PointF point, [NullAllowed] CALayer layer);
 		
 		[Export ("convertPoint:toLayer:")]
-		PointF ConvertPointToLayer (PointF point, CALayer layer);
+		PointF ConvertPointToLayer (PointF point, [NullAllowed] CALayer layer);
 		
 		[Export ("convertRect:fromLayer:")]
-		RectangleF ConvertRectfromLayer (RectangleF rect, CALayer layer);
+		RectangleF ConvertRectFromLayer (RectangleF rect, [NullAllowed] CALayer layer);
 		
 		[Export ("convertRect:toLayer:")]
-		RectangleF ConvertRectToLayer (RectangleF rect, CALayer layer);
+		RectangleF ConvertRectToLayer (RectangleF rect, [NullAllowed] CALayer layer);
 
 		[Export ("convertTime:fromLayer:")]
-		double ConvertTimeFromLayer (double rect, [NullAllowed] CALayer layer);
+		double ConvertTimeFromLayer (double timeInterval, [NullAllowed] CALayer layer);
 		
 		[Export ("convertTime:toLayer:")]
-		double ConvertTimeToLayer (double t, CALayer layer);
+		double ConvertTimeToLayer (double timeInterval, [NullAllowed] CALayer layer);
 
 		[Export ("hitTest:")]
 		CALayer HitTest (PointF p);
