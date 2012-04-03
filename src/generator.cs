@@ -986,7 +986,7 @@ public class Generator {
 		if (pi.ParameterType.IsByRef && pi.ParameterType.GetElementType ().IsValueType == false){
 			return pi.Name + "Ptr";
 		}
-		
+
 		if (IsWrappedType (pi.ParameterType)){
 			if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
 				return String.Format ("{0} == null ? IntPtr.Zero : {0}.Handle", pi.Name);
@@ -1013,10 +1013,14 @@ public class Generator {
 					else
 						return String.Format ("(IntPtr)(&_s{0})", pi.Name);
 				} else {
+#if false
 					if (allow_null)
 						return String.Format ("ns{0} == null ? IntPtr.Zero : ns{0}.Handle", pi.Name);
 					else 
 						return "ns" + pi.Name + ".Handle";
+#else
+					return "ns" + pi.Name;
+#endif
 				}
 			}
 		}
@@ -1675,6 +1679,7 @@ public class Generator {
 							handle = "";
 						} else {
 							target_name = "ns" + pi.Name;
+							handle = "";
 						}
 					} else
 						target_name = pi.Name;
@@ -1827,10 +1832,14 @@ public class Generator {
 	public string GenerateMarshalString (bool probe_null, bool must_copy)
 	{
 		if (must_copy){
+#if false
 			if (probe_null)
 				return "var ns{0} = {0} == null ? null : new NSString ({0});\n";
 			else
 				return "var ns{0} = new NSString ({0});\n";
+#else
+			return "var ns{0} = NSString.CreateNative ({0});\n";
+#endif
 		}
 		return
 			CoreMessagingNS + ".NSStringStruct _s{0}; Console.WriteLine (\"" + CurrentMethod + ": Marshalling: {{0}}\", {0}); \n" +
@@ -1843,10 +1852,14 @@ public class Generator {
 	public string GenerateDisposeString (bool probe_null, bool must_copy)
 	{
 		if (must_copy){
+#if false
 			if (probe_null)
 				return "if (ns{0} != null)\n" + "\tns{0}.Dispose ();";
 			else
 				return "ns{0}.Dispose ();\n";
+#else
+			return "NSString.ReleaseNative (ns{0});";
+#endif
 		} else 
 			return "if (_s{0}.Flags != 0x010007d1) throw new Exception (\"String was retained, not copied\");";
 	}
