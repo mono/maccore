@@ -3270,6 +3270,9 @@ namespace MonoMac.Foundation
 		[Bind ("sizeWithFont:constrainedToSize:lineBreakMode:")]
 		SizeF StringSize (UIFont font, SizeF constrainedToSize, UILineBreakMode lineBreakMode);
 
+		[Bind ("sizeWithFont:minFontSize:actualFontSize:forWidth:lineBreakMode:")]
+		SizeF StringSize (UIFont font, float minFontSize, ref float actualFontSize, float forWidth, UILineBreakMode lineBreakMode);
+
 		[Bind ("drawAtPoint:withFont:")]
 		SizeF DrawString (PointF point, UIFont font);
 
@@ -3280,7 +3283,7 @@ namespace MonoMac.Foundation
 		SizeF DrawString (PointF point, float width, UIFont font, float fontSize, UILineBreakMode breakMode, UIBaselineAdjustment adjustment);
 
 		[Bind ("drawAtPoint:forWidth:withFont:minFontSize:actualFontSize:lineBreakMode:baselineAdjustment:")]
-		SizeF DrawString (PointF point, float width, UIFont font, float minFontSize, float actualFontSize, UILineBreakMode breakMode, UIBaselineAdjustment adjustment);
+		SizeF DrawString (PointF point, float width, UIFont font, float minFontSize, ref float actualFontSize, UILineBreakMode breakMode, UIBaselineAdjustment adjustment);
 
 		[Bind ("drawInRect:withFont:")]
 		SizeF DrawString (RectangleF rect, UIFont font);
@@ -3290,9 +3293,6 @@ namespace MonoMac.Foundation
 
 		[Bind ("drawInRect:withFont:lineBreakMode:alignment:")]
 		SizeF DrawString (RectangleF rect, UIFont font, UILineBreakMode mode, UITextAlignment alignment);
-
-		// [Bind ("sizeWithFont:minFontSize:actualFontSize:forWidth:lineBreakMode:")]
-		// TODO: need "ref" support for floats.
 #endif
 		[Export ("characterAtIndex:")]
 		char _characterAtIndex (int index);
