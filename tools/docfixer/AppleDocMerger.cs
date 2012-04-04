@@ -157,7 +157,7 @@ namespace macdoc
 				/*if (debug != null && t.FullName != debug)
 					continue;*/
 				
-				if (t == nso || t.BaseType == nso) {
+				if (t == nso || GenerateAncestorChain (t).Contains (nso)) {
 					try {
 						ProcessNSO (t);
 					} catch (Exception e){
@@ -175,6 +175,13 @@ namespace macdoc
 				throw new ApplicationException (string.Format ("Too many types were not found on this run ({0}), should be around 60-70 (mostly CoreImage, 3 UIKits, 2 CoreAnimation, 1 Foundation, 1 Bluetooth, 1 iAd",
 				                                               numOfMissingAppleDocumentation));
 			}
+		}
+
+		IEnumerable<TypeDefinition> GenerateAncestorChain (TypeDefinition type)
+		{
+			var t = type;
+			while (t.BaseType != null && (t = t.BaseType.Resolve ()) != null && t.FullName != options.Assembly.MainModule.TypeSystem.Object.FullName)
+				yield return t;
 		}
 		
 		public void ProcessNSO (TypeDefinition t)
@@ -765,8 +772,8 @@ namespace macdoc
 			string path = GetRealAppleDocPath (t);
 			if (path != null)
 				yield return LoadAppleDocumentation (path);
-			while (t.BaseType != null && (t = t.BaseType.Resolve ()) != null && t.FullName != options.Assembly.MainModule.TypeSystem.Object.FullName) {
-				path = GetRealAppleDocPath (t);
+			foreach (var ancestor in GenerateAncestorChain (t)) {
+				path = GetRealAppleDocPath (ancestor);
 				if (path != null)
 					yield return LoadAppleDocumentation (path);
 			}
