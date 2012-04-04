@@ -5653,6 +5653,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject),
+		   Name="NSURLProtocol",
 		   Delegates=new string [] {"WeakClient"},
 		   Events=new Type [] {typeof (NSUrlProtocolClient)})]
 	interface NSUrlProtocol {
