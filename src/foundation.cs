@@ -3247,7 +3247,7 @@ namespace MonoMac.Foundation
 		SizeF StringSize ([NullAllowed] NSDictionary attributedStringAttributes);
 		
 		[Bind ("boundingRectWithSize:options:attributes:")]
-		SizeF BoundingRectWithSize (SizeF size, NSStringDrawingOptions options, NSDictionary attributes);
+		RectangleF BoundingRectWithSize (SizeF size, NSStringDrawingOptions options, NSDictionary attributes);
 		
 		[Bind ("drawAtPoint:withAttributes:")]
 		void DrawString (PointF point, NSDictionary attributes);
