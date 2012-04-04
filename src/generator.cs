@@ -2491,7 +2491,7 @@ public class Generator {
 				}
 			}
 			
-			foreach (var mi in type.GatherMethods (BindingFlags.Public | BindingFlags.Instance)){
+			foreach (var mi in GetTypeContractMethods (type)){
 				if (mi.IsSpecialName)
 					continue;
 
