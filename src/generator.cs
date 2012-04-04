@@ -869,7 +869,7 @@ public class Generator {
 		// Pass "out ValueType" directly
 		//
 		if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType)
-			return "out " + mai.Type.GetElementType ().Name;
+			return "out " + FormatType (null, mai.Type.GetElementType ());
 
 		if (mai.Type.IsSubclassOf (typeof (Delegate))){
 			return "IntPtr";
@@ -1980,7 +1980,11 @@ public class Generator {
 				byRefPostProcessing.AppendLine();
 				byRefPostProcessing.AppendFormat("IntPtr {0}Value = Marshal.ReadIntPtr({0}Ptr);", pi.Name);
 				byRefPostProcessing.AppendLine();
-				byRefPostProcessing.AppendFormat("{0} = {0}Value != IntPtr.Zero ? ({1})Runtime.GetNSObject({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
+				if (mai.Type.GetElementType () == typeof (string)){
+					byRefPostProcessing.AppendFormat("{0} = {0}Value != IntPtr.Zero ? NSString.FromHandle ({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
+				} else {
+					byRefPostProcessing.AppendFormat("{0} = {0}Value != IntPtr.Zero ? ({1})Runtime.GetNSObject({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
+				}
 				byRefPostProcessing.AppendLine();
 				byRefPostProcessing.AppendFormat("Marshal.FreeHGlobal({0}Ptr);", pi.Name);
 				byRefPostProcessing.AppendLine();
