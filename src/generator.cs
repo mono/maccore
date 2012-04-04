@@ -835,7 +835,7 @@ public class Generator {
 	//
 	// Returns the type that we use to marshal the given type as a string
 	// for example "UIView" -> "IntPtr"
-	string ParameterGetMarshalType (MarshalInfo mai)
+	string ParameterGetMarshalType (MarshalInfo mai, bool formatted = false)
 	{
 		if (mai.Type.IsEnum)
 			return PrimitiveType (mai.Type);
@@ -868,8 +868,10 @@ public class Generator {
 		//
 		// Pass "out ValueType" directly
 		//
-		if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType)
-			return "out " + FormatType (null, mai.Type.GetElementType ());
+		if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType){
+			Type elementType = mai.Type.GetElementType ();
+			return "out " + (formatted ? FormatType (null, elementType) : elementType.Name);
+		}
 
 		if (mai.Type.IsSubclassOf (typeof (Delegate))){
 			return "IntPtr";
@@ -1167,7 +1169,7 @@ public class Generator {
 			b.Append (", ");
 
 			try {
-				b.Append (ParameterGetMarshalType (new MarshalInfo (mi, pi)));
+				b.Append (ParameterGetMarshalType (new MarshalInfo (mi, pi), true));
 			} catch {
 				Console.WriteLine ("  in parameter {0} of {1}.{2}", pi.Name, mi.DeclaringType, mi.Name);
 			}
