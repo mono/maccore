@@ -2553,7 +2553,11 @@ public class Generator {
 					}
 
 					if (!libraries.Contains (library_name)) {
-						print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+						if (BindThirdPartyLibrary && library_name == "__Internal") {
+							print ("static IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
+						} else {
+							print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+						}
 						libraries.Add (library_name);
 					}
 
