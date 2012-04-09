@@ -2254,7 +2254,7 @@ public class Generator {
 			}
 			
 			foreach (var mi in GetTypeContractMethods (type)){
-				if (mi.IsSpecialName)
+				if (mi.IsSpecialName || (mi.Name == "Constructor" && type != mi.DeclaringType))
 					continue;
 
 #if RETAIN_AUDITING
