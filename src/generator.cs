@@ -2307,8 +2307,12 @@ public class Generator {
 								break;
 							}
 						} 
-					} else
-						library_name = type.Namespace.Substring (MainPrefix.Length+1);
+					} else {
+						library_name = type.Namespace;
+						// note: not every binding namespace will start with MainPrefix (e.g. MonoTouch.)
+						if (library_name.StartsWith (MainPrefix))
+							library_name = library_name.Substring (MainPrefix.Length + 1);
+					}
 
 					if (!libraries.Contains (library_name)) {
 						print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
