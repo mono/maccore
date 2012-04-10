@@ -5658,7 +5658,7 @@ namespace MonoMac.Foundation
 		   Events=new Type [] {typeof (NSUrlProtocolClient)})]
 	interface NSUrlProtocol {
 		[Export ("initWithRequest:cachedResponse:client:")]
-		IntPtr Constructor (NSUrlRequest request, NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
+		IntPtr Constructor (NSUrlRequest request, [NullAllowed] NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
 
 		[Export ("client")]
 		NSObject WeakClient { get; set; }
