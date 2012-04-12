@@ -557,10 +557,10 @@ namespace MonoMac.CoreData
 		IntPtr Constructor (NSManagedObjectContextConcurrencyType ct);
 
 		[Export ("performBlock:")]
-		void Perform (NSAction action);
+		void Perform (/* non null */ NSAction action);
 
 		[Export ("performBlockAndWait:")]
-		void PerformAndWait (NSAction action);
+		void PerformAndWait (/* non null */ NSAction action);
 
 		[Export ("userInfo")]
 		NSMutableDictionary UserInfo { get; }

@@ -3519,10 +3519,10 @@ namespace MonoMac.Foundation
 	public interface NSBlockOperation {
 		[Static]
 		[Export ("blockOperationWithBlock:")]
-		NSBlockOperation Create (NSAction method);
+		NSBlockOperation Create (/* non null */ NSAction method);
 
 		[Export ("addExecutionBlock:")]
-		void AddExecutionBlock (NSAction method);
+		void AddExecutionBlock (/* non null */ NSAction method);
 
 		[Export ("executionBlocks")]
 		NSObject [] ExecutionBlocks { get; }
@@ -3532,13 +3532,13 @@ namespace MonoMac.Foundation
 	[Since (4,0)]
 	public interface NSOperationQueue {
 		[Export ("addOperation:")][PostGet ("Operations")]
-		void AddOperation (NSOperation op);
+		void AddOperation ([NullAllowed] NSOperation op);
 
 		[Export ("addOperations:waitUntilFinished:")][PostGet ("Operations")]
-		void AddOperations (NSOperation [] operations, bool waitUntilFinished);
+		void AddOperations ([NullAllowed] NSOperation [] operations, bool waitUntilFinished);
 
 		[Export ("addOperationWithBlock:")][PostGet ("Operations")]
-		void AddOperation (NSAction operation);
+		void AddOperation (/* non null */ NSAction operation);
 
 		[Export ("operations")]
 		NSOperation [] Operations { get; }
@@ -4961,16 +4961,19 @@ namespace MonoMac.Foundation
 		IntPtr Constructor ([NullAllowed] NSFilePresenter filePresenterOrNil);
 
 		[Export ("coordinateReadingItemAtURL:options:error:byAccessor:")]
-		void CoordinateRead (NSUrl itemUrl, NSFileCoordinatorReadingOptions options, out NSError error, NSFileCoordinatorWorker worker);
+		void CoordinateRead (NSUrl itemUrl, NSFileCoordinatorReadingOptions options, out NSError error, /* non null */ NSFileCoordinatorWorker worker);
 
 		[Export ("coordinateWritingItemAtURL:options:error:byAccessor:")]
-		void CoordinateWrite (NSUrl url, NSFileCoordinatorWritingOptions options, out NSError error, NSFileCoordinatorWorker worker);
+		void CoordinateWrite (NSUrl url, NSFileCoordinatorWritingOptions options, out NSError error, /* non null */ NSFileCoordinatorWorker worker);
 
 		[Export ("coordinateReadingItemAtURL:options:writingItemAtURL:options:error:byAccessor:")]
-		void CoordinateReadWrite (NSUrl readingURL, NSFileCoordinatorReadingOptions readingOptions, NSUrl writingURL, NSFileCoordinatorWritingOptions writingOptions, out NSError error, NSFileCoordinatorWorkerRW readWriteWorker);
+		void CoordinateReadWrite (NSUrl readingURL, NSFileCoordinatorReadingOptions readingOptions, NSUrl writingURL, NSFileCoordinatorWritingOptions writingOptions, out NSError error, /* non null */ NSFileCoordinatorWorkerRW readWriteWorker);
+		
+		[Export ("coordinateWritingItemAtURL:options:writingItemAtURL:options:error:byAccessor:")]
+		void CoordinateWriteWrite (NSUrl writingURL, NSFileCoordinatorWritingOptions writingOptions, NSUrl writingURL2, NSFileCoordinatorWritingOptions writingOptions2, out NSError error, /* non null */ NSFileCoordinatorWorkerRW writeWriteWorker);
 
 		[Export ("prepareForReadingItemsAtURLs:options:writingItemsAtURLs:options:error:byAccessor:")]
-		void CoordinateBatc (NSUrl [] readingURLs, NSFileCoordinatorReadingOptions readingOptions, NSUrl [] writingURLs, NSFileCoordinatorWritingOptions writingOptions, NSError error, NSAction batchHandler);
+		void CoordinateBatc (NSUrl [] readingURLs, NSFileCoordinatorReadingOptions readingOptions, NSUrl [] writingURLs, NSFileCoordinatorWritingOptions writingOptions, out NSError error, /* non null */ NSAction batchHandler);
 
 		[Export ("itemAtURL:didMoveToURL:")]
 		void ItemMoved (NSUrl fromUrl, NSUrl toUrl);

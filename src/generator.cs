@@ -2806,7 +2806,17 @@ public class Generator {
 				indent++;
 				print ("var descriptor = (BlockLiteral *) block;");
 				print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
-				print ("{0}del ({1});", ti.ReturnType == "System.Void" ? String.Empty : "return ", ti.Invoke);
+				bool is_void = ti.ReturnType == "System.Void";
+				// FIXME: right now we only support 'null' when the delegate does not return a value
+				// otherwise we will need to know the default value to be returned (likely uncommon)
+				if (is_void) {
+					print ("if (del != null)");
+					indent++;
+					print ("del ({0});", ti.Invoke);
+					indent--;
+				} else {
+					print ("return del ({0});", ti.Invoke);
+				}
 				indent--;
 				print ("}");
 				print ("");

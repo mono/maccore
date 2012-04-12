@@ -981,7 +981,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("animationDuration")]
 		double AnimationDuration { get; set; }
 	
-		[Static]
+		[Static, NullAllowed]
 		[Export ("animationTimingFunction")]
 		CAMediaTimingFunction AnimationTimingFunction { get; set; }
 	
@@ -998,7 +998,7 @@ namespace MonoMac.CoreAnimation {
 		void SetValueForKey (NSObject anObject, NSString key);
 
 		[Since (4,0)]
-		[Static, Export ("completionBlock")]
+		[Static, Export ("completionBlock"), NullAllowed]
 		NSAction CompletionBlock { get; set; }
 
 		[Field ("kCATransactionAnimationDuration")]
