@@ -54,11 +54,12 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPDFStreamCopyData (IntPtr handle);
+		extern static IntPtr CGPDFStreamCopyData (IntPtr handle, out int format);
 		
 		public NSData Data {
 			get {
-				IntPtr obj = CGPDFStreamCopyData (handle);
+				int format;
+				IntPtr obj = CGPDFStreamCopyData (handle, out format);
 				var ret = new NSData (obj);
 				CFObject.CFRelease (obj);
 				return ret;
