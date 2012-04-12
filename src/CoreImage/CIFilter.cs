@@ -222,14 +222,13 @@ namespace MonoMac.CoreImage {
 			case "CIFaceBalance":
 				return new CIFaceBalance (handle);
 			default:
-				Debug.WriteLine (String.Format ("Unknown filter type returned: `{0}', returning a default CIFilter", filterName));
-				return new CIFilter ();
+				throw new NotImplementedException (String.Format ("Unknown filter type returned: `{0}', returning a default CIFilter", filterName));
 			}
 		}
 	}
 
 	public class CIFaceBalance : CIFilter {
-		private CIFaceBalance (){}
+
 		public CIFaceBalance (IntPtr handle): base (handle) {}
 		
 	}
