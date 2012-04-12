@@ -60,7 +60,7 @@ namespace MonoMac.CoreAnimation {
 		}
 		
 		[Obsolete ("Use ConvertRectFromLayer instead")]
-		RectangleF ConvertRectfromLayer (RectangleF rect, CALayer layer)
+		public RectangleF ConvertRectfromLayer (RectangleF rect, CALayer layer)
 		{
 			return ConvertRectFromLayer (rect, layer);
 		}
