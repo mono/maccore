@@ -52,6 +52,7 @@ namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	public interface CIColor {
 		[Static]
 		[Export ("colorWithCGColor:")]
@@ -105,6 +106,7 @@ namespace MonoMac.CoreImage {
 
         [BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	public interface CIContext {
 		// When we bind OpenGL add these:
 		//[Export ("contextWithCGLContext:pixelFormat:colorSpace:options:")]
@@ -177,6 +179,7 @@ namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	public interface CIFilter {
 		[Export ("inputKeys")]
 		string [] InputKeys { get; }
@@ -524,6 +527,7 @@ namespace MonoMac.CoreImage {
 	
 #if MONOMAC
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
 	public interface CIFilterGenerator {
 		[Static, Export ("filterGenerator")]
 		CIFilterGenerator Create ();
@@ -577,6 +581,7 @@ namespace MonoMac.CoreImage {
 	}
 
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
 	public interface CIFilterShape {
 		[Export ("shapeWithRect:")]
 		CIFilterShape FromRect (RectangleF rect);
@@ -606,6 +611,7 @@ namespace MonoMac.CoreImage {
 	
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	public interface CIImage {
 		[Static]
 		[Export ("imageWithCGImage:")]
@@ -900,6 +906,7 @@ namespace MonoMac.CoreImage {
 	
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	interface CIVector {
 		[Static, Internal, Export ("vectorWithValues:count:")]
 		CIVector _FromValues (IntPtr values, int count);
@@ -992,6 +999,7 @@ namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	interface CIDetector {
 		[Static, Export ("detectorOfType:context:options:"), Internal]
 		CIDetector FromType (NSString detectorType, CIContext context, [NullAllowed] NSDictionary options);
@@ -1020,6 +1028,7 @@ namespace MonoMac.CoreImage {
 	
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	interface CIFeature {
 		[Export ("type")]
 		NSString Type { get; }
@@ -1030,6 +1039,7 @@ namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (CIFeature))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	interface CIFaceFeature {
 		[Export ("hasLeftEyePosition")]
 		bool HasLeftEyePosition { get; }
