@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2009 Novell, Inc
+// Copyright 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -28,6 +29,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
+using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 
 namespace MonoMac.CoreGraphics {
@@ -100,5 +102,29 @@ namespace MonoMac.CoreGraphics {
 
 			handle = CGGradientCreateWithColorComponents (colorspace.handle, components, null, components.Length / (colorspace.Components+1));
 		}
+#if !COREBUILD
+		[DllImport(Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGGradientCreateWithColors (/* CGColorSpaceRef */ IntPtr colorspace, /* CFArrayRef */ IntPtr colors, float [] locations);
+
+		public CGGradient (CGColorSpace colorspace, CGColor [] colors, float [] locations)
+		{
+			if (colors == null)
+				throw new ArgumentNullException ("colors");
+			
+			IntPtr csh = colorspace == null ? IntPtr.Zero : colorspace.handle;
+			using (var array = CFArray.FromNativeObjects (colors))
+				handle = CGGradientCreateWithColors (csh, array.Handle, locations);
+		}
+
+		public CGGradient (CGColorSpace colorspace, CGColor [] colors)
+		{
+			if (colors == null)
+				throw new ArgumentNullException ("colors");
+			
+			IntPtr csh = colorspace == null ? IntPtr.Zero : colorspace.handle;
+			using (var array = CFArray.FromNativeObjects (colors))
+				handle = CGGradientCreateWithColors (csh, array.Handle, null);
+		}
+#endif
 	}
 }
