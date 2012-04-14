@@ -3101,7 +3101,7 @@ public class Generator {
 
 					notification_event_arg_types [event_args_type] = event_args_type;
 					print ("public partial class NSNotificationCenter {\n");
-					print ("\tpublic static class {0} {{\n", TypeName);
+					print ("\tpublic static partial class {0} {{\n", TypeName);
 					print ("\t\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_args_type.FullName);
 					print ("\t\t{");
 					print ("\t\t\treturn DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", type.Namespace + "." + TypeName + "." + property.Name, event_args_type.Name);
