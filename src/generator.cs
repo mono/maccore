@@ -3095,18 +3095,19 @@ public class Generator {
 				print ("namespace {0}.Foundation {{", MainPrefix);
 				indent++;
 			
+				print ("public partial class NSNotificationCenter {\n");
+				print ("\tpublic static partial class {0} {{\n", TypeName);
 				foreach (var property in notifications){
 					string notification_name = GetNotificationName (property);
 					Type event_args_type = GetNotificationArgType (property);
 
 					notification_event_arg_types [event_args_type] = event_args_type;
-					print ("public partial class NSNotificationCenter {\n");
-					print ("\tpublic static partial class {0} {{\n", TypeName);
 					print ("\t\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_args_type.FullName);
 					print ("\t\t{");
 					print ("\t\t\treturn DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", type.Namespace + "." + TypeName + "." + property.Name, event_args_type.Name);
-					print ("\t\t}\n\t}\n}");
+					print ("\t\t}");
 				}
+				print ("\t}\n}");
 				indent--;
 				print ("}");
 			}
