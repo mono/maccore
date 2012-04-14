@@ -1751,7 +1751,7 @@ public class Generator {
 		print (w, "// We keep references to objects, so warning 414 is expected\n");
 		print (w, "#pragma warning disable 414\n");
 		print (w, from ns in implicit_ns select "using " + ns + ";");
-		print (w);
+		print (w, "");
 	}
 
 	void GenerateInvoke (bool stret, bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static)
