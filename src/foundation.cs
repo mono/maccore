@@ -3320,6 +3320,7 @@ namespace MonoMac.Foundation
 		
 		[Export ("stringByReplacingCharactersInRange:withString:")]
 		NSString Replace (NSRange range, NSString replacement);
+
 	}
 	
 	[BaseType (typeof (NSStream))]

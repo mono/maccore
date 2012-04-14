@@ -66,6 +66,19 @@ namespace MonoMac.Foundation {
 			return new NSString (h);
 		}
 
+
+		// [Export ("initWithData:encoding:")]
+		// IntPtr Constructor (NSData data, NSStringEncoding encoding);
+		// 
+		// [Export ("initWithContentsOfURL:encoding:error")]
+		// IntPtr Constructor (NSUrl url, NSStringEncoding encoding, out NSError error);
+		// 
+		// [Export ("initWithContentsOfURL:usedEncoding:error:")]
+		// IntPtr Constructor (NSUrl url, out NSStringEncoding encoding, out NSError error);
+		// 
+		// [Export ("initWithBytes:length:encoding")]
+		// IntPtr Constructor (IntPtr bytes, int length, NSStringEncoding encoding);
+		
 		public char this [int idx] {
 			get {
 				return _characterAtIndex (idx);

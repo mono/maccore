@@ -388,6 +388,12 @@ public class ThreadSafeAttribute : Attribute {
 	public ThreadSafeAttribute () {}
 }
 
+[AttributeUsage(AttributeTargets.Property, AllowMultiple=true)]
+public class NotificationAttribute : Attribute {
+	public NotificationAttribute (Type t) { Type = t; }
+	public Type Type { get; set; }
+}
+
 public class EventArgsAttribute : Attribute {
 	public EventArgsAttribute (string s)
 	{
@@ -681,6 +687,7 @@ public class Generator {
 	List<MarshalType> marshal_types = new List<MarshalType> ();
 	Dictionary<Type,TrampolineInfo> trampolines = new Dictionary<Type,TrampolineInfo> ();
 	Dictionary<Type,Type> delegates_emitted = new Dictionary<Type, Type> ();
+	Dictionary<Type,Type> notification_event_arg_types = new Dictionary<Type,Type> ();
 	
 	public bool Alpha;
 	public bool OnlyX86;
@@ -1459,8 +1466,93 @@ public class Generator {
 		
 		print (m, "\t}\n}");
 		m.Close ();
+
+		// Generate the event arg mappings
+		if (notification_event_arg_types.Count > 0)
+			GenerateEventArgsFile ();
 	}
 
+	static string GenerateNSValue (string propertyToCall)
+	{
+		return "using (var nsv = new NSValue (value))\n\treturn nsv." + propertyToCall + ";";
+	}
+
+	static string GenerateNSNumber (string cast, string propertyToCall)
+	{
+		return "using (var nsn = new NSNumber (value))\n\treturn " + cast + "nsn." + propertyToCall + ";";
+	}
+	
+	void GenerateEventArgsFile ()
+	{
+		var event_args_file = Path.Combine (basedir, "ObjCRuntime/EventArgs.g.cs");
+		GeneratedFiles.Add (event_args_file);
+		sw = new StreamWriter (event_args_file);
+
+		Header (sw);
+		foreach (Type eventType in notification_event_arg_types.Keys){
+			print ("namespace {0} {{", eventType.Namespace); indent++;
+			print ("public class {0} : EventArgs {{", eventType.Name); indent++;
+			print ("NSNotification notification;\n");
+			print ("public {0} (NSNotification notification)\n{{\tthis.notification = notification;\n}}\n", eventType.Name);
+			int i = 0;
+			foreach (var prop in eventType.GetProperties (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)){
+				var export = prop.GetCustomAttributes (typeof (ExportAttribute), true) [0] as ExportAttribute;
+				var null_allowed = HasAttribute (prop, typeof (NullAllowedAttribute));
+				var nullable_type = prop.PropertyType.IsValueType && null_allowed;
+				var propertyType = prop.PropertyType;
+				var propNamespace = prop.DeclaringType.Namespace;
+				
+				string kn = "k" + (i++);
+				var lib = propNamespace.Substring (propNamespace.IndexOf (".") + 1);
+				print ("static IntPtr {0};", kn);
+				print ("public {0}{1} {2} {{\n\tget {{\n", propertyType, nullable_type ? "?" : "", prop.Name); indent += 2;
+				print ("if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.SlowGetIntPtr (Constants.{2}Library, \"{3}\");", kn, MainPrefix, lib, export.Selector);
+				print ("var value = notification.UserInfo.LowlevelObjectForKey ({0});\n", kn);
+				if (null_allowed)
+					print ("if (value == IntPtr.Zero)\n\treturn null;");
+
+				var fullname = propertyType.FullName;
+				
+				if (fullname == "System.Drawing.RectangleF")
+					print (GenerateNSValue ("RectangleFValue"));
+				else if (propertyType == typeof (double))
+					print (GenerateNSNumber ("", "DoubleValue"));
+				else if (propertyType == typeof (float))
+					print (GenerateNSNumber ("", "FloatValue"));
+				else if (fullname == "System.Drawing.PointF")
+					print (GenerateNSValue ("PointFValue"));
+				else if (fullname == "System.Drawing.SizeF")
+					print (GenerateNSValue ("SizeFValue"));
+				else if (propertyType == typeof (string))
+					print ("return NSString.FromHandle (value);");
+				else if (propertyType == typeof (NSString))
+					print ("return new NSString (value);");
+				else {
+					Type underlying = propertyType.IsEnum ? Enum.GetUnderlyingType (propertyType) : propertyType;
+					string cast = propertyType.IsEnum ? "(" + propertyType.FullName + ") " : "";
+					
+					if (underlying == typeof (int))
+						print (GenerateNSNumber (cast, "Int32Value"));
+					else if (underlying == typeof (long))
+						print (GenerateNSNumber (cast, "Int64Value"));
+					else if (underlying == typeof (short))
+						print (GenerateNSNumber (cast, "Int16Value"));
+					else if (underlying == typeof (byte))
+						print (GenerateNSNumber (cast, "ByteValue"));
+					else
+						Console.WriteLine ("Error: Do not know how to extract type {0} from an NSDictionary", propertyType);
+				}
+				indent -= 2;
+				print ("\t}\n}\n");
+			}
+
+			indent--; print ("}");
+			indent--; print ("}");
+		}
+		sw.Close ();
+	}
+	
+		
 	public void DumpChildren (int level, GeneratedType gt)
 	{
 		string prefix = new string ('\t', level);
@@ -1658,7 +1750,8 @@ public class Generator {
 		print (w, "//\n// Auto-generated from generator.cs, do not edit\n//");
 		print (w, "// We keep references to objects, so warning 414 is expected\n");
 		print (w, "#pragma warning disable 414\n");
-		print (w, from ns in implicit_ns select "using " + ns + ";\n");
+		print (w, from ns in implicit_ns select "using " + ns + ";");
+		print (w);
 	}
 
 	void GenerateInvoke (bool stret, bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static)
@@ -2513,12 +2606,16 @@ public class Generator {
 			}
 
 			var field_exports = new List<PropertyInfo> ();
+			var notifications = new List<PropertyInfo> ();
 			foreach (var pi in GetTypeContractProperties (type)){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
 				if (HasAttribute (pi, typeof (FieldAttribute))){
 					field_exports.Add (pi);
+
+					if (HasAttribute (pi, typeof (NotificationAttribute)))
+						notifications.Add (pi);
 					continue;
 				}
 
@@ -2986,10 +3083,52 @@ public class Generator {
 
 			indent--;
 			print ("}");
-		}
 
+			//
+			// Notification extensions
+			//
+			if (notifications.Count > 0){
+				print ("\n");
+				print ("//");
+				print ("// Notifications");
+				print ("//");
+				print ("namespace {0}.Foundation {{", MainPrefix);
+				indent++;
+			
+				foreach (var property in notifications){
+					string notification_name = GetNotificationName (property);
+					Type event_args_type = GetNotificationArgType (property);
+
+					notification_event_arg_types [event_args_type] = event_args_type;
+					print ("public partial class NSNotificationCenter {\n");
+					print ("\tpublic static class {0} {{\n", TypeName);
+					print ("\t\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_args_type.FullName);
+					print ("\t\t{");
+					print ("\t\t\treturn DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", type.Namespace + "." + TypeName + "." + property.Name, event_args_type.Name);
+					print ("\t\t}\n\t}\n}");
+				}
+				indent--;
+				print ("}");
+			}
+			
+		}
 	}
 
+	string GetNotificationName (PropertyInfo pi)
+	{
+		// TODO: fetch the NotificationAttribute, see if there is an override there.
+		var name = pi.Name;
+		if (name.EndsWith ("Notification"))
+			return name.Substring (0, name.Length-"Notification".Length);
+		return name;
+	}
+
+	Type GetNotificationArgType (PropertyInfo pi)
+	{
+		object [] a = pi.GetCustomAttributes (typeof (NotificationAttribute), true);
+		return (a [0] as NotificationAttribute).Type;
+	}
+	
 	//
 	// Support for the automatic delegate/event generation
 	//
