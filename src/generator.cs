@@ -1516,7 +1516,12 @@ public class Generator {
 			print ("public {0} (NSNotification notification) : base (notification) \n{{\n}}\n", eventType.Name);
 			int i = 0;
 			foreach (var prop in eventType.GetProperties (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)){
-				var export = prop.GetCustomAttributes (typeof (ExportAttribute), true) [0] as ExportAttribute;
+				var attrs = prop.GetCustomAttributes (typeof (ExportAttribute), true);
+				if (attrs.Length == 0){
+					Console.WriteLine ("Error, no Export attribute on {0}.{1} property", eventType, prop.Name);
+					Environment.Exit (1);
+				}
+				var export = attrs [0] as ExportAttribute;
 				var null_allowed = HasAttribute (prop, typeof (NullAllowedAttribute));
 				var nullable_type = prop.PropertyType.IsValueType && null_allowed;
 				var propertyType = prop.PropertyType;
@@ -1547,7 +1552,9 @@ public class Generator {
 
 					var fullname = propertyType.FullName;
 
-					if (IsWrappedType (propertyType)){
+					if (propertyType.IsArray && IsWrappedType (propertyType.GetElementType ())){
+						print ("return NSArray.ArrayFromHandle<{0}> (value);", RenderType (propertyType.GetElementType ()));
+					} else if (IsWrappedType (propertyType)){
 						print ("return ({0}) Runtime.GetNSObject (value);", RenderType (propertyType));
 					} else if (fullname == "System.Drawing.RectangleF")
 						print (GenerateNSValue ("RectangleFValue"));
@@ -1577,8 +1584,12 @@ public class Generator {
 							print (GenerateNSNumber (cast, "Int16Value"));
 						else if (underlying == typeof (byte))
 							print (GenerateNSNumber (cast, "ByteValue"));
-						else
-							Console.WriteLine ("Error: Do not know how to extract type {0} from an NSDictionary", propertyType);
+						else if (underlying == typeof (bool))
+							print (GenerateNSNumber (cast, "BoolValue"));
+						else {
+							Console.WriteLine ("Error: Do not know how to extract type {0}/{1} from an NSDictionary", propertyType, underlying);
+							Environment.Exit (1);
+						}
 					}
 				}
 				indent -= 2;
@@ -3145,7 +3156,7 @@ public class Generator {
 					notification_event_arg_types [event_args_type] = event_args_type;
 					print ("\t\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_args_type.FullName);
 					print ("\t\t{");
-					print ("\t\t\treturn DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", type.Namespace + "." + TypeName + "." + property.Name, event_args_type.Name);
+					print ("\t\t\treturn DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", type.Namespace + "." + TypeName + "." + property.Name, event_args_type.FullName);
 					print ("\t\t}");
 				}
 				print ("\t}\n}");
