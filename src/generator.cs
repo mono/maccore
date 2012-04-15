@@ -388,10 +388,27 @@ public class ThreadSafeAttribute : Attribute {
 	public ThreadSafeAttribute () {}
 }
 
+//
+// When applied, flags the [Flags] as a notification and generates the
+// code to strongly type the notification.
+//
 [AttributeUsage(AttributeTargets.Property, AllowMultiple=true)]
 public class NotificationAttribute : Attribute {
 	public NotificationAttribute (Type t) { Type = t; }
+	public NotificationAttribute () {}
+	
 	public Type Type { get; set; }
+}
+
+//
+// Applied to attributes in the notification EventArgs
+// to generate code that merely probes for the existance of
+// the key, instead of extracting a value out of the
+// userInfo dictionary
+//
+[AttributeUsage(AttributeTargets.Property, AllowMultiple=true)]
+public class ProbePresenceAttribute : Attribute {
+	public ProbePresenceAttribute () {}
 }
 
 public class EventArgsAttribute : Attribute {
@@ -1490,10 +1507,13 @@ public class Generator {
 
 		Header (sw);
 		foreach (Type eventType in notification_event_arg_types.Keys){
+			// Do not generate events for stuff with no arguments
+			if (eventType == null)
+				continue;
+			
 			print ("namespace {0} {{", eventType.Namespace); indent++;
-			print ("public class {0} : EventArgs {{", eventType.Name); indent++;
-			print ("NSNotification notification;\n");
-			print ("public {0} (NSNotification notification)\n{{\tthis.notification = notification;\n}}\n", eventType.Name);
+			print ("public class {0} : NSNotificationEventArgs {{", eventType.Name); indent++;
+			print ("public {0} (NSNotification notification) : base (notification) \n{{\n}}\n", eventType.Name);
 			int i = 0;
 			foreach (var prop in eventType.GetProperties (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)){
 				var export = prop.GetCustomAttributes (typeof (ExportAttribute), true) [0] as ExportAttribute;
@@ -1501,46 +1521,65 @@ public class Generator {
 				var nullable_type = prop.PropertyType.IsValueType && null_allowed;
 				var propertyType = prop.PropertyType;
 				var propNamespace = prop.DeclaringType.Namespace;
+				var probe_presence = HasAttribute (prop, typeof (ProbePresenceAttribute));
 				
 				string kn = "k" + (i++);
 				var lib = propNamespace.Substring (propNamespace.IndexOf (".") + 1);
 				print ("static IntPtr {0};", kn);
 				print ("public {0}{1} {2} {{\n\tget {{\n", propertyType, nullable_type ? "?" : "", prop.Name); indent += 2;
 				print ("if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.SlowGetIntPtr (Constants.{2}Library, \"{3}\");", kn, MainPrefix, lib, export.Selector);
-				print ("var value = notification.UserInfo.LowlevelObjectForKey ({0});\n", kn);
-				if (null_allowed)
-					print ("if (value == IntPtr.Zero)\n\treturn null;");
-
-				var fullname = propertyType.FullName;
-				
-				if (fullname == "System.Drawing.RectangleF")
-					print (GenerateNSValue ("RectangleFValue"));
-				else if (propertyType == typeof (double))
-					print (GenerateNSNumber ("", "DoubleValue"));
-				else if (propertyType == typeof (float))
-					print (GenerateNSNumber ("", "FloatValue"));
-				else if (fullname == "System.Drawing.PointF")
-					print (GenerateNSValue ("PointFValue"));
-				else if (fullname == "System.Drawing.SizeF")
-					print (GenerateNSValue ("SizeFValue"));
-				else if (propertyType == typeof (string))
-					print ("return NSString.FromHandle (value);");
-				else if (propertyType == typeof (NSString))
-					print ("return new NSString (value);");
-				else {
-					Type underlying = propertyType.IsEnum ? Enum.GetUnderlyingType (propertyType) : propertyType;
-					string cast = propertyType.IsEnum ? "(" + propertyType.FullName + ") " : "";
-					
-					if (underlying == typeof (int))
-						print (GenerateNSNumber (cast, "Int32Value"));
-					else if (underlying == typeof (long))
-						print (GenerateNSNumber (cast, "Int64Value"));
-					else if (underlying == typeof (short))
-						print (GenerateNSNumber (cast, "Int16Value"));
-					else if (underlying == typeof (byte))
-						print (GenerateNSNumber (cast, "ByteValue"));
+				if (null_allowed || probe_presence){
+					if (probe_presence)
+						print ("if (Notification.UserInfo == null)\n\treturn false;");
 					else
-						Console.WriteLine ("Error: Do not know how to extract type {0} from an NSDictionary", propertyType);
+						print ("if (Notification.UserInfo == null)\n\treturn null;");
+				}
+				print ("var value = Notification.UserInfo.LowlevelObjectForKey ({0});\n", kn);
+				if (probe_presence)
+					print ("return value != IntPtr.Zero;");
+				else {
+					if (null_allowed)
+						print ("if (value == IntPtr.Zero)\n\treturn null;");
+					else if (propertyType.IsArray)
+						print ("if (value == IntPtr.Zero)\n\treturn new {0} [0];", RenderType (propertyType.GetElementType ()));
+					else
+						print ("if (value == IntPtr.Zero)\n\treturn default({0});", RenderType (propertyType));
+
+					var fullname = propertyType.FullName;
+
+					if (IsWrappedType (propertyType)){
+						print ("return ({0}) Runtime.GetNSObject (value);", RenderType (propertyType));
+					} else if (fullname == "System.Drawing.RectangleF")
+						print (GenerateNSValue ("RectangleFValue"));
+					else if (propertyType == typeof (double))
+						print (GenerateNSNumber ("", "DoubleValue"));
+					else if (propertyType == typeof (float))
+						print (GenerateNSNumber ("", "FloatValue"));
+					else if (fullname == "System.Drawing.PointF")
+						print (GenerateNSValue ("PointFValue"));
+					else if (fullname == "System.Drawing.SizeF")
+						print (GenerateNSValue ("SizeFValue"));
+					else if (propertyType == typeof (string))
+						print ("return NSString.FromHandle (value);");
+					else if (propertyType == typeof (NSString))
+						print ("return new NSString (value);");
+					else if (propertyType == typeof (string [])){
+						print ("return NSArray.StringArrayFromHandle (value);");
+					} else {
+						Type underlying = propertyType.IsEnum ? Enum.GetUnderlyingType (propertyType) : propertyType;
+						string cast = propertyType.IsEnum ? "(" + propertyType.FullName + ") " : "";
+						
+						if (underlying == typeof (int))
+							print (GenerateNSNumber (cast, "Int32Value"));
+						else if (underlying == typeof (long))
+							print (GenerateNSNumber (cast, "Int64Value"));
+						else if (underlying == typeof (short))
+							print (GenerateNSNumber (cast, "Int16Value"));
+						else if (underlying == typeof (byte))
+							print (GenerateNSNumber (cast, "ByteValue"));
+						else
+							Console.WriteLine ("Error: Do not know how to extract type {0} from an NSDictionary", propertyType);
+					}
 				}
 				indent -= 2;
 				print ("\t}\n}\n");
@@ -3100,7 +3139,9 @@ public class Generator {
 				foreach (var property in notifications){
 					string notification_name = GetNotificationName (property);
 					Type event_args_type = GetNotificationArgType (property);
-
+					if (event_args_type == null)
+						continue;
+					
 					notification_event_arg_types [event_args_type] = event_args_type;
 					print ("\t\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_args_type.FullName);
 					print ("\t\t{");
