@@ -70,9 +70,11 @@ namespace MonoMac.CoreMidi {
 	[Static]
 	interface Midi {
 		[Field ("MIDINetworkNotificationContactsDidChange")]
+		[Notification]
 		NSString NetworkNotificationContactsDidChange { get; }
 
 		[Field ("MIDINetworkNotificationSessionDidChange")]
+		[Notification]
 		NSString NetworkNotificationSessionDidChange { get; }
 
 		[Field ("MIDINetworkBonjourServiceType")]
