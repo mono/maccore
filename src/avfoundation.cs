@@ -6,7 +6,7 @@
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
-// Copyright 2011, Xamarin, INc.
+// Copyright 2011-2012, Xamarin, INc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -2358,6 +2358,11 @@ namespace MonoMac.AVFoundation {
 		AVVideoCompositionCoreAnimationTool FromLayer (CALayer videoLayer, CALayer animationLayer);
 	}
 
+	interface AVCaptureSessionRuntimeErrorEventArgs {
+		[Export ("AVCaptureSessionErrorKey")]
+		NSError Error { get; }
+	}
+	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVCaptureSession {
@@ -2437,21 +2442,26 @@ namespace MonoMac.AVFoundation {
 		NSString Preset352x288 { get; }
 
 		[Field ("AVCaptureSessionRuntimeErrorNotification")]
+		[Notification (typeof (AVCaptureSessionRuntimeErrorEventArgs))]
 		NSString RuntimeErrorNotification { get; }
 		
 		[Field ("AVCaptureSessionErrorKey")]
 		NSString ErrorKey { get; }
 		
 		[Field ("AVCaptureSessionDidStartRunningNotification")]
+		[Notification]
 		NSString DidStartRunningNotification { get; }
 		
 		[Field ("AVCaptureSessionDidStopRunningNotification")]
+		[Notification]
 		NSString DidStopRunningNotification { get; }
 		
 		[Field ("AVCaptureSessionWasInterruptedNotification")]
+		[Notification]
 		NSString WasInterruptedNotification { get; }
 		
 		[Field ("AVCaptureSessionInterruptionEndedNotification")]
+		[Notification]
 		NSString InterruptionEndedNotification { get; }
 	}
 
@@ -2519,6 +2529,10 @@ namespace MonoMac.AVFoundation {
 	interface AVCaptureInput {
 		[Export ("ports")]
 		AVCaptureInputPort [] Ports { get; }
+
+		[Field ("AVCaptureInputPortFormatDescriptionDidChangeNotification")]
+		[Notification]
+		NSString PortFormatDescriptionDidChangeNotification { get; }
 	}
 
 	[Since (4,0)]
@@ -2822,12 +2836,15 @@ namespace MonoMac.AVFoundation {
 		AVCaptureDevicePosition Position { get; }
 
 		[Field ("AVCaptureDeviceWasConnectedNotification")]
+		[Notification]
 		NSString WasConnectedNotification { get; }
 
 		[Field ("AVCaptureDeviceWasDisconnectedNotification")]
+		[Notification]
 		NSString WasDisconnectedNotification { get; }
 
 		[Field ("AVCaptureDeviceSubjectAreaDidChangeNotification")]
+		[Notification]
 		NSString SubjectAreaDidChangeNotification { get; }
 
 		// 5.0
@@ -2955,6 +2972,11 @@ namespace MonoMac.AVFoundation {
 
 	delegate void AVTimeHandler (CMTime time);
 
+	interface AVPlayerItemErrorEventArgs {
+		[Export ("AVPlayerItemFailedToPlayToEndTimeErrorKey")]
+		NSError Error { get; }
+	}
+		
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVPlayerItem {
@@ -3032,10 +3054,12 @@ namespace MonoMac.AVFoundation {
 		NSError Error { get; }
 
 		[Field ("AVPlayerItemDidPlayToEndTimeNotification")]
-		NSString DidPLayToEndTimeNotification { get; }
+		[Notification]
+		NSString DidPlayToEndTimeNotification { get; }
 
 		[Since (4,3)]
 		[Field ("AVPlayerItemFailedToPlayToEndTimeNotification")]
+		[Notification (typeof (AVPlayerItemErrorEventArgs))]
 		NSString ItemFailedToPlayToEndTimeNotification { get; }
 
 		[Since (4,3)]
@@ -3064,6 +3088,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (5,0)]
 		[Field ("AVPlayerItemTimeJumpedNotification")]
+		[Notification]
 		NSString TimeJumpedNotification { get; }
 
 		[Since (5,0)]
