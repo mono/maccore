@@ -3831,7 +3831,7 @@ namespace MonoMac.Foundation
 		string PathForResource (string name, [NullAllowed] string ofType, string subpath, string localizationName);
 
 		[Export ("localizedStringForKey:value:table:")]
-		string LocalizedString (string key, string value, string table);
+		string LocalizedString ([NullAllowed] string key, [NullAllowed] string value, [NullAllowed] string table);
 
 		[Export ("objectForInfoDictionaryKey:")]
 		NSObject ObjectForInfoDictionary (string key);
