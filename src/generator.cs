@@ -3037,6 +3037,30 @@ public class Generator {
 				print ("}");
 				print ("");
 			}
+			//
+			// Notification extensions
+			//
+			if (notifications.Count > 0){
+				print ("\n");
+				print ("//");
+				print ("// Notifications");
+				print ("//");
+			
+				print ("public static partial class Notifications {\n");
+				foreach (var property in notifications){
+					string notification_name = GetNotificationName (property);
+					Type event_args_type = GetNotificationArgType (property);
+					if (event_args_type == null)
+						continue;
+					
+					notification_event_arg_types [event_args_type] = event_args_type;
+					print ("\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_args_type.FullName);
+					print ("\t{");
+					print ("\t\treturn NSNotificationCenter.DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", property.Name, event_args_type.FullName);
+					print ("\t}");
+				}
+				print ("\n}");
+			}
 			indent--;
 
 			print ("}} /* class {0} */", TypeName);
@@ -3133,37 +3157,6 @@ public class Generator {
 
 			indent--;
 			print ("}");
-
-			//
-			// Notification extensions
-			//
-			if (notifications.Count > 0){
-				print ("\n");
-				print ("//");
-				print ("// Notifications");
-				print ("//");
-				print ("namespace {0}.Foundation {{", MainPrefix);
-				indent++;
-			
-				print ("public partial class NSNotificationCenter {\n");
-				print ("\tpublic static partial class {0} {{\n", TypeName);
-				foreach (var property in notifications){
-					string notification_name = GetNotificationName (property);
-					Type event_args_type = GetNotificationArgType (property);
-					if (event_args_type == null)
-						continue;
-					
-					notification_event_arg_types [event_args_type] = event_args_type;
-					print ("\t\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_args_type.FullName);
-					print ("\t\t{");
-					print ("\t\t\treturn DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", type.Namespace + "." + TypeName + "." + property.Name, event_args_type.FullName);
-					print ("\t\t}");
-				}
-				print ("\t}\n}");
-				indent--;
-				print ("}");
-			}
-			
 		}
 	}
 
