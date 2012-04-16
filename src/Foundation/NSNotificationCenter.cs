@@ -10,11 +10,13 @@ namespace MonoMac.Foundation {
 
 	[Register]
 	internal class InternalNSNotificationHandler : NSObject  {
+		NSNotificationCenter notificationCenter;
 		Action<NSNotification> notify;
 		
-		public InternalNSNotificationHandler (Action<NSNotification> notify)
+		public InternalNSNotificationHandler (NSNotificationCenter notificationCenter, Action<NSNotification> notify)
 		{
-				this.notify = notify;
+			this.notificationCenter = notificationCenter;
+			this.notify = notify;
 		}
 		
 		[Export ("post:")]
@@ -23,6 +25,15 @@ namespace MonoMac.Foundation {
 		{
 			notify (s);
 			s.Dispose ();
+		}
+
+		protected override void Dispose (bool disposing)
+		{
+			if (disposing && notificationCenter != null){
+				notificationCenter.RemoveObserver (this);
+				notificationCenter = null;
+			}
+			base.Dispose (disposing);
 		}
 	}
 
@@ -42,7 +53,7 @@ namespace MonoMac.Foundation {
 			if (notify == null)
 				throw new ArgumentNullException ("notify");
 			
-			var proxy = new InternalNSNotificationHandler (notify);
+			var proxy = new InternalNSNotificationHandler (this, notify);
 			
 			AddObserver (proxy, postSelector, aName, fromObject);
 
