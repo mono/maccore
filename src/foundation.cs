@@ -904,15 +904,19 @@ namespace MonoMac.Foundation
 		
 		// There is no info associated with these notifications
 		[Field ("NSMetadataQueryDidStartGatheringNotification")]
+		[Notification]
 		NSString DidStartGatheringNotification { get; }
 	
 		[Field ("NSMetadataQueryGatheringProgressNotification")]
+		[Notification]
 		NSString GatheringProgressNotification { get; }
 		
 		[Field ("NSMetadataQueryDidFinishGatheringNotification")]
+		[Notification]
 		NSString DidFinishGatheringNotification { get; }
 		
 		[Field ("NSMetadataQueryDidUpdateNotification")]
+		[Notification]
 		NSString DidUpdateNotification { get; }
 		
 		[Field ("NSMetadataQueryResultContentRelevanceAttribute")]
@@ -1653,6 +1657,7 @@ namespace MonoMac.Foundation
 		NSLocaleLanguageDirection GetLineDirection (string isoLanguageCode);
 
 		[Field ("NSCurrentLocaleDidChangeNotification")]
+		[Notification]
 		NSString CurrentLocaleDidChangeNotification { get; }
 
 		[Export ("objectForKey:"), Internal]
@@ -1923,6 +1928,14 @@ namespace MonoMac.Foundation
 	}
 
 #if !MONOMAC
+	interface NSUbiquitousKeyValueStoreChangeEventArgs {
+		[Export ("NSUbiquitousKeyValueStoreChangedKeysKey")]
+		string [] ChangedKeys { get; }
+	
+		[Export ("NSUbiquitousKeyValueStoreChangeReasonKey")]
+		NSUbiquitousKeyValueStoreChangeReason ChangeReason { get; }
+	}
+
 	[BaseType (typeof (NSObject))]
 	interface NSUbiquitousKeyValueStore {
 		[Static]
@@ -1987,6 +2000,7 @@ namespace MonoMac.Foundation
 		bool Synchronize ();
 
 		[Field ("NSUbiquitousKeyValueStoreDidChangeExternallyNotification")]
+		[Notification (typeof (NSUbiquitousKeyValueStoreChangeEventArgs))]
 		NSString DidChangeExternallyNotification { get; }
 
 		[Field ("NSUbiquitousKeyValueStoreChangeReasonKey")]
@@ -2767,6 +2781,13 @@ namespace MonoMac.Foundation
 		void SetDefaultCredential (NSUrlCredential credential, NSUrlProtectionSpace forProtectionSpace);
 	}
 
+	interface NSUndoManagerCloseUndoGroupEventArgs {
+		// Bug in docs, see header file
+		[Export ("NSUndoManagerGroupIsDiscardableKey")]
+		[NullAllowed]
+		bool Discardable { get; }
+	}
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSUndoManager {
 		[Export ("beginUndoGrouping")]
@@ -2851,24 +2872,31 @@ namespace MonoMac.Foundation
 		string RedoMenuTitleForUndoActionName (string name);
 
 		[Field ("NSUndoManagerCheckpointNotification")]
+		[Notification]
 		NSString CheckpointNotification { get; }
 
 		[Field ("NSUndoManagerDidOpenUndoGroupNotification")]
+		[Notification]
 		NSString DidOpenUndoGroupNotification { get; }
 
 		[Field ("NSUndoManagerDidRedoChangeNotification")]
+		[Notification]
 		NSString DidRedoChangeNotification { get; }
 
 		[Field ("NSUndoManagerDidUndoChangeNotification")]
+		[Notification]
 		NSString DidUndoChangeNotification { get; }
 
 		[Field ("NSUndoManagerWillCloseUndoGroupNotification")]
+		[Notification (typeof (NSUndoManagerCloseUndoGroupEventArgs))]
 		NSString WillCloseUndoGroupNotification { get; }
 
 		[Field ("NSUndoManagerWillRedoChangeNotification")]
+		[Notification]
 		NSString WillRedoChangeNotification { get; }
 
 		[Field ("NSUndoManagerWillUndoChangeNotification")]
+		[Notification]
 		NSString WillUndoChangeNotification { get; }
 
 		[Since (5,0)]
@@ -2887,8 +2915,8 @@ namespace MonoMac.Foundation
 		NSString GroupIsDiscardableKey { get; }
 
 		[Field ("NSUndoManagerDidCloseUndoGroupNotification")]
+		[Notification (typeof (NSUndoManagerCloseUndoGroupEventArgs))]
 		NSString DidCloseUndoGroupNotification { get; }
-
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLProtectionSpace")]
