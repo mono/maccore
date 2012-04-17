@@ -27,7 +27,7 @@
 //
 
 
-namespace MonoTouch.Foundation {
+namespace MonoMac.Foundation {
 	public abstract partial class NSUrlProtocol : NSObject {
 		NSUrlProtocolClient client;
 

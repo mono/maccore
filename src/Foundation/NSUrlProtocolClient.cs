@@ -50,42 +50,42 @@ namespace MonoMac.Foundation {
 
 		public void Redirected (NSUrlProtocol protocol, NSUrlRequest redirectedToEequest, NSUrlResponse redirectResponse)
 		{
-			MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr_IntPtr (this.Handle, selUrlProtocolWasRedirectedToRequestRedirectResponse_, protocol.Handle, redirectedToEequest.Handle, redirectResponse.Handle);
+			Messaging.void_objc_msgSend_IntPtr_IntPtr_IntPtr (this.Handle, selUrlProtocolWasRedirectedToRequestRedirectResponse_, protocol.Handle, redirectedToEequest.Handle, redirectResponse.Handle);
 		}
 
 		public void CachedResponseIsValid (NSUrlProtocol protocol, NSCachedUrlResponse cachedResponse)
 		{
-			MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolCachedResponseIsValid_, protocol.Handle, cachedResponse.Handle);
+			Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolCachedResponseIsValid_, protocol.Handle, cachedResponse.Handle);
 		}
 
 		public void ReceivedResponse (NSUrlProtocol protocol, NSUrlResponse response, NSUrlCacheStoragePolicy policy)
 		{
-			MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr_int (this.Handle, selUrlProtocolDidReceiveResponseCacheStoragePolicy_, protocol.Handle, response.Handle, (int)policy);
+			Messaging.void_objc_msgSend_IntPtr_IntPtr_int (this.Handle, selUrlProtocolDidReceiveResponseCacheStoragePolicy_, protocol.Handle, response.Handle, (int)policy);
 		}
 
 		public void DataLoaded (NSUrlProtocol protocol, NSData data)
 		{
-			MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolDidLoadData_, protocol.Handle, data.Handle);
+			Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolDidLoadData_, protocol.Handle, data.Handle);
 		}
 
 		public void FinishedLoading (NSUrlProtocol protocol)
 		{
-			MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr (this.Handle, selUrlProtocolDidFinishLoading_, protocol.Handle);
+			Messaging.void_objc_msgSend_IntPtr (this.Handle, selUrlProtocolDidFinishLoading_, protocol.Handle);
 		}
 
 		public void FailedWithError (NSUrlProtocol protocol, NSError error)
 		{
-			MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolDidFailWithError_, protocol.Handle, error.Handle);
+			Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolDidFailWithError_, protocol.Handle, error.Handle);
 		}
 
 		public void ReceivedAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge)
 		{
-			MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolDidReceiveAuthenticationChallenge_, protocol.Handle, challenge.Handle);
+			Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolDidReceiveAuthenticationChallenge_, protocol.Handle, challenge.Handle);
 		}
 
 		public void CancelledAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge)
 		{
-			MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolDidCancelAuthenticationChallenge_, protocol.Handle, challenge.Handle);
+			Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUrlProtocolDidCancelAuthenticationChallenge_, protocol.Handle, challenge.Handle);
 		}
 	}
 }
