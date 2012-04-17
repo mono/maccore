@@ -5732,55 +5732,18 @@ namespace MonoMac.Foundation
 	}
 #endif
 
-	[BaseType (typeof (NSObject), Name="NSURLProtocolClient")]
-	[Model]
 	interface NSUrlProtocolClient {
-		[Abstract]
-		[Export ("UrlProtocol:wasRedirectedToRequest:redirectResponse:"), EventArgs ("NSUrlProtocolRedirect")]
-		void Redirected (NSUrlProtocol protocol, NSUrlRequest redirectedToEequest, NSUrlResponse redirectResponse);
-
-		[Abstract]
-		[Export ("UrlProtocol:cachedResponseIsValid:"), EventArgs ("NSUrlProtocolCachedResponse")]
-		void CachedResponseIsValid (NSUrlProtocol protocol, NSCachedUrlResponse cachedResponse);
-
-		[Abstract]
-		[Export ("UrlProtocol:didReceiveResponse:cacheStoragePolicy:"), EventArgs ("NSUrlProtocolResponse")]
-		void ReceivedResponse (NSUrlProtocol protocol, NSUrlResponse response, NSUrlCacheStoragePolicy policy);
-
-		[Abstract]
-		[Export ("UrlProtocol:didLoadData:"), EventArgs ("NSUrlProtocolData")]
-		void DataLoaded (NSUrlProtocol protocol, NSData data);
-
-		[Abstract]
-		[Export ("UrlProtocolDidFinishLoading:")]
-		void FinishedLoading (NSUrlProtocol protocol);
-
-		[Abstract]
-		[Export ("UrlProtocol:didFailWithError:"), EventArgs ("NSUrlProtocolError")]
-		void FailedWithError (NSUrlProtocol protocol, NSError error);
-
-		[Abstract]
-		[Export ("UrlProtocol:didReceiveAuthenticationChallenge:"), EventArgs ("NSUrlProtocolChallenge")]
-		void ReceivedAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge);
-
-		[Abstract]
-		[Export ("UrlProtocol:didCancelAuthenticationChallenge:"), EventArgs ("NSUrlProtocolChallenge")]
-		void CancelledAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge);
 	}
 
 	[BaseType (typeof (NSObject),
 		   Name="NSURLProtocol",
-		   Delegates=new string [] {"WeakClient"},
-		   Events=new Type [] {typeof (NSUrlProtocolClient)})]
+		   Delegates=new string [] {"WeakClient"})]
 	interface NSUrlProtocol {
 		[Export ("initWithRequest:cachedResponse:client:")]
 		IntPtr Constructor (NSUrlRequest request, [NullAllowed] NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
 
 		[Export ("client")]
 		NSObject WeakClient { get; set; }
-
-		[Wrap ("WeakClient")]
-		NSUrlProtocolClient Client { get; set; }
 
 		[Export ("request")]
 		NSUrlRequest Request { get; }
