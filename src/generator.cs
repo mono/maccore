@@ -3040,6 +3040,7 @@ public class Generator {
 			//
 			// Notification extensions
 			//
+			indent--;
 			if (notifications.Count > 0){
 				print ("\n");
 				print ("//");
@@ -3050,18 +3051,17 @@ public class Generator {
 				foreach (var property in notifications){
 					string notification_name = GetNotificationName (property);
 					Type event_args_type = GetNotificationArgType (property);
-					if (event_args_type == null)
-						continue;
-					
-					notification_event_arg_types [event_args_type] = event_args_type;
-					print ("\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_args_type.FullName);
+					string event_name = event_args_type == null ? "NSNotificationEventArgs" : event_args_type.FullName;
+
+					if (event_args_type != null)
+						notification_event_arg_types [event_args_type] = event_args_type;
+					print ("\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_name);
 					print ("\t{");
-					print ("\t\treturn NSNotificationCenter.DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", property.Name, event_args_type.FullName);
+					print ("\t\treturn NSNotificationCenter.DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", property.Name, event_name);
 					print ("\t}");
 				}
 				print ("\n}");
 			}
-			indent--;
 
 			print ("}} /* class {0} */", TypeName);
 
