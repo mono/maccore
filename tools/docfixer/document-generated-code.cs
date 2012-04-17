@@ -18,19 +18,23 @@ using System.Linq;
 using System.Xml.XPath;
 using System.Xml;
 using System.Text;
+
 #if MONOMAC
 using MonoMac.Foundation;
 #else
 using MonoTouch.Foundation;
 #endif
+using macdoc;
 
 class DocumentGeneratedCode {
 #if MONOMAC
-	static string ns = "MonoMac";
 	Type nso = typeof (MonoMac.Foundation.NSObject);
+	const string ns = "MonoMac";
+	const string docBase = "/Developer/Documentation/DocSets/com.apple.adc.documentation.AppleSnowLeopard.CoreReference.docset";
 #else
-	static string ns = "MonoTouch";
 	Type nso = typeof (MonoTouch.Foundation.NSObject);
+	const string ns = "MonoTouch";
+	const string docBase = "/Library/Developer/Shared/Documentation/DocSets/com.apple.adc.documentation.AppleiOS5_0.iOSLibrary.docset";
 #endif
 
 	static void Help ()
@@ -41,6 +45,9 @@ class DocumentGeneratedCode {
 	static string assembly_dir;
 	static Assembly assembly;
 	static bool mergeAppledocs;
+	static AppleDocMerger docGenerator;
+
+	static Dictionary<Type,XDocument> docs = new Dictionary<Type,XDocument> ();
 	
 	static string GetMdocPath (Type t)
 	{
@@ -49,7 +56,6 @@ class DocumentGeneratedCode {
 		return String.Format ("{0}/{1}/{2}.xml", assembly_dir, ns, typeName);
 	}
 	
-	static Dictionary<Type,XDocument> docs = new Dictionary<Type,XDocument> ();
 	static XDocument GetDoc (Type t)
 	{
 		if (docs.ContainsKey (t))
@@ -116,13 +122,13 @@ class DocumentGeneratedCode {
 		var example = field.XPathSelectElement ("Docs/remarks/example");
 		if (mergeAppledocs){
 			if (returnType.Value == "MonoMac.Foundation.NSString" && export.EndsWith ("Notification")){
-				var mdoc = DocGenerator.GetAppleMemberDocs (t, export);
+				var mdoc = docGenerator.GetAppleMemberDocs (ToCecilType (t), export);
 				if (mdoc == null){
 					Console.WriteLine ("Failed to load docs for {0} - {1}", t.Name, export);
 					return;
 				}
 
-				var section = DocGenerator.ExtractSection (mdoc);
+				var section = docGenerator.ExtractSection (mdoc);
 
 				//
 				// Make this pretty, the first paragraph we turn into the summary,
@@ -193,8 +199,6 @@ class DocumentGeneratedCode {
 		var debug = Environment.GetEnvironmentVariable ("DOCFIXER");
 		bool debugDoc = false;
 		
-		DocGenerator.DebugDocs = false;
-		
 		for (int i = 0; i < args.Length; i++){
 			var arg = args [i];
 			if (arg == "-h" || arg == "--help"){
@@ -206,7 +210,6 @@ class DocumentGeneratedCode {
 				continue;
 			}
 			if (arg == "--debugdoc"){
-				DocGenerator.DebugDocs = true;
 				debugDoc = true;
 				continue;
 			}
@@ -229,9 +232,18 @@ class DocumentGeneratedCode {
 		assembly_dir = Path.Combine (dir, "en");
 		assembly = Assembly.LoadFrom (lib);
 
+		docGenerator = new AppleDocMerger (new AppleDocMerger.Options {
+			DocBase = Path.Combine (docBase, "Contents/Resources/Documents/documentation"),
+			DebugDocs = debugDoc,
+			MonodocArchive = new MDocDirectoryArchive (assembly_dir),
+			Assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly (lib),
+			BaseAssemblyNamespace = ns,
+			ImportSamples = false
+		});
+
 		foreach (Type t in assembly.GetTypes ()){
 			if (debugDoc){
-				string str = DocGenerator.GetAppleDocFor (t);
+				string str = docGenerator.GetAppleDocFor (ToCecilType (t));
 				if (str == null){
 					Console.WriteLine ("Could not find docs for {0}", t);
 				}
@@ -251,5 +263,10 @@ class DocumentGeneratedCode {
 		SaveDocs ();
 		
 		return 0;
+	}
+	
+	static Mono.Cecil.TypeDefinition ToCecilType (Type t)
+	{
+		return new Mono.Cecil.TypeDefinition (t.Namespace, t.Name, (Mono.Cecil.TypeAttributes)t.Attributes);
 	}
 }
