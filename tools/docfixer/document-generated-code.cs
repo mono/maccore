@@ -148,6 +148,67 @@ class DocumentGeneratedCode {
 		}
 	}
 
+	//
+	// Handles notifications
+	//
+	static Dictionary<Type,List<Type>> event_args_to_notification_uses = new Dictionary<Type,List<Type>> ();
+	
+	public static void ProcessNotification (Type t, XDocument xdoc, PropertyInfo pi)
+	{
+		var notification = pi.GetCustomAttributes (typeof (NotificationAttribute), true);
+		if (notification.Length == 0)
+			return;
+		
+		var notification_event_args = ((NotificationAttribute) notification [0]).Type;
+		
+		var field = xdoc.XPathSelectElement ("Type/Members/Member[@MemberName='" + pi.Name + "']");
+		if (field == null){
+			Console.WriteLine ("Warning: {0} document is not up-to-date with the latest assembly", t);
+			return;
+		}
+		var name = pi.Name;
+		var mname = name.Substring (0, name.Length-("Notification".Length));
+		
+		var returnType = field.XPathSelectElement ("ReturnValue/ReturnType");
+		var summary = field.XPathSelectElement ("Docs/summary");
+		var remarks = field.XPathSelectElement ("Docs/remarks");
+		var example = field.XPathSelectElement ("Docs/remarks/example");
+
+		var body = new StringBuilder ("    Console.WriteLine (\"Notification: {0}\", args.Notification);");
+	
+		if (notification_event_args != null){
+			body.Append ("\n");
+			foreach (var p in notification_event_args.GetProperties ()){
+				body.AppendFormat ("\n    Console.WriteLine (\"{0}\", args.{0});", p.Name);
+			}
+		}
+		
+		remarks.AddFirst (XElement.Parse (String.Format ("<para id='tool-remark'>If you want to subscribe to this notification, you can use the convenience <see cref='T:{0}+Notifications'/>.<see cref='M:{0}+Notifications.Observe{1}'/> method which offers strongly typed access to the parameters of the notification.</para>", t.Name, mname)));
+		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
+							    "// Lambda style, listening\n" +
+							    "notification = {0}.Notifications.Observe{1} ((sender, args) => {{\n    /* Access strongly typed args */\n{2}\n}});\n\n" +
+							    "// To stop listening:\n" +
+							    "notification.Dispose ();\n\n" +
+							    "// Method style\nNSObject notification;" +
+							    "void Callback (object sender, {1} args)\n"+
+							    "{{\n    // Access strongly typed args\n{2}\n}}\n\n" +
+							    "void Setup ()\n{{\n" +
+							    "    notification = {0}.Notifications.Observe{1} (Callback);\n}}\n\n" +
+							    "void Teardown ()\n{{\n" +
+							    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body)));
+
+		// Keep track of the uses, so we can list all of the observers.
+		if (notification_event_args != null){
+			List<Type> list;
+			if (!event_args_to_notification_uses.ContainsKey (notification_event_args))
+				list = new List<Type> ();
+			else
+				list = event_args_to_notification_uses [notification_event_args];
+			list.Add (notification_event_args);
+			event_args_to_notification_uses [notification_event_args] = list;
+		}
+	}
+
 	public static void PopulateEvents (XDocument xmldoc, BaseTypeAttribute bta, Type t)
 	{
 		for (int i = 0; i < bta.Events.Length; i++){
@@ -181,13 +242,25 @@ class DocumentGeneratedCode {
 			return;
 		
 		foreach (var pi in t.GatherProperties ()){
+			object [] attrs;
+			var kbd = false;
+			if (t.Name == "UIKeyboard"){
+				Console.WriteLine ("KEYBOARD");
+				kbd = true;
+			}
 			if (pi.GetCustomAttributes (typeof (FieldAttribute), true).Length > 0){
+				if (kbd)
+				Console.WriteLine ("--->FILED");
 				ProcessField (t, xmldoc, pi);
+
+				if ((attrs = pi.GetCustomAttributes (typeof (NotificationAttribute), true)).Length > 0)
+					ProcessNotification (t, xmldoc, pi);
 				continue;
 			}
+			
 		}
 
-		if (bta.Events != null){
+		if (bta != null && bta.Events != null){
 			PopulateEvents (xmldoc, bta, t);
 		}
 	}
@@ -255,10 +328,14 @@ class DocumentGeneratedCode {
 				continue;
 
 			var btas = t.GetCustomAttributes (typeof (BaseTypeAttribute), true);
-			if (btas.Length > 0)
-				ProcessNSO (t, (BaseTypeAttribute) btas [0]);
+			ProcessNSO (t, btas.Length > 0  ? (BaseTypeAttribute) btas [0] : null);
 		}
 
+		foreach (Type notification_event_args in event_args_to_notification_uses.Keys){
+			var uses = event_args_to_notification_uses [notification_event_args];
+
+			
+		}
 		Console.WriteLine ("saving");
 		SaveDocs ();
 		
