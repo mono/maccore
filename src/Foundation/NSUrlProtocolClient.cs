@@ -31,7 +31,6 @@ using System;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
-	[Register("NSURLProtocolClient", true)]
 	public sealed class NSUrlProtocolClient : NSObject
 	{
 		public NSUrlProtocolClient (IntPtr handle)
