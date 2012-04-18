@@ -49,21 +49,22 @@ class DocumentGeneratedCode {
 
 	static Dictionary<Type,XDocument> docs = new Dictionary<Type,XDocument> ();
 	
-	static string GetMdocPath (Type t)
+	static string GetMdocPath (Type t, bool notification = false)
 	{
 		var ns = t.Namespace;
 		var typeName = t.FullName.Substring (ns.Length+1);
-		return String.Format ("{0}/{1}/{2}.xml", assembly_dir, ns, typeName);
+		return String.Format ("{0}/{1}/{2}{3}.xml", assembly_dir, ns, typeName, notification ? "+Notifications" : "");
 	}
 	
-	static XDocument GetDoc (Type t)
+	static XDocument GetDoc (Type t, bool notification = false)
 	{
-		if (docs.ContainsKey (t))
+		if (notification == false && docs.ContainsKey (t))
 			return docs [t];
 		
-		string xmldocpath = GetMdocPath (t);
+		string xmldocpath = GetMdocPath (t, notification);
+		
 		if (!File.Exists (xmldocpath)) {
-			Console.WriteLine ("DOC REGEN PENDING for type: {0} (File missing={1})", t.FullName, xmldocpath);
+			Console.WriteLine ("Document missing for type: {0} (File missing={1}), must run update-docs", t.FullName, xmldocpath);
 			return null;
 		}
 		
@@ -71,7 +72,8 @@ class DocumentGeneratedCode {
 		try {
 			using (var f = File.OpenText (xmldocpath))
 				xmldoc = XDocument.Load (f);
-			docs [t] = xmldoc;
+			if (notification == false)
+				docs [t] = xmldoc;
 		} catch {
 			Console.WriteLine ("Failure while loading {0}", xmldocpath);
 			return null;
@@ -79,23 +81,28 @@ class DocumentGeneratedCode {
 
 		return xmldoc;
 	}
+
+	static void Save (string xmldocpath, XDocument xmldoc)
+	{
+		var xmlSettings = new XmlWriterSettings (){
+			Indent = true,
+			Encoding = new UTF8Encoding (false),
+			OmitXmlDeclaration = true
+		};
+		using (var output = File.CreateText (xmldocpath)){
+			var xmlw = XmlWriter.Create (output, xmlSettings);
+			xmldoc.Save (xmlw);
+			output.WriteLine ();
+		}
+	}
 	
 	static void SaveDocs ()
 	{
 		foreach (var t in docs.Keys){
 			var xmldocpath = GetMdocPath (t);
 			var xmldoc = docs [t];
-				
-			var xmlSettings = new XmlWriterSettings (){
-				Indent = true,
-				Encoding = new UTF8Encoding (false),
-				OmitXmlDeclaration = true
-			};
-			using (var output = File.CreateText (xmldocpath)){
-				var xmlw = XmlWriter.Create (output, xmlSettings);
-				xmldoc.Save (xmlw);
-				output.WriteLine ();
-			}
+
+			Save (xmldocpath, xmldoc);
 		}
 	}
 
@@ -113,7 +120,10 @@ class DocumentGeneratedCode {
 		
 		var field = xdoc.XPathSelectElement ("Type/Members/Member[@MemberName='" + pi.Name + "']");
 		if (field == null){
-			Console.WriteLine ("Warning: {0} document is not up-to-date with the latest assembly", t);
+			if (!warnings_up_to_date.ContainsKey (t)){
+				Console.WriteLine ("Warning: {0} document is not up-to-date with the latest assembly (could not find Field <Member MemberName='{1}')", t, pi.Name);
+				warnings_up_to_date [t] = true;
+			}
 			return;
 		}
 		var returnType = field.XPathSelectElement ("ReturnValue/ReturnType");
@@ -152,7 +162,7 @@ class DocumentGeneratedCode {
 	// Handles notifications
 	//
 	static Dictionary<Type,List<Type>> event_args_to_notification_uses = new Dictionary<Type,List<Type>> ();
-	
+	static Dictionary<Type,bool> warnings_up_to_date = new Dictionary<Type, bool> ();
 	public static void ProcessNotification (Type t, XDocument xdoc, PropertyInfo pi)
 	{
 		var notification = pi.GetCustomAttributes (typeof (NotificationAttribute), true);
@@ -163,7 +173,10 @@ class DocumentGeneratedCode {
 		
 		var field = xdoc.XPathSelectElement ("Type/Members/Member[@MemberName='" + pi.Name + "']");
 		if (field == null){
-			Console.WriteLine ("Warning: {0} document is not up-to-date with the latest assembly", t);
+			if (!warnings_up_to_date.ContainsKey (t)){
+				Console.WriteLine ("WARNING: {0} document is not up-to-date with the latest assembly", t);
+				warnings_up_to_date [t] = true;
+			}
 			return;
 		}
 		var name = pi.Name;
@@ -207,6 +220,50 @@ class DocumentGeneratedCode {
 			list.Add (notification_event_args);
 			event_args_to_notification_uses [notification_event_args] = list;
 		}
+
+		DocumentNotificationNestedType (t);
+	}
+
+	public static void DocumentNotificationNestedType (Type t)
+	{
+		var class_doc = GetDoc (t, true);
+
+		if (class_doc == null){
+			Console.WriteLine ("Error, can not find Notification class for type {0}", t);
+			return;
+		}
+
+		var class_summary = class_doc.XPathSelectElement ("Type/Docs/summary");
+		var class_remarks = class_doc.XPathSelectElement ("Type/Docs/remarks");
+
+		class_summary.Value = "Notification posted by the <see cref =\"T:" + t.FullName + "\"/> class.";
+		class_remarks.Value = "";
+		class_remarks.Add (XElement.Parse ("<para>This is a static class which contains various helper methods that allow developers to observe events posted " +
+						   "in the iOS notification hub (<see cref=\"T:MonoTouch.Foundation.NSNotificationCenter\"/>).</para>"));
+		class_remarks.Add (XElement.Parse ("<para>The methods defined in this class post events invoke the provided method or lambda with a " +
+						   "<see cref=\"T:MonoTouch.Foundation.NSNotificationEventArgs\"/> parameter which contains strongly typed properties for the notification arguments.</para>"));
+
+		var notifications = from prop in t.GetProperties ()
+			let fieldAttrs = prop.GetCustomAttributes (typeof (FieldAttribute), true)
+			where fieldAttrs.Length > 0 && prop.GetCustomAttributes (typeof (NotificationAttribute), true).Length > 0
+			let propName = prop.Name
+			let propLen = propName.Length
+			let convertedName = propName.Substring (0, propLen-("Notification".Length))
+			select new Tuple<string,string> (convertedName, ((FieldAttribute) fieldAttrs [0]).SymbolName) ;
+
+		foreach (var notification in notifications){
+			var method = class_doc.XPathSelectElement ("Type/Members/Member[@MemberName='Observe" + notification.Item1 + "']");
+
+			var handler = method.XPathSelectElement ("Docs/param");
+			var summary = method.XPathSelectElement ("Docs/summary");
+			var remarks = method.XPathSelectElement ("Docs/remarks");
+			if (handler == null)
+				Console.WriteLine ("Looking for {0}, and this is the class\n{1}", notification.Item1, class_doc);
+			handler.Value = "Method to invoke when the notification is posted.";
+			summary.Value = "Registers a method to be notified when the " + notification.Item2 + " notification is posted.";
+		}
+		Save (GetMdocPath (t, true), class_doc);
+		
 	}
 
 	public static void PopulateEvents (XDocument xmldoc, BaseTypeAttribute bta, Type t)
@@ -244,13 +301,7 @@ class DocumentGeneratedCode {
 		foreach (var pi in t.GatherProperties ()){
 			object [] attrs;
 			var kbd = false;
-			if (t.Name == "UIKeyboard"){
-				Console.WriteLine ("KEYBOARD");
-				kbd = true;
-			}
 			if (pi.GetCustomAttributes (typeof (FieldAttribute), true).Length > 0){
-				if (kbd)
-				Console.WriteLine ("--->FILED");
 				ProcessField (t, xmldoc, pi);
 
 				if ((attrs = pi.GetCustomAttributes (typeof (NotificationAttribute), true)).Length > 0)
