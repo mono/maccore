@@ -623,10 +623,8 @@ namespace MonoMac.CoreFoundation {
 					protocol = "ftp://";
 					break;
 				case CFProxyType.HTTP:
-					protocol = "http://";
-					break;
 				case CFProxyType.HTTPS:
-					protocol = "https://";
+					protocol = "http://";
 					break;
 				default:
 					return null;
