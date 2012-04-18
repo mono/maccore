@@ -163,6 +163,8 @@ class DocumentGeneratedCode {
 	//
 	static Dictionary<Type,List<Type>> event_args_to_notification_uses = new Dictionary<Type,List<Type>> ();
 	static Dictionary<Type,bool> warnings_up_to_date = new Dictionary<Type, bool> ();
+	static List<Type> nested_types = new List<Type> ();
+	
 	public static void ProcessNotification (Type t, XDocument xdoc, PropertyInfo pi)
 	{
 		var notification = pi.GetCustomAttributes (typeof (NotificationAttribute), true);
@@ -195,14 +197,18 @@ class DocumentGeneratedCode {
 				body.AppendFormat ("\n    Console.WriteLine (\"{0}\", args.{0});", p.Name);
 			}
 		}
+
+		if (remarks.Value == "To be added.")
+			remarks.Value = "";
 		
 		remarks.AddFirst (XElement.Parse (String.Format ("<para id='tool-remark'>If you want to subscribe to this notification, you can use the convenience <see cref='T:{0}+Notifications'/>.<see cref='M:{0}+Notifications.Observe{1}'/> method which offers strongly typed access to the parameters of the notification.</para>", t.Name, mname)));
+		remarks.Add (XElement.Parse ("<para>The following example shows how to use the strongly typed Notifications class, to take the guesswork out of the available properties in the notification:</para>"));
 		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
-							    "// Lambda style, listening\n" +
+							    "//\n// Lambda style\n//\n\n// listening\n" +
 							    "notification = {0}.Notifications.Observe{1} ((sender, args) => {{\n    /* Access strongly typed args */\n{2}\n}});\n\n" +
 							    "// To stop listening:\n" +
 							    "notification.Dispose ();\n\n" +
-							    "// Method style\nNSObject notification;" +
+							    "//\n// Method style\n//\nNSObject notification;\n" +
 							    "void Callback (object sender, {1} args)\n"+
 							    "{{\n    // Access strongly typed args\n{2}\n}}\n\n" +
 							    "void Setup ()\n{{\n" +
@@ -220,11 +226,10 @@ class DocumentGeneratedCode {
 			list.Add (notification_event_args);
 			event_args_to_notification_uses [notification_event_args] = list;
 		}
-
-		DocumentNotificationNestedType (t);
+		DocumentNotificationNestedType (t, pi, body.ToString ());
 	}
 
-	public static void DocumentNotificationNestedType (Type t)
+	public static void DocumentNotificationNestedType (Type t, PropertyInfo pi, string body)
 	{
 		var class_doc = GetDoc (t, true);
 
@@ -244,23 +249,43 @@ class DocumentGeneratedCode {
 						   "<see cref=\"T:MonoTouch.Foundation.NSNotificationEventArgs\"/> parameter which contains strongly typed properties for the notification arguments.</para>"));
 
 		var notifications = from prop in t.GetProperties ()
+			let propName = prop.Name
+			where propName == pi.Name
 			let fieldAttrs = prop.GetCustomAttributes (typeof (FieldAttribute), true)
 			where fieldAttrs.Length > 0 && prop.GetCustomAttributes (typeof (NotificationAttribute), true).Length > 0
-			let propName = prop.Name
 			let propLen = propName.Length
-			let convertedName = propName.Substring (0, propLen-("Notification".Length))
+			let convertedName = propName.EndsWith ("Notification") ? propName.Substring (0, propLen-("Notification".Length)) : propName
 			select new Tuple<string,string> (convertedName, ((FieldAttribute) fieldAttrs [0]).SymbolName) ;
 
 		foreach (var notification in notifications){
-			var method = class_doc.XPathSelectElement ("Type/Members/Member[@MemberName='Observe" + notification.Item1 + "']");
+			var mname = "Observe" + notification.Item1;
+			var method = class_doc.XPathSelectElement ("Type/Members/Member[@MemberName='" + mname + "']");
 
 			var handler = method.XPathSelectElement ("Docs/param");
 			var summary = method.XPathSelectElement ("Docs/summary");
 			var remarks = method.XPathSelectElement ("Docs/remarks");
+			var returns = method.XPathSelectElement ("Docs/returns");
 			if (handler == null)
 				Console.WriteLine ("Looking for {0}, and this is the class\n{1}", notification.Item1, class_doc);
 			handler.Value = "Method to invoke when the notification is posted.";
 			summary.Value = "Registers a method to be notified when the " + notification.Item2 + " notification is posted.";
+			returns.Value = "The returned NSObject represents the registered notification.   Either call Dispose on the object to stop receiving notifications, or pass it to <see cref=\"M:MonoTouch.Foundation.NSNotification.RemoveObserver\"/>";
+			remarks.Value = "";
+			remarks.Add (XElement.Parse ("<para>The following example shows how you can use this method in your code</para>"));
+
+			remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
+								    "//\n// Lambda style\n//\n\n// listening\n" +
+								    "notification = {0}.Notifications.Observe{1} ((sender, args) => {{\n    /* Access strongly typed args */\n{2}\n}});\n\n" +
+								    "// To stop listening:\n" +
+								    "notification.Dispose ();\n\n" +
+								    "//\n//Method style\n//\nNSObject notification;\n" +
+								    "void Callback (object sender, {1} args)\n"+
+								    "{{\n    // Access strongly typed args\n{2}\n}}\n\n" +
+								    "void Setup ()\n{{\n" +
+								    "    notification = {0}.Notifications.Observe{1} (Callback);\n}}\n\n" +
+								    "void Teardown ()\n{{\n" +
+								    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body)));
+		
 		}
 		Save (GetMdocPath (t, true), class_doc);
 		
