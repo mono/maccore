@@ -428,11 +428,6 @@ namespace MonoMac.AudioToolbox {
 			AudioFileID audioFile, bool useCache, ref int numBytes, 
 			IntPtr *ptr_outPacketDescriptions, long inStartingPacket, ref int numPackets, IntPtr outBuffer);
 
-		[DllImport (Constants.AudioToolboxLibrary)]
-		unsafe extern static OSStatus AudioFileReadPackets (
-			AudioFileID audioFile, bool useCache, ref int numBytes, 
-			IntPtr *ptr_outPacketDescriptions, long inStartingPacket, ref int numPackets, IntPtr outBuffer);
-		
 		public AudioStreamPacketDescription [] ReadPacketData (long inStartingPacket, int nPackets, byte [] buffer)
 		{
 			if (buffer == null)
