@@ -538,7 +538,11 @@ namespace MonoMac.CoreFoundation {
 			if (native == IntPtr.Zero)
 				return null;
 			
-			return new CFProxySettings (new NSDictionary (native));
+			var dict = new NSDictionary (native);
+			// Must release since the IntPtr constructor calls Retain and
+			// CFNetworkCopySystemProxySettings return value is already retained
+			dict.Release ();
+			return new CFProxySettings (dict);
 		}
 		
 #if notyet
