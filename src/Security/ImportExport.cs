@@ -101,6 +101,13 @@ namespace MonoMac.Security {
 			}
 		}
 		
+		static NSDictionary GetRetainedDictionary (IntPtr handle)
+		{
+			NSDictionary dict = (NSDictionary) Runtime.GetNSObject (handle);
+			dict.Release ();
+			return dict;
+		}
+		
 		static public SecStatusCode ImportPkcs12 (NSData data, NSDictionary options, out NSDictionary[] array)
 		{
 			if (options == null)
@@ -108,7 +115,9 @@ namespace MonoMac.Security {
 			
 			IntPtr handle;
 			SecStatusCode code = SecPKCS12Import (data.Handle, options.Handle, out handle);
-			array = NSArray.ArrayFromHandle <NSDictionary> (handle);
+			// note: NSArray.ArrayFromHandle will retain the NSDictionary it creates - but the ones 
+			// we're receiving already are retained, GetRetainedDictionary drops that extra level
+			array = NSArray.ArrayFromHandle <NSDictionary> (handle, GetRetainedDictionary);
 			return code;
 		}
 	}
