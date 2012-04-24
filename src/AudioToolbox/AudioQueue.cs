@@ -388,25 +388,20 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static AudioQueueStatus AudioQueueEnqueueBuffer (
+		extern unsafe static AudioQueueStatus AudioQueueEnqueueBuffer (
 			IntPtr AQ,
-			IntPtr audioQueueBuffer,
+			AudioQueueBuffer* audioQueueBuffer,
 			int nPackets,
-			IntPtr desc);
+			AudioStreamPacketDescription [] desc);
 		public AudioQueueStatus EnqueueBuffer (IntPtr audioQueueBuffer, int bytes, AudioStreamPacketDescription [] desc)
 		{
 			if (audioQueueBuffer == IntPtr.Zero)
 				throw new ArgumentNullException ("audioQueueBuffer");
 
 			unsafe {
-				Marshal.WriteInt32 (audioQueueBuffer, 8, bytes);
-				if (desc == null)
-					return AudioQueueEnqueueBuffer (handle, audioQueueBuffer, 0, IntPtr.Zero);
-				else {
-					fixed (AudioStreamPacketDescription *pdesc = &desc [0]){
-						return AudioQueueEnqueueBuffer (handle, audioQueueBuffer, desc.Length, (IntPtr) pdesc);
-					}
-				}
+				AudioQueueBuffer *buffer = (AudioQueueBuffer *) audioQueueBuffer;
+				buffer->AudioDataByteSize = (uint) bytes;
+				return EnqueueBuffer (buffer, desc);
 			}
 		}
 		
@@ -415,13 +410,7 @@ namespace MonoMac.AudioToolbox {
 			if (audioQueueBuffer == null)
 				throw new ArgumentNullException ("audioQueueBuffer");
 
-			if (desc == null) {
-				return AudioQueueEnqueueBuffer (handle, (IntPtr) audioQueueBuffer, 0, IntPtr.Zero);
-			} else {
-				fixed (AudioStreamPacketDescription *pdesc = &desc [0]) {
-					return AudioQueueEnqueueBuffer (handle, (IntPtr) audioQueueBuffer, desc.Length, (IntPtr) pdesc);
-				}
-			}
+			return AudioQueueEnqueueBuffer (handle, audioQueueBuffer, desc == null ? 0 : desc.Length, desc);
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -869,9 +858,6 @@ namespace MonoMac.AudioToolbox {
 		// Manipulating Audio Queue Properties
 		//   AudioQueueAddPropertyListener
 		//   AudioQueueRemovePropertyListener
-		// Performing Offline Rendering
-		//   AudioQueueSetOfflineRenderFormat
-		//   AudioQueueOfflineRender
 	}
 
 	public class OutputAudioQueue : AudioQueue {
@@ -904,62 +890,69 @@ namespace MonoMac.AudioToolbox {
 				h (this, new OutputCompletedEventArgs (audioQueueBuffer));
 		}
 
-		public OutputAudioQueue (AudioStreamBasicDescription desc) : this (desc, null, null){}
+		public OutputAudioQueue (AudioStreamBasicDescription desc) : this (desc, null, (CFString) null)
+		{
+		}
+
 		public OutputAudioQueue (AudioStreamBasicDescription desc, CFRunLoop runLoop, string runMode)
+			: this (desc, runLoop, runMode == null ? null : new CFString (runMode))
+		{
+		}
+
+		public OutputAudioQueue (AudioStreamBasicDescription desc, CFRunLoop runLoop, CFString runMode)
 		{
 			IntPtr h;
-			GCHandle mygch = GCHandle.Alloc (this);
-			CFString s = runMode == null ? null : new CFString (runMode);
-			
-			var code = AudioQueueNewOutput (ref desc, dOutputCallback, GCHandle.ToIntPtr (mygch),
+			GCHandle gch = GCHandle.Alloc (this);
+
+			var code = AudioQueueNewOutput (ref desc, dOutputCallback, GCHandle.ToIntPtr (gch),
 							runLoop == null ? IntPtr.Zero : runLoop.Handle,
-							s == null ? IntPtr.Zero : s.Handle, 0, out h);
-			if (s != null)
-				s.Dispose ();
-			
-			if (code == 0){
-				handle = h;
-				gch = mygch;
-				return;
+							runMode == null ? IntPtr.Zero : runMode.Handle, 0, out h);
+
+			if (code != 0) {
+				gch.Free ();
+				throw new AudioQueueException (code);
 			}
-			gch.Free ();
-			throw new AudioQueueException (code);
+
+			this.gch = gch;
+			handle = h;
 		}
 
-#if false
 		[DllImport (Constants.AudioToolboxLibrary, EntryPoint="AudioQueueSetOfflineRenderFormat")]
-		extern static OSStatus AudioQueueSetOfflineRenderFormat2 (IntPtr aq, IntPtr, IntPtr layout);
-		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioQueueSetOfflineRenderFormat (IntPtr aq, ref AudioStreamBasicDescription format, IntPtr layout);
+		extern static AudioQueueStatus AudioQueueSetOfflineRenderFormat2 (IntPtr aq, IntPtr format, IntPtr layout);
 
-		public void SetOfflineRenderFormat (AudioStreamBasicDescription desc, AudioChannelLayout layout)
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioQueueStatus AudioQueueSetOfflineRenderFormat (IntPtr aq, ref AudioStreamBasicDescription format, IntPtr layout);
+
+		public AudioQueueStatus SetOfflineRenderFormat (AudioStreamBasicDescription desc, AudioChannelLayout layout)
 		{
 			int size;
-			var h = AudioFile.AudioChannelLayoutToBlock (layout, out size);
-			AudioQueueSetOfflineRenderFormat (handle, ref resc, h);
-			Marshal.FreeHGlobal (h);
+			var h = layout == null ? IntPtr.Zero : AudioChannelLayout.ToBlock (layout, out size);
+			try {
+				return AudioQueueSetOfflineRenderFormat (handle, ref desc, h);
+			} finally {
+				Marshal.FreeHGlobal (h);
+			}
 		}
 
-		public void DisableOfflineRender ()
+		public AudioQueueStatus DisableOfflineRender ()
 		{
-			AudioQueueSetOfflineRenderFormat2 (handle, IntPtr.Zero, IntPtr.Zero);
+			return AudioQueueSetOfflineRenderFormat2 (handle, IntPtr.Zero, IntPtr.Zero);
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioQueueOfflineRender (IntPtr aq, ref AudioTimeStamp stamp, IntPtr buffer, int frames);
+		extern unsafe static AudioQueueStatus AudioQueueOfflineRender (IntPtr aq, ref AudioTimeStamp stamp, AudioQueueBuffer* buffer, int frames);
 
-		public int OfflineRender (double timeStamp, IntPtr audioQueueBuffer, int frameCount)
+		public unsafe AudioQueueStatus RenderOffline (double timeStamp, AudioQueueBuffer* audioQueueBuffer, int frameCount)
 		{
-			if (audioQueueBuffer == IntPtr.Zero)
+			if (audioQueueBuffer == null)
 				throw new ArgumentNullException ("audioQueueBuffer");
+
 			var stamp = new AudioTimeStamp () {
 				SampleTime = timeStamp,
 				Flags = AudioTimeStamp.AtsFlags.SampleTimeValid
 			};
-			AudioQueueOfflineRender (handle, ref stamp, audioQueueBuffer, frameCount);
+			return AudioQueueOfflineRender (handle, ref stamp, audioQueueBuffer, frameCount);
 		}
-		// TODO: Need to bind the 
-#endif
 	}
 
 	public class InputAudioQueue : AudioQueue {
