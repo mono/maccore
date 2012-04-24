@@ -220,6 +220,11 @@ namespace MonoMac.AudioToolbox {
 			IntPtrBuffer = audioQueueBuffer;
 		}
 
+		public unsafe OutputCompletedEventArgs (AudioQueueBuffer *audioQueueBuffer)
+		{
+			IntPtrBuffer = (IntPtr) audioQueueBuffer;
+		}
+
 		public IntPtr IntPtrBuffer { get; private set; }
 		public unsafe AudioQueueBuffer *UnsafeBuffer {
 			get { return (AudioQueueBuffer *) IntPtrBuffer; }
@@ -343,6 +348,15 @@ namespace MonoMac.AudioToolbox {
 		{
 			return AudioQueueAllocateBuffer (handle, bufferSize, out audioQueueBuffer);
 		}
+
+		public unsafe AudioQueueStatus AllocateBuffer (int bufferSize, out AudioQueueBuffer* audioQueueBuffer)
+		{
+			IntPtr buf;
+			AudioQueueStatus result;
+			result = AudioQueueAllocateBuffer (handle, bufferSize, out buf);
+			audioQueueBuffer = (AudioQueueBuffer *) buf;
+			return result;
+		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static AudioQueueStatus AudioQueueAllocateBufferWithPacketDescriptions(IntPtr AQ, int bufferSize, int nPackets, out IntPtr audioQueueBuffer);
@@ -392,6 +406,20 @@ namespace MonoMac.AudioToolbox {
 					fixed (AudioStreamPacketDescription *pdesc = &desc [0]){
 						return AudioQueueEnqueueBuffer (handle, audioQueueBuffer, desc.Length, (IntPtr) pdesc);
 					}
+				}
+			}
+		}
+		
+		public unsafe AudioQueueStatus EnqueueBuffer (AudioQueueBuffer* audioQueueBuffer, AudioStreamPacketDescription [] desc)
+		{
+			if (audioQueueBuffer == null)
+				throw new ArgumentNullException ("audioQueueBuffer");
+
+			if (desc == null) {
+				return AudioQueueEnqueueBuffer (handle, (IntPtr) audioQueueBuffer, 0, IntPtr.Zero);
+			} else {
+				fixed (AudioStreamPacketDescription *pdesc = &desc [0]) {
+					return AudioQueueEnqueueBuffer (handle, (IntPtr) audioQueueBuffer, desc.Length, (IntPtr) pdesc);
 				}
 			}
 		}
