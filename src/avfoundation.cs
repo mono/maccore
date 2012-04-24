@@ -633,6 +633,12 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("mediaSelectionGroupForMediaCharacteristic:")]
 		AVMediaSelectionGroup MediaSelectionGroupForMediaCharacteristic (string avMediaCharacteristic);
+
+		[Export ("statusOfValueForKey:error:")]
+		AVKeyValueStatus StatusOfValue (string key, out NSError error);
+
+		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
+		void LoadValuesAsynchronously (string [] keys, NSAction handler);
 	}
 
 	[BaseType (typeof (NSObject))]
