@@ -1908,11 +1908,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("duration")]
 		CMTime Duration { get; }
 
-                [Export ("statusOfValueForKey:error:")]
-                AVKeyValueStatus StatusOfValueForKeyerror (string key, out NSError error);
+		[Export ("statusOfValueForKey:error:")]
+		AVKeyValueStatus StatusOfValueForKeyerror (string key, out NSError error);
 
-                [Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
-                void LoadValuesAsynchronously (string [] keys, NSAction handler);
+		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
+		void LoadValuesAsynchronously (string [] keys, NSAction handler);
 	}
 
 	[Since (4,0)]
@@ -3244,18 +3244,18 @@ namespace MonoMac.AVFoundation {
 
 	}
 
-        [BaseType (typeof (NSObject))]
-        [Model]
+	[BaseType (typeof (NSObject))]
+	[Model]
 	[Since (4,0)]
-        interface AVAsynchronousKeyValueLoading {
-                [Abstract]
-                [Export ("statusOfValueForKey:error:")]
-                AVKeyValueStatus StatusOfValueForKeyerror (string key, IntPtr outError);
+	interface AVAsynchronousKeyValueLoading {
+		[Abstract]
+		[Export ("statusOfValueForKey:error:")]
+		AVKeyValueStatus StatusOfValueForKeyerror (string key, IntPtr outError);
 
-                [Abstract]
-                [Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
-                void LoadValuesAsynchronously (string [] keys, NSAction handler);
-        }
+		[Abstract]
+		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
+		void LoadValuesAsynchronously (string [] keys, NSAction handler);
+	}
 
 	[Since (4,1)]
 	[BaseType (typeof (AVPlayer))]
