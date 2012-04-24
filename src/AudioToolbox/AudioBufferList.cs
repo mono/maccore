@@ -46,6 +46,12 @@ namespace MonoMac.AudioToolbox
 		{
 		}
 
+		public AudioBufferList (int count)
+		{
+			bufferCount = count;
+			buffers = new AudioBuffer [count];
+		}
+
 		public override string ToString ()
 		{
 			if (buffers != null && buffers.Length > 0)
@@ -57,9 +63,8 @@ namespace MonoMac.AudioToolbox
 
 	public class MutableAudioBufferList : AudioBufferList, IDisposable {
 		public MutableAudioBufferList (int nubuffers, int bufferSize)
+			: base (nubuffers)
 		{
-			bufferCount = nubuffers;
-			buffers = new AudioBuffer[bufferCount];
 			for (int i = 0; i < bufferCount; i++) {
 				buffers[i].NumberChannels = 1;
 				buffers[i].DataByteSize = bufferSize;
