@@ -426,30 +426,19 @@ namespace MonoMac.AudioToolbox {
 		[DllImport (Constants.AudioToolboxLibrary)]
 		unsafe extern static OSStatus AudioFileReadPacketData (
 			AudioFileID audioFile, bool useCache, ref int numBytes, 
-			IntPtr *ptr_outPacketDescriptions, long inStartingPacket, ref int numPackets, IntPtr outBuffer);
+			AudioStreamPacketDescription [] packetDescriptions, long inStartingPacket, ref int numPackets, IntPtr outBuffer);
 
 		public AudioStreamPacketDescription [] ReadPacketData (long inStartingPacket, int nPackets, byte [] buffer)
 		{
 			if (buffer == null)
 				throw new ArgumentNullException ("buffer");
-			return RealReadPacketData (false, inStartingPacket, nPackets, buffer, 0, buffer.Length);
+			int count = buffer.Length;
+			return RealReadPacketData (false, inStartingPacket, ref nPackets, buffer, 0, ref count);
 		}
 		
 		public AudioStreamPacketDescription [] ReadPacketData (bool useCache, long inStartingPacket, int nPackets, byte [] buffer, int offset, int count)
 		{
-			if (buffer == null)
-				throw new ArgumentNullException ("buffer");
-			if (offset < 0)
-				throw new ArgumentException ("offset", "<0");
-			if (count < 0)
-				throw new ArgumentException ("count", "<0");
-			int len = buffer.Length;
-			if (offset > len)
-				throw new ArgumentException ("destination offset is beyond array size");
-			// reordered to avoid possible integer overflow
-			if (offset > len - count)
-				throw new ArgumentException ("Reading would overrun buffer");
-			return RealReadPacketData (useCache, inStartingPacket, nPackets, buffer, offset, count);
+			return ReadPacketData (useCache, inStartingPacket, ref nPackets, buffer, offset, ref count);
 		}
 
 		static internal AudioStreamPacketDescription [] PacketDescriptionFrom (int nPackets, IntPtr b)
@@ -468,28 +457,53 @@ namespace MonoMac.AudioToolbox {
 
 			return ret;
 		}
-		
-		unsafe AudioStreamPacketDescription [] RealReadPacketData (bool useCache, long inStartingPacket, int nPackets, byte [] buffer, int offset, int count)
-		{
-			// sizeof (AudioStreamPacketDescription)  == 16
-			var b = Marshal.AllocHGlobal (16 * nPackets);
-			try {
-				fixed (byte *bop = &buffer [offset]){
-					var r = AudioFileReadPacketData (handle, useCache, ref count, &b, inStartingPacket, ref nPackets, (IntPtr) bop);
-					
-					if (r == (int) AudioFileError.EndOfFile) {
-						if (count == 0)
-							return null;
-					} else if (r != 0) {
-						return null;
-					}
-				}
 
-				var ret = PacketDescriptionFrom (nPackets, b);
-				return ret;
-			} finally {
-				Marshal.FreeHGlobal (b);
+		public AudioStreamPacketDescription [] ReadPacketData (bool useCache, long inStartingPacket, ref int nPackets, byte [] buffer, int offset, ref int count)
+		{
+			if (buffer == null)
+				throw new ArgumentNullException ("buffer");
+			if (offset < 0)
+				throw new ArgumentException ("offset", "<0");
+			if (count < 0)
+				throw new ArgumentException ("count", "<0");
+			int len = buffer.Length;
+			if (offset > len)
+				throw new ArgumentException ("destination offset is beyond array size");
+			// reordered to avoid possible integer overflow
+			if (offset > len - count)
+				throw new ArgumentException ("Reading would overrun buffer");
+			return RealReadPacketData (useCache, inStartingPacket, ref nPackets, buffer, offset, ref count);
+		}
+		
+		public AudioStreamPacketDescription [] ReadPacketData (bool useCache, long inStartingPacket, ref int nPackets, IntPtr buffer, ref int count)
+		{
+			if (buffer == IntPtr.Zero)
+				throw new ArgumentNullException ("buffer");
+			if (count < 0)
+				throw new ArgumentException ("count", "<0");
+			return RealReadPacketData (useCache, inStartingPacket, ref nPackets, buffer, ref count);
+		}
+		
+		unsafe AudioStreamPacketDescription [] RealReadPacketData (bool useCache, long inStartingPacket, ref int nPackets, byte [] buffer, int offset, ref int count)
+		{
+			fixed (byte *bop = &buffer [offset]) {
+				return RealReadPacketData (useCache, inStartingPacket, ref nPackets, (IntPtr) bop, ref count);
 			}
+		}
+		
+		unsafe AudioStreamPacketDescription [] RealReadPacketData (bool useCache, long inStartingPacket, ref int nPackets, IntPtr buffer, ref int count)
+		{
+			var descriptions = new AudioStreamPacketDescription [nPackets];
+			var r = AudioFileReadPacketData (handle, useCache, ref count, descriptions, inStartingPacket, ref nPackets, buffer);
+			
+			if (r == (int) AudioFileError.EndOfFile) {
+				if (count == 0)
+					return null;
+			} else if (r != 0) {
+				return null;
+			}
+
+			return descriptions;
 		}
 
 		public AudioStreamPacketDescription [] ReadFixedPackets (long inStartingPacket, int nPackets, byte [] buffer)
@@ -518,30 +532,17 @@ namespace MonoMac.AudioToolbox {
 
 		unsafe AudioStreamPacketDescription [] RealReadFixedPackets (bool useCache, long inStartingPacket, int nPackets, byte [] buffer, int offset, int count)
 		{
-			// 16 == sizeof (AudioStreamPacketDescription) 
-			var b = Marshal.AllocHGlobal (16* nPackets);
-			try {
-				fixed (byte *bop = &buffer [offset]){
-					var r = AudioFileReadPacketData (handle, useCache, ref count, &b, inStartingPacket, ref nPackets, (IntPtr) bop);
-					if (r == (int) AudioFileError.EndOfFile) {
-						if (count == 0)
-							return null;
-					} else if (r != 0) {
+			var descriptions = new AudioStreamPacketDescription [nPackets];
+			fixed (byte *bop = &buffer [offset]){
+				var r = AudioFileReadPacketData (handle, useCache, ref count, descriptions, inStartingPacket, ref nPackets, (IntPtr) bop);
+				if (r == (int) AudioFileError.EndOfFile) {
+					if (count == 0)
 						return null;
-					}
+				} else if (r != 0) {
+					return null;
 				}
-				var ret = new AudioStreamPacketDescription [nPackets];
-				int p = 0;
-				for (int i = 0; i < nPackets; i++){
-					ret [i].StartOffset = Marshal.ReadInt64 (b, p);
-					ret [i].VariableFramesInPacket = Marshal.ReadInt32 (b, p+8);
-					ret [i].DataByteSize = Marshal.ReadInt32 (b, p+12);
-					p += 16;
-				}
-				return ret;
-			} finally {
-				Marshal.FreeHGlobal (b);
 			}
+			return descriptions;
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
