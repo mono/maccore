@@ -620,9 +620,9 @@ public class Tuple<A,B> {
 // The Invoke contains the invocation steps necessary to invoke the method
 //
 public class TrampolineInfo {
-	public string UserDelegate, DelegateName, TrampolineName, Parameters, Invoke, ReturnType;
+	public string UserDelegate, DelegateName, TrampolineName, Parameters, Invoke, ReturnType, DelegateReturnType, ReturnFormat;
 
-	public TrampolineInfo (string userDelegate, string delegateName, string trampolineName, string pars, string invoke, string returnType)
+	public TrampolineInfo (string userDelegate, string delegateName, string trampolineName, string pars, string invoke, string returnType, string delegateReturnType, string returnFormat)
 	{
 		UserDelegate = userDelegate;
 		DelegateName = delegateName;
@@ -630,6 +630,8 @@ public class TrampolineInfo {
 		TrampolineName = trampolineName;
 		Invoke = invoke;
 		ReturnType = returnType;
+		DelegateReturnType = delegateReturnType;
+		ReturnFormat = returnFormat;
 	}
 
 	public string StaticName {
@@ -926,6 +928,14 @@ public class Generator {
 		var mi = t.GetMethod ("Invoke");
 		var pars = new StringBuilder ();
 		var invoke = new StringBuilder ();
+		var returntype = mi.ReturnType.ToString ();
+		var returnformat = "return {0};";
+		
+		if (IsWrappedType (mi.ReturnType)) {
+			returntype = "IntPtr";
+			returnformat = "return {0} != null ? {0}.Handle : IntPtr.Zero;";
+		}
+		
 		pars.Append ("IntPtr block");
 		var parameters = mi.GetParameters ();
 		foreach (var pi in parameters){
@@ -997,7 +1007,9 @@ public class Generator {
 					     "Inner" + t.Name,
 					     "Trampoline" + t.Name,
 					     pars.ToString (), invoke.ToString (),
-					     mi.ReturnType.ToString ());
+					     returntype,
+					     mi.ReturnType.ToString (),
+					     returnformat);
 
 		trampolines [t] = ti;
 		return ti.StaticName;
@@ -2965,7 +2977,8 @@ public class Generator {
 					print ("del ({0});", ti.Invoke);
 					indent--;
 				} else {
-					print ("return del ({0});", ti.Invoke);
+					print ("{0} retval = del ({1});", ti.DelegateReturnType, ti.Invoke);
+					print (ti.ReturnFormat, "retval");
 				}
 				indent--;
 				print ("}");
