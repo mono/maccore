@@ -166,7 +166,7 @@ namespace MonoMac.CoreText {
 		public CGPath GetPath ()
 		{
 			IntPtr h = CTFrameGetPath (handle);
-			return h == IntPtr.Zero ? null : new CGPath (h, true);
+			return h == IntPtr.Zero ? null : new CGPath (h, false);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
