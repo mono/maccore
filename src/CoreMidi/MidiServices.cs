@@ -1000,7 +1000,13 @@ namespace MonoMac.CoreMidi {
 
 		public int MaxSysExSpeed {
 			get {
-				return GetInt (kMIDIPropertyMaxSysExSpeed);
+				try {
+					return GetInt (kMIDIPropertyMaxSysExSpeed);
+				} catch {
+					// Some endpoints do not support this property
+					// return the MIDI 1.0 default in those cases.
+					return 3125;
+				}
 			}
 			set {
 				SetInt (kMIDIPropertyMaxSysExSpeed, value);
