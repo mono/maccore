@@ -103,7 +103,7 @@ namespace MonoMac.QuickLook {
 		// UIView and UIImage do not exists in MonoMac
 		
 		[Since (4,2)]
-		[Export ("previewController:frameForPreviewItem:inSourceView:"), DelegateName ("QLFrame"), DefaultValue (null)]
+		[Export ("previewController:frameForPreviewItem:inSourceView:"), DelegateName ("QLFrame"), DefaultValue (typeof (System.Drawing.RectangleF))]
 		RectangleF FrameForPreviewItem (QLPreviewItem item, [NullAllowed] UIView view);
 		
 		[Since (4,2)]

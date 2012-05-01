@@ -3315,7 +3315,7 @@ public class Generator {
 		if (def == null)
 			return "null";
 
-		if (def.GetType ().FullName == "System.Drawing.RectangleF")
+		if (def == typeof (System.Drawing.RectangleF))
 			return "System.Drawing.RectangleF.Empty";
 		
 		if (def is bool)
