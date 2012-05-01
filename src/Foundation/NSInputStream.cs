@@ -51,7 +51,7 @@ namespace MonoMac.Foundation {
 
 		public void Notify (CFStreamEventType eventType)
 		{
-			if (!flags.HasFlag (eventType))
+			if ((flags & eventType) == 0)
 				return;
 
 			context.Invoke (callback, Handle, eventType);
