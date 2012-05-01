@@ -48,7 +48,7 @@ namespace MonoMac.Foundation {
 
 		public override string ToString ()
 		{
-			return AbsoluteString;
+			return AbsoluteString ?? base.ToString ();
 		}
 
 		public bool TryGetResource (string key, out NSObject value, out NSError error)
