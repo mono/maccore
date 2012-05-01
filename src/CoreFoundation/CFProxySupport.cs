@@ -491,7 +491,7 @@ namespace MonoMac.CoreFoundation {
 		
 		public static CFProxy[] GetProxiesForURL (NSUrl url, CFProxySettings proxySettings)
 		{
-			if (url == null)
+			if (url == null || (url.Handle == IntPtr.Zero))
 				throw new ArgumentNullException ("url");
 			
 			if (proxySettings == null)
@@ -520,7 +520,10 @@ namespace MonoMac.CoreFoundation {
 			if (uri == null)
 				throw new ArgumentNullException ("uri");
 			
-			NSUrl url = new NSUrl (uri.AbsoluteUri);
+			NSUrl url = NSUrl.FromString (uri.AbsoluteUri);
+			if (url == null)
+				return null;
+			
 			CFProxy[] proxies = GetProxiesForURL (url, proxySettings);
 			url.Dispose ();
 			
@@ -687,36 +690,40 @@ namespace MonoMac.CoreFoundation {
 				if (targetUri == null)
 					throw new ArgumentNullException ("targetUri");
 				
-				CFProxySettings settings = CFNetwork.GetSystemProxySettings ();
-				CFProxy[] proxies = CFNetwork.GetProxiesForUri (targetUri, settings);
-				Uri uri;
-				
-				if (proxies == null)
-					return targetUri;
-				
-				for (int i = 0; i < proxies.Length; i++) {
-					switch (proxies[i].ProxyType) {
-					case CFProxyType.AutoConfigurationJavaScript:
-						if ((uri = GetProxyUriFromScript (proxies[i].AutoConfigurationJavaScript, targetUri)) != null)
-							return uri;
-						break;
-					case CFProxyType.AutoConfigurationUrl:
-						// unsupported proxy type (requires fetching script from remote url)
-						break;
-					case CFProxyType.HTTPS:
-					case CFProxyType.HTTP:
-					case CFProxyType.FTP:
-						// create a Uri based on the hostname/port/etc info
-						return GetProxyUri (proxies[i]);
-					case CFProxyType.SOCKS:
-						// unsupported proxy type, try the next one
-						break;
-					case CFProxyType.None:
-						// no proxy should be used
+				try {
+					CFProxySettings settings = CFNetwork.GetSystemProxySettings ();
+					CFProxy[] proxies = CFNetwork.GetProxiesForUri (targetUri, settings);
+					Uri uri;
+					
+					if (proxies == null)
 						return targetUri;
+					
+					for (int i = 0; i < proxies.Length; i++) {
+						switch (proxies[i].ProxyType) {
+						case CFProxyType.AutoConfigurationJavaScript:
+							if ((uri = GetProxyUriFromScript (proxies[i].AutoConfigurationJavaScript, targetUri)) != null)
+								return uri;
+							break;
+						case CFProxyType.AutoConfigurationUrl:
+							// unsupported proxy type (requires fetching script from remote url)
+							break;
+						case CFProxyType.HTTPS:
+						case CFProxyType.HTTP:
+						case CFProxyType.FTP:
+							// create a Uri based on the hostname/port/etc info
+							return GetProxyUri (proxies[i]);
+						case CFProxyType.SOCKS:
+							// unsupported proxy type, try the next one
+							break;
+						case CFProxyType.None:
+							// no proxy should be used
+							return targetUri;
+						}
 					}
 				}
-				
+				catch {
+					// ignore errors while retrieving proxy data
+				}
 				// no supported proxies for this Uri, fall back to trying to connect to targetUri directly.
 				return targetUri;
 			}
