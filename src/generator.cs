@@ -2906,7 +2906,7 @@ public class Generator {
 
 							var def = GetDefaultValue (mi);
 							if ((def is string) && ((def as string) == "null") && mi.ReturnType.IsValueType)
-								print ("throw new Exception ();");
+								print ("throw new Exception (\"No event handler has been added to the {0} event.\");", mi.Name);
 							else {
 								foreach (var j in pars){
 									if (j.ParameterType.IsByRef && j.IsOut){
