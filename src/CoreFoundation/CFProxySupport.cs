@@ -302,7 +302,7 @@ namespace MonoMac.CoreFoundation {
 			this.settings = settings;
 		}
 		
-		internal NSDictionary Dictionary {
+		public NSDictionary Dictionary {
 			get { return settings; }
 		}
 		
@@ -613,12 +613,7 @@ namespace MonoMac.CoreFoundation {
 			}
 			
 			public ICredentials Credentials {
-				get {
-					throw new NotSupportedException ();
-				}
-				set {
-					throw new NotSupportedException ();
-				}
+				get; set;
 			}
 			
 			static Uri GetProxyUri (CFProxy proxy)
