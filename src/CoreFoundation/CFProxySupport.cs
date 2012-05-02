@@ -206,29 +206,35 @@ namespace MonoMac.CoreFoundation {
 		
 		static CFProxyType CFProxyTypeToEnum (NSString type)
 		{
-#if !MONOMAC
-			if (MonoTouch.UIKit.UIDevice.CurrentDevice.CheckSystemVersion (4, 0)) {
-#endif
+			if (CFProxyTypeAutoConfigurationJavaScript != null) {
 				if (type.Handle == CFProxyTypeAutoConfigurationJavaScript.Handle)
 					return CFProxyType.AutoConfigurationJavaScript;
-#if !MONOMAC
 			}
-#endif
 			
-			if (type.Handle == CFProxyTypeAutoConfigurationURL.Handle)
-				return CFProxyType.AutoConfigurationUrl;
+			if (CFProxyTypeAutoConfigurationURL != null) {
+				if (type.Handle == CFProxyTypeAutoConfigurationURL.Handle)
+					return CFProxyType.AutoConfigurationUrl;
+			}
 			
-			if (type.Handle == CFProxyTypeFTP.Handle)
-				return CFProxyType.FTP;
+			if (CFProxyTypeFTP != null) {
+				if (type.Handle == CFProxyTypeFTP.Handle)
+					return CFProxyType.FTP;
+			}
 			
-			if (type.Handle == CFProxyTypeHTTP.Handle)
-				return CFProxyType.HTTP;
+			if (CFProxyTypeHTTP != null) {
+				if (type.Handle == CFProxyTypeHTTP.Handle)
+					return CFProxyType.HTTP;
+			}
 			
-			if (type.Handle == CFProxyTypeHTTPS.Handle)
-				return CFProxyType.HTTPS;
+			if (CFProxyTypeHTTP != null) {
+				if (type.Handle == CFProxyTypeHTTPS.Handle)
+					return CFProxyType.HTTPS;
+			}
 			
-			if (type.Handle == CFProxyTypeSOCKS.Handle)
-				return CFProxyType.SOCKS;
+			if (CFProxyTypeSOCKS != null) {
+				if (type.Handle == CFProxyTypeSOCKS.Handle)
+					return CFProxyType.SOCKS;
+			}
 			
 			return CFProxyType.None;
 		}
@@ -242,21 +248,30 @@ namespace MonoMac.CoreFoundation {
 		}
 #endif
 		
-		[Since (4, 0)]
+		[Since (4, 0)][Lion]
 		public NSString AutoConfigurationJavaScript {
 			get {
+				if (AutoConfigurationJavaScriptKey == null)
+					return null;
+				
 				return (NSString) settings[AutoConfigurationJavaScriptKey];
 			}
 		}
 		
 		public NSUrl AutoConfigurationUrl {
 			get {
+				if (AutoConfigurationURLKey == null)
+					return null;
+				
 				return (NSUrl) settings[AutoConfigurationURLKey];
 			}
 		}
 		
 		public string HostName {
 			get {
+				if (HostNameKey == null)
+					return null;
+				
 				NSString v = (NSString) settings[HostNameKey];
 				
 				return v != null ? v.ToString () : null;
@@ -265,6 +280,9 @@ namespace MonoMac.CoreFoundation {
 		
 		public string Password {
 			get {
+				if (PasswordKey == null)
+					return null;
+				
 				NSString v = (NSString) settings[PasswordKey];
 				
 				return v != null ? v.ToString () : null;
@@ -273,6 +291,9 @@ namespace MonoMac.CoreFoundation {
 		
 		public int Port {
 			get {
+				if (PortNumberKey == null)
+					return 0;
+				
 				NSNumber v = (NSNumber) settings[PortNumberKey];
 				
 				return v != null ? v.Int32Value : 0;
@@ -281,12 +302,18 @@ namespace MonoMac.CoreFoundation {
 		
 		public CFProxyType ProxyType {
 			get {
+				if (ProxyTypeKey == null)
+					return CFProxyType.None;
+				
 				return CFProxyTypeToEnum ((NSString) settings[ProxyTypeKey]);
 			}
 		}
 		
 		public string Username {
 			get {
+				if (UsernameKey == null)
+					return null;
+				
 				NSString v = (NSString) settings[UsernameKey];
 				
 				return v != null ? v.ToString () : null;
@@ -370,6 +397,9 @@ namespace MonoMac.CoreFoundation {
 		
 		public bool HTTPEnable {
 			get {
+				if (CFNetworkProxiesHTTPEnable == null)
+					return false;
+				
 				NSNumber v = (NSNumber) settings[CFNetworkProxiesHTTPEnable];
 				
 				return v != null ? v.BoolValue : false;
@@ -378,6 +408,9 @@ namespace MonoMac.CoreFoundation {
 		
 		public int HTTPPort {
 			get {
+				if (CFNetworkProxiesHTTPPort == null)
+					return 0;
+				
 				NSNumber v = (NSNumber) settings[CFNetworkProxiesHTTPPort];
 				
 				return v != null ? v.Int32Value : 0;
@@ -386,6 +419,9 @@ namespace MonoMac.CoreFoundation {
 		
 		public string HTTPProxy {
 			get {
+				if (CFNetworkProxiesHTTPProxy == null)
+					return null;
+				
 				NSString v = (NSString) settings[CFNetworkProxiesHTTPProxy];
 				
 				return v != null ? v.ToString () : null;
@@ -394,6 +430,9 @@ namespace MonoMac.CoreFoundation {
 		
 		public bool ProxyAutoConfigEnable {
 			get {
+				if (CFNetworkProxiesProxyAutoConfigEnable == null)
+					return false;
+				
 				NSNumber v = (NSNumber) settings[CFNetworkProxiesProxyAutoConfigEnable];
 				
 				return v != null ? v.BoolValue : false;
@@ -402,6 +441,9 @@ namespace MonoMac.CoreFoundation {
 		
 		public string ProxyAutoConfigJavaScript {
 			get {
+				if (CFNetworkProxiesProxyAutoConfigJavaScript == null)
+					return null;
+				
 				NSString v = (NSString) settings[CFNetworkProxiesProxyAutoConfigJavaScript];
 				
 				return v != null ? v.ToString () : null;
@@ -410,6 +452,9 @@ namespace MonoMac.CoreFoundation {
 		
 		public string ProxyAutoConfigURLString {
 			get {
+				if (CFNetworkProxiesProxyAutoConfigURLString == null)
+					return null;
+				
 				NSString v = (NSString) settings[CFNetworkProxiesProxyAutoConfigURLString];
 				
 				return v != null ? v.ToString () : null;
