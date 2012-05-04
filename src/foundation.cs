@@ -3353,12 +3353,6 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSStream))]
 	public interface NSInputStream {
-		//[Export ("read:maxLength:")]
-		//int Read (byte [] buffer, uint len);
-		
-		//[Export ("getBuffer:length:")]
-		//bool GetBuffer (ref byte buffer, ref uint len);
-	
 		[Export ("hasBytesAvailable")]
 		bool HasBytesAvailable ();
 	
