@@ -291,6 +291,10 @@ public class PlainStringAttribute : Attribute {
 	public PlainStringAttribute () {}
 }
 
+public class AutoreleaseAttribute : Attribute {
+	public AutoreleaseAttribute () {}
+}
+
 // When applied, the generator generates a check for the Handle being valid on the main object, to
 // ensure that the user did not Dispose() the object.
 //
@@ -1456,7 +1460,7 @@ public class Generator {
 						if (mi.DeclaringType == t)
 							need_abstract [t] = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute)
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute)
 						continue;
 					else 
 						Console.WriteLine ("Error: Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -2518,6 +2522,7 @@ public class Generator {
 		bool is_new = HasAttribute (mi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
 		bool is_unsafe = false;
+		bool is_autorelease = HasAttribute (mi, typeof (AutoreleaseAttribute));
 
 		foreach (ParameterInfo pi in mi.GetParameters ())
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
@@ -2539,8 +2544,17 @@ public class Generator {
 					
 			if (is_model)
 				print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
-			else
+			else {
+				if (is_autorelease) {
+					indent++;
+					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
+				}
 				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck);
+				if (is_autorelease) {
+					print ("}");
+					indent--;
+				}
+			}
 			print ("}\n");
 		}
 	}
