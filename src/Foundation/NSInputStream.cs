@@ -27,9 +27,9 @@ namespace MonoMac.Foundation {
 			
 			int ret;
 			if (IsDirectBinding) {
-				ret = MonoTouch.ObjCRuntime.Messaging.int_objc_msgSend_IntPtr_UInt32 (this.Handle, selReadMaxLength, buffer, len);
+				ret = Messaging.int_objc_msgSend_IntPtr_UInt32 (this.Handle, selReadMaxLength, buffer, len);
 			} else {
-				ret = MonoTouch.ObjCRuntime.Messaging.int_objc_msgSendSuper_IntPtr_UInt32 (this.SuperHandle, selReadMaxLength, buffer, len);
+				ret = Messaging.int_objc_msgSendSuper_IntPtr_UInt32 (this.SuperHandle, selReadMaxLength, buffer, len);
 			}
 			
 			return ret;
