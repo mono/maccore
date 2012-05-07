@@ -2592,10 +2592,10 @@ namespace MonoMac.Foundation
 		void Cancel ();
 	
 		[Export ("scheduleInRunLoop:forMode:")]
-		void Schedule (NSRunLoop aRunLoop, string forMode);
+		void Schedule (NSRunLoop aRunLoop, NSString forMode);
 	
 		[Export ("unscheduleFromRunLoop:forMode:")]
-		void Unschedule (NSRunLoop aRunLoop, string forMode);
+		void Unschedule (NSRunLoop aRunLoop, NSString forMode);
 
 		/* Adopted by the NSUrlAuthenticationChallengeSender protocol */
 		[Export ("useCredential:forAuthenticationChallenge:")]
