@@ -57,9 +57,9 @@ namespace MonoMac.Foundation {
 			var nsforMode = NSString.CreateNative (forMode);
 			
 			if (IsDirectBinding) {
-				MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selScheduleInRunLoopForMode_, aRunLoop.Handle, nsforMode);
+				Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selScheduleInRunLoopForMode_, aRunLoop.Handle, nsforMode);
 			} else {
-				MonoTouch.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selScheduleInRunLoopForMode_, aRunLoop.Handle, nsforMode);
+				Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selScheduleInRunLoopForMode_, aRunLoop.Handle, nsforMode);
 			}
 			NSString.ReleaseNative (nsforMode);
 		}
@@ -75,9 +75,9 @@ namespace MonoMac.Foundation {
 			var nsforMode = NSString.CreateNative (forMode);
 			
 			if (IsDirectBinding) {
-				MonoTouch.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUnscheduleFromRunLoopForMode_, aRunLoop.Handle, nsforMode);
+				Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUnscheduleFromRunLoopForMode_, aRunLoop.Handle, nsforMode);
 			} else {
-				MonoTouch.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selUnscheduleFromRunLoopForMode_, aRunLoop.Handle, nsforMode);
+				Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selUnscheduleFromRunLoopForMode_, aRunLoop.Handle, nsforMode);
 			}
 			NSString.ReleaseNative (nsforMode);
 		}
