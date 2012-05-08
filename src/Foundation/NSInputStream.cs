@@ -66,9 +66,9 @@ namespace MonoMac.Foundation {
 		}
 
 		[Export ("getBuffer:length:")]
-		protected unsafe virtual bool GetBuffer (out System.Byte* buffer, out System.UInt32 len)
+		protected unsafe virtual bool GetBuffer (out IntPtr buffer, out System.UInt32 len)
 		{
-			buffer = null;
+			buffer = IntPtr.Zero;
 			len = 0;
 			return false;
 		}
