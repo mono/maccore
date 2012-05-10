@@ -2022,7 +2022,7 @@ public class Generator {
 			else
 				return "ns{0}.Dispose ();\n";
 #else
-			return "NSString.ReleaseNative (ns{0});";
+			return "NSString.ReleaseNative (ns{0});\n";
 #endif
 		} else 
 			return "if (_s{0}.Flags != 0x010007d1) throw new Exception (\"String was retained, not copied\");";
