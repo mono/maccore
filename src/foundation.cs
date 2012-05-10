@@ -4219,7 +4219,8 @@ namespace MonoMac.Foundation
 		NSNotificationCenter DefaultCenter { get; }
 	
 		[Export ("addObserver:selector:name:object:")]
-		void AddObserver ([RetainList (true, "ObserverList")] NSObject observer, Selector aSelector, [NullAllowed] NSString aName, [NullAllowed] NSObject anObject);
+		[PostSnippet ("AddObserverToList (observer, aName, anObject);")]
+		void AddObserver (NSObject observer, Selector aSelector, [NullAllowed] NSString aName, [NullAllowed] NSObject anObject);
 	
 		[Export ("postNotification:")]
 		void PostNotification (NSNotification notification);
@@ -4231,10 +4232,12 @@ namespace MonoMac.Foundation
 		void PostNotificationName (string aName, [NullAllowed] NSObject anObject, [NullAllowed] NSDictionary aUserInfo);
 	
 		[Export ("removeObserver:")]
-		void RemoveObserver ([RetainList (false, "ObserverList")] NSObject observer);
+		[PostSnippet ("RemoveObserversFromList (observer, null, null);")]
+		void RemoveObserver (NSObject observer);
 	
 		[Export ("removeObserver:name:object:")]
-		void RemoveObserver ([RetainList (false, "ObserverList")] NSObject observer, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
+		[PostSnippet ("RemoveObserversFromList (observer, aName, anObject);")]
+		void RemoveObserver (NSObject observer, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
 
 		[Since (4,0)]
 		[Export ("addObserverForName:object:queue:usingBlock:")]
