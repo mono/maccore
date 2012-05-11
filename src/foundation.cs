@@ -3730,7 +3730,7 @@ namespace MonoMac.Foundation
 		NSDictionary InfoDictionary{ get; }
 
 		// Additions from AppKit
-#if !MONOMAC
+#if MONOMAC
 		// https://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSBundle_AppKitAdditions/Reference/Reference.html
 		[Static]
 		[Export ("loadNibNamed:owner:")]
