@@ -3843,19 +3843,22 @@ namespace MonoMac.Foundation
 		NSDictionary InfoDictionary{ get; }
 
 		// Additions from AppKit
+#if !MONOMAC
+		// https://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSBundle_AppKitAdditions/Reference/Reference.html
 		[Static]
 		[Export ("loadNibNamed:owner:")]
 		bool LoadNib (string nibName, NSObject owner);
-		
-		[Export ("loadNibNamed:owner:options:")]
-		NSArray LoadNib (string nibName, NSObject owner, [NullAllowed] NSDictionary options);
 
 		[Export ("pathForImageResource:")]
 		string PathForImageResource (string resource);
 
 		[Export ("pathForSoundResource:")]
 		string PathForSoundResource (string resource);
-
+#else
+		// http://developer.apple.com/library/ios/#documentation/uikit/reference/NSBundle_UIKitAdditions/Introduction/Introduction.html
+		[Export ("loadNibNamed:owner:options:")]
+		NSArray LoadNib (string nibName, NSObject owner, [NullAllowed] NSDictionary options);
+#endif
 		[Export ("bundleURL")]
 		[Since (4,0)]
 		NSUrl BundleUrl { get; }
