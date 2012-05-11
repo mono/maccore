@@ -68,7 +68,9 @@ namespace MonoMac.Foundation {
 			try {
 				action ();
 			} finally {
+				action = null; // this is a one-shot dispatcher
 				gch.Free ();
+				Dispose ();
 			}
 		}
 	}
