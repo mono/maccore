@@ -204,7 +204,7 @@ using MonoMac.AudioToolbox;
 			return new AudioComponentDescription (AudioComponentType.Generator, (int) generator);
 		}
 
-		static string fmt = "[componetType={0}, subType={2}]";
+		static string fmt = "[componetType={0}, subType={1}]";
 		public override string ToString ()
 		{
 			switch (ComponentType){
