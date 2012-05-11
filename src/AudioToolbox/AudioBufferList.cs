@@ -49,9 +49,9 @@ namespace MonoMac.AudioToolbox
 		public override string ToString ()
 		{
 			if (buffers != null && buffers.Length > 0)
-				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0].DataByteSize);
-			else
-				return string.Format ("[empty]");
+				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0], buffers [0].DataByteSize);
+			
+			return "[empty]";
 		}
 	}
 
