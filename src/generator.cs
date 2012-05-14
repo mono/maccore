@@ -369,6 +369,26 @@ public class SealedAttribute : Attribute {
 	public SealedAttribute () {} 
 }
 
+// Marks a struct parameter/return value as requiring a certain alignment.
+public class AlignAttribute : Attribute {
+	public int Align { get; set; }
+	public AlignAttribute (int align)
+	{
+		Align = align;
+	}
+	public int Bits {
+		get {
+			int bits = 0;
+			int tmp = Align;
+			while (tmp > 1) {
+				bits++;
+				tmp /= 2;
+			}
+			return bits;
+		}
+	}
+}
+
 public class EventArgsAttribute : Attribute {
 	public EventArgsAttribute (string s)
 	{
@@ -489,12 +509,16 @@ public class AppearanceAttribute : Attribute {
 public class MarshalInfo {
 	public bool PlainString;
 	public Type Type;
+	public bool IsAligned;
 
 	// Used for parameters
 	public MarshalInfo (ParameterInfo pi)
 	{
 		PlainString = pi.GetCustomAttributes (typeof (PlainStringAttribute), true).Length > 0;
 		Type = pi.ParameterType;
+		IsAligned = Generator.HasAttribute (pi, typeof (AlignAttribute));
+		if (IsAligned)
+			Type = typeof (IntPtr);
 	}
 
 	// Used to return values
@@ -502,6 +526,9 @@ public class MarshalInfo {
 	{
 		PlainString = mi.ReturnTypeCustomAttributes.GetCustomAttributes (typeof (PlainStringAttribute), true).Length > 0;
 		Type = mi.ReturnType;
+		IsAligned = Generator.HasAttribute (mi, typeof (AlignAttribute));
+		if (IsAligned)
+			Type = typeof (IntPtr);
 	}
 
 	public static bool UseString (ParameterInfo pi)
@@ -1003,7 +1030,7 @@ public class Generator {
 		return GetAttribute (mi, typeof (BindAttribute)) as BindAttribute;
 	}
 	
-	public bool HasAttribute (ICustomAttributeProvider i, Type t)
+	public static bool HasAttribute (ICustomAttributeProvider i, Type t)
 	{
 		return i.GetCustomAttributes (t, true).Length > 0;
 	}
@@ -1088,7 +1115,7 @@ public class Generator {
 		print (m, "\t\t[DllImport (LIBOBJC_DYLIB, EntryPoint=\"{0}\")]", entry_point);
 		print (m, "\t\tpublic extern static {0} {1} ({3}IntPtr receiver, IntPtr selector{2});",
 		       need_stret ? "void" : ParameterGetMarshalType (mi), method_name, b.ToString (),
-		       need_stret ? "out " + FormatType (MessagingType, mi.ReturnType) + " retval, " : "");
+		       need_stret ? (HasAttribute (mi, typeof (AlignAttribute)) ? "IntPtr" : "out " + FormatType (MessagingType, mi.ReturnType)) + " retval, " : "");
 		       
 	}
 
@@ -1562,10 +1589,11 @@ public class Generator {
 			sig = MessagingNS + ".Messaging." + sig;
 		
 		if (stret){
+			string ret_val = HasAttribute (mi, typeof (AlignAttribute)) ? "ret" : "out ret";
 			if (is_static)
-				print ("{0} (out ret, class_ptr, {3}{4});", sig, target_name, supercall ? "Super" : "", selector, args);
+				print ("{0} ({5}, class_ptr, {3}{4});", sig, target_name, supercall ? "Super" : "", selector, args, ret_val);
 			else
-				print ("{0} (out ret, {1}.{2}Handle, {3}{4});", sig, target_name, supercall ? "Super" : "", selector, args);
+				print ("{0} ({5}, {1}.{2}Handle, {3}{4});", sig, target_name, supercall ? "Super" : "", selector, args, ret_val);
 		} else {
 			bool returns = mi.ReturnType != typeof (void) && mi.Name != "Constructor";
 
@@ -1802,6 +1830,7 @@ public class Generator {
 			print (sw, convs.ToString ());
 
 		Inject (mi, typeof (PreSnippetAttribute));
+		AlignAttribute align = GetAttribute (mi, typeof (AlignAttribute)) as AlignAttribute;
 		bool has_postget = HasAttribute (mi, typeof (PostGetAttribute));
 		bool use_temp_return  =
 			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
@@ -1814,7 +1843,11 @@ public class Generator {
 		if (use_temp_return) {
 			if (mi.ReturnType.IsSubclassOf (typeof (Delegate)))
 				print ("BlockLiteral *ret;");
-			else
+			else if (align != null) {
+				print ("{0} ret_real;", FormatType (mi.DeclaringType, mi.ReturnType));
+				print ("IntPtr ret_alloced = Marshal.AllocHGlobal (Marshal.SizeOf (typeof ({0})) + {1});", FormatType (mi.DeclaringType, mi.ReturnType), align.Align);
+				print ("IntPtr ret = new IntPtr (((ret_alloced.ToInt32 () + {0}) >> {1}) << {1});", align.Align - 1, align.Bits);
+			} else
 				print ("{0} ret;", FormatType (mi.DeclaringType, mi.ReturnType)); //  = new {0} ();"
 		}
 		
@@ -1884,6 +1917,10 @@ public class Generator {
 				print ("return null;");
 				indent--;
 				print ("return ({0}) (ret->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (ret->global_handle).Target : GCHandle.FromIntPtr (ret->local_handle).Target);", FormatType (mi.DeclaringType, mi.ReturnType));
+			} else if (align != null) {
+				print ("unsafe {{ ret_real = *({0} *) ret; }}", FormatType (mi.DeclaringType, mi.ReturnType));
+				print ("Marshal.FreeHGlobal (ret_alloced);");
+				print ("return ret_real;");
 			} else {
 				print ("return ret;");
 			}
