@@ -101,7 +101,7 @@ namespace MonoMac.Foundation {
 					properties.Add (NSHttpCookie.KeyExpires, (NSDate) expires.Value);
 				if (maximumAge.HasValue)
 					properties.Add (NSHttpCookie.KeyMaximumAge, new NSString (maximumAge.Value.ToString ()));
-				if (ports != null)
+				if (!String.IsNullOrEmpty (ports))
 					properties.Add (NSHttpCookie.KeyPort, new NSString (ports.Replace ("\"", String.Empty)));
 				// any value means secure is true
 				if (secure.HasValue && secure.Value)
