@@ -170,6 +170,7 @@ namespace MonoMac.CoreMidi {
 	public class MidiObject : INativeObject, IDisposable {
                 internal static IntPtr midiLibrary = Dlfcn.dlopen (Constants.CoreMidiLibrary, 0);
                 internal IntPtr handle;
+		internal bool owns;
 
 #if !COREBUILD
 		internal static IntPtr kMIDIPropertyAdvanceScheduleTimeMuSec;
@@ -270,7 +271,10 @@ namespace MonoMac.CoreMidi {
 			get { return handle; }
 		}
 		
-		internal MidiObject () {}
+		internal MidiObject ()
+		{
+			owns = true;
+		}
 		
 #if !COREBUILD
 		[DllImport (Constants.CoreMidiLibrary)]
@@ -390,12 +394,18 @@ namespace MonoMac.CoreMidi {
 #endif
 		
                 public MidiObject (IntPtr handle)
+			: this (handle, true)
                 {
-                        if (handle == IntPtr.Zero)
-                                throw new Exception ("Invalid parameters to context creation");
-
-                        this.handle = handle;
                 }
+
+		internal MidiObject (IntPtr handle, bool owns)
+		{
+			if (handle == IntPtr.Zero)
+				throw new Exception ("Invalid parameters to context creation");
+
+			this.handle = handle;
+			this.owns = owns;
+		}
 
                 ~MidiObject ()
                 {
@@ -432,9 +442,9 @@ namespace MonoMac.CoreMidi {
 			case MidiObjectType.Entity:
 				return new MidiEntity (handle);
 			case MidiObjectType.Source:
-				return new MidiEndpoint (handle);
+				return new MidiEndpoint (handle, false);
 			case MidiObjectType.Destination:
-				return new MidiEndpoint (handle);
+				return new MidiEndpoint (handle, false);
 			default:
 				throw new Exception ("Unknown MidiObjectType " + (int) type);
 			}
@@ -479,7 +489,8 @@ namespace MonoMac.CoreMidi {
 		internal override void DisposeHandle ()
 		{
 			if (handle != IntPtr.Zero){
-				MIDIClientDispose (handle);
+				if (owns)
+					MIDIClientDispose (handle);
 				handle = IntPtr.Zero;
 				gch.Free ();
 			}
@@ -512,7 +523,7 @@ namespace MonoMac.CoreMidi {
 				var code = MIDISourceCreate (handle, nsstr.Handle, out ret);
 				if (code != 0)
 					return null;
-				return new MidiEndpoint (ret);
+				return new MidiEndpoint (ret, true);
 			}			
 		}
 		
@@ -739,7 +750,8 @@ namespace MonoMac.CoreMidi {
 		internal override void DisposeHandle ()
 		{
 			if (handle != IntPtr.Zero){
-				MIDIPortDispose (handle);
+				if (owns)
+					MIDIPortDispose (handle);
 				handle = IntPtr.Zero;
 				gch.Free ();
 			}
@@ -836,7 +848,7 @@ namespace MonoMac.CoreMidi {
 			var dest = MIDIEntityGetDestination (handle, idx);
 			if (dest == IntPtr.Zero)
 				return null;
-			return new MidiEndpoint (handle);
+			return new MidiEndpoint (handle, false);
 		}
 
 		public MidiEndpoint GetSource (int idx)
@@ -844,7 +856,7 @@ namespace MonoMac.CoreMidi {
 			var dest = MIDIEntityGetSource (handle, idx);
 			if (dest == IntPtr.Zero)
 				return null;
-			return new MidiEndpoint (handle);
+			return new MidiEndpoint (handle, false);
 		}
 
 		[DllImport (Constants.CoreMidiLibrary)]
@@ -1637,7 +1649,8 @@ namespace MonoMac.CoreMidi {
 		internal override void DisposeHandle ()
 		{
 			if (handle != IntPtr.Zero){
-				MIDIEndpointDispose (handle);
+				if (owns)
+					MIDIEndpointDispose (handle);
 				handle = IntPtr.Zero;
 				gch.Free ();
 			}
@@ -1645,12 +1658,17 @@ namespace MonoMac.CoreMidi {
 
 		public string EndpointName { get; private set; }
 
-		internal MidiEndpoint (IntPtr handle) : base (handle)
+		internal MidiEndpoint (IntPtr handle) : base (handle, false)
 		{
 			EndpointName = "Endpoint from Lookup";
 		}
 
-		internal MidiEndpoint (IntPtr handle, string endpointName) : base (handle)
+		internal MidiEndpoint (IntPtr handle, bool owns) : base (handle, owns)
+		{
+			EndpointName = "Endpoint from Lookup";
+		}
+
+		internal MidiEndpoint (IntPtr handle, string endpointName, bool owns) : base (handle, owns)
 		{
 			EndpointName = endpointName;
 		}
@@ -1661,7 +1679,7 @@ namespace MonoMac.CoreMidi {
 			var h = MIDIGetSource (sourceIndex);
 			if (h == IntPtr.Zero)
 				return null;
-			return new MidiEndpoint (h, "Source" + sourceIndex);
+			return new MidiEndpoint (h, "Source" + sourceIndex, false);
 		}
 
 		public static MidiEndpoint GetDestination (int destinationIndex)
@@ -1669,7 +1687,7 @@ namespace MonoMac.CoreMidi {
 			var h = MIDIGetDestination (destinationIndex);
 			if (h == IntPtr.Zero)
 				return null;
-			return new MidiEndpoint (h, "Destination" + destinationIndex);
+			return new MidiEndpoint (h, "Destination" + destinationIndex, false);
 		}
 
 		internal MidiEndpoint (MidiClient client, string name)
