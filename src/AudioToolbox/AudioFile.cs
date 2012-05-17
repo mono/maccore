@@ -117,7 +117,9 @@ namespace MonoMac.AudioToolbox {
 		BitRate = 0x62726174,
 		ID3Tag = 0x69643374,
 		SourceBitDepth = 0x73627464,
-		AlbumArtwork = 0x61617274
+		AlbumArtwork = 0x61617274,
+		ReadyToProducePackets = 0x72656479,
+		AverageBytesPerPacket = 0x61627070
 	}
 
 	public enum AudioFileLoopDirection {
