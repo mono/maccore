@@ -93,7 +93,7 @@ namespace MonoMac.CoreMidi {
 		{
 			int size = 4;
 			for (int i = packets.Length; i > 0; i--){
-				int plen = packets [i].Length;
+				int plen = packets [i - 1].Length;
 				plen = (plen + 3)&(~3);
 				size += 8 + 4 + plen;
 			}
