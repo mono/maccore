@@ -86,42 +86,32 @@ namespace MonoMac.CoreFoundation {
 			CFReadStreamRef_InvokeCallback (callback, stream, eventType, Info);
 		}
 		
-#if MONOMAC
+		[MonoNativeFunctionWrapper]
 		delegate IntPtr RetainDelegate (IntPtr info);
 		static IntPtr CFReadStreamRef_InvokeRetain (IntPtr retain, IntPtr info)
 		{
 			return ((RetainDelegate) Marshal.GetDelegateForFunctionPointer (retain, typeof (RetainDelegate))) (info);
 		}
 		
+		[MonoNativeFunctionWrapper]
 		delegate void ReleaseDelegate (IntPtr info);
 		static void CFReadStreamRef_InvokeRelease (IntPtr release, IntPtr info)
 		{
 			((ReleaseDelegate) Marshal.GetDelegateForFunctionPointer (release, typeof (ReleaseDelegate))) (info);
 		}
 		
+		[MonoNativeFunctionWrapper]
 		delegate IntPtr CopyDescriptionDelegate (IntPtr info);
 		static IntPtr CFReadStreamRef_InvokeCopyDescription (IntPtr copyDescription, IntPtr info)
 		{
 			return ((CopyDescriptionDelegate) Marshal.GetDelegateForFunctionPointer (copyDescription, typeof (CopyDescriptionDelegate))) (info);
 		}
 		
+		[MonoNativeFunctionWrapper]
 		delegate void CallbackDelegate (IntPtr stream, CFStreamEventType eventType, IntPtr info);
 		static void CFReadStreamRef_InvokeCallback (IntPtr callback, IntPtr stream, CFStreamEventType eventType, IntPtr info)
 		{
 			((CallbackDelegate) Marshal.GetDelegateForFunctionPointer (callback, typeof (CallbackDelegate))) (stream, eventType, info);
 		}
-#else
-		[DllImport ("__Internal")]
-		static extern IntPtr CFReadStreamRef_InvokeRetain (IntPtr retain, IntPtr info);
-
-		[DllImport ("__Internal")]
-		static extern void CFReadStreamRef_InvokeRelease (IntPtr release, IntPtr info);
-
-		[DllImport ("__Internal")]
-		static extern IntPtr CFReadStreamRef_InvokeCopyDescription (IntPtr copyDescription, IntPtr info);
-
-		[DllImport ("__Internal")]
-		static extern void CFReadStreamRef_InvokeCallback (IntPtr callback, IntPtr stream, CFStreamEventType eventType, IntPtr clientCallBackInfo);
-#endif
 	}
 }
