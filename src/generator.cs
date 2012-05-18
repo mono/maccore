@@ -858,7 +858,7 @@ public class Generator {
 		return (pt == typeof (int) || pt == typeof (long) || pt == typeof (byte) || pt == typeof (short));
 	}
 
-	public string PrimitiveType (Type t)
+	public string PrimitiveType (Type t, bool formatted = false)
 	{
 		if (t == typeof (void))
 			return "void";
@@ -877,7 +877,7 @@ public class Generator {
 		if (t == typeof (bool))
 			return "bool";
 
-		return t.Name;
+		return formatted ? FormatType (null, t) : t.Name;
 	}
 
 	// Is this a wrapped type of NSObject from the MonoTouch/MonoMac binding world?
@@ -896,13 +896,13 @@ public class Generator {
 	string ParameterGetMarshalType (MarshalInfo mai, bool formatted = false)
 	{
 		if (mai.Type.IsEnum)
-			return PrimitiveType (mai.Type);
+			return PrimitiveType (mai.Type, formatted);
 
 		if (IsWrappedType (mai.Type))
 			return "IntPtr";
 
 		if (IsNativeType (mai.Type))
-			return PrimitiveType (mai.Type);
+			return PrimitiveType (mai.Type, formatted);
 
 		if (mai.Type == typeof (string)){
 			if (mai.PlainString)
@@ -917,7 +917,7 @@ public class Generator {
 			return mt.Encoding;
 		
 		if (mai.Type.IsValueType)
-			return PrimitiveType (mai.Type);
+			return PrimitiveType (mai.Type, formatted);
 
 		// Arrays are returned as NSArrays
 		if (mai.Type.IsArray)
@@ -1262,7 +1262,7 @@ public class Generator {
 
 		print (m, "\t\t[DllImport (LIBOBJC_DYLIB, EntryPoint=\"{0}\")]", entry_point);
 		print (m, "\t\tpublic extern static {0} {1} ({3}IntPtr receiver, IntPtr selector{2});",
-		       need_stret ? "void" : ParameterGetMarshalType (mi), method_name, b.ToString (),
+		       need_stret ? "void" : ParameterGetMarshalType (mi, true), method_name, b.ToString (),
 		       need_stret ? (HasAttribute (mi, typeof (AlignAttribute)) ? "IntPtr" : "out " + FormatType (MessagingType, mi.ReturnType)) + " retval, " : "");
 		       
 	}
