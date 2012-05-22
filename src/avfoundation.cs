@@ -653,7 +653,7 @@ namespace MonoMac.AVFoundation {
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("appliesPreferredTrackTransform")]
-		bool AppliesPreferredTrackTransform { get; }
+		bool AppliesPreferredTrackTransform { get; set; }
 
 		[Static]
 		[Export ("assetImageGeneratorWithAsset:")]
@@ -663,7 +663,7 @@ namespace MonoMac.AVFoundation {
 		IntPtr Constructor (AVAsset asset);
 
 		[Export ("copyCGImageAtTime:actualTime:error:")]
-		CGImage CopyCGImageAtTime (CMTime requestedTime, CMTime actualTime, NSError outError);
+		CGImage CopyCGImageAtTime (CMTime requestedTime, out CMTime actualTime, out NSError outError);
 
 		[Export ("generateCGImagesAsynchronouslyForTimes:completionHandler:")]
 		void GenerateCGImagesAsynchronously (NSValue cmTimesRequestedTimes, AVAssetImageGeneratorCompletionHandler handler);
