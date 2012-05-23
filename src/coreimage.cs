@@ -782,6 +782,9 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIFormatRGBA8")]
 		int FormatRGBA8 { get; }
 
+		[Internal, Field ("kCIImageColorSpace")]
+		NSString CIImageColorSpace { get; }
+
 		// UIKit extensions
 		[Export ("initWithImage:")]
 		IntPtr Constructor (UIImage image);

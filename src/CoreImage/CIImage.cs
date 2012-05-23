@@ -99,6 +99,20 @@ namespace MonoMac.CoreImage {
 			}
 			return ret;
 		}
+
+		public static CIImage FromCGImage (CGImage image, CGColorSpace colorSpace)
+		{
+			if (colorSpace == null)
+				throw new ArgumentNullException ("colorSpace");
+			
+			using (var arr = NSArray.FromIntPtrs (new IntPtr [] { colorSpace.Handle })){
+				using (var keys = NSArray.FromIntPtrs (new IntPtr [] { CIImageColorSpace.Handle } )){
+					using (var dict = NSDictionary.FromObjectsAndKeysInternal (arr, keys)){
+						return FromCGImage (image, dict);
+					}
+				}
+			}
+		}
 		
 		public CIFilter [] GetAutoAdjustmentFilters ()
 		{
@@ -113,6 +127,11 @@ namespace MonoMac.CoreImage {
 			if (dict == null)
 				return GetAutoAdjustmentFilters ();
 			return WrapFilters (_GetAutoAdjustmentFilters (dict));
+		}
+
+		public static implicit operator CIImage (CGImage image)
+		{
+			return FromCGImage (image);
 		}
 	}
 }
