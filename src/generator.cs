@@ -960,12 +960,14 @@ public class Generator {
 		var mi = t.GetMethod ("Invoke");
 		var pars = new StringBuilder ();
 		var invoke = new StringBuilder ();
-		var returntype = mi.ReturnType.ToString ();
+		string returntype;
 		var returnformat = "return {0};";
 		
 		if (IsWrappedType (mi.ReturnType)) {
 			returntype = "IntPtr";
 			returnformat = "return {0} != null ? {0}.Handle : IntPtr.Zero;";
+		} else {
+			returntype = FormatType (mi.DeclaringType, mi.ReturnType);
 		}
 		
 		pars.Append ("IntPtr block");
@@ -3020,7 +3022,7 @@ public class Generator {
 				indent++;
 				print ("var descriptor = (BlockLiteral *) block;");
 				print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
-				bool is_void = ti.ReturnType == "System.Void";
+				bool is_void = ti.ReturnType == "void";
 				// FIXME: right now we only support 'null' when the delegate does not return a value
 				// otherwise we will need to know the default value to be returned (likely uncommon)
 				if (is_void) {
@@ -3409,6 +3411,10 @@ public class Generator {
 				return "bool";
 			}
 		}
+		
+		if (t == typeof (void))
+			return "void";
+
 		string ns = t.Namespace;
 		if (implicit_ns.Contains (ns))
 			return t.Name;
