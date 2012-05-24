@@ -187,6 +187,9 @@ namespace MonoMac.Foundation
 #endif
 		NSString LigatureAttributeName { get; } 
 #if MONOMAC
+		[Field ("NSObliquenessAttributeName", "AppKit")]
+		NSString ObliquenessAttributeName { get; } 
+		
 		[Export ("initWithData:options:documentAttributes:error:")]
 		IntPtr Constructor (NSData data, NSDictionary options, out NSDictionary docAttributes, out NSError error);
 
