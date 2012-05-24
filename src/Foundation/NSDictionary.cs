@@ -319,6 +319,30 @@ namespace MonoMac.Foundation {
 			}
 		}
 
+		public virtual NSObject this [NSString key] {
+			get {
+				if (key == null)
+					throw new ArgumentNullException ("key");
+				return ObjectForKey (key);
+			}
+			set {
+				throw new NotSupportedException ();
+			}
+		}
+
+		public virtual NSObject this [string key] {
+			get {
+				if (key == null)
+					throw new ArgumentNullException ("key");
+				using (var nss = new NSString (key)){
+					return ObjectForKey (nss);
+				}
+			}
+			set {
+				throw new NotSupportedException ();
+			}
+		}
+
 		ICollection<NSObject> IDictionary<NSObject, NSObject>.Keys {
 			get {return Keys;}
 		}
