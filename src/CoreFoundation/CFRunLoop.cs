@@ -251,8 +251,15 @@ namespace MonoMac.CoreFoundation {
 #endif
 
 		internal CFRunLoop (IntPtr handle)
+			: this (handle, false)
 		{
-			CFObject.CFRetain (handle);
+		}
+
+		[Preserve (Conditional = true)]
+		internal CFRunLoop (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CFObject.CFRetain (handle);
 			this.handle = handle;
 		}
 
