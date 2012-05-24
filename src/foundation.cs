@@ -48,6 +48,8 @@ using System.Drawing;
 namespace MonoMac.Foundation
 {
 	public delegate int NSComparator (NSObject obj1, NSObject obj2);
+	public delegate void NSAttributedRangeCallback (NSDictionary attrs, NSRange range, ref bool stop);
+	public delegate void NSAttributedStringCallback (NSObject value, NSRange range, ref bool stop);
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSArray {
@@ -1186,9 +1188,6 @@ namespace MonoMac.Foundation
 		[Export ("dateByAddingTimeInterval:")]
 		NSDate AddSeconds (double seconds);
 
-		[Export ("description")]
-		string Description { get; }
-
 		[Export ("dateWithTimeIntervalSinceNow:")]
 		[Static]
 		NSDate FromTimeIntervalSinceNow (double secs);
@@ -1243,9 +1242,6 @@ namespace MonoMac.Foundation
 
 		[Export ("allValues")]
 		NSObject [] Values { get; }
-
-		[Export ("description")]
-		string Description {get; }
 
 		[Export ("descriptionInStringsFileFormat")]
 		string DescriptionInStringsFileFormat { get; }
@@ -1792,9 +1788,6 @@ namespace MonoMac.Foundation
 		[Export ("allObjects")][Internal]
 		IntPtr _AllObjects ();
 
-		[Export ("description")]
-		string Description { get; }
-
 		[Export ("isEqualToSet:")]
 		bool IsEqualToSet (NSSet other);
 
@@ -1901,9 +1894,6 @@ namespace MonoMac.Foundation
 		
 		[Static, Export ("localTimeZone")]
 		NSTimeZone LocalTimeZone { get; }
-
-		[Export ("description")]
-		string Description { get; }
 
 		[Export ("secondsFromGMT")]
 		int GetSecondsFromGMT { get; }
@@ -3494,6 +3484,12 @@ namespace MonoMac.Foundation
 		
 		[Export ("mutableCopy")]
 		NSObject MutableCopy ();
+
+		[Export ("description")]
+		string Description { get; }
+
+		[Export ("debugDescription")]
+		string DebugDescription { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]

@@ -34,5 +34,10 @@ namespace MonoMac.Foundation {
 			Location = start;
 			Length = len;
 		}
+
+		public override string ToString ()
+		{
+			return String.Format ("[Location={0},Length={1}]", Location, Length);
+		}
 	}
 }
