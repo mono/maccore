@@ -652,9 +652,9 @@ public class Tuple<A,B> {
 // The Invoke contains the invocation steps necessary to invoke the method
 //
 public class TrampolineInfo {
-	public string UserDelegate, DelegateName, TrampolineName, Parameters, Invoke, ReturnType, DelegateReturnType, ReturnFormat;
+	public string UserDelegate, DelegateName, TrampolineName, Parameters, Invoke, ReturnType, DelegateReturnType, ReturnFormat, Clear;
 
-	public TrampolineInfo (string userDelegate, string delegateName, string trampolineName, string pars, string invoke, string returnType, string delegateReturnType, string returnFormat)
+	public TrampolineInfo (string userDelegate, string delegateName, string trampolineName, string pars, string invoke, string returnType, string delegateReturnType, string returnFormat, string clear)
 	{
 		UserDelegate = userDelegate;
 		DelegateName = delegateName;
@@ -664,6 +664,7 @@ public class TrampolineInfo {
 		ReturnType = returnType;
 		DelegateReturnType = delegateReturnType;
 		ReturnFormat = returnFormat;
+		Clear = clear;
 	}
 
 	public string StaticName {
@@ -960,6 +961,7 @@ public class Generator {
 		var mi = t.GetMethod ("Invoke");
 		var pars = new StringBuilder ();
 		var invoke = new StringBuilder ();
+		var clear = new StringBuilder  ();
 		string returntype;
 		var returnformat = "return {0};";
 		
@@ -991,11 +993,14 @@ public class Generator {
 
 			if (pi.ParameterType.IsByRef){
 				var nt = pi.ParameterType.GetElementType ();
+				if (pi.IsOut){
+					clear.AppendFormat ("{0} = {1};", pi.Name, nt.IsValueType ? "default (" + FormatType (null, nt) + ")" : "null");
+				}
 				if (nt.IsValueType){
 					pars.AppendFormat ("{0} {1} {2}", pi.IsOut ? "out" : "ref", FormatType (null, nt), pi.Name);
 					invoke.AppendFormat ("{0} {1}", pi.IsOut ? "out" : "ref", pi.Name);
 					continue;
-				} 
+				}
 			} else if (pi.ParameterType.IsValueType){
 				pars.AppendFormat ("{0} {1}", FormatType (null, pi.ParameterType), pi.Name);
 				invoke.AppendFormat ("{0}", pi.Name);
@@ -1043,7 +1048,7 @@ public class Generator {
 					     pars.ToString (), invoke.ToString (),
 					     returntype,
 					     mi.ReturnType.ToString (),
-					     returnformat);
+					     returnformat, clear.ToString ());
 
 		trampolines [t] = ti;
 		return ti.StaticName;
@@ -3030,6 +3035,13 @@ public class Generator {
 					indent++;
 					print ("del ({0});", ti.Invoke);
 					indent--;
+					if (ti.Clear.Length > 0){
+						print ("else");
+						indent++;
+						print (ti.Clear);
+						indent--;
+					}
+
 				} else {
 					print ("{0} retval = del ({1});", ti.DelegateReturnType, ti.Invoke);
 					print (ti.ReturnFormat, "retval");
