@@ -3358,10 +3358,10 @@ namespace MonoMac.Foundation
 		NSInputStream FromFile (string  path);
 		
 		[Export ("_scheduleInCFRunLoop:forMode:")]
-		void ScheduleInCFRunLoop (IntPtr runloop, string mode);
+		void ScheduleInCFRunLoop (CFRunLoop runloop, NSString mode);
 
 		[Export ("_unscheduleFromCFRunLoop:forMode:")]
-		void UnscheduleInCFRunLoop (IntPtr runloop, string mode);
+		void UnscheduleInCFRunLoop (CFRunLoop runloop, NSString mode);
 	}
 
 	//
