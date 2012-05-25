@@ -118,6 +118,12 @@ namespace MonoMac.Foundation
 		[Export ("initWithAttributedString:")]
 		IntPtr Constructor (NSAttributedString other);
 
+		[Export ("enumerateAttributesInRange:options:usingBlock:")]
+		void EnumerateAttributes (NSRange range, NSAttributedStringEnumeration options, NSAttributedRangeCallback callback);
+
+		[Export ("enumerateAttribute:inRange:options:usingBlock:")]
+		void EnumerateAttribute (NSString attributeName, NSRange inRange, NSAttributedStringEnumeration options, NSAttributedStringCallback callback);
+
 #if MONOMAC
 		[Export("size")]
 		SizeF Size { get; }
