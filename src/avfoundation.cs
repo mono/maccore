@@ -666,7 +666,7 @@ namespace MonoMac.AVFoundation {
 		CGImage CopyCGImageAtTime (CMTime requestedTime, out CMTime actualTime, out NSError outError);
 
 		[Export ("generateCGImagesAsynchronouslyForTimes:completionHandler:")]
-		void GenerateCGImagesAsynchronously (NSValue cmTimesRequestedTimes, AVAssetImageGeneratorCompletionHandler handler);
+		void GenerateCGImagesAsynchronously (NSValue[] cmTimesRequestedTimes, AVAssetImageGeneratorCompletionHandler handler);
 
 		[Export ("cancelAllCGImageGeneration")]
 		void CancelAllCGImageGeneration ();
