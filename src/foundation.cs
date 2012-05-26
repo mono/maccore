@@ -5119,7 +5119,7 @@ namespace MonoMac.Foundation
 		NSString FileProtectionCompleteUnlessOpen { get; }
 
 		[Since (5,0)]
-		[Field ("NSFileProtectionCompleteUntilFirstUserAuthentication ")]
+		[Field ("NSFileProtectionCompleteUntilFirstUserAuthentication")]
 		NSString FileProtectionCompleteUntilFirstUserAuthentication  { get; }
 		
 		[Field("NSFileSystemSize")]
