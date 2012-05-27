@@ -129,72 +129,34 @@ namespace MonoMac.Foundation
 #if MONOMAC
 		[Export("size")]
 		SizeF Size { get; }
-#endif
 
-
-#if MONOMAC
 		[Field ("NSFontAttributeName", "AppKit")]
-#else
-		[Field ("NSFontAttributeName")]
-#endif
 		NSString FontAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSLinkAttributeName", "AppKit")]
-#else
-		[Field ("NSLinkAttributeName")]
-#endif
 		NSString LinkAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSUnderlineStyleAttributeName", "AppKit")]
-#else
-		[Field ("NSUnderlineStyleAttributeName")]
-#endif
 		NSString UnderlineStyleAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSStrikethroughStyleAttributeName", "AppKit")]
-#else
-		[Field ("NSStrikethroughStyleAttributeName")]
-#endif
 		NSString StrikethroughStyleAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSStrokeWidthAttributeName", "AppKit")]
-#else
-		[Field ("NSStrokeWidthAttributeName")]
-#endif
 		NSString StrokeWidthAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSParagraphStyleAttributeName", "AppKit")]
-#else
-		[Field ("NSParagraphStyleAttributeName")]
-#endif
 		NSString ParagraphStyleAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSForegroundColorAttributeName", "AppKit")]
-#else
-		[Field ("NSForegroundColorAttributeName")]
-#endif
 		NSString ForegroundColorAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSBackgroundColorAttributeName", "AppKit")]
-#else
-		[Field ("NSBackgroundColorAttributeName")]
-#endif
 		NSString BackgroundColorAttributeName { get; }
-		
-#if MONOMAC
+
 		[Field ("NSLigatureAttributeName", "AppKit")]
-#else
-		[Field ("NSLigatureAttributeName")]
-#endif
 		NSString LigatureAttributeName { get; } 
-#if MONOMAC
+
 		[Field ("NSObliquenessAttributeName", "AppKit")]
 		NSString ObliquenessAttributeName { get; } 
 		
