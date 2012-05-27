@@ -410,10 +410,10 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIAttributeTypeRectangle", "+CoreImage")]
 		NSString TypeRectangle  { get; }
 
+#if MONOMAC
 		[Field ("kCIAttributeTypeOpaqueColor", "+CoreImage")]
 		NSString TypeOpaqueColor  { get; }
 
-#if MONOMAC
 		[Field ("kCIAttributeTypeGradient", "+CoreImage")]
 		NSString TypeGradient  { get; }
 #else
