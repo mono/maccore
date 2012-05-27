@@ -874,10 +874,10 @@ namespace MonoMac.CoreData
 
 		[Field ("NSSQLiteStoreType")]
 		NSString SQLiteStoreType { get; }
-		
+#if MONOMAC
 		[Field ("NSXMLStoreType")]
 		NSString XMLStoreType { get; }
-		
+#endif	
 		[Field ("NSBinaryStoreType")]
 		NSString BinaryStoreType { get; }
 		
@@ -898,10 +898,10 @@ namespace MonoMac.CoreData
 
 		[Field ("NSReadOnlyPersistentStoreOption")]
 		NSString ReadOnlyPersistentStoreOption { get; }
-
+#if MONOMAC
 		[Field ("NSValidateXMLStoreOption")]
 		NSString ValidateXMLStoreOption { get; }
-
+#endif
 		[Field ("NSPersistentStoreTimeoutOption")]
 		NSString PersistentStoreTimeoutOption { get; }
 
@@ -953,7 +953,7 @@ namespace MonoMac.CoreData
 		[Field ("NSPersistentStoreUbiquitousContentNameKey")]
 		NSString PersistentStoreUbiquitousContentNameKey { get; }
 
-		[Field ("NSPersistentStoreUbiquitousContentUrlLKey")]
+		[Field ("NSPersistentStoreUbiquitousContentURLKey")]
 		NSString PersistentStoreUbiquitousContentUrlLKey { get; }
 
 		[Field ("NSPersistentStoreFileProtectionKey")]
