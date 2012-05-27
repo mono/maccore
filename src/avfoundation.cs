@@ -1625,7 +1625,7 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVMetadataID3MetadataKeyGroupIdentifier")]
 		NSString ID3MetadataKeyGroupIdentifier { get; }
 		
-		[Field ("AVMetadataID3MetadataKeyInvolvedPeopleList")]
+		[Field ("AVMetadataID3MetadataKeyInvolvedPeopleList_v23")]
 		NSString ID3MetadataKeyInvolvedPeopleList { get; }
 		
 		[Field ("AVMetadataID3MetadataKeyLink")]
