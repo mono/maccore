@@ -124,8 +124,7 @@ namespace MonoMac.QuickLook {
 		[Export ("previewItemTitle")]
 		string ItemTitle { get; }
 	}
-#endif
-
+#else
 	[Static]
 	interface QLThumbnailImage {
 		[Internal, Field ("kQLThumbnailOptionScaleFactorKey")]
@@ -134,4 +133,5 @@ namespace MonoMac.QuickLook {
 		[Internal, Field ("kQLThumbnailOptionIconModeKey")]
 		NSString OptionIconModeKey { get; }
 	}
+#endif
 }
