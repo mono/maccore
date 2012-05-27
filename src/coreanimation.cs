@@ -1357,7 +1357,7 @@ namespace MonoMac.CoreAnimation {
 		[Field ("kCAEmitterLayerOldestFirst")]
 		NSString RenderOldestFirst { get; }			
 
-		[Field ("kCAEmitterLayerOldestLastt")]
+		[Field ("kCAEmitterLayerOldestLast")]
 		NSString RenderOldestLast { get; }			
 
 		[Field ("kCAEmitterLayerBackToFront")]
