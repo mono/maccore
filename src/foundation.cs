@@ -2931,16 +2931,16 @@ namespace MonoMac.Foundation
 		NSString HTTPS { get; }
 		[Field ("NSURLProtectionSpaceFTP")]
 		NSString FTP { get; }
-		[Field ("NSURLProtectionSpaceHTTPProxy;")]
+		[Field ("NSURLProtectionSpaceHTTPProxy")]
 		NSString HTTPProxy { get; }
-		[Field ("NSURLProtectionSpaceHTTPSProxy;")]
+		[Field ("NSURLProtectionSpaceHTTPSProxy")]
 		NSString HTTPSProxy { get; }
-		[Field ("NSURLProtectionSpaceFTPProxy;")]
+		[Field ("NSURLProtectionSpaceFTPProxy")]
 		NSString FTPProxy { get; }
-		[Field ("NSURLProtectionSpaceSOCKSProxy;")]
+		[Field ("NSURLProtectionSpaceSOCKSProxy")]
 		NSString SOCKSProxy { get; }
 
-		[Field ("NSURLAuthenticationMethodDefault;")]
+		[Field ("NSURLAuthenticationMethodDefault")]
 		NSString AuthenticationMethodDefault { get; }
 
 		[Field ("NSURLAuthenticationMethodHTTPBasic")]
