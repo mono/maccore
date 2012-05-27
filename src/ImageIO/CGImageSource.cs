@@ -258,11 +258,25 @@ namespace MonoMac.ImageIO {
 			return new NSDictionary (CGImageSourceCopyProperties (handle, dict == null ? IntPtr.Zero : dict.Handle));
 		}
 
+		public NSDictionary CopyProperties (CGImageOptions options)
+		{
+			if (options == null)
+				throw new ArgumentNullException ("options");
+			return CopyProperties (options.ToDictionary ());
+		}
+
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCopyPropertiesAtIndex (IntPtr handle, int idx, IntPtr dictOptions);
 		public NSDictionary CopyProperties (NSDictionary dict, int imageIndex)
 		{
 			return new NSDictionary (CGImageSourceCopyPropertiesAtIndex (handle, imageIndex, dict == null ? IntPtr.Zero : dict.Handle));
+		}
+
+		public NSDictionary CopyProperties (CGImageOptions options, int imageIndex)
+		{
+			if (options == null)
+				throw new ArgumentNullException ("options");
+			return CopyProperties (options.ToDictionary (), imageIndex);
 		}
 		
 		//
