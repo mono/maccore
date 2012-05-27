@@ -2261,8 +2261,8 @@ namespace MonoMac.Foundation
 		[Field ("NSURLFileAllocatedSizeKey")]
 		NSString FileAllocatedSizeKey { get; }
 
-		[Field ("NSURLIsAliasFileKey		")]
-		NSString IsAliasFileKey		 { get; }
+		[Field ("NSURLIsAliasFileKey")]
+		NSString IsAliasFileKey	{ get; }
 
 		[Field ("NSURLVolumeLocalizedFormatDescriptionKey")]
 		NSString VolumeLocalizedFormatDescriptionKey { get; }
