@@ -898,6 +898,7 @@ namespace MonoMac.Foundation
 		NSString ResultContentRelevanceAttribute { get; }
 		
 		// Scope constants for defined search locations
+#if MONOMAC
 		[Field ("NSMetadataQueryUserHomeScope")]
 		NSString UserHomeScope { get; }
 		
@@ -909,7 +910,7 @@ namespace MonoMac.Foundation
 
 		[Field ("NSMetadataQueryLocalDocumentsScope")]
 		NSString QueryLocalDocumentsScope { get; }
-
+#endif
 		[Field ("NSMetadataQueryUbiquitousDocumentsScope")]
 		NSString QueryUbiquitousDocumentsScope { get; }
 
