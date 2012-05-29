@@ -123,7 +123,7 @@ namespace MonoMac.Foundation {
 
 		public override string ToString ()
 		{
-			return Description;
+			return Description ?? base.ToString ();
 		}
 	}
 }

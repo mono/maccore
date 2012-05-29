@@ -30,7 +30,7 @@ namespace MonoMac.Foundation {
 	public partial class NSUrlRequest {
 		public override string ToString ()
 		{
-			return Url.AbsoluteString;
+			return Url != null ? Url.AbsoluteString : base.ToString ();
 		}
 	}
 }
