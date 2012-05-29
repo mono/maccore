@@ -997,7 +997,10 @@ public class Generator {
 					clear.AppendFormat ("{0} = {1};", pi.Name, nt.IsValueType ? "default (" + FormatType (null, nt) + ")" : "null");
 				}
 				if (nt.IsValueType){
-					pars.AppendFormat ("{0} {1} {2}", pi.IsOut ? "out" : "ref", FormatType (null, nt), pi.Name);
+					string marshal = string.Empty;
+					if (nt == typeof (bool))
+						marshal = "[System.Runtime.InteropServices.MarshalAs (System.Runtime.InteropServices.UnmanagedType.I1)] ";
+					pars.AppendFormat ("{3}{0} {1} {2}", pi.IsOut ? "out" : "ref", FormatType (null, nt), pi.Name, marshal);
 					invoke.AppendFormat ("{0} {1}", pi.IsOut ? "out" : "ref", pi.Name);
 					continue;
 				}
