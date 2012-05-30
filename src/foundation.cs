@@ -227,6 +227,8 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSCachedURLResponse")]
+	// instance created with 'init' will crash when Dispose is called
+	[DisableDefaultCtor]
 	public interface NSCachedUrlResponse {
 		[Export ("initWithResponse:data:userInfo:storagePolicy:")]
 		IntPtr Constructor (NSUrlResponse response, NSData data, [NullAllowed] NSDictionary userInfo, NSUrlCacheStoragePolicy storagePolicy);
@@ -248,6 +250,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSCalendar {
 		[Export ("initWithCalendarIdentifier:")]
 		IntPtr Constructor (string identifier);
@@ -747,6 +751,8 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSCoder),
 		   Delegates=new string [] {"WeakDelegate"},
 		   Events=new Type [] { typeof (NSKeyedArchiverDelegate) })]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[NSKeyedArchiver init]: cannot use -init for initialization
+	[DisableDefaultCtor]
 	public interface NSKeyedArchiver {
 		[Export ("initForWritingWithMutableData:")]
 		IntPtr Constructor (NSMutableData data);
@@ -781,6 +787,8 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSCoder),
 		   Delegates=new string [] {"WeakDelegate"},
 		   Events=new Type [] { typeof (NSKeyedUnarchiverDelegate) })]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[NSKeyedUnarchiver init]: cannot use -init for initialization
+	[DisableDefaultCtor]
 	public interface NSKeyedUnarchiver {
 		[Export ("initForReadingWithData:")]
 		IntPtr Constructor (NSData data);
@@ -1302,7 +1310,12 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSException {
+		[Export ("initWithName:reason:userInfo:")]
+		IntPtr Constructor (string name, string reason, [NullAllowed] NSDictionary userInfo);
+
 		[Export ("name")]
 		string Name { get; }
 	
@@ -1319,6 +1332,8 @@ namespace MonoMac.Foundation
 	public delegate void NSExpressionHandler (NSObject evaluatedObject, NSExpression [] expressions, NSMutableDictionary context);
 	
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -predicateFormat cannot be sent to an abstract object of class NSExpression: Create a concrete instance!
+	[DisableDefaultCtor]
 	public interface NSExpression {
 		[Static, Export ("expressionForConstantValue:")]
 		NSExpression FromConstant (NSObject obj);
@@ -1568,6 +1583,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL so it's not usable evenif it does not throw an ObjC exception
+	[DisableDefaultCtor]
 	public interface NSLocale {
 		[Static]
 		[Export ("systemLocale")]
@@ -1691,6 +1708,8 @@ namespace MonoMac.Foundation
 
 	
 	[BaseType (typeof (NSObject))]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSRunLoop {
 		[Export ("currentRunLoop")][Static][IsThreadStatic]
 		NSRunLoop Current { get; }
@@ -1796,6 +1815,8 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof(NSObject))]
 	[Dispose ("if (disposing) { Invalidate (); } ")]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSTimer {
 		// TODO: scheduledTimerWithTimeInterval:invocation:repeats:
 
@@ -1830,6 +1851,9 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof(NSObject))]
+	// NSTimeZone is an abstract class that defines the behavior of time zone objects. -> http://developer.apple.com/library/ios/#documentation/Cocoa/Reference/Foundation/Classes/NSTimeZone_Class/Reference/Reference.html
+	// calling 'init' returns a NIL pointer, i.e. an unusable instance
+	[DisableDefaultCtor]
 	public interface NSTimeZone {
 		[Export ("initWithName:")]
 		IntPtr Constructor (string name);
@@ -2082,6 +2106,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURL")]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSUrl {
 		[Export ("initWithScheme:host:path:")]
 		IntPtr Constructor (string scheme, string host, string path);
@@ -2526,6 +2552,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLAuthenticationChallenge")]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSUrlAuthenticationChallenge {
 		[Export ("initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:")]
 		IntPtr Constructor (NSUrlProtectionSpace space, NSUrlCredential credential, int previousFailureCount, NSUrlResponse response, NSError error, NSUrlConnection sender);
@@ -2677,6 +2705,8 @@ namespace MonoMac.Foundation
 	}
 		
 	[BaseType (typeof (NSObject), Name="NSURLCredential")]
+	// crash when calling NSObjecg.get_Description (and likely other selectors)
+	[DisableDefaultCtor]
 	public interface NSUrlCredential {
 		[Export ("persistence")]
 		NSUrlCredentialPersistence Persistence { get; }
@@ -2720,6 +2750,8 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLCredentialStorage")]
+	// init returns NIL -> SharedCredentialStorage
+	[DisableDefaultCtor]
 	public interface NSUrlCredentialStorage {
 		[Export ("sharedCredentialStorage")]
 		NSUrlCredentialStorage SharedCredentialStorage { get; }
@@ -2882,6 +2914,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLProtectionSpace")]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSUrlProtectionSpace {
 		
 		[Export ("initWithHost:port:protocol:realm:authenticationMethod:")]
@@ -3570,6 +3604,8 @@ namespace MonoMac.Foundation
 
 #if !MONOMAC
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[__NSArrayM insertObject:atIndex:]: object cannot be nil
+	[DisableDefaultCtor]
 	interface NSOrthography {
 		[Export ("dominantScript")]
 		string DominantScript { get;  }
@@ -3622,6 +3658,8 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSHTTPCookie")]
+	// default 'init' crash both simulator and devices
+	[DisableDefaultCtor]
 	public interface NSHttpCookie {
 		[Export ("initWithProperties:")]
 		IntPtr Constructor (NSDictionary properties);
@@ -3676,6 +3714,8 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSHTTPCookieStorage")]
+	// NSHTTPCookieStorage implements a singleton object -> use SharedStorage since 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSHttpCookieStorage {
 		[Export ("sharedHTTPCookieStorage"), Static]
 		NSHttpCookieStorage SharedStorage { get; }
@@ -3962,6 +4002,8 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSJSONSerialization")]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** +[NSJSONSerialization allocWithZone:]: Do not create instances of NSJSONSerialization in this release
+	[DisableDefaultCtor]
 	interface NSJsonSerialization {
 		[Static]
 		[Export ("isValidJSONObject:")]
@@ -4167,6 +4209,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: *** -[NSConcreteNotification init]: should never be used
+	[DisableDefaultCtor]
 	public interface NSNotification {
 		[Export ("name")]
 		string Name { get; }
@@ -4274,6 +4318,8 @@ namespace MonoMac.Foundation
 	public delegate void NSNotificationHandler (NSNotification notification);
 	
 	[BaseType (typeof (NSObject))]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSValue {
 		[Export ("getValue:")]
 		void StoreValueAtAddress (IntPtr value);
@@ -4409,6 +4455,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSValue))]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSNumber {
 		[Export ("charValue")]
 		sbyte SByteValue { get; }
@@ -5406,6 +5454,8 @@ namespace MonoMac.Foundation
 	}
 		
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: -[NSFileVersion init]: You have to use one of the factory methods to instantiate NSFileVersion.
+	[DisableDefaultCtor]
 	interface NSFileVersion {
 		[Export ("URL")]
 		NSUrl Url { get;  }
@@ -5611,6 +5661,8 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSPredicate {
 		[Static]
 		[Export ("predicateWithFormat:argumentArray:")]
