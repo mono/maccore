@@ -14,6 +14,8 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreData
 {
 	[BaseType (typeof (NSPersistentStore))]
+	// Objective-C exception thrown.  Name: NSInternalInconsistencyException Reason: NSMappedObjectStore must be initialized with initWithPersistentStoreCoordinator:configurationName:URL:options
+	[DisableDefaultCtor]
 	public interface NSAtomicStore {
 
 		[Export ("initWithPersistentStoreCoordinator:configurationName:URL:options:")]
@@ -54,6 +56,8 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: NSAtomicStoreCacheNodes must be initialized using initWithObjectID:(NSManagedObjectID *)
+	[DisableDefaultCtor]
 	public interface NSAtomicStoreCacheNode {
 
 		[Export ("initWithObjectID:")]
@@ -348,6 +352,9 @@ namespace MonoMac.CoreData
 	}
 
 	[BaseType (typeof (NSObject))]
+	// 'init' issues a warning: CoreData: error: Failed to call designated initializer on NSManagedObject class 'NSManagedObject' 
+	// then crash while disposing the instance
+	[DisableDefaultCtor]
 	public interface NSManagedObject {
 		[Export ("initWithEntity:insertIntoManagedObjectContext:")]
 		IntPtr Constructor (NSEntityDescription entity, NSManagedObjectContext context);
@@ -572,7 +579,10 @@ namespace MonoMac.CoreData
 		[Export ("parentContext")]
 		NSManagedObjectContext ParentContext { get; set; }
 	}
+
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -URIRepresentation cannot be sent to an abstract object of class NSManagedObjectID: Create a concrete instance!
+	[DisableDefaultCtor]
 	public interface NSManagedObjectID {
 
 		[Export ("entity")]
