@@ -91,6 +91,8 @@ namespace MonoMac.CoreMidi {
 	}
 
 	[BaseType (typeof (NSObject), Name="MIDINetworkSession")]
+	// default 'init' crash the application
+	[DisableDefaultCtor]
 	interface MidiNetworkSession {
 		[Export ("enabled")]
 		bool Enabled { [Bind ("isEnabled")] get; set;  }
