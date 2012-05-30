@@ -750,6 +750,8 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (NSObject))]
 	[Model]
+	// protocol
+	[DisableDefaultCtor]
 	public interface CAAction {
 		[Export ("runActionForKey:object:arguments:")]
 		void RunAction (string eventKey, NSObject obj, NSDictionary arguments);
