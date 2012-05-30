@@ -238,7 +238,7 @@ namespace MonoMac.AudioUnit
 
 		public int Uninitialize ()
 		{
-			return AudioUnitUnInitialize (handle);
+			return AudioUnitUninitialize (handle);
 		}
 
 		public void Start()
@@ -299,7 +299,7 @@ namespace MonoMac.AudioUnit
 		{
 			if (handle != IntPtr.Zero){
 				Stop ();
-				AudioUnitUnInitialize (handle);
+				AudioUnitUninitialize (handle);
 				AudioComponentInstanceDispose (handle);
 				gcHandle.Free();
 				handle = IntPtr.Zero;
@@ -339,7 +339,7 @@ namespace MonoMac.AudioUnit
 		static extern int AudioUnitInitialize(IntPtr inUnit);
 		
 		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
-		static extern int AudioUnitUnInitialize(IntPtr inUnit);
+		static extern int AudioUnitUninitialize(IntPtr inUnit);
 
 		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 		static extern int AudioOutputUnitStart(IntPtr ci);
