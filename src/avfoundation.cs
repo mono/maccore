@@ -539,6 +539,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** initialization method -init cannot be sent to an abstract object of class AVAsset: Create a concrete instance!
+	[DisableDefaultCtor]
 	interface AVAsset {
 		[Export ("duration")]
 		CMTime Duration { get;  }
@@ -642,6 +644,9 @@ namespace MonoMac.AVFoundation {
 	}
 
 	[BaseType (typeof (NSObject))]
+	// <quote>You create an asset generator using initWithAsset: or assetImageGeneratorWithAsset:</quote> http://developer.apple.com/library/ios/#documentation/AVFoundation/Reference/AVAssetImageGenerator_Class/Reference/Reference.html
+	// calling 'init' returns a NIL handle
+	[DisableDefaultCtor]
 	interface AVAssetImageGenerator {
 		[Export ("maximumSize")]
 		SizeF MaximumSize { get; set;  }
@@ -692,6 +697,8 @@ namespace MonoMac.AVFoundation {
 	
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetReader initWithAsset:error:] invalid parameter not satisfying: asset != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetReader {
 		[Export ("asset")]
 		AVAsset Asset { get;  }
@@ -729,6 +736,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** initialization method -init cannot be sent to an abstract object of class AVAssetReaderOutput: Create a concrete instance!
+	[DisableDefaultCtor]
 	interface AVAssetReaderOutput {
 		[Export ("mediaType")]
 		string MediaType { get; }
@@ -742,6 +751,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (AVAssetReaderOutput))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetReaderTrackOutput initWithTrack:outputSettings:] invalid parameter not satisfying: track != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetReaderTrackOutput {
 		[Export ("track")]
 		AVAssetTrack Track { get;  }
@@ -759,6 +770,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (AVAssetReaderOutput))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetReaderAudioMixOutput initWithAudioTracks:audioSettings:] invalid parameter not satisfying: audioTracks != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetReaderAudioMixOutput {
 		[Export ("audioTracks")]
 		AVAssetTrack [] AudioTracks { get;  }
@@ -778,6 +791,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (AVAssetReaderOutput))]
+	// crash application if 'init' is called
+	[DisableDefaultCtor]
 	interface AVAssetReaderVideoCompositionOutput {
 		[Export ("videoTracks")]
 		AVAssetTrack [] VideoTracks { get;  }
@@ -797,6 +812,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriter initWithURL:fileType:error:] invalid parameter not satisfying: outputURL != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetWriter {
 		[Export ("outputURL", ArgumentSemantic.Copy)]
 		NSUrl OutputURL { get;  }
@@ -858,6 +875,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriterInput initWithMediaType:outputSettings:] invalid parameter not satisfying: mediaType != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetWriterInput {
 		[Export ("mediaType")]
 		string MediaType { get;  }
@@ -898,6 +917,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriterInputPixelBufferAdaptor initWithAssetWriterInput:sourcePixelBufferAttributes:] invalid parameter not satisfying: input != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetWriterInputPixelBufferAdaptor {
 		[Export ("assetWriterInput")]
 		AVAssetWriterInput AssetWriterInput { get;  }
@@ -920,6 +941,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (AVAsset), Name="AVURLAsset")]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVUrlAsset {
 		[Export ("URL", ArgumentSemantic.Copy)]
 		NSUrl Url { get;  }
@@ -950,6 +973,8 @@ namespace MonoMac.AVFoundation {
 	}
 
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVAssetTrack {
 		[Export ("trackID")]
 		int TrackID { get;  }
@@ -1952,6 +1977,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (AVAssetTrack))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVCompositionTrack {
 		[Export ("segments", ArgumentSemantic.Copy)]
 		AVCompositionTrackSegment [] Segments { get; }
@@ -1959,6 +1986,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (AVCompositionTrack))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVMutableCompositionTrack {
 		[Export ("segments", ArgumentSemantic.Copy)]
 		AVCompositionTrackSegment [] Segments { get; set; }
@@ -2075,6 +2104,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVAssetExportSession {
 		[Export ("presetName")]
 		string PresetName { get;  }
@@ -2240,6 +2271,8 @@ namespace MonoMac.AVFoundation {
 	[Since (5,0)]
 	[BaseType (typeof (NSObject))]
         [Model]
+	// Protocol
+	[DisableDefaultCtor]
         interface AVVideoCompositionValidationHandling {
                 [Export ("videoComposition:shouldContinueValidatingAfterFindingInvalidValueForKey:")]
                 bool ShouldContinueValidatingAfterFindingInvalidValueForKey (AVVideoComposition videoComposition, string key);
@@ -2532,6 +2565,8 @@ namespace MonoMac.AVFoundation {
 	
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: Cannot instantiate AVCaptureInput because it is an abstract superclass.
+	[DisableDefaultCtor]
 	interface AVCaptureInput {
 		[Export ("ports")]
 		AVCaptureInputPort [] Ports { get; }
@@ -2560,6 +2595,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (AVCaptureInput))]
+	// crash application if 'init' is called
+	[DisableDefaultCtor]
 	interface AVCaptureDeviceInput {
 		[Export ("device")]
 		AVCaptureDevice Device { get;  }
@@ -2574,6 +2611,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: Cannot instantiate AVCaptureOutput because it is an abstract superclass.
+	[DisableDefaultCtor]
 	interface AVCaptureOutput {
 		[Export ("connections")]
 		NSObject [] Connections { get; }
@@ -2680,6 +2719,8 @@ namespace MonoMac.AVFoundation {
 
 	[BaseType (typeof (AVCaptureOutput))]
 	[Since (4,0)]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: Cannot instantiate AVCaptureFileOutput because it is an abstract superclass.
+	[DisableDefaultCtor]
 	interface AVCaptureFileOutput {
 		[Export ("recordedDuration")]
 		CMTime RecordedDuration { get;  }
@@ -2755,6 +2796,8 @@ namespace MonoMac.AVFoundation {
 		
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: Cannot instantiate a AVCaptureDevice directly.
+	[DisableDefaultCtor]
 	interface AVCaptureDevice {
 		[Export ("uniqueID")]
 		string UniqueID { get;  }
@@ -2985,6 +3028,8 @@ namespace MonoMac.AVFoundation {
 		
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVPlayerItem {
 		[Export ("status")]
 		AVPlayerItemStatus Status { get;  }
