@@ -626,7 +626,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (5,0)]
 		[Export ("compatibleWithSavedPhotosAlbum")]
-		bool CompatibleWithSavedPhotosAlbum  { get; }
+		bool CompatibleWithSavedPhotosAlbum  { [Bind ("isCompatibleWithSavedPhotosAlbum")] get; }
 
 		[Since (5,0)]
 		[Export ("creationDate")]
@@ -2045,8 +2045,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("tracks")]
 		AVCompositionTrack [] Tracks { get; }
 
+		[Obsolete ("Deprecated in iOS5")]
 		[Export ("naturalSize")]
-		SizeF NaturalSize { get; set; }
+		SizeF NaturalSize { get; }
 
 	}
 
@@ -2923,8 +2924,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("rate")]
 		float Rate { get; set;  }
 
+		// note: not a property in ObjC
 		[Export ("currentTime")]
-		CMTime CurrentTime { get; set;  }
+		CMTime CurrentTime { get; }
 
 		[Export ("actionAtItemEnd")]
 		AVPlayerActionAtItemEnd ActionAtItemEnd { get; set;  }
