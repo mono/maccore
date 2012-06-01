@@ -1215,10 +1215,10 @@ namespace MonoMac.CoreAnimation {
 		[Export ("greenSpeed")]
 		float GreenSpeed { get; set;  }
 
-		[Export ("BlueSpeed")]
+		[Export ("blueSpeed")]
 		float BlueSpeed { get; set;  }
 
-		[Export ("AlphaSpeed")]
+		[Export ("alphaSpeed")]
 		float AlphaSpeed { get; set;  }
 
 		[Export ("contents")]
