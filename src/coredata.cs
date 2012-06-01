@@ -19,7 +19,7 @@ namespace MonoMac.CoreData
 	public interface NSAtomicStore {
 
 		[Export ("initWithPersistentStoreCoordinator:configurationName:URL:options:")]
-		IntPtr Constructor (NSPersistentStoreCoordinator coordinator, string configurationName, NSUrl url, NSDictionary options);
+		IntPtr Constructor (NSPersistentStoreCoordinator coordinator, string configurationName, NSUrl url, [NullAllowed] NSDictionary options);
 
 		[Export ("load:")]
 		bool Load (out NSError error);
@@ -119,7 +119,7 @@ namespace MonoMac.CoreData
 		[Export ("name")]
 		string Name { get; set; }
 
-		[Export ("isAbstract")]
+		[Export ("Abstract")]
 		bool Abstract { [Bind("isAbstract")] get; set; }
 
 		[Export ("subentitiesByName")]
