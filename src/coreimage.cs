@@ -194,7 +194,7 @@ namespace MonoMac.CoreImage {
 		NSDictionary Attributes { get; }
 
 		[Export ("name")]
-		string Name { get; set;}
+		string Name { get; }
 
 		[Static]
 		[Export ("filterWithName:")]
@@ -680,6 +680,7 @@ namespace MonoMac.CoreImage {
 		//[Export ("imageWithIOSurface:options:")]
 		//CIImage ImageWithIOSurfaceoptions (IOSurfaceRef surface, NSDictionary d, );
 
+		[Static]
 		[Export ("imageWithColor:")]
 		CIImage ImageWithColor (CIColor color);
 
@@ -698,7 +699,7 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (CGLayer layer);
 
 		[Export ("initWithCGLayer:options:")]
-		NSObject IntPtr (CGLayer layer, NSDictionary d);
+		IntPtr Constructor (CGLayer layer, NSDictionary d);
 
 		[Export ("initWithData:")]
 		IntPtr Constructor (NSData data);
@@ -757,12 +758,14 @@ namespace MonoMac.CoreImage {
 		//[Export ("definition")]
 		//CIFilterShape Definition ();
 
+		// can't see this in either iOS or OSX
+#if false
 		[Export ("url")]
 		NSUrl Url { get; }
 
 		[Export ("colorSpace")]
 		CGColorSpace ColorSpace { get; }
-
+#endif
 #if MONOMAC
 		[Field ("kCIFormatARGB8")]
 		int FormatARGB8 { get; }
@@ -1038,6 +1041,9 @@ namespace MonoMac.CoreImage {
 
 		[Export ("bounds")]
 		RectangleF Bounds { get; }
+
+		[Field ("CIFeatureTypeFace")]
+		NSString TypeFace { get; }
 	}
 
 	[BaseType (typeof (CIFeature))]
