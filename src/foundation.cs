@@ -625,8 +625,9 @@ namespace MonoMac.Foundation
 		[Export ("calendar")]
 		NSCalendar Calendar { get; set; }
 
+		// not exposed as a property in documentation
 		[Export ("isLenient")]
-		bool IsLenient { get; set; } 
+		bool IsLenient { get; [Bind ("setLenient:")] set; } 
 
 		[Export ("twoDigitStartDate")]
 		NSDate TwoDigitStartDate { get; set; }
@@ -1040,7 +1041,7 @@ namespace MonoMac.Foundation
 		[Export ("insertObject:atIndex:")]
 		void Insert (NSObject obj, int index);
 
-		[Export ("removeLastObject:")]
+		[Export ("removeLastObject")]
 		void RemoveLastObject ();
 
 		[Export ("removeObjectAtIndex:")]
@@ -1055,7 +1056,7 @@ namespace MonoMac.Foundation
 		[Export ("addObjectsFromArray:")]
 		void AddObjects (NSObject [] source);
 
-		[Export ("insertObjects:atIndexes")]
+		[Export ("insertObjects:atIndexes:")]
 		void InsertObjects (NSObject [] objects, NSIndexSet atIndexes);
 
 		[Export ("removeObjectsAtIndexes:")]
@@ -1626,19 +1627,19 @@ namespace MonoMac.Foundation
 		[Export ("componentsFromLocaleIdentifier:")][Static]
 		NSDictionary ComponentsFromLocaleIdentifier (string identifier);
 
-		[Export ("localeIdentifierFromComponents:")]
+		[Export ("localeIdentifierFromComponents:")][Static]
 		string LocaleIdentifierFromComponents (NSDictionary dict);
 
-		[Export ("canonicalLanguageIdentifierFromString")]
+		[Export ("canonicalLanguageIdentifierFromString")][Static]
 		string CanonicalLanguageIdentifierFromString (string str);
 
-		[Export ("canonicalLocaleIdentifierFromString:")]
+		[Export ("canonicalLocaleIdentifierFromString:")][Static]
 		string CanonicalLocaleIdentifierFromString (string str);
 
-		[Export ("characterDirectionForLanguage")]
+		[Export ("characterDirectionForLanguage")][Static]
 		NSLocaleLanguageDirection GetCharacterDirection (string isoLanguageCode);
 
-		[Export ("lineDirectionForLanguage")]
+		[Export ("lineDirectionForLanguage")][Static]
 		NSLocaleLanguageDirection GetLineDirection (string isoLanguageCode);
 
 		[Field ("NSCurrentLocaleDidChangeNotification")]
@@ -3629,7 +3630,7 @@ namespace MonoMac.Foundation
 		string DominantLanguageForScript (string script);
 
 		[Export ("initWithDominantScript:languageMap:")]
-		IntPtr Constructor (string dominantScript, NSDictionary languageMap);
+		IntPtr Constructor (string dominantScript, [NullAllowed] NSDictionary languageMap);
 	}
 #endif
 	
@@ -4618,6 +4619,7 @@ namespace MonoMac.Foundation
 		[Export ("numberFromString:")]
 		NSNumber NumberFromString (string text);
 
+		[Static]
 		[Export ("localizedStringFromNumber:numberStyle:")]
 		string LocalizedStringFromNumbernumberStyle (NSNumber num, NSNumberFormatterStyle nstyle);
 
@@ -4827,7 +4829,7 @@ namespace MonoMac.Foundation
 		[Export ("maximumDecimalNumber")][Static]
 		NSDecimalNumber MaxValue { get; }
 
-		[Export ("notANumber")]
+		[Export ("notANumber")][Static]
 		NSDecimalNumber NaN { get; }
 
 		//
@@ -4918,6 +4920,7 @@ namespace MonoMac.Foundation
 		[Export ("isMainThread")]
 		bool IsMainThread { get; }
 
+		[Static]
 		[Export ("mainThread")]
 		NSThread MainThread { get; }
 
@@ -5477,10 +5480,10 @@ namespace MonoMac.Foundation
 
 		[Export ("resolved")]
 		bool Resolved { [Bind ("isResolved")] get; set;  }
-
+#if MONOMAC
 		[Export ("discardable")]
 		bool Discardable { [Bind ("isDiscardable")] get; set;  }
-
+#endif
 		[Static]
 		[Export ("currentVersionOfItemAtURL:")]
 		NSFileVersion GetCurrentVersion (NSUrl url);
