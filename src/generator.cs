@@ -943,9 +943,7 @@ public class Generator {
 		if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType == false)
 			return "IntPtr";
 		
-		Console.WriteLine ("Do not know how to make a signature for {0}", mai.Type);
-		throw new Exception ();
-		//return null;
+		throw new BindingException (1017, true, "Do not know how to make a signature for {0}", mai.Type);
 	}
 
 	//
@@ -1041,8 +1039,7 @@ public class Generator {
 				}
 			}
 			
-			Console.Error.WriteLine ("MakeTrampoline: do not know how to make a trampoline for {0}", pi);
-			throw new Exception ();
+			throw new BindingException (1001, true, "MakeTrampoline: do not know how to make a trampoline for {0}", pi);
 		}
 
 		var ti = new TrampolineInfo (t.FullName,
@@ -1135,8 +1132,7 @@ public class Generator {
 			return String.Format ("(IntPtr) block_ptr_{0}", pi.Name);
 		}
 		
-		Console.WriteLine ("Unknown kind {0}", pi);
-		throw new Exception ();
+		throw new BindingException (1002, true, "Unknown kind {0} in method '{1}.{2}'", pi, mi.DeclaringType.FullName, mi	.Name);
 	}
 
 	public bool ParameterNeedsNullCheck (ParameterInfo pi, MethodInfo mi)
@@ -1207,8 +1203,8 @@ public class Generator {
 
 		try {
 			sb.Append (ParameterGetMarshalType (mi));
-		} catch {
-			Console.WriteLine ("   in Method `{0}'", mi.Name);
+		} catch (BindingException ex) {
+			throw new BindingException (ex.Code, ex.Error, ex,  "{0} in method `{1}'", ex.Message, mi.Name);
 		}
 
 		sb.Append ("_");
@@ -1222,9 +1218,8 @@ public class Generator {
 			sb.Append ("_");
 			try {
 				sb.Append (ParameterGetMarshalType (new MarshalInfo (mi, pi)).Replace (' ', '_'));
-			} catch {
-				Console.WriteLine ("  in parameter `{0}' from {1}.{2}", pi.Name, mi.DeclaringType, mi.Name);
-				throw;
+			} catch (BindingException ex) {
+				throw new BindingException (ex.Code, ex.Error, ex, "{0} in parameter `{1}' from {2}.{3}", ex.Message, pi.Name, mi.DeclaringType, mi.Name);
 			}
 		}
 
@@ -1248,8 +1243,8 @@ public class Generator {
 
 			try {
 				b.Append (ParameterGetMarshalType (new MarshalInfo (mi, pi), true));
-			} catch {
-				Console.WriteLine ("  in parameter {0} of {1}.{2}", pi.Name, mi.DeclaringType, mi.Name);
+			} catch (BindingException ex) {
+				throw new BindingException (ex.Code, ex.Error, ex, "{0} in parameter {1} of {2}.{3}", ex.Message, pi.Name, mi.DeclaringType, mi.Name);
 			}
 			b.Append (" ");
 			b.Append ("arg" + (++n));
@@ -1426,10 +1421,8 @@ public class Generator {
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
-				if (HasAttribute (pi, typeof (IsThreadStaticAttribute)) && !HasAttribute (pi, typeof (StaticAttribute))) {
-					Console.WriteLine ("Error: [IsThreadStatic] is only valid on properties that are also [Static]");
-					Environment.Exit (1);
-				}
+				if (HasAttribute (pi, typeof (IsThreadStaticAttribute)) && !HasAttribute (pi, typeof (StaticAttribute)))
+					throw new BindingException (1008, true, "[IsThreadStatic] is only valid on properties that are also [Static]");
 
 				string wrapname;
 				var export = GetExportAttribute (pi, out wrapname);
@@ -1442,8 +1435,7 @@ public class Generator {
 					if (attrs.Length != 0)
 						continue;
 					
-					Console.WriteLine ("Error: no [Export] attribute on property {0}.{1}", pi.DeclaringType, pi.Name);
-					Environment.Exit (1);
+					throw new BindingException (1018, true, "No [Export] attribute on property {0}.{1}", pi.DeclaringType, pi.Name);
 				}
 				if (HasAttribute (pi, typeof (StaticAttribute)))
 					need_static [t] = true;
@@ -1501,12 +1493,10 @@ public class Generator {
 					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute)
 						continue;
 					else 
-						Console.WriteLine ("Error: Unknown attribute {0} on {1}", attr.GetType (), t);
+						throw new BindingException (1007, true, "Unknown attribute {0} on {1}", attr.GetType (), t);
 
-					if (selector == null){
-						Console.WriteLine ("Error: No selector specified for method `{0}.{1}'", mi.DeclaringType, mi.Name);
-						Environment.Exit (1);
-					}
+					if (selector == null)
+						throw new BindingException (1009, true, "No selector specified for method `{0}.{1}'", mi.DeclaringType, mi.Name);
 					
 					tselectors.Add (selector);
 					if (selector_use.ContainsKey (selector)){
@@ -1574,10 +1564,9 @@ public class Generator {
 			int i = 0;
 			foreach (var prop in eventType.GetProperties (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)){
 				var attrs = prop.GetCustomAttributes (typeof (ExportAttribute), true);
-				if (attrs.Length == 0){
-					Console.WriteLine ("Error, no Export attribute on {0}.{1} property", eventType, prop.Name);
-					Environment.Exit (1);
-				}
+				if (attrs.Length == 0)
+					throw new BindingException (1010, true, "No Export attribute on {0}.{1} property", eventType, prop.Name);
+
 				var export = attrs [0] as ExportAttribute;
 				var null_allowed = HasAttribute (prop, typeof (NullAllowedAttribute));
 				var nullable_type = prop.PropertyType.IsValueType && null_allowed;
@@ -1643,10 +1632,8 @@ public class Generator {
 							print (GenerateNSNumber (cast, "ByteValue"));
 						else if (underlying == typeof (bool))
 							print (GenerateNSNumber (cast, "BoolValue"));
-						else {
-							Console.WriteLine ("Error: Do not know how to extract type {0}/{1} from an NSDictionary", propertyType, underlying);
-							Environment.Exit (1);
-						}
+						else
+							throw new BindingException (1011, true, "Do not know how to extract type {0}/{1} from an NSDictionary", propertyType, underlying);
 					}
 				}
 				indent -= 2;
@@ -1873,9 +1860,9 @@ public class Generator {
 					if (pi.ParameterType == typeof (string)){
 						var mai = new MarshalInfo (mi, pi);
 						
-						if (mai.PlainString){
-							Console.WriteLine ("Trying to use a string as a [Target]");
-						}
+						if (mai.PlainString)
+							ErrorHelper.Show (new BindingException (1101, false, "Trying to use a string as a [Target]"));
+
 						if (mai.ZeroCopyStringMarshal){
 							target_name = "(IntPtr)(&_s" + pi.Name + ")";
 							handle = "";
@@ -2539,10 +2526,8 @@ public class Generator {
 		object [] attr = mi.GetCustomAttributes (typeof (ExportAttribute), true);
 		if (attr.Length != 1){
 			attr = mi.GetCustomAttributes (typeof (BindAttribute), true);
-			if (attr.Length != 1){
-				Console.WriteLine ("No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
-				Environment.Exit (1);
-			}
+			if (attr.Length != 1)
+				throw new BindingException (1012, true, "No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
 			BindAttribute ba = (BindAttribute) attr [0];
 			selector = ba.Selector;
 			virtual_method = ba.Virtual;
@@ -2816,10 +2801,9 @@ public class Generator {
 						print ("return Dlfcn.GetIntPtr ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else {
 						if (field_pi.PropertyType == typeof (string))
-							Console.WriteLine ("Unsupported type for Fields (string), you probably meant NSString");
+							throw new BindingException (1013, true, "Unsupported type for Fields (string), you probably meant NSString");
 						else
-							Console.WriteLine ("Unsupported type for Fields: {0}", fieldTypeName);
-						Environment.Exit (1);
+							throw new BindingException (1014, true, "Unsupported type for Fields: {0}", fieldTypeName);
 					}
 					
 					indent--;
@@ -2833,10 +2817,8 @@ public class Generator {
 			var delegateTypes = new Dictionary<string,MethodInfo> ();
 
 			if (bta != null && bta.Events != null){
-				if (bta.Delegates == null){
-					Console.WriteLine ("In class {0} You specified the Events property, but did not bind those to names with Delegates", type.FullName);
-					Environment.Exit (1);
-				}
+				if (bta.Delegates == null)
+					throw new BindingException (1015, true, "In class {0} You specified the Events property, but did not bind those to names with Delegates", type.FullName);
 				
 				print ("//");
 				print ("// Events and properties from the delegate");
@@ -2889,10 +2871,8 @@ public class Generator {
 						var pars = mi.GetParameters ();
 						int minPars = bta.Singleton ? 0 : 1;
 
-						if (pars.Length < minPars){
-							Console.WriteLine ("Error, the delegate method {0}.{1} needs to take at least one parameter", dtype.FullName, mi.Name);
-							Environment.Exit (1);
-						}
+						if (pars.Length < minPars)
+							throw new BindingException (1003, true, "The delegate method {0}.{1} needs to take at least one parameter", dtype.FullName, mi.Name);
 						
 						var sender = pars.Length == 0 ? "this" : pars [0].Name;
 
@@ -3328,15 +3308,12 @@ public class Generator {
 			return "EventArgs";
 		
 		var a = GetAttribute (mi, typeof (EventArgsAttribute));
-		if (a == null){
-			Console.WriteLine ("The delegate method {0}.{1} is missing the [EventArgs] attribute (has {2} parameters)", mi.DeclaringType.FullName, mi.Name, mi.GetParameters ().Length);
-			throw new Exception ();
-		}
+		if (a == null)
+			throw new BindingException (1004, true, "The delegate method {0}.{1} is missing the [EventArgs] attribute (has {2} parameters)", mi.DeclaringType.FullName, mi.Name, mi.GetParameters ().Length);
+
 		var ea = (EventArgsAttribute) a;
-		if (ea.ArgName.EndsWith ("EventArgs")){
-			Console.WriteLine ("EventArgs in {0}.{1} attribute should not include the text `EventArgs' at the end", mi.DeclaringType.FullName, mi.Name);
-			throw new Exception ();
-		}
+		if (ea.ArgName.EndsWith ("EventArgs"))
+			throw new BindingException (1005, true, "EventArgs in {0}.{1} attribute should not include the text `EventArgs' at the end", mi.DeclaringType.FullName, mi.Name);
 		
 		if (ea.SkipGeneration){
 			skipGeneration [ea.FullName ? ea.ArgName : ea.ArgName + "EventArgs"] = true;
@@ -3359,11 +3336,10 @@ public class Generator {
 		if (a != null)
 			return ((DelegateNameAttribute) a).Name;
 		a = GetAttribute (mi, typeof (EventArgsAttribute));
-		if (a == null){
-			Console.WriteLine ("The delegate method {0}.{1} is missing the [DelegateName] attribute (or EventArgs)", mi.DeclaringType.FullName, mi.Name);
-			throw new Exception ();
-		}
-		Console.WriteLine ("WARNING: Using the deprecated EventArgs for a delegate signature in {0}.{1}, please use DelegateName instead", mi.DeclaringType.FullName, mi.Name);
+		if (a == null)
+			throw new BindingException (1006, true, "The delegate method {0}.{1} is missing the [DelegateName] attribute (or EventArgs)", mi.DeclaringType.FullName, mi.Name);
+
+		ErrorHelper.Show (new BindingException (1102, false, "Using the deprecated EventArgs for a delegate signature in {0}.{1}, please use DelegateName instead", mi.DeclaringType.FullName, mi.Name));
 		return ((EventArgsAttribute) a).ArgName;
 	}
 	
@@ -3377,8 +3353,7 @@ public class Generator {
 				return fvfa.Argument;
 			}
 			
-			Console.WriteLine ("The delegate method {0}.{1} is missing the [DefaultValue] attribute", mi.DeclaringType.FullName, mi.Name);
-			Environment.Exit (1);
+			throw new BindingException (1016, true, "The delegate method {0}.{1} is missing the [DefaultValue] attribute", mi.DeclaringType.FullName, mi.Name);
 		}
 		var def = ((DefaultValueAttribute) a).Default;
 		if (def == null)

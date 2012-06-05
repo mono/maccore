@@ -61,6 +61,16 @@ class BindingTouch {
 	
 	static int Main (string [] args)
 	{
+		try {
+			return Main2 (args);
+		} catch (Exception ex) {
+			ErrorHelper.Show (ex);
+			return 1;
+		}
+	}
+	
+	static int Main2 (string [] args)
+	{
 		bool show_help = false;
 		bool zero_copy = false;
 		bool alpha = false;
