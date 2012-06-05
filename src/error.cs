@@ -17,7 +17,7 @@ using System.Collections.Generic;
 // BI0xxx	the generator itself, e.g. parameters, environment
 // BI1xxx	code generation
 //	BI10xx	errors
-//		BI1001 MakeTrampoline: do not know how to make a trampoline for {0}
+//		BI1001 Do not know how to make a trampoline for {0}
 //		BI1002 Unknown kind {0} in method '{1}'
 //		BI1003 The delegate method {0}.{1} needs to take at least one parameter
 //		BI1004 The delegate method {0}.{1} is missing the [EventArgs] attribute (has {2} parameters)
@@ -73,8 +73,8 @@ public class BindingException : Exception {
 	// http://blogs.msdn.com/b/msbuild/archive/2006/11/03/msbuild-visual-studio-aware-error-messages-and-message-formats.aspx
 	public override string ToString ()
 	{
-		 return String.Format ("{0} BI{1:0000}: {2}",
-			Error ? "error" : "warning", Code, Message);
+		 return String.Format ("{0} BI{1:0000}: {3}: {2}",
+			Error ? "error" : "warning", Code, Message, BindingTouch.ToolName);
 	}
 }
 

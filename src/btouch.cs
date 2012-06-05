@@ -51,6 +51,10 @@ class BindingTouch {
 	static string compiler = "/Developer/MonoTouch/usr/bin/smcs";
 #endif
 
+	public static string ToolName {
+		get { return tool_name; }
+	}
+
 	static void ShowHelp (OptionSet os)
 	{
 		Console.WriteLine ("{0} - Mono Objective-C API binder", tool_name);

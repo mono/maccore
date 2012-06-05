@@ -1039,7 +1039,7 @@ public class Generator {
 				}
 			}
 			
-			throw new BindingException (1001, true, "MakeTrampoline: do not know how to make a trampoline for {0}", pi);
+			throw new BindingException (1001, true, "Do not know how to make a trampoline for {0}", pi);
 		}
 
 		var ti = new TrampolineInfo (t.FullName,
