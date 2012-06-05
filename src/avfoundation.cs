@@ -968,7 +968,7 @@ namespace MonoMac.AVFoundation {
 		string [] AudiovisualTypes { get; }
 
 		[Since (5,0)]
-		[Static, Export ("isPlayableExtendedMIMEType")]
+		[Static, Export ("isPlayableExtendedMIMEType:")]
 		bool IsPlayable (string extendedMimeType);
 	}
 

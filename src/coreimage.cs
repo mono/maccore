@@ -112,11 +112,11 @@ namespace MonoMac.CoreImage {
 		//[Export ("contextWithCGLContext:pixelFormat:colorSpace:options:")]
 		//CIContext ContextWithCGLContextpixelFormatcolorSpaceoptions (CGLContextObj ctx, CGLPixelFormatObj pf, CGColorSpaceRef cs, NSDictionary dict, );
 
+#if MONOMAC
 		[Internal, Static]
 		[Export ("contextWithCGContext:options:")]
 		CIContext FromContext (CGContext ctx, [NullAllowed] NSDictionary options);
-
-#if !MONOMAC
+#else
 		[Static]
 		[Export ("contextWithEAGLContext:")]
 		CIContext FromContext (EAGLContext eaglContext);

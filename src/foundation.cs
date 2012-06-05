@@ -1355,7 +1355,7 @@ namespace MonoMac.Foundation
 		NSExpression FromFormat (string format, NSExpression [] parameters);
 		
 		//+ (NSExpression *)expressionForAggregate:(NSArray *)subexpressions; 
-		[Export ("expressionForAggregate:")]
+		[Static, Export ("expressionForAggregate:")]
 		NSExpression FromAggregate (NSExpression [] subexpressions);
 
 		[Static, Export ("expressionForUnionSet:with:")]
@@ -1374,7 +1374,7 @@ namespace MonoMac.Foundation
 		[Static, Export ("expressionForFunction:selectorName:arguments:")]
 		NSExpression FromFunction (NSExpression target, string name, NSExpression[] parameters);
 
-		[Static, Export ("expressionForBlock:selectorName:arguments:")]
+		[Static, Export ("expressionForBlock:arguments:")]
 		NSExpression FromFunction (NSExpressionHandler target, NSExpression[] parameters);
 
 		[Export ("initWithExpressionType:")]
@@ -1596,7 +1596,7 @@ namespace MonoMac.Foundation
 		NSLocale CurrentLocale { get; }
 
 		[Static]
-		[Export ("autoUpdatingCurrentLocale")]
+		[Export ("autoupdatingCurrentLocale")]
 		NSLocale AutoUpdatingCurrentLocale { get; }
 		
 
@@ -1630,16 +1630,16 @@ namespace MonoMac.Foundation
 		[Export ("localeIdentifierFromComponents:")][Static]
 		string LocaleIdentifierFromComponents (NSDictionary dict);
 
-		[Export ("canonicalLanguageIdentifierFromString")][Static]
+		[Export ("canonicalLanguageIdentifierFromString:")][Static]
 		string CanonicalLanguageIdentifierFromString (string str);
 
 		[Export ("canonicalLocaleIdentifierFromString:")][Static]
 		string CanonicalLocaleIdentifierFromString (string str);
 
-		[Export ("characterDirectionForLanguage")][Static]
+		[Export ("characterDirectionForLanguage:")][Static]
 		NSLocaleLanguageDirection GetCharacterDirection (string isoLanguageCode);
 
-		[Export ("lineDirectionForLanguage")][Static]
+		[Export ("lineDirectionForLanguage:")][Static]
 		NSLocaleLanguageDirection GetLineDirection (string isoLanguageCode);
 
 		[Field ("NSCurrentLocaleDidChangeNotification")]
@@ -3471,11 +3471,16 @@ namespace MonoMac.Foundation
 
 		[Export ("optionDescriptionsForBinding:")]
 		NSObject[] BindingOptionDescriptions (string aBinding);
-
+#if MONOMAC
+		// NSPlaceholders (informal) protocol
 		[Static]
 		[Export ("defaultPlaceholderForMarker:withBinding:")]
 		NSObject GetDefaultPlaceholder (NSObject marker, string binding);
 
+		[Static]
+		[Export ("setDefaultPlaceholder:forMarker:withBinding:")]
+		NSObject SetDefaultPlaceholder (NSObject placeholder, NSObject marker, string binding);
+#endif
 		[Export ("objectDidEndEditing:")]
 		void ObjectDidEndEditing (NSObject editor);
 
