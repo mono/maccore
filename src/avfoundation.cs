@@ -2335,14 +2335,13 @@ namespace MonoMac.AVFoundation {
 		[Export ("backgroundColor")]
 		CGColor BackgroundColor { get; set;  }
 
-		// Already on base class, why does Apple add it here as well?
-		//[Export ("enablePostProcessing")]
-		//bool EnablePostProcessing { get; }
+		[Export ("enablePostProcessing")]
+		bool EnablePostProcessing { get; set; }
 
 		[Export ("layerInstructions", ArgumentSemantic.Copy)]
 		AVVideoCompositionLayerInstruction [] LayerInstructions { get; set;  }
 
-		[Static, Export ("videoComposition")]
+		[Static, Export ("videoCompositionInstruction")]
 		AVVideoCompositionInstruction Create (); 		
 	}
 
