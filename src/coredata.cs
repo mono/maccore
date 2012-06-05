@@ -878,10 +878,11 @@ namespace MonoMac.CoreData
 		[Export ("tryLock")]
 		bool TryLock { get; }
 
+#if MONOMAC
 		[Obsolete("Deprecated in MAC OSX 10.5 and later")]
 		[Static, Export ("metadataForPersistentStoreWithURL:error:")]
 		NSDictionary MetadataForPersistentStoreWithUrl (NSUrl url, out NSError error);
-
+#endif
 		[Field ("NSSQLiteStoreType")]
 		NSString SQLiteStoreType { get; }
 #if MONOMAC
