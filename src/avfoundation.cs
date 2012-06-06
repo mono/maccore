@@ -3057,7 +3057,7 @@ namespace MonoMac.AVFoundation {
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("currentTime")]
-		CMTime CurrentTime { get; set;  }
+		CMTime CurrentTime { get; }
 
 		[Export ("playbackLikelyToKeepUp")]
 		bool PlaybackLikelyToKeepUp { [Bind ("isPlaybackLikelyToKeepUp")] get;  }
