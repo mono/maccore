@@ -2754,6 +2754,7 @@ namespace MonoMac.Foundation
 	// init returns NIL -> SharedCredentialStorage
 	[DisableDefaultCtor]
 	public interface NSUrlCredentialStorage {
+		[Static]
 		[Export ("sharedCredentialStorage")]
 		NSUrlCredentialStorage SharedCredentialStorage { get; }
 
