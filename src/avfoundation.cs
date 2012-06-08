@@ -897,10 +897,10 @@ namespace MonoMac.AVFoundation {
 		bool ExpectsMediaDataInRealTime { get; set;  }
 
 		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
-		AVAssetWriterInput FromType (string mediaType, NSDictionary outputSettings);
+		AVAssetWriterInput FromType (string mediaType, [NullAllowed] NSDictionary outputSettings);
 
 		[Export ("initWithMediaType:outputSettings:")]
-		IntPtr Constructor (string mediaType, NSDictionary outputSettings);
+		IntPtr Constructor (string mediaType, [NullAllowed] NSDictionary outputSettings);
 
 		[Export ("requestMediaDataWhenReadyOnQueue:usingBlock:")]
 		void RequestMediaData (DispatchQueue queue, NSAction action);
@@ -930,10 +930,10 @@ namespace MonoMac.AVFoundation {
 		//CVPixelBufferPoolRef pixelBufferPool { get;  }
 
 		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
-		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
+		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
-		IntPtr Constructor (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
+		IntPtr Constructor (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
 		[Export ("appendPixelBuffer:withPresentationTime:")]
 		bool AppendPixelBufferWithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
