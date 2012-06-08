@@ -3913,6 +3913,12 @@ namespace MonoMac.Foundation
 		[Static, Export ("bundleWithURL:")]
 		[Since (4,0)]
 		NSBundle FromUrl (NSUrl url);
+
+		[Export ("preferredLocalizations")]
+		string [] PreferredLocalizations { get; }
+
+		[Export ("localizations")]
+		string [] Localizations { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
