@@ -523,4 +523,11 @@ namespace MonoMac.Foundation  {
 		Atomic = 1 << 0,
 		WithNameUpdating = 1 << 1
 	}
+
+	[Flags]
+	public enum NSAttributedStringEnumeration {
+		None = 0,
+		Reverse = 1 << 1,
+		LongestEffectiveRangeNotRequired = 1 << 20
+	}
 }

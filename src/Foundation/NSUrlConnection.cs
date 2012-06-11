@@ -45,5 +45,42 @@ namespace MonoMac.Foundation {
 			
 			return (NSData) Runtime.GetNSObject (res);
 		}
+		
+		[Export ("scheduleInRunLoop:forMode:")]
+		[Obsolete ("Use Schedule (NSRunLoop, NSString) instead")]
+		public virtual void Schedule (NSRunLoop aRunLoop, string forMode)
+		{
+			if (aRunLoop == null)
+				throw new ArgumentNullException ("aRunLoop");
+			if (forMode == null)
+				throw new ArgumentNullException ("forMode");
+			var nsforMode = NSString.CreateNative (forMode);
+			
+			if (IsDirectBinding) {
+				Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selScheduleInRunLoopForMode_, aRunLoop.Handle, nsforMode);
+			} else {
+				Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selScheduleInRunLoopForMode_, aRunLoop.Handle, nsforMode);
+			}
+			NSString.ReleaseNative (nsforMode);
+		}
+		
+		[Export ("unscheduleFromRunLoop:forMode:")]
+		[Obsolete ("Use Unschedule (NSRunLoop, NSString) instead")]
+		public virtual void Unschedule (NSRunLoop aRunLoop, string forMode)
+		{
+			if (aRunLoop == null)
+				throw new ArgumentNullException ("aRunLoop");
+			if (forMode == null)
+				throw new ArgumentNullException ("forMode");
+			var nsforMode = NSString.CreateNative (forMode);
+			
+			if (IsDirectBinding) {
+				Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUnscheduleFromRunLoopForMode_, aRunLoop.Handle, nsforMode);
+			} else {
+				Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selUnscheduleFromRunLoopForMode_, aRunLoop.Handle, nsforMode);
+			}
+			NSString.ReleaseNative (nsforMode);
+		}
+		
 	}
 }

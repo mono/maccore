@@ -35,21 +35,8 @@ namespace MonoMac.AVFoundation {
 		Max = 0x7F
 	}
 
-	public static class AVAudioSettings {
-
-		public static readonly NSString AVFormatIDKey = new NSString ("AVFormatIDKey");
-		public static readonly NSString AVSampleRateKey = new NSString ("AVSampleRateKey");
-		public static readonly NSString AVNumberOfChannelsKey = new NSString ("AVNumberOfChannelsKey");
-
-		public static readonly NSString AVLinearPCMBitDepthKey = new NSString ("AVLinearPCMBitDepthKey");
-		public static readonly NSString AVLinearPCMIsBigEndianKey = new NSString ("AVLinearPCMIsBigEndianKey");
-		public static readonly NSString AVLinearPCMIsFloatKey = new NSString ("AVLinearPCMIsFloatKey");
-
-		public static readonly NSString AVEncoderAudioQualityKey = new NSString ("AVEncoderAudioQualityKey");
-		public static readonly NSString AVEncoderBitRateKey = new NSString ("AVEncoderBitRateKey");
-		public static readonly NSString AVEncoderBitDepthHintKey = new NSString ("AVEncoderBitDepthHintKey");
-
-		public static readonly NSString AVSampleRateConverterAudioQualityKey = new NSString ("AVSampleRateConverterAudioQualityKey");
+	// Just to disable generating the public ctor
+	public static partial class AVAudioSettings {
 	}
 
 	[Since (4,0)]
@@ -84,8 +71,8 @@ namespace MonoMac.AVFoundation {
 	public enum AVCaptureVideoOrientation {
 		Portrait = 1,
 		PortraitUpsideDown,
-		LandscapeLeft,
 		LandscapeRight,
+		LandscapeLeft,
 	}
 
 	[Since (4,0)]
@@ -167,6 +154,8 @@ namespace MonoMac.AVFoundation {
 		EncoderTemporarilyUnavailable = -11840,
 		InvalidVideoComposition = -11841,
 		MediaServicesWereReset = -11820,
+		//[Since (5,1)]
+		InvalidOutputURLPathExtension = -11843
 	}
 
 	[Since (4,0)]

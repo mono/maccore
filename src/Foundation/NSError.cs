@@ -24,6 +24,7 @@
 // Simple class for passing NSErrors as EventArgs
 //
 using System;
+using System.Diagnostics;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
@@ -39,16 +40,10 @@ namespace MonoMac.Foundation {
 
 	public partial class NSError : NSObject {
 #if !COREBUILD
-		[Obsolete ("Creating NSErrors without arguments can cause your application to crash unexpectedly if you return it back to Objective-C")]
-		[Export ("init")]
-		public NSError () : base (NSObjectFlag.Empty)
+		[Obsolete ("Always specify a domain and error code when creating an NSError instance")]
+		public NSError () : this (new NSString ("Invalid .ctor used"), 0, null)
 		{
-			Console.WriteLine ("Warning: you created an NSError without a domain, this can crash your application if you return this to Objective-C");
-			if (IsDirectBinding) {
-				Handle = MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);
-			} else {
-				Handle = MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);
-			}
+			Debug.WriteLine ("Warning: you created an NSError without specifying a domain");
 		}
 		
 		public static NSError FromDomain (NSString domain, int code)

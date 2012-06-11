@@ -47,6 +47,10 @@ using System.Drawing;
 
 namespace MonoMac.Foundation
 {
+	public delegate int NSComparator (NSObject obj1, NSObject obj2);
+	public delegate void NSAttributedRangeCallback (NSDictionary attrs, NSRange range, ref bool stop);
+	public delegate void NSAttributedStringCallback (NSObject value, NSRange range, ref bool stop);
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSArray {
 		[Export ("count")]
@@ -69,6 +73,12 @@ namespace MonoMac.Foundation
 
 		[Export ("arrayWithContentsOfFile:")][Static]
 		NSArray FromFile (string path);
+		
+		[Export ("sortedArrayUsingComparator:")]
+		NSArray Sort (NSComparator cmptr);
+		
+		[Export ("filteredArrayUsingPredicate:")]
+		NSArray Filter (NSPredicate predicate);
 	}
 
 	[Since (3,2)]
@@ -108,68 +118,46 @@ namespace MonoMac.Foundation
 		[Export ("initWithAttributedString:")]
 		IntPtr Constructor (NSAttributedString other);
 
+		[Export ("enumerateAttributesInRange:options:usingBlock:")]
+		void EnumerateAttributes (NSRange range, NSAttributedStringEnumeration options, NSAttributedRangeCallback callback);
+
+		[Export ("enumerateAttribute:inRange:options:usingBlock:")]
+		void EnumerateAttribute (NSString attributeName, NSRange inRange, NSAttributedStringEnumeration options, NSAttributedStringCallback callback);
+
 #if MONOMAC
 		[Export("size")]
 		SizeF Size { get; }
-#endif
 
-
-#if MONOMAC
 		[Field ("NSFontAttributeName", "AppKit")]
-#else
-		[Field ("NSFontAttributeName")]
-#endif
 		NSString FontAttributeName { get; }
 
-#if MONOMAC
+		[Field ("NSLinkAttributeName", "AppKit")]
+		NSString LinkAttributeName { get; }
+
 		[Field ("NSUnderlineStyleAttributeName", "AppKit")]
-#else
-		[Field ("NSUnderlineStyleAttributeName")]
-#endif
 		NSString UnderlineStyleAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSStrikethroughStyleAttributeName", "AppKit")]
-#else
-		[Field ("NSStrikethroughStyleAttributeName")]
-#endif
 		NSString StrikethroughStyleAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSStrokeWidthAttributeName", "AppKit")]
-#else
-		[Field ("NSStrokeWidthAttributeName")]
-#endif
 		NSString StrokeWidthAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSParagraphStyleAttributeName", "AppKit")]
-#else
-		[Field ("NSParagraphStyleAttributeName")]
-#endif
 		NSString ParagraphStyleAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSForegroundColorAttributeName", "AppKit")]
-#else
-		[Field ("NSForegroundColorAttributeName")]
-#endif
 		NSString ForegroundColorAttributeName { get; }
 
-#if MONOMAC
 		[Field ("NSBackgroundColorAttributeName", "AppKit")]
-#else
-		[Field ("NSBackgroundColorAttributeName")]
-#endif
 		NSString BackgroundColorAttributeName { get; }
-		
-#if MONOMAC
+
 		[Field ("NSLigatureAttributeName", "AppKit")]
-#else
-		[Field ("NSLigatureAttributeName")]
-#endif
 		NSString LigatureAttributeName { get; } 
-#if MONOMAC
+
+		[Field ("NSObliquenessAttributeName", "AppKit")]
+		NSString ObliquenessAttributeName { get; } 
+		
 		[Export ("initWithData:options:documentAttributes:error:")]
 		IntPtr Constructor (NSData data, NSDictionary options, out NSDictionary docAttributes, out NSError error);
 
@@ -239,10 +227,15 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSCachedURLResponse")]
+	// instance created with 'init' will crash when Dispose is called
+	[DisableDefaultCtor]
 	public interface NSCachedUrlResponse {
 		[Export ("initWithResponse:data:userInfo:storagePolicy:")]
-		IntPtr Constructor (NSUrlResponse response, NSData data, NSDictionary userInfo, NSUrlCacheStoragePolicy storagePolicy);
+		IntPtr Constructor (NSUrlResponse response, NSData data, [NullAllowed] NSDictionary userInfo, NSUrlCacheStoragePolicy storagePolicy);
 
+		[Export ("initWithResponse:data:")]
+		IntPtr Constructor (NSUrlResponse response, NSData data);
+          
 		[Export ("response")]
 		NSUrlResponse Response { get; }
 
@@ -257,6 +250,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSCalendar {
 		[Export ("initWithCalendarIdentifier:")]
 		IntPtr Constructor (string identifier);
@@ -630,8 +625,9 @@ namespace MonoMac.Foundation
 		[Export ("calendar")]
 		NSCalendar Calendar { get; set; }
 
+		// not exposed as a property in documentation
 		[Export ("isLenient")]
-		bool IsLenient { get; set; } 
+		bool IsLenient { get; [Bind ("setLenient:")] set; } 
 
 		[Export ("twoDigitStartDate")]
 		NSDate TwoDigitStartDate { get; set; }
@@ -756,6 +752,8 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSCoder),
 		   Delegates=new string [] {"WeakDelegate"},
 		   Events=new Type [] { typeof (NSKeyedArchiverDelegate) })]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[NSKeyedArchiver init]: cannot use -init for initialization
+	[DisableDefaultCtor]
 	public interface NSKeyedArchiver {
 		[Export ("initForWritingWithMutableData:")]
 		IntPtr Constructor (NSMutableData data);
@@ -766,7 +764,7 @@ namespace MonoMac.Foundation
 		
 		[Export ("archiveRootObject:toFile:")]
 		[Static]
-		NSData ArchiveRootObjectToFile (NSObject root, string file);
+		bool ArchiveRootObjectToFile (NSObject root, string file);
 
 		[Export ("finishEncoding")]
 		void FinishEncoding ();
@@ -790,6 +788,8 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSCoder),
 		   Delegates=new string [] {"WeakDelegate"},
 		   Events=new Type [] { typeof (NSKeyedUnarchiverDelegate) })]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[NSKeyedUnarchiver init]: cannot use -init for initialization
+	[DisableDefaultCtor]
 	public interface NSKeyedUnarchiver {
 		[Export ("initForReadingWithData:")]
 		IntPtr Constructor (NSData data);
@@ -886,21 +886,26 @@ namespace MonoMac.Foundation
 		
 		// There is no info associated with these notifications
 		[Field ("NSMetadataQueryDidStartGatheringNotification")]
+		[Notification]
 		NSString DidStartGatheringNotification { get; }
 	
 		[Field ("NSMetadataQueryGatheringProgressNotification")]
+		[Notification]
 		NSString GatheringProgressNotification { get; }
 		
 		[Field ("NSMetadataQueryDidFinishGatheringNotification")]
+		[Notification]
 		NSString DidFinishGatheringNotification { get; }
 		
 		[Field ("NSMetadataQueryDidUpdateNotification")]
+		[Notification]
 		NSString DidUpdateNotification { get; }
 		
 		[Field ("NSMetadataQueryResultContentRelevanceAttribute")]
 		NSString ResultContentRelevanceAttribute { get; }
 		
 		// Scope constants for defined search locations
+#if MONOMAC
 		[Field ("NSMetadataQueryUserHomeScope")]
 		NSString UserHomeScope { get; }
 		
@@ -912,7 +917,7 @@ namespace MonoMac.Foundation
 
 		[Field ("NSMetadataQueryLocalDocumentsScope")]
 		NSString QueryLocalDocumentsScope { get; }
-
+#endif
 		[Field ("NSMetadataQueryUbiquitousDocumentsScope")]
 		NSString QueryUbiquitousDocumentsScope { get; }
 
@@ -1036,7 +1041,7 @@ namespace MonoMac.Foundation
 		[Export ("insertObject:atIndex:")]
 		void Insert (NSObject obj, int index);
 
-		[Export ("removeLastObject:")]
+		[Export ("removeLastObject")]
 		void RemoveLastObject ();
 
 		[Export ("removeObjectAtIndex:")]
@@ -1051,7 +1056,7 @@ namespace MonoMac.Foundation
 		[Export ("addObjectsFromArray:")]
 		void AddObjects (NSObject [] source);
 
-		[Export ("insertObjects:atIndexes")]
+		[Export ("insertObjects:atIndexes:")]
 		void InsertObjects (NSObject [] objects, NSIndexSet atIndexes);
 
 		[Export ("removeObjectsAtIndexes:")]
@@ -1164,9 +1169,6 @@ namespace MonoMac.Foundation
 		[Export ("dateByAddingTimeInterval:")]
 		NSDate AddSeconds (double seconds);
 
-		[Export ("description")]
-		string Description { get; }
-
 		[Export ("dateWithTimeIntervalSinceNow:")]
 		[Static]
 		NSDate FromTimeIntervalSinceNow (double secs);
@@ -1221,9 +1223,6 @@ namespace MonoMac.Foundation
 
 		[Export ("allValues")]
 		NSObject [] Values { get; }
-
-		[Export ("description")]
-		string Description {get; }
 
 		[Export ("descriptionInStringsFileFormat")]
 		string DescriptionInStringsFileFormat { get; }
@@ -1312,7 +1311,12 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSException {
+		[Export ("initWithName:reason:userInfo:")]
+		IntPtr Constructor (string name, string reason, [NullAllowed] NSDictionary userInfo);
+
 		[Export ("name")]
 		string Name { get; }
 	
@@ -1329,6 +1333,8 @@ namespace MonoMac.Foundation
 	public delegate void NSExpressionHandler (NSObject evaluatedObject, NSExpression [] expressions, NSMutableDictionary context);
 	
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -predicateFormat cannot be sent to an abstract object of class NSExpression: Create a concrete instance!
+	[DisableDefaultCtor]
 	public interface NSExpression {
 		[Static, Export ("expressionForConstantValue:")]
 		NSExpression FromConstant (NSObject obj);
@@ -1349,7 +1355,7 @@ namespace MonoMac.Foundation
 		NSExpression FromFormat (string format, NSExpression [] parameters);
 		
 		//+ (NSExpression *)expressionForAggregate:(NSArray *)subexpressions; 
-		[Export ("expressionForAggregate:")]
+		[Static, Export ("expressionForAggregate:")]
 		NSExpression FromAggregate (NSExpression [] subexpressions);
 
 		[Static, Export ("expressionForUnionSet:with:")]
@@ -1368,7 +1374,7 @@ namespace MonoMac.Foundation
 		[Static, Export ("expressionForFunction:selectorName:arguments:")]
 		NSExpression FromFunction (NSExpression target, string name, NSExpression[] parameters);
 
-		[Static, Export ("expressionForBlock:selectorName:arguments:")]
+		[Static, Export ("expressionForBlock:arguments:")]
 		NSExpression FromFunction (NSExpressionHandler target, NSExpression[] parameters);
 
 		[Export ("initWithExpressionType:")]
@@ -1578,6 +1584,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL so it's not usable evenif it does not throw an ObjC exception
+	[DisableDefaultCtor]
 	public interface NSLocale {
 		[Static]
 		[Export ("systemLocale")]
@@ -1588,7 +1596,7 @@ namespace MonoMac.Foundation
 		NSLocale CurrentLocale { get; }
 
 		[Static]
-		[Export ("autoUpdatingCurrentLocale")]
+		[Export ("autoupdatingCurrentLocale")]
 		NSLocale AutoUpdatingCurrentLocale { get; }
 		
 
@@ -1619,22 +1627,23 @@ namespace MonoMac.Foundation
 		[Export ("componentsFromLocaleIdentifier:")][Static]
 		NSDictionary ComponentsFromLocaleIdentifier (string identifier);
 
-		[Export ("localeIdentifierFromComponents:")]
+		[Export ("localeIdentifierFromComponents:")][Static]
 		string LocaleIdentifierFromComponents (NSDictionary dict);
 
-		[Export ("canonicalLanguageIdentifierFromString")]
+		[Export ("canonicalLanguageIdentifierFromString:")][Static]
 		string CanonicalLanguageIdentifierFromString (string str);
 
-		[Export ("canonicalLocaleIdentifierFromString:")]
+		[Export ("canonicalLocaleIdentifierFromString:")][Static]
 		string CanonicalLocaleIdentifierFromString (string str);
 
-		[Export ("characterDirectionForLanguage")]
+		[Export ("characterDirectionForLanguage:")][Static]
 		NSLocaleLanguageDirection GetCharacterDirection (string isoLanguageCode);
 
-		[Export ("lineDirectionForLanguage")]
+		[Export ("lineDirectionForLanguage:")][Static]
 		NSLocaleLanguageDirection GetLineDirection (string isoLanguageCode);
 
 		[Field ("NSCurrentLocaleDidChangeNotification")]
+		[Notification]
 		NSString CurrentLocaleDidChangeNotification { get; }
 
 		[Export ("objectForKey:"), Internal]
@@ -1700,6 +1709,8 @@ namespace MonoMac.Foundation
 
 	
 	[BaseType (typeof (NSObject))]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSRunLoop {
 		[Export ("currentRunLoop")][Static][IsThreadStatic]
 		NSRunLoop Current { get; }
@@ -1769,9 +1780,6 @@ namespace MonoMac.Foundation
 		[Export ("allObjects")][Internal]
 		IntPtr _AllObjects ();
 
-		[Export ("description")]
-		string Description { get; }
-
 		[Export ("isEqualToSet:")]
 		bool IsEqualToSet (NSSet other);
 
@@ -1808,6 +1816,8 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof(NSObject))]
 	[Dispose ("if (disposing) { Invalidate (); } ")]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSTimer {
 		// TODO: scheduledTimerWithTimeInterval:invocation:repeats:
 
@@ -1842,6 +1852,9 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof(NSObject))]
+	// NSTimeZone is an abstract class that defines the behavior of time zone objects. -> http://developer.apple.com/library/ios/#documentation/Cocoa/Reference/Foundation/Classes/NSTimeZone_Class/Reference/Reference.html
+	// calling 'init' returns a NIL pointer, i.e. an unusable instance
+	[DisableDefaultCtor]
 	public interface NSTimeZone {
 		[Export ("initWithName:")]
 		IntPtr Constructor (string name);
@@ -1879,9 +1892,6 @@ namespace MonoMac.Foundation
 		[Static, Export ("localTimeZone")]
 		NSTimeZone LocalTimeZone { get; }
 
-		[Export ("description")]
-		string Description { get; }
-
 		[Export ("secondsFromGMT")]
 		int GetSecondsFromGMT { get; }
 
@@ -1905,6 +1915,14 @@ namespace MonoMac.Foundation
 	}
 
 #if !MONOMAC
+	interface NSUbiquitousKeyValueStoreChangeEventArgs {
+		[Export ("NSUbiquitousKeyValueStoreChangedKeysKey")]
+		string [] ChangedKeys { get; }
+	
+		[Export ("NSUbiquitousKeyValueStoreChangeReasonKey")]
+		NSUbiquitousKeyValueStoreChangeReason ChangeReason { get; }
+	}
+
 	[BaseType (typeof (NSObject))]
 	interface NSUbiquitousKeyValueStore {
 		[Static]
@@ -1969,6 +1987,7 @@ namespace MonoMac.Foundation
 		bool Synchronize ();
 
 		[Field ("NSUbiquitousKeyValueStoreDidChangeExternallyNotification")]
+		[Notification (typeof (NSUbiquitousKeyValueStoreChangeEventArgs))]
 		NSString DidChangeExternallyNotification { get; }
 
 		[Field ("NSUbiquitousKeyValueStoreChangeReasonKey")]
@@ -2088,6 +2107,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURL")]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSUrl {
 		[Export ("initWithScheme:host:path:")]
 		IntPtr Constructor (string scheme, string host, string path);
@@ -2266,8 +2287,8 @@ namespace MonoMac.Foundation
 		[Field ("NSURLFileAllocatedSizeKey")]
 		NSString FileAllocatedSizeKey { get; }
 
-		[Field ("NSURLIsAliasFileKey		")]
-		NSString IsAliasFileKey		 { get; }
+		[Field ("NSURLIsAliasFileKey")]
+		NSString IsAliasFileKey	{ get; }
 
 		[Field ("NSURLVolumeLocalizedFormatDescriptionKey")]
 		NSString VolumeLocalizedFormatDescriptionKey { get; }
@@ -2492,6 +2513,10 @@ namespace MonoMac.Foundation
 		[Since (5,0)]
 		[Field ("NSURLUbiquitousItemPercentUploadedKey")]
 		NSString UbiquitousItemPercentUploadedKey { get; }
+		
+		[Since (5,1)]
+		[Field ("NSURLIsExcludedFromBackupKey")]
+		NSString IsExcludedFromBackupKey { get; }
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLCache")]
@@ -2528,6 +2553,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLAuthenticationChallenge")]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSUrlAuthenticationChallenge {
 		[Export ("initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:")]
 		IntPtr Constructor (NSUrlProtectionSpace space, NSUrlCredential credential, int previousFailureCount, NSUrlResponse response, NSError error, NSUrlConnection sender);
@@ -2585,10 +2612,10 @@ namespace MonoMac.Foundation
 		void Cancel ();
 	
 		[Export ("scheduleInRunLoop:forMode:")]
-		void Schedule (NSRunLoop aRunLoop, string forMode);
+		void Schedule (NSRunLoop aRunLoop, NSString forMode);
 	
 		[Export ("unscheduleFromRunLoop:forMode:")]
-		void Unschedule (NSRunLoop aRunLoop, string forMode);
+		void Unschedule (NSRunLoop aRunLoop, NSString forMode);
 
 		/* Adopted by the NSUrlAuthenticationChallengeSender protocol */
 		[Export ("useCredential:forAuthenticationChallenge:")]
@@ -2679,6 +2706,8 @@ namespace MonoMac.Foundation
 	}
 		
 	[BaseType (typeof (NSObject), Name="NSURLCredential")]
+	// crash when calling NSObjecg.get_Description (and likely other selectors)
+	[DisableDefaultCtor]
 	public interface NSUrlCredential {
 		[Export ("persistence")]
 		NSUrlCredentialPersistence Persistence { get; }
@@ -2720,7 +2749,41 @@ namespace MonoMac.Foundation
 		NSUrlCredential FromTrust (IntPtr SecTrustRef_trust);
 	
 	}
-		
+
+	[BaseType (typeof (NSObject), Name="NSURLCredentialStorage")]
+	// init returns NIL -> SharedCredentialStorage
+	[DisableDefaultCtor]
+	public interface NSUrlCredentialStorage {
+		[Static]
+		[Export ("sharedCredentialStorage")]
+		NSUrlCredentialStorage SharedCredentialStorage { get; }
+
+		[Export ("credentialsForProtectionSpace:")]
+		NSDictionary GetCredentials (NSUrlProtectionSpace forProtectionSpace);
+
+		[Export ("allCredentials")]
+		NSDictionary AllCredentials { get; }
+
+		[Export ("setCredential:forProtectionSpace:")]
+		void SetCredential (NSUrlCredential credential, NSUrlProtectionSpace forProtectionSpace);
+
+		[Export ("removeCredential:forProtectionSpace:")]
+		void RemoveCredential (NSUrlCredential credential, NSUrlProtectionSpace forProtectionSpace);
+
+		[Export ("defaultCredentialForProtectionSpace:")]
+		NSUrlCredential GetDefaultCredential (NSUrlProtectionSpace forProtectionSpace);
+
+		[Export ("setDefaultCredential:forProtectionSpace:")]
+		void SetDefaultCredential (NSUrlCredential credential, NSUrlProtectionSpace forProtectionSpace);
+	}
+
+	interface NSUndoManagerCloseUndoGroupEventArgs {
+		// Bug in docs, see header file
+		[Export ("NSUndoManagerGroupIsDiscardableKey")]
+		[NullAllowed]
+		bool Discardable { get; }
+	}
+	
 	[BaseType (typeof (NSObject))]
 	public interface NSUndoManager {
 		[Export ("beginUndoGrouping")]
@@ -2805,24 +2868,31 @@ namespace MonoMac.Foundation
 		string RedoMenuTitleForUndoActionName (string name);
 
 		[Field ("NSUndoManagerCheckpointNotification")]
+		[Notification]
 		NSString CheckpointNotification { get; }
 
 		[Field ("NSUndoManagerDidOpenUndoGroupNotification")]
+		[Notification]
 		NSString DidOpenUndoGroupNotification { get; }
 
 		[Field ("NSUndoManagerDidRedoChangeNotification")]
+		[Notification]
 		NSString DidRedoChangeNotification { get; }
 
 		[Field ("NSUndoManagerDidUndoChangeNotification")]
+		[Notification]
 		NSString DidUndoChangeNotification { get; }
 
 		[Field ("NSUndoManagerWillCloseUndoGroupNotification")]
+		[Notification (typeof (NSUndoManagerCloseUndoGroupEventArgs))]
 		NSString WillCloseUndoGroupNotification { get; }
 
 		[Field ("NSUndoManagerWillRedoChangeNotification")]
+		[Notification]
 		NSString WillRedoChangeNotification { get; }
 
 		[Field ("NSUndoManagerWillUndoChangeNotification")]
+		[Notification]
 		NSString WillUndoChangeNotification { get; }
 
 		[Since (5,0)]
@@ -2841,11 +2911,13 @@ namespace MonoMac.Foundation
 		NSString GroupIsDiscardableKey { get; }
 
 		[Field ("NSUndoManagerDidCloseUndoGroupNotification")]
+		[Notification (typeof (NSUndoManagerCloseUndoGroupEventArgs))]
 		NSString DidCloseUndoGroupNotification { get; }
-
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLProtectionSpace")]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSUrlProtectionSpace {
 		
 		[Export ("initWithHost:port:protocol:realm:authenticationMethod:")]
@@ -2886,6 +2958,45 @@ namespace MonoMac.Foundation
 		// NSURLProtectionSpace(NSServerTrustValidationSpace)
 		[Export ("serverTrust")]
 		IntPtr ServerTrust { get ; }
+
+		[Field ("NSURLProtectionSpaceHTTP")]
+		NSString HTTP { get; }
+		[Field ("NSURLProtectionSpaceHTTPS")]
+		NSString HTTPS { get; }
+		[Field ("NSURLProtectionSpaceFTP")]
+		NSString FTP { get; }
+		[Field ("NSURLProtectionSpaceHTTPProxy")]
+		NSString HTTPProxy { get; }
+		[Field ("NSURLProtectionSpaceHTTPSProxy")]
+		NSString HTTPSProxy { get; }
+		[Field ("NSURLProtectionSpaceFTPProxy")]
+		NSString FTPProxy { get; }
+		[Field ("NSURLProtectionSpaceSOCKSProxy")]
+		NSString SOCKSProxy { get; }
+
+		[Field ("NSURLAuthenticationMethodDefault")]
+		NSString AuthenticationMethodDefault { get; }
+
+		[Field ("NSURLAuthenticationMethodHTTPBasic")]
+		NSString AuthenticationMethodHTTPBasic { get; }
+
+		[Field ("NSURLAuthenticationMethodHTTPDigest")]
+		NSString AuthenticationMethodHTTPDigest { get; }
+
+		[Field ("NSURLAuthenticationMethodHTMLForm")]
+		NSString AuthenticationMethodHTMLForm { get; }
+
+		[Field ("NSURLAuthenticationMethodNTLM")]
+		NSString AuthenticationMethodNTL { get; }
+
+		[Field ("NSURLAuthenticationMethodNegotiate")]
+		NSString AuthenticationMethodNegotiat { get; }
+
+		[Field ("NSURLAuthenticationMethodClientCertificate")]
+		NSString AuthenticationMethodClientCertificate { get; }
+
+		[Field ("NSURLAuthenticationMethodServerTrust")]
+		NSString AuthenticationMethodServerTrus { get; }
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLRequest")]
@@ -3159,10 +3270,10 @@ namespace MonoMac.Foundation
 	public interface NSString2 {
 #if MONOMAC
 		[Bind ("sizeWithAttributes:")]
-		SizeF StringSize (NSDictionary attributedStringAttributes);
+		SizeF StringSize ([NullAllowed] NSDictionary attributedStringAttributes);
 		
 		[Bind ("boundingRectWithSize:options:attributes:")]
-		SizeF BoundingRectWithSize (SizeF size, NSStringDrawingOptions options, NSDictionary attributes);
+		RectangleF BoundingRectWithSize (SizeF size, NSStringDrawingOptions options, NSDictionary attributes);
 		
 		[Bind ("drawAtPoint:withAttributes:")]
 		void DrawString (PointF point, NSDictionary attributes);
@@ -3185,6 +3296,9 @@ namespace MonoMac.Foundation
 		[Bind ("sizeWithFont:constrainedToSize:lineBreakMode:")]
 		SizeF StringSize (UIFont font, SizeF constrainedToSize, UILineBreakMode lineBreakMode);
 
+		[Bind ("sizeWithFont:minFontSize:actualFontSize:forWidth:lineBreakMode:")]
+		SizeF StringSize (UIFont font, float minFontSize, ref float actualFontSize, float forWidth, UILineBreakMode lineBreakMode);
+
 		[Bind ("drawAtPoint:withFont:")]
 		SizeF DrawString (PointF point, UIFont font);
 
@@ -3195,7 +3309,7 @@ namespace MonoMac.Foundation
 		SizeF DrawString (PointF point, float width, UIFont font, float fontSize, UILineBreakMode breakMode, UIBaselineAdjustment adjustment);
 
 		[Bind ("drawAtPoint:forWidth:withFont:minFontSize:actualFontSize:lineBreakMode:baselineAdjustment:")]
-		SizeF DrawString (PointF point, float width, UIFont font, float minFontSize, float actualFontSize, UILineBreakMode breakMode, UIBaselineAdjustment adjustment);
+		SizeF DrawString (PointF point, float width, UIFont font, float minFontSize, ref float actualFontSize, UILineBreakMode breakMode, UIBaselineAdjustment adjustment);
 
 		[Bind ("drawInRect:withFont:")]
 		SizeF DrawString (RectangleF rect, UIFont font);
@@ -3205,9 +3319,6 @@ namespace MonoMac.Foundation
 
 		[Bind ("drawInRect:withFont:lineBreakMode:alignment:")]
 		SizeF DrawString (RectangleF rect, UIFont font, UILineBreakMode mode, UITextAlignment alignment);
-
-		// [Bind ("sizeWithFont:minFontSize:actualFontSize:forWidth:lineBreakMode:")]
-		// TODO: need "ref" support for floats.
 #endif
 		[Export ("characterAtIndex:")]
 		char _characterAtIndex (int index);
@@ -3235,16 +3346,11 @@ namespace MonoMac.Foundation
 		
 		[Export ("stringByReplacingCharactersInRange:withString:")]
 		NSString Replace (NSRange range, NSString replacement);
+
 	}
 	
 	[BaseType (typeof (NSStream))]
 	public interface NSInputStream {
-		//[Export ("read:maxLength:")]
-		//int Read (byte [] buffer, uint len);
-		
-		//[Export ("getBuffer:length:")]
-		//bool GetBuffer (ref byte buffer, ref uint len);
-	
 		[Export ("hasBytesAvailable")]
 		bool HasBytesAvailable ();
 	
@@ -3258,6 +3364,12 @@ namespace MonoMac.Foundation
 		[Static]
 		[Export ("inputStreamWithFileAtPath:")]
 		NSInputStream FromFile (string  path);
+		
+		[Export ("_scheduleInCFRunLoop:forMode:")]
+		void ScheduleInCFRunLoop (CFRunLoop runloop, NSString mode);
+
+		[Export ("_unscheduleFromCFRunLoop:forMode:")]
+		void UnscheduleInCFRunLoop (CFRunLoop runloop, NSString mode);
 	}
 
 	//
@@ -3360,11 +3472,16 @@ namespace MonoMac.Foundation
 
 		[Export ("optionDescriptionsForBinding:")]
 		NSObject[] BindingOptionDescriptions (string aBinding);
-
+#if MONOMAC
+		// NSPlaceholders (informal) protocol
 		[Static]
 		[Export ("defaultPlaceholderForMarker:withBinding:")]
 		NSObject GetDefaultPlaceholder (NSObject marker, string binding);
 
+		[Static]
+		[Export ("setDefaultPlaceholder:forMarker:withBinding:")]
+		NSObject SetDefaultPlaceholder (NSObject placeholder, NSObject marker, string binding);
+#endif
 		[Export ("objectDidEndEditing:")]
 		void ObjectDidEndEditing (NSObject editor);
 
@@ -3374,6 +3491,18 @@ namespace MonoMac.Foundation
 		[Export ("commitEditingWithDelegate:didCommitSelector:contextInfo:")]
 		//void CommitEditingWithDelegateDidCommitSelectorContextInfo (NSObject objDelegate, Selector didCommitSelector, IntPtr contextInfo);
 		void CommitEditing (NSObject objDelegate, Selector didCommitSelector, IntPtr contextInfo);
+
+		[Export ("copy")]
+		NSObject Copy ();
+		
+		[Export ("mutableCopy")]
+		NSObject MutableCopy ();
+
+		[Export ("description")]
+		string Description { get; }
+
+		[Export ("debugDescription")]
+		string DebugDescription { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -3428,10 +3557,10 @@ namespace MonoMac.Foundation
 	public interface NSBlockOperation {
 		[Static]
 		[Export ("blockOperationWithBlock:")]
-		NSBlockOperation Create (NSAction method);
+		NSBlockOperation Create (/* non null */ NSAction method);
 
 		[Export ("addExecutionBlock:")]
-		void AddExecutionBlock (NSAction method);
+		void AddExecutionBlock (/* non null */ NSAction method);
 
 		[Export ("executionBlocks")]
 		NSObject [] ExecutionBlocks { get; }
@@ -3441,13 +3570,13 @@ namespace MonoMac.Foundation
 	[Since (4,0)]
 	public interface NSOperationQueue {
 		[Export ("addOperation:")][PostGet ("Operations")]
-		void AddOperation (NSOperation op);
+		void AddOperation ([NullAllowed] NSOperation op);
 
 		[Export ("addOperations:waitUntilFinished:")][PostGet ("Operations")]
-		void AddOperations (NSOperation [] operations, bool waitUntilFinished);
+		void AddOperations ([NullAllowed] NSOperation [] operations, bool waitUntilFinished);
 
 		[Export ("addOperationWithBlock:")][PostGet ("Operations")]
-		void AddOperation (NSAction operation);
+		void AddOperation (/* non null */ NSAction operation);
 
 		[Export ("operations")]
 		NSOperation [] Operations { get; }
@@ -3482,6 +3611,8 @@ namespace MonoMac.Foundation
 
 #if !MONOMAC
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[__NSArrayM insertObject:atIndex:]: object cannot be nil
+	[DisableDefaultCtor]
 	interface NSOrthography {
 		[Export ("dominantScript")]
 		string DominantScript { get;  }
@@ -3505,7 +3636,7 @@ namespace MonoMac.Foundation
 		string DominantLanguageForScript (string script);
 
 		[Export ("initWithDominantScript:languageMap:")]
-		IntPtr Constructor (string dominantScript, NSDictionary languageMap);
+		IntPtr Constructor (string dominantScript, [NullAllowed] NSDictionary languageMap);
 	}
 #endif
 	
@@ -3534,6 +3665,8 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSHTTPCookie")]
+	// default 'init' crash both simulator and devices
+	[DisableDefaultCtor]
 	public interface NSHttpCookie {
 		[Export ("initWithProperties:")]
 		IntPtr Constructor (NSDictionary properties);
@@ -3588,6 +3721,8 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSHTTPCookieStorage")]
+	// NSHTTPCookieStorage implements a singleton object -> use SharedStorage since 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSHttpCookieStorage {
 		[Export ("sharedHTTPCookieStorage"), Static]
 		NSHttpCookieStorage SharedStorage { get; }
@@ -3711,7 +3846,7 @@ namespace MonoMac.Foundation
 		string PathForResource (string name, [NullAllowed] string ofType, string subpath, string localizationName);
 
 		[Export ("localizedStringForKey:value:table:")]
-		string LocalizedString (string key, string value, string table);
+		string LocalizedString ([NullAllowed] string key, [NullAllowed] string value, [NullAllowed] string table);
 
 		[Export ("objectForInfoDictionaryKey:")]
 		NSObject ObjectForInfoDictionary (string key);
@@ -3723,19 +3858,22 @@ namespace MonoMac.Foundation
 		NSDictionary InfoDictionary{ get; }
 
 		// Additions from AppKit
+#if MONOMAC
+		// https://developer.apple.com/library/mac/#documentation/Cocoa/Reference/ApplicationKit/Classes/NSBundle_AppKitAdditions/Reference/Reference.html
 		[Static]
 		[Export ("loadNibNamed:owner:")]
 		bool LoadNib (string nibName, NSObject owner);
-		
-		[Export ("loadNibNamed:owner:options:")]
-		NSArray LoadNib (string nibName, NSObject owner, [NullAllowed] NSDictionary options);
 
 		[Export ("pathForImageResource:")]
 		string PathForImageResource (string resource);
 
 		[Export ("pathForSoundResource:")]
 		string PathForSoundResource (string resource);
-
+#else
+		// http://developer.apple.com/library/ios/#documentation/uikit/reference/NSBundle_UIKitAdditions/Introduction/Introduction.html
+		[Export ("loadNibNamed:owner:options:")]
+		NSArray LoadNib (string nibName, NSObject owner, [NullAllowed] NSDictionary options);
+#endif
 		[Export ("bundleURL")]
 		[Since (4,0)]
 		NSUrl BundleUrl { get; }
@@ -3775,6 +3913,12 @@ namespace MonoMac.Foundation
 		[Static, Export ("bundleWithURL:")]
 		[Since (4,0)]
 		NSBundle FromUrl (NSUrl url);
+
+		[Export ("preferredLocalizations")]
+		string [] PreferredLocalizations { get; }
+
+		[Export ("localizations")]
+		string [] Localizations { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -3871,6 +4015,8 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject), Name="NSJSONSerialization")]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** +[NSJSONSerialization allocWithZone:]: Do not create instances of NSJSONSerialization in this release
+	[DisableDefaultCtor]
 	interface NSJsonSerialization {
 		[Static]
 		[Export ("isValidJSONObject:")]
@@ -4076,6 +4222,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: *** -[NSConcreteNotification init]: should never be used
+	[DisableDefaultCtor]
 	public interface NSNotification {
 		[Export ("name")]
 		string Name { get; }
@@ -4099,7 +4247,8 @@ namespace MonoMac.Foundation
 		NSNotificationCenter DefaultCenter { get; }
 	
 		[Export ("addObserver:selector:name:object:")]
-		void AddObserver ([RetainList (true, "ObserverList")] NSObject observer, Selector aSelector, [NullAllowed] NSString aName, [NullAllowed] NSObject anObject);
+		[PostSnippet ("AddObserverToList (observer, aName, anObject);")]
+		void AddObserver (NSObject observer, Selector aSelector, [NullAllowed] NSString aName, [NullAllowed] NSObject anObject);
 	
 		[Export ("postNotification:")]
 		void PostNotification (NSNotification notification);
@@ -4111,10 +4260,12 @@ namespace MonoMac.Foundation
 		void PostNotificationName (string aName, [NullAllowed] NSObject anObject, [NullAllowed] NSDictionary aUserInfo);
 	
 		[Export ("removeObserver:")]
-		void RemoveObserver ([RetainList (false, "ObserverList")] NSObject observer);
+		[PostSnippet ("RemoveObserversFromList (observer, null, null);")]
+		void RemoveObserver (NSObject observer);
 	
 		[Export ("removeObserver:name:object:")]
-		void RemoveObserver ([RetainList (false, "ObserverList")] NSObject observer, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
+		[PostSnippet ("RemoveObserversFromList (observer, aName, anObject);")]
+		void RemoveObserver (NSObject observer, [NullAllowed] string aName, [NullAllowed] NSObject anObject);
 
 		[Since (4,0)]
 		[Export ("addObserverForName:object:queue:usingBlock:")]
@@ -4180,6 +4331,8 @@ namespace MonoMac.Foundation
 	public delegate void NSNotificationHandler (NSNotification notification);
 	
 	[BaseType (typeof (NSObject))]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSValue {
 		[Export ("getValue:")]
 		void StoreValueAtAddress (IntPtr value);
@@ -4315,6 +4468,8 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSValue))]
+	// init returns NIL
+	[DisableDefaultCtor]
 	public interface NSNumber {
 		[Export ("charValue")]
 		sbyte SByteValue { get; }
@@ -4476,6 +4631,7 @@ namespace MonoMac.Foundation
 		[Export ("numberFromString:")]
 		NSNumber NumberFromString (string text);
 
+		[Static]
 		[Export ("localizedStringFromNumber:numberStyle:")]
 		string LocalizedStringFromNumbernumberStyle (NSNumber num, NSNumberFormatterStyle nstyle);
 
@@ -4685,7 +4841,7 @@ namespace MonoMac.Foundation
 		[Export ("maximumDecimalNumber")][Static]
 		NSDecimalNumber MaxValue { get; }
 
-		[Export ("notANumber")]
+		[Export ("notANumber")][Static]
 		NSDecimalNumber NaN { get; }
 
 		//
@@ -4776,6 +4932,7 @@ namespace MonoMac.Foundation
 		[Export ("isMainThread")]
 		bool IsMainThread { get; }
 
+		[Static]
 		[Export ("mainThread")]
 		NSThread MainThread { get; }
 
@@ -4870,16 +5027,19 @@ namespace MonoMac.Foundation
 		IntPtr Constructor ([NullAllowed] NSFilePresenter filePresenterOrNil);
 
 		[Export ("coordinateReadingItemAtURL:options:error:byAccessor:")]
-		void CoordinateRead (NSUrl itemUrl, NSFileCoordinatorReadingOptions options, out NSError error, NSFileCoordinatorWorker worker);
+		void CoordinateRead (NSUrl itemUrl, NSFileCoordinatorReadingOptions options, out NSError error, /* non null */ NSFileCoordinatorWorker worker);
 
 		[Export ("coordinateWritingItemAtURL:options:error:byAccessor:")]
-		void CoordinateWrite (NSUrl url, NSFileCoordinatorWritingOptions options, out NSError error, NSFileCoordinatorWorker worker);
+		void CoordinateWrite (NSUrl url, NSFileCoordinatorWritingOptions options, out NSError error, /* non null */ NSFileCoordinatorWorker worker);
 
 		[Export ("coordinateReadingItemAtURL:options:writingItemAtURL:options:error:byAccessor:")]
-		void CoordinateReadWrite (NSUrl readingURL, NSFileCoordinatorReadingOptions readingOptions, NSUrl writingURL, NSFileCoordinatorWritingOptions writingOptions, out NSError error, NSFileCoordinatorWorkerRW readWriteWorker);
+		void CoordinateReadWrite (NSUrl readingURL, NSFileCoordinatorReadingOptions readingOptions, NSUrl writingURL, NSFileCoordinatorWritingOptions writingOptions, out NSError error, /* non null */ NSFileCoordinatorWorkerRW readWriteWorker);
+		
+		[Export ("coordinateWritingItemAtURL:options:writingItemAtURL:options:error:byAccessor:")]
+		void CoordinateWriteWrite (NSUrl writingURL, NSFileCoordinatorWritingOptions writingOptions, NSUrl writingURL2, NSFileCoordinatorWritingOptions writingOptions2, out NSError error, /* non null */ NSFileCoordinatorWorkerRW writeWriteWorker);
 
 		[Export ("prepareForReadingItemsAtURLs:options:writingItemsAtURLs:options:error:byAccessor:")]
-		void CoordinateBatc (NSUrl [] readingURLs, NSFileCoordinatorReadingOptions readingOptions, NSUrl [] writingURLs, NSFileCoordinatorWritingOptions writingOptions, NSError error, NSAction batchHandler);
+		void CoordinateBatc (NSUrl [] readingURLs, NSFileCoordinatorReadingOptions readingOptions, NSUrl [] writingURLs, NSFileCoordinatorWritingOptions writingOptions, out NSError error, /* non null */ NSAction batchHandler);
 
 		[Export ("itemAtURL:didMoveToURL:")]
 		void ItemMoved (NSUrl fromUrl, NSUrl toUrl);
@@ -4983,7 +5143,7 @@ namespace MonoMac.Foundation
 		NSString FileProtectionCompleteUnlessOpen { get; }
 
 		[Since (5,0)]
-		[Field ("NSFileProtectionCompleteUntilFirstUserAuthentication ")]
+		[Field ("NSFileProtectionCompleteUntilFirstUserAuthentication")]
 		NSString FileProtectionCompleteUntilFirstUserAuthentication  { get; }
 		
 		[Field("NSFileSystemSize")]
@@ -5125,7 +5285,7 @@ namespace MonoMac.Foundation
 
 		[Since (4,0)]
 		[Export ("URLForDirectory:inDomain:appropriateForURL:create:error:")]
-		NSUrl GetUrl (NSSearchPathDirectory directory, NSSearchPathDomain domain, NSUrl url, bool shouldCreate, out NSError error);
+		NSUrl GetUrl (NSSearchPathDirectory directory, NSSearchPathDomain domain, [NullAllowed] NSUrl url, bool shouldCreate, out NSError error);
 
 		[Since (4,0)]
 		[Export ("URLsForDirectory:inDomains:")]
@@ -5250,10 +5410,10 @@ namespace MonoMac.Foundation
 	[Model]
 	interface NSFilePresenter {
 		[Abstract]
-		[Export ("NSURL*presentedItemURL")]
+		[Export ("presentedItemURL")]
 		NSUrl PresentedItemURL { get; }
 
-		[Export ("NSOperationQueue*presentedItemOperationQueue")]
+		[Export ("presentedItemOperationQueue")]
 		NSOperationQueue PesentedItemOperationQueue { get; }
 
 #if DOUBLE_BLOCKS
@@ -5309,6 +5469,8 @@ namespace MonoMac.Foundation
 	}
 		
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: -[NSFileVersion init]: You have to use one of the factory methods to instantiate NSFileVersion.
+	[DisableDefaultCtor]
 	interface NSFileVersion {
 		[Export ("URL")]
 		NSUrl Url { get;  }
@@ -5330,10 +5492,10 @@ namespace MonoMac.Foundation
 
 		[Export ("resolved")]
 		bool Resolved { [Bind ("isResolved")] get; set;  }
-
+#if MONOMAC
 		[Export ("discardable")]
 		bool Discardable { [Bind ("isDiscardable")] get; set;  }
-
+#endif
 		[Static]
 		[Export ("currentVersionOfItemAtURL:")]
 		NSFileVersion GetCurrentVersion (NSUrl url);
@@ -5514,6 +5676,8 @@ namespace MonoMac.Foundation
 	
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	public interface NSPredicate {
 		[Static]
 		[Export ("predicateWithFormat:argumentArray:")]
@@ -5609,54 +5773,18 @@ namespace MonoMac.Foundation
 	}
 #endif
 
-	[BaseType (typeof (NSObject), Name="NSURLProtocolClient")]
-	[Model]
 	interface NSUrlProtocolClient {
-		[Abstract]
-		[Export ("UrlProtocol:wasRedirectedToRequest:redirectResponse:"), EventArgs ("NSUrlProtocolRedirect")]
-		void Redirected (NSUrlProtocol protocol, NSUrlRequest redirectedToEequest, NSUrlResponse redirectResponse);
-
-		[Abstract]
-		[Export ("UrlProtocol:cachedResponseIsValid:"), EventArgs ("NSUrlProtocolCachedResponse")]
-		void CachedResponseIsValid (NSUrlProtocol protocol, NSCachedUrlResponse cachedResponse);
-
-		[Abstract]
-		[Export ("UrlProtocol:didReceiveResponse:cacheStoragePolicy:"), EventArgs ("NSUrlProtocolResponse")]
-		void ReceivedResponse (NSUrlProtocol protocol, NSUrlResponse response, NSUrlCacheStoragePolicy policy);
-
-		[Abstract]
-		[Export ("UrlProtocol:didLoadData:"), EventArgs ("NSUrlProtocolData")]
-		void DataLoaded (NSUrlProtocol protocol, NSData data);
-
-		[Abstract]
-		[Export ("UrlProtocolDidFinishLoading:")]
-		void FinishedLoading (NSUrlProtocol protocol);
-
-		[Abstract]
-		[Export ("UrlProtocol:didFailWithError:"), EventArgs ("NSUrlProtocolError")]
-		void FailedWithError (NSUrlProtocol protocol, NSError error);
-
-		[Abstract]
-		[Export ("UrlProtocol:didReceiveAuthenticationChallenge:"), EventArgs ("NSUrlProtocolChallenge")]
-		void ReceivedAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge);
-
-		[Abstract]
-		[Export ("UrlProtocol:didCancelAuthenticationChallenge:"), EventArgs ("NSUrlProtocolChallenge")]
-		void CancelledAuthenticationChallenge (NSUrlProtocol protocol, NSUrlAuthenticationChallenge challenge);
 	}
 
 	[BaseType (typeof (NSObject),
-		   Delegates=new string [] {"WeakClient"},
-		   Events=new Type [] {typeof (NSUrlProtocolClient)})]
+		   Name="NSURLProtocol",
+		   Delegates=new string [] {"WeakClient"})]
 	interface NSUrlProtocol {
 		[Export ("initWithRequest:cachedResponse:client:")]
-		IntPtr Constructor (NSUrlRequest request, NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
+		IntPtr Constructor (NSUrlRequest request, [NullAllowed] NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
 
 		[Export ("client")]
 		NSObject WeakClient { get; set; }
-
-		[Wrap ("WeakClient")]
-		NSUrlProtocolClient Client { get; set; }
 
 		[Export ("request")]
 		NSUrlRequest Request { get; }

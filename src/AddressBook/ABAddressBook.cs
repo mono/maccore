@@ -79,6 +79,7 @@ namespace MonoMac.AddressBook {
 			ABPersonPropertyId.Init ();
 			ABPersonRelatedNamesLabel.Init ();
 			ABPersonUrlLabel.Init ();
+			ABSourcePropertyId.Init ();
 		}
 	}
 
@@ -337,6 +338,40 @@ namespace MonoMac.AddressBook {
 			using (var s = new NSString (name))
 				cfArrayRef = ABAddressBookCopyPeopleWithName (Handle, s.Handle);
 			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABPerson (h, this));
+		}
+		
+		// ABSource
+		// http://developer.apple.com/library/IOs/#documentation/AddressBook/Reference/ABSourceRef_iPhoneOS/Reference/reference.html
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr /* CFArrayRef */ ABAddressBookCopyArrayOfAllSources (IntPtr /* ABAddressBookRef */ addressBook);
+		public ABSource [] GetAllSources ()
+		{
+			AssertValid ();
+			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllSources (Handle);
+			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABSource (h, this));
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr /* ABRecordRef */ ABAddressBookCopyDefaultSource (IntPtr /* ABAddressBookRef */ addressBook);
+		public ABSource GetDefaultSource ()
+		{
+			AssertValid ();
+			IntPtr h = ABAddressBookCopyDefaultSource (Handle);
+			if (h == IntPtr.Zero)
+				return null;
+			return new ABSource (h, this);
+		}
+		
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr /* ABRecordRef */ ABAddressBookGetSourceWithRecordID (IntPtr /* ABAddressBookRef */ addressBook, int /* ABRecordID */ sourceID);
+		public ABSource GetSource (int sourceID)
+		{
+			AssertValid ();
+			var h = ABAddressBookGetSourceWithRecordID (Handle, sourceID);
+			if (h == IntPtr.Zero)
+				return null;
+			return new ABSource (h, this);
 		}
 	}
 }

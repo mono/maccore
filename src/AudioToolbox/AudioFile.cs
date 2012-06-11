@@ -2,7 +2,7 @@
 // AudioFile.cs:
 //
 // Authors:
-//    Miguel de Icaza (miguel@novell.com)
+//    Miguel de Icaza (miguel@xamarin.com)
 //     
 // Copyright 2009 Novell, Inc
 //
@@ -117,7 +117,9 @@ namespace MonoMac.AudioToolbox {
 		BitRate = 0x62726174,
 		ID3Tag = 0x69643374,
 		SourceBitDepth = 0x73627464,
-		AlbumArtwork = 0x61617274
+		AlbumArtwork = 0x61617274,
+		ReadyToProducePackets = 0x72656479,
+		AverageBytesPerPacket = 0x61627070
 	}
 
 	public enum AudioFileLoopDirection {
@@ -426,35 +428,19 @@ namespace MonoMac.AudioToolbox {
 		[DllImport (Constants.AudioToolboxLibrary)]
 		unsafe extern static OSStatus AudioFileReadPacketData (
 			AudioFileID audioFile, bool useCache, ref int numBytes, 
-			IntPtr *ptr_outPacketDescriptions, long inStartingPacket, ref int numPackets, IntPtr outBuffer);
+			AudioStreamPacketDescription [] packetDescriptions, long inStartingPacket, ref int numPackets, IntPtr outBuffer);
 
-		[DllImport (Constants.AudioToolboxLibrary)]
-		unsafe extern static OSStatus AudioFileReadPackets (
-			AudioFileID audioFile, bool useCache, ref int numBytes, 
-			IntPtr *ptr_outPacketDescriptions, long inStartingPacket, ref int numPackets, IntPtr outBuffer);
-		
 		public AudioStreamPacketDescription [] ReadPacketData (long inStartingPacket, int nPackets, byte [] buffer)
 		{
 			if (buffer == null)
 				throw new ArgumentNullException ("buffer");
-			return RealReadPacketData (false, inStartingPacket, nPackets, buffer, 0, buffer.Length);
+			int count = buffer.Length;
+			return RealReadPacketData (false, inStartingPacket, ref nPackets, buffer, 0, ref count);
 		}
 		
 		public AudioStreamPacketDescription [] ReadPacketData (bool useCache, long inStartingPacket, int nPackets, byte [] buffer, int offset, int count)
 		{
-			if (buffer == null)
-				throw new ArgumentNullException ("buffer");
-			if (offset < 0)
-				throw new ArgumentException ("offset", "<0");
-			if (count < 0)
-				throw new ArgumentException ("count", "<0");
-			int len = buffer.Length;
-			if (offset > len)
-				throw new ArgumentException ("destination offset is beyond array size");
-			// reordered to avoid possible integer overflow
-			if (offset > len - count)
-				throw new ArgumentException ("Reading would overrun buffer");
-			return RealReadPacketData (useCache, inStartingPacket, nPackets, buffer, offset, count);
+			return ReadPacketData (useCache, inStartingPacket, ref nPackets, buffer, offset, ref count);
 		}
 
 		static internal AudioStreamPacketDescription [] PacketDescriptionFrom (int nPackets, IntPtr b)
@@ -473,28 +459,53 @@ namespace MonoMac.AudioToolbox {
 
 			return ret;
 		}
-		
-		unsafe AudioStreamPacketDescription [] RealReadPacketData (bool useCache, long inStartingPacket, int nPackets, byte [] buffer, int offset, int count)
-		{
-			// sizeof (AudioStreamPacketDescription)  == 16
-			var b = Marshal.AllocHGlobal (16 * nPackets);
-			try {
-				fixed (byte *bop = &buffer [offset]){
-					var r = AudioFileReadPacketData (handle, useCache, ref count, &b, inStartingPacket, ref nPackets, (IntPtr) bop);
-					
-					if (r == (int) AudioFileError.EndOfFile) {
-						if (count == 0)
-							return null;
-					} else if (r != 0) {
-						return null;
-					}
-				}
 
-				var ret = PacketDescriptionFrom (nPackets, b);
-				return ret;
-			} finally {
-				Marshal.FreeHGlobal (b);
+		public AudioStreamPacketDescription [] ReadPacketData (bool useCache, long inStartingPacket, ref int nPackets, byte [] buffer, int offset, ref int count)
+		{
+			if (buffer == null)
+				throw new ArgumentNullException ("buffer");
+			if (offset < 0)
+				throw new ArgumentException ("offset", "<0");
+			if (count < 0)
+				throw new ArgumentException ("count", "<0");
+			int len = buffer.Length;
+			if (offset > len)
+				throw new ArgumentException ("destination offset is beyond array size");
+			// reordered to avoid possible integer overflow
+			if (offset > len - count)
+				throw new ArgumentException ("Reading would overrun buffer");
+			return RealReadPacketData (useCache, inStartingPacket, ref nPackets, buffer, offset, ref count);
+		}
+		
+		public AudioStreamPacketDescription [] ReadPacketData (bool useCache, long inStartingPacket, ref int nPackets, IntPtr buffer, ref int count)
+		{
+			if (buffer == IntPtr.Zero)
+				throw new ArgumentNullException ("buffer");
+			if (count < 0)
+				throw new ArgumentException ("count", "<0");
+			return RealReadPacketData (useCache, inStartingPacket, ref nPackets, buffer, ref count);
+		}
+		
+		unsafe AudioStreamPacketDescription [] RealReadPacketData (bool useCache, long inStartingPacket, ref int nPackets, byte [] buffer, int offset, ref int count)
+		{
+			fixed (byte *bop = &buffer [offset]) {
+				return RealReadPacketData (useCache, inStartingPacket, ref nPackets, (IntPtr) bop, ref count);
 			}
+		}
+		
+		unsafe AudioStreamPacketDescription [] RealReadPacketData (bool useCache, long inStartingPacket, ref int nPackets, IntPtr buffer, ref int count)
+		{
+			var descriptions = new AudioStreamPacketDescription [nPackets];
+			var r = AudioFileReadPacketData (handle, useCache, ref count, descriptions, inStartingPacket, ref nPackets, buffer);
+			
+			if (r == (int) AudioFileError.EndOfFile) {
+				if (count == 0)
+					return null;
+			} else if (r != 0) {
+				return null;
+			}
+
+			return descriptions;
 		}
 
 		public AudioStreamPacketDescription [] ReadFixedPackets (long inStartingPacket, int nPackets, byte [] buffer)
@@ -523,30 +534,17 @@ namespace MonoMac.AudioToolbox {
 
 		unsafe AudioStreamPacketDescription [] RealReadFixedPackets (bool useCache, long inStartingPacket, int nPackets, byte [] buffer, int offset, int count)
 		{
-			// 16 == sizeof (AudioStreamPacketDescription) 
-			var b = Marshal.AllocHGlobal (16* nPackets);
-			try {
-				fixed (byte *bop = &buffer [offset]){
-					var r = AudioFileReadPacketData (handle, useCache, ref count, &b, inStartingPacket, ref nPackets, (IntPtr) bop);
-					if (r == (int) AudioFileError.EndOfFile) {
-						if (count == 0)
-							return null;
-					} else if (r != 0) {
+			var descriptions = new AudioStreamPacketDescription [nPackets];
+			fixed (byte *bop = &buffer [offset]){
+				var r = AudioFileReadPacketData (handle, useCache, ref count, descriptions, inStartingPacket, ref nPackets, (IntPtr) bop);
+				if (r == (int) AudioFileError.EndOfFile) {
+					if (count == 0)
 						return null;
-					}
+				} else if (r != 0) {
+					return null;
 				}
-				var ret = new AudioStreamPacketDescription [nPackets];
-				int p = 0;
-				for (int i = 0; i < nPackets; i++){
-					ret [i].StartOffset = Marshal.ReadInt64 (b, p);
-					ret [i].VariableFramesInPacket = Marshal.ReadInt32 (b, p+8);
-					ret [i].DataByteSize = Marshal.ReadInt32 (b, p+12);
-					p += 16;
-				}
-				return ret;
-			} finally {
-				Marshal.FreeHGlobal (b);
 			}
+			return descriptions;
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -806,7 +804,27 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		// TODO: kAudioFilePropertyFormatList
+		public AudioFormat [] AudioFormats {
+			get {
+				unsafe {
+					int size;
+					var r = GetProperty (AudioFileProperty.FormatList, out size);
+					var records = (AudioFormat *) r;
+					if (r == IntPtr.Zero)
+						return null;
+					int itemSize = sizeof (AudioFormat);
+					int items = size/itemSize;
+					var ret = new AudioFormat [items];
+					
+					for (int i = 0; i < items; i++)
+						ret [i] = records [i];
+
+					Marshal.FreeHGlobal (r);
+					return ret;
+				}
+			}
+		}
+		
 		public bool IsOptimized {
 			get {
 				return GetInt (AudioFileProperty.IsOptimized) == 1;
@@ -864,83 +882,6 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 		
-		unsafe static float ReadFloat (IntPtr p, int offset)
-		{
-			float f;
-			var pf = &f;
-			byte *pb = (byte *) pf;
-			byte *src = ((byte *)p) + offset;
-			
-			pb [0] = src [0];
-			pb [1] = src [1];
-			pb [2] = src [2];
-			pb [3] = src [3];
-
-			return f;
-		}
-
-		unsafe static void WriteFloat (IntPtr p, int offset, float f)
-		{
-			var pf = &f;
-			byte *pb = (byte *) pf;
-			byte *dest = ((byte *)p) + offset;
-			
-			dest [0] = pb [0];
-			dest [1] = pb [1];
-			dest [2] = pb [2];
-			dest [3] = pb [3];
-		}
-		
-		static internal AudioChannelLayout AudioChannelLayoutFromHandle (IntPtr h)
-		{
-			var layout = new AudioChannelLayout ();
-			layout.AudioTag  = (AudioChannelLayoutTag) Marshal.ReadInt32 (h, 0);
-			layout.Bitmap = Marshal.ReadInt32 (h, 4);
-			layout.Channels = new AudioChannelDescription [Marshal.ReadInt32 (h, 8)];
-			int p = 12;
-			for (int i = 0; i < layout.Channels.Length; i++){
-				var desc = new AudioChannelDescription ();
-				desc.Label = (AudioChannelLabel) Marshal.ReadInt32 (h, p);
-				desc.Flags = (AudioChannelFlags) Marshal.ReadInt32 (h, p+4);
-				desc.Coords = new float [3];
-				desc.Coords [0] = ReadFloat (h, p+8);
-				desc.Coords [1] = ReadFloat (h, p+12);
-				desc.Coords [2] = ReadFloat (h, p+16);
-				layout.Channels [i] = desc;
-				
-				p += 20;
-			}
-
-			return layout;
-		}
-
-		static internal IntPtr AudioChannelLayoutToBlock (AudioChannelLayout layout, out int size)
-		{
-			if (layout == null)
-				throw new ArgumentNullException ("layout");
-			if (layout.Channels == null)
-				throw new ArgumentNullException ("layout.Channels");
-			
-			size = 12 + layout.Channels.Length * 20;
-			IntPtr buffer = Marshal.AllocHGlobal (size);
-			int p;
-			Marshal.WriteInt32 (buffer, 0, (int) layout.AudioTag);
-			Marshal.WriteInt32 (buffer, 4, layout.Bitmap);
-			Marshal.WriteInt32 (buffer, 8, layout.Channels.Length);
-			p = 12;
-			foreach (var desc in layout.Channels){
-				Marshal.WriteInt32 (buffer, p, (int) desc.Label);
-				Marshal.WriteInt32 (buffer, p + 4, (int) desc.Flags);
-				WriteFloat (buffer, p + 8, desc.Coords [0]);
-				WriteFloat (buffer, p + 12, desc.Coords [1]);
-				WriteFloat (buffer, p + 16, desc.Coords [2]);
-
-				p += 20;
-			}
-			
-			return buffer;
-		}
-		
 		public AudioChannelLayout ChannelLayout {
 			get {
 				int size;
@@ -948,7 +889,7 @@ namespace MonoMac.AudioToolbox {
 				if (h == IntPtr.Zero)
 					return null;
 				
-				var layout = AudioChannelLayoutFromHandle (h);
+				var layout = AudioChannelLayout.FromHandle (h);
 				Marshal.FreeHGlobal (h);
 
 				return layout;

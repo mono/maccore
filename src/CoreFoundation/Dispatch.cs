@@ -206,7 +206,7 @@ namespace MonoMac.CoreFoundation {
 				if (handle == IntPtr.Zero)
 					throw new ObjectDisposedException ("DispatchQueue");
 				
-				return dispatch_queue_get_label (handle);
+				return Marshal.PtrToStringAnsi (dispatch_queue_get_label (handle));
 			}
 		}
 
@@ -226,27 +226,38 @@ namespace MonoMac.CoreFoundation {
 				return new DispatchQueue (dispatch_get_global_queue ((IntPtr) DispatchQueuePriority.Default, IntPtr.Zero), false);
 			}
 		}
-#if !MONOMAC	
-		static IntPtr main_q;
+#if MONOMAC
+		static DispatchQueue PInvokeDispatchGetMainQueue ()
+		{
+			return new DispatchQueue (dispatch_get_main_queue (), false);
+		}
+
 #endif
+		static IntPtr main_q;
 		static object lockobj = new object ();
 
 		public static DispatchQueue MainQueue {
 			get {
-#if !MONOMAC
-				if (Runtime.Arch == Arch.DEVICE) {
-					lock (lockobj) {
-						if (main_q == IntPtr.Zero) {
+				lock (lockobj) {
+					if (main_q == IntPtr.Zero) {
+						// Try loading the symbol from our address space first, should work everywhere
+						main_q = Dlfcn.dlsym ((IntPtr) (-2), "_dispatch_main_q");
+
+						// Last case: this is technically not right for the simulator, as this path
+						// actually points to the MacOS library, not the one in the SDK.
+						if (main_q == IntPtr.Zero){
 							var h = Dlfcn.dlopen ("/usr/lib/libSystem.dylib", 0x0);
 							main_q = Dlfcn.GetIndirect (h, "_dispatch_main_q");
 							Dlfcn.dlclose (h);
 						}
 					}
-
-					return new DispatchQueue (main_q, false);
-				} else
+				}
+#if MONOMAC
+				// For Snow Leopard
+				if (main_q == IntPtr.Zero)
+					return PInvokeDispatchGetMainQueue ();
 #endif
-					return new DispatchQueue (dispatch_get_main_queue (), false);
+				return new DispatchQueue (main_q, false);
 			}
 		}
 
@@ -261,7 +272,7 @@ namespace MonoMac.CoreFoundation {
 		static void static_dispatcher_to_managed (IntPtr context)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (context);
-                        var action = gch.Target as NSAction;
+			var action = gch.Target as NSAction;
 			if (action != null)
 				action ();
 			gch.Free ();
@@ -298,13 +309,16 @@ namespace MonoMac.CoreFoundation {
 		extern static IntPtr dispatch_get_current_queue ();
 
 		[DllImport ("libc")]
+		// dispatch_queue_t dispatch_get_global_queue (long priority, unsigned long flags);
+		// IntPtr used for 32/64 bits
 		extern static IntPtr dispatch_get_global_queue (IntPtr priority, IntPtr flags);
 
 		[DllImport ("libc")]
 		extern static IntPtr dispatch_get_main_queue ();
 
 		[DllImport ("libc")]
-		extern static string dispatch_queue_get_label (IntPtr queue);
+		// this returns a "const char*" so we cannot make a string out of it since it will be freed (and crash)
+		extern static IntPtr dispatch_queue_get_label (IntPtr queue);
 
 #if MONOMAC
 		//

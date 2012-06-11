@@ -129,7 +129,7 @@ namespace MonoMac.CoreFoundation {
 		public static NSString CFDefaultRunLoopMode {
 			get {
 				if (_CFDefaultRunLoopMode == null)
-					_CFDefaultRunLoopMode = Dlfcn.GetStringConstant (CoreFoundationLibraryHandle, "kCFDefaultRunLoopMode");
+					_CFDefaultRunLoopMode = Dlfcn.GetStringConstant (CoreFoundationLibraryHandle, ModeDefault);
 				return _CFDefaultRunLoopMode;
 			}
 		}
@@ -138,7 +138,7 @@ namespace MonoMac.CoreFoundation {
 		public static NSString CFRunLoopCommonModes {
 			get {
 				if (_CFRunLoopCommonModes == null)
-					_CFRunLoopCommonModes = Dlfcn.GetStringConstant (CoreFoundationLibraryHandle, "kCFRunLoopCommonModes");
+					_CFRunLoopCommonModes = Dlfcn.GetStringConstant (CoreFoundationLibraryHandle, ModeCommon);
 				return _CFRunLoopCommonModes;
 			}
 		}
@@ -251,8 +251,15 @@ namespace MonoMac.CoreFoundation {
 #endif
 
 		internal CFRunLoop (IntPtr handle)
+			: this (handle, false)
 		{
-			CFObject.CFRetain (handle);
+		}
+
+		[Preserve (Conditional = true)]
+		internal CFRunLoop (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CFObject.CFRetain (handle);
 			this.handle = handle;
 		}
 

@@ -6,7 +6,7 @@
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
-// Copyright 2011, Xamarin, INc.
+// Copyright 2011-2012, Xamarin, INc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -289,7 +289,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (4,0)]
 		[Export ("playAtTime:")]
-		bool PlayAtTimetime (double time);
+		bool PlayAtTime (double time);
 
 		[Since (4,0)]
 		[Export ("settings"), Internal]
@@ -539,6 +539,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** initialization method -init cannot be sent to an abstract object of class AVAsset: Create a concrete instance!
+	[DisableDefaultCtor]
 	interface AVAsset {
 		[Export ("duration")]
 		CMTime Duration { get;  }
@@ -624,7 +626,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (5,0)]
 		[Export ("compatibleWithSavedPhotosAlbum")]
-		bool CompatibleWithSavedPhotosAlbum  { get; }
+		bool CompatibleWithSavedPhotosAlbum  { [Bind ("isCompatibleWithSavedPhotosAlbum")] get; }
 
 		[Since (5,0)]
 		[Export ("creationDate")]
@@ -633,9 +635,18 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("mediaSelectionGroupForMediaCharacteristic:")]
 		AVMediaSelectionGroup MediaSelectionGroupForMediaCharacteristic (string avMediaCharacteristic);
+
+		[Export ("statusOfValueForKey:error:")]
+		AVKeyValueStatus StatusOfValue (string key, out NSError error);
+
+		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
+		void LoadValuesAsynchronously (string [] keys, NSAction handler);
 	}
 
 	[BaseType (typeof (NSObject))]
+	// <quote>You create an asset generator using initWithAsset: or assetImageGeneratorWithAsset:</quote> http://developer.apple.com/library/ios/#documentation/AVFoundation/Reference/AVAssetImageGenerator_Class/Reference/Reference.html
+	// calling 'init' returns a NIL handle
+	[DisableDefaultCtor]
 	interface AVAssetImageGenerator {
 		[Export ("maximumSize")]
 		SizeF MaximumSize { get; set;  }
@@ -647,7 +658,7 @@ namespace MonoMac.AVFoundation {
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("appliesPreferredTrackTransform")]
-		bool AppliesPreferredTrackTransform { get; }
+		bool AppliesPreferredTrackTransform { get; set; }
 
 		[Static]
 		[Export ("assetImageGeneratorWithAsset:")]
@@ -657,10 +668,10 @@ namespace MonoMac.AVFoundation {
 		IntPtr Constructor (AVAsset asset);
 
 		[Export ("copyCGImageAtTime:actualTime:error:")]
-		CGImage CopyCGImageAtTime (CMTime requestedTime, CMTime actualTime, NSError outError);
+		CGImage CopyCGImageAtTime (CMTime requestedTime, out CMTime actualTime, out NSError outError);
 
 		[Export ("generateCGImagesAsynchronouslyForTimes:completionHandler:")]
-		void GenerateCGImagesAsynchronously (NSValue cmTimesRequestedTimes, AVAssetImageGeneratorCompletionHandler handler);
+		void GenerateCGImagesAsynchronously (NSValue[] cmTimesRequestedTimes, AVAssetImageGeneratorCompletionHandler handler);
 
 		[Export ("cancelAllCGImageGeneration")]
 		void CancelAllCGImageGeneration ();
@@ -686,6 +697,8 @@ namespace MonoMac.AVFoundation {
 	
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetReader initWithAsset:error:] invalid parameter not satisfying: asset != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetReader {
 		[Export ("asset")]
 		AVAsset Asset { get;  }
@@ -703,10 +716,10 @@ namespace MonoMac.AVFoundation {
 		AVAssetReaderOutput [] Outputs { get;  }
 
 		[Static, Export ("assetReaderWithAsset:error:")]
-		AVAssetReader _FromAsset (AVAsset asset, IntPtr ptrToNsError);
+		AVAssetReader FromAsset (AVAsset asset, out NSError error);
 
 		[Export ("initWithAsset:error:")]
-		IntPtr Constructor (AVAsset asset, IntPtr ptrToNsError);
+		IntPtr Constructor (AVAsset asset, out NSError error);
 
 		[Export ("canAddOutput:")]
 		bool CanAddOutput (AVAssetReaderOutput output);
@@ -723,6 +736,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** initialization method -init cannot be sent to an abstract object of class AVAssetReaderOutput: Create a concrete instance!
+	[DisableDefaultCtor]
 	interface AVAssetReaderOutput {
 		[Export ("mediaType")]
 		string MediaType { get; }
@@ -736,6 +751,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (AVAssetReaderOutput))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetReaderTrackOutput initWithTrack:outputSettings:] invalid parameter not satisfying: track != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetReaderTrackOutput {
 		[Export ("track")]
 		AVAssetTrack Track { get;  }
@@ -753,6 +770,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (AVAssetReaderOutput))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetReaderAudioMixOutput initWithAudioTracks:audioSettings:] invalid parameter not satisfying: audioTracks != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetReaderAudioMixOutput {
 		[Export ("audioTracks")]
 		AVAssetTrack [] AudioTracks { get;  }
@@ -772,6 +791,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (AVAssetReaderOutput))]
+	// crash application if 'init' is called
+	[DisableDefaultCtor]
 	interface AVAssetReaderVideoCompositionOutput {
 		[Export ("videoTracks")]
 		AVAssetTrack [] VideoTracks { get;  }
@@ -791,6 +812,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriter initWithURL:fileType:error:] invalid parameter not satisfying: outputURL != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetWriter {
 		[Export ("outputURL", ArgumentSemantic.Copy)]
 		NSUrl OutputURL { get;  }
@@ -817,10 +840,10 @@ namespace MonoMac.AVFoundation {
 		AVMetadataItem [] Metadata { get; set;  }
 
 		[Static, Export ("assetWriterWithURL:fileType:error:")]
-		AVAssetWriter FromUrl (NSUrl outputUrl, string outputFileType, IntPtr ptrToNSError);
+		AVAssetWriter FromUrl (NSUrl outputUrl, string outputFileType, out NSError error);
 
 		[Export ("initWithURL:fileType:error:")]
-		IntPtr Constructor (NSUrl outputUrl, string outputFileType, IntPtr ptrToNSError);
+		IntPtr Constructor (NSUrl outputUrl, string outputFileType, out NSError error);
 
 		[Export ("canApplyOutputSettings:forMediaType:")]
 		bool CanApplyOutputSettings (NSDictionary outputSettings, string toMediaType);
@@ -852,6 +875,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriterInput initWithMediaType:outputSettings:] invalid parameter not satisfying: mediaType != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetWriterInput {
 		[Export ("mediaType")]
 		string MediaType { get;  }
@@ -872,10 +897,10 @@ namespace MonoMac.AVFoundation {
 		bool ExpectsMediaDataInRealTime { get; set;  }
 
 		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
-		AVAssetWriterInput FromType (string mediaType, NSDictionary outputSettings);
+		AVAssetWriterInput FromType (string mediaType, [NullAllowed] NSDictionary outputSettings);
 
 		[Export ("initWithMediaType:outputSettings:")]
-		IntPtr Constructor (string mediaType, NSDictionary outputSettings);
+		IntPtr Constructor (string mediaType, [NullAllowed] NSDictionary outputSettings);
 
 		[Export ("requestMediaDataWhenReadyOnQueue:usingBlock:")]
 		void RequestMediaData (DispatchQueue queue, NSAction action);
@@ -892,6 +917,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriterInputPixelBufferAdaptor initWithAssetWriterInput:sourcePixelBufferAttributes:] invalid parameter not satisfying: input != ((void*)0)
+	[DisableDefaultCtor]
 	interface AVAssetWriterInputPixelBufferAdaptor {
 		[Export ("assetWriterInput")]
 		AVAssetWriterInput AssetWriterInput { get;  }
@@ -903,10 +930,10 @@ namespace MonoMac.AVFoundation {
 		//CVPixelBufferPoolRef pixelBufferPool { get;  }
 
 		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
-		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
+		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
-		IntPtr Constructor (AVAssetWriterInput input, NSDictionary sourcePixelBufferAttributes);
+		IntPtr Constructor (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
 		[Export ("appendPixelBuffer:withPresentationTime:")]
 		bool AppendPixelBufferWithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
@@ -914,6 +941,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (AVAsset), Name="AVURLAsset")]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVUrlAsset {
 		[Export ("URL", ArgumentSemantic.Copy)]
 		NSUrl Url { get;  }
@@ -939,11 +968,13 @@ namespace MonoMac.AVFoundation {
 		string [] AudiovisualTypes { get; }
 
 		[Since (5,0)]
-		[Static, Export ("isPlayableExtendedMIMEType")]
+		[Static, Export ("isPlayableExtendedMIMEType:")]
 		bool IsPlayable (string extendedMimeType);
 	}
 
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVAssetTrack {
 		[Export ("trackID")]
 		int TrackID { get;  }
@@ -1080,6 +1111,786 @@ namespace MonoMac.AVFoundation {
 		NSObject PropertyList { get; }
 	}
 
+	[Static]
+	interface AVMetadata {
+		[Field ("AVMetadataKeySpaceCommon")]
+		NSString KeySpaceCommon { get; }
+		
+		[Field ("AVMetadataCommonKeyTitle")]
+		NSString CommonKeyTitle { get; }
+		
+		[Field ("AVMetadataCommonKeyCreator")]
+		NSString CommonKeyCreator { get; }
+		
+		[Field ("AVMetadataCommonKeySubject")]
+		NSString CommonKeySubject { get; }
+		
+		[Field ("AVMetadataCommonKeyDescription")]
+		NSString CommonKeyDescription { get; }
+		
+		[Field ("AVMetadataCommonKeyPublisher")]
+		NSString CommonKeyPublisher { get; }
+		
+		[Field ("AVMetadataCommonKeyContributor")]
+		NSString CommonKeyContributor { get; }
+		
+		[Field ("AVMetadataCommonKeyCreationDate")]
+		NSString CommonKeyCreationDate { get; }
+		
+		[Field ("AVMetadataCommonKeyLastModifiedDate")]
+		NSString CommonKeyLastModifiedDate { get; }
+		
+		[Field ("AVMetadataCommonKeyType")]
+		NSString CommonKeyType { get; }
+		
+		[Field ("AVMetadataCommonKeyFormat")]
+		NSString CommonKeyFormat { get; }
+		
+		[Field ("AVMetadataCommonKeyIdentifier")]
+		NSString CommonKeyIdentifier { get; }
+		
+		[Field ("AVMetadataCommonKeySource")]
+		NSString CommonKeySource { get; }
+		
+		[Field ("AVMetadataCommonKeyLanguage")]
+		NSString CommonKeyLanguage { get; }
+		
+		[Field ("AVMetadataCommonKeyRelation")]
+		NSString CommonKeyRelation { get; }
+		
+		[Field ("AVMetadataCommonKeyLocation")]
+		NSString CommonKeyLocation { get; }
+		
+		[Field ("AVMetadataCommonKeyCopyrights")]
+		NSString CommonKeyCopyrights { get; }
+		
+		[Field ("AVMetadataCommonKeyAlbumName")]
+		NSString CommonKeyAlbumName { get; }
+		
+		[Field ("AVMetadataCommonKeyAuthor")]
+		NSString CommonKeyAuthor { get; }
+		
+		[Field ("AVMetadataCommonKeyArtist")]
+		NSString CommonKeyArtist { get; }
+		
+		[Field ("AVMetadataCommonKeyArtwork")]
+		NSString CommonKeyArtwork { get; }
+		
+		[Field ("AVMetadataCommonKeyMake")]
+		NSString CommonKeyMake { get; }
+		
+		[Field ("AVMetadataCommonKeyModel")]
+		NSString CommonKeyModel { get; }
+		
+		[Field ("AVMetadataCommonKeySoftware")]
+		NSString CommonKeySoftware { get; }
+
+		[Field ("AVMetadataFormatQuickTimeUserData")]
+		NSString FormatQuickTimeUserData { get; }
+		
+		[Field ("AVMetadataKeySpaceQuickTimeUserData")]
+		NSString KeySpaceQuickTimeUserData { get; }
+	
+		[Field ("AVMetadataQuickTimeUserDataKeyAlbum")]
+		NSString QuickTimeUserDataKeyAlbum { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyArranger")]
+		NSString QuickTimeUserDataKeyArranger { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyArtist")]
+		NSString QuickTimeUserDataKeyArtist { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyAuthor")]
+		NSString QuickTimeUserDataKeyAuthor { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyChapter")]
+		NSString QuickTimeUserDataKeyChapter { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyComment")]
+		NSString QuickTimeUserDataKeyComment { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyComposer")]
+		NSString QuickTimeUserDataKeyComposer { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyCopyright")]
+		NSString QuickTimeUserDataKeyCopyright { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyCreationDate")]
+		NSString QuickTimeUserDataKeyCreationDate { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyDescription")]
+		NSString QuickTimeUserDataKeyDescription { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyDirector")]
+		NSString QuickTimeUserDataKeyDirector { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyDisclaimer")]
+		NSString QuickTimeUserDataKeyDisclaimer { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyEncodedBy")]
+		NSString QuickTimeUserDataKeyEncodedBy { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyFullName")]
+		NSString QuickTimeUserDataKeyFullName { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyGenre")]
+		NSString QuickTimeUserDataKeyGenre { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyHostComputer")]
+		NSString QuickTimeUserDataKeyHostComputer { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyInformation")]
+		NSString QuickTimeUserDataKeyInformation { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyKeywords")]
+		NSString QuickTimeUserDataKeyKeywords { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyMake")]
+		NSString QuickTimeUserDataKeyMake { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyModel")]
+		NSString QuickTimeUserDataKeyModel { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyOriginalArtist")]
+		NSString QuickTimeUserDataKeyOriginalArtist { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyOriginalFormat")]
+		NSString QuickTimeUserDataKeyOriginalFormat { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyOriginalSource")]
+		NSString QuickTimeUserDataKeyOriginalSource { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyPerformers")]
+		NSString QuickTimeUserDataKeyPerformers { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyProducer")]
+		NSString QuickTimeUserDataKeyProducer { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyPublisher")]
+		NSString QuickTimeUserDataKeyPublisher { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyProduct")]
+		NSString QuickTimeUserDataKeyProduct { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeySoftware")]
+		NSString QuickTimeUserDataKeySoftware { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeySpecialPlaybackRequirements")]
+		NSString QuickTimeUserDataKeySpecialPlaybackRequirements { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyTrack")]
+		NSString QuickTimeUserDataKeyTrack { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyWarning")]
+		NSString QuickTimeUserDataKeyWarning { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyWriter")]
+		NSString QuickTimeUserDataKeyWriter { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyURLLink")]
+		NSString QuickTimeUserDataKeyURLLink { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyLocationISO6709")]
+		NSString QuickTimeUserDataKeyLocationISO6709 { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyTrackName")]
+		NSString QuickTimeUserDataKeyTrackName { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyCredits")]
+		NSString QuickTimeUserDataKeyCredits { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyPhonogramRights")]
+		NSString QuickTimeUserDataKeyPhonogramRights { get; }
+		
+		[Field ("AVMetadataQuickTimeUserDataKeyTaggedCharacteristic")]
+		NSString QuickTimeUserDataKeyTaggedCharacteristic { get; }
+		
+		[Field ("AVMetadataISOUserDataKeyCopyright")]
+		NSString ISOUserDataKeyCopyright { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyCopyright")]
+		NSString K3GPUserDataKeyCopyright { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyAuthor")]
+		NSString K3GPUserDataKeyAuthor { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyPerformer")]
+		NSString K3GPUserDataKeyPerformer { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyGenre")]
+		NSString K3GPUserDataKeyGenre { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyRecordingYear")]
+		NSString K3GPUserDataKeyRecordingYear { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyLocation")]
+		NSString K3GPUserDataKeyLocation { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyTitle")]
+		NSString K3GPUserDataKeyTitle { get; }
+		
+		[Field ("AVMetadata3GPUserDataKeyDescription")]
+		NSString K3GPUserDataKeyDescription { get; }
+		
+
+		[Field ("AVMetadataFormatQuickTimeMetadata")]
+		NSString FormatQuickTimeMetadata { get; }
+		
+		[Field ("AVMetadataKeySpaceQuickTimeMetadata")]
+		NSString KeySpaceQuickTimeMetadata { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyAuthor")]
+		NSString QuickTimeMetadataKeyAuthor { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyComment")]
+		NSString QuickTimeMetadataKeyComment { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCopyright")]
+		NSString QuickTimeMetadataKeyCopyright { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCreationDate")]
+		NSString QuickTimeMetadataKeyCreationDate { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDirector")]
+		NSString QuickTimeMetadataKeyDirector { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDisplayName")]
+		NSString QuickTimeMetadataKeyDisplayName { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyInformation")]
+		NSString QuickTimeMetadataKeyInformation { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyKeywords")]
+		NSString QuickTimeMetadataKeyKeywords { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyProducer")]
+		NSString QuickTimeMetadataKeyProducer { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyPublisher")]
+		NSString QuickTimeMetadataKeyPublisher { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyAlbum")]
+		NSString QuickTimeMetadataKeyAlbum { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyArtist")]
+		NSString QuickTimeMetadataKeyArtist { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyArtwork")]
+		NSString QuickTimeMetadataKeyArtwork { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDescription")]
+		NSString QuickTimeMetadataKeyDescription { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeySoftware")]
+		NSString QuickTimeMetadataKeySoftware { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyYear")]
+		NSString QuickTimeMetadataKeyYear { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyGenre")]
+		NSString QuickTimeMetadataKeyGenre { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyiXML")]
+		NSString QuickTimeMetadataKeyiXML { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationISO6709")]
+		NSString QuickTimeMetadataKeyLocationISO6709 { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyMake")]
+		NSString QuickTimeMetadataKeyMake { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyModel")]
+		NSString QuickTimeMetadataKeyModel { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyArranger")]
+		NSString QuickTimeMetadataKeyArranger { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyEncodedBy")]
+		NSString QuickTimeMetadataKeyEncodedBy { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyOriginalArtist")]
+		NSString QuickTimeMetadataKeyOriginalArtist { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyPerformer")]
+		NSString QuickTimeMetadataKeyPerformer { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyComposer")]
+		NSString QuickTimeMetadataKeyComposer { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCredits")]
+		NSString QuickTimeMetadataKeyCredits { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyPhonogramRights")]
+		NSString QuickTimeMetadataKeyPhonogramRights { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCameraIdentifier")]
+		NSString QuickTimeMetadataKeyCameraIdentifier { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCameraFrameReadoutTime")]
+		NSString QuickTimeMetadataKeyCameraFrameReadoutTime { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyTitle")]
+		NSString QuickTimeMetadataKeyTitle { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyCollectionUser")]
+		NSString QuickTimeMetadataKeyCollectionUser { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyRatingUser")]
+		NSString QuickTimeMetadataKeyRatingUser { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationName")]
+		NSString QuickTimeMetadataKeyLocationName { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationBody")]
+		NSString QuickTimeMetadataKeyLocationBody { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationNote")]
+		NSString QuickTimeMetadataKeyLocationNote { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationRole")]
+		NSString QuickTimeMetadataKeyLocationRole { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyLocationDate")]
+		NSString QuickTimeMetadataKeyLocationDate { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDirectionFacing")]
+		NSString QuickTimeMetadataKeyDirectionFacing { get; }
+		
+		[Field ("AVMetadataQuickTimeMetadataKeyDirectionMotion")]
+		NSString QuickTimeMetadataKeyDirectionMotion { get; }
+		
+		[Field ("AVMetadataFormatiTunesMetadata")]
+		NSString FormatiTunesMetadata { get; }
+		
+		[Field ("AVMetadataKeySpaceiTunes")]
+		NSString KeySpaceiTunes { get; }
+		
+
+		[Field ("AVMetadataiTunesMetadataKeyAlbum")]
+		NSString iTunesMetadataKeyAlbum { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyArtist")]
+		NSString iTunesMetadataKeyArtist { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyUserComment")]
+		NSString iTunesMetadataKeyUserComment { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyCoverArt")]
+		NSString iTunesMetadataKeyCoverArt { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyCopyright")]
+		NSString iTunesMetadataKeyCopyright { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyReleaseDate")]
+		NSString iTunesMetadataKeyReleaseDate { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyEncodedBy")]
+		NSString iTunesMetadataKeyEncodedBy { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPredefinedGenre")]
+		NSString iTunesMetadataKeyPredefinedGenre { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyUserGenre")]
+		NSString iTunesMetadataKeyUserGenre { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeySongName")]
+		NSString iTunesMetadataKeySongName { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyTrackSubTitle")]
+		NSString iTunesMetadataKeyTrackSubTitle { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyEncodingTool")]
+		NSString iTunesMetadataKeyEncodingTool { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyComposer")]
+		NSString iTunesMetadataKeyComposer { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAlbumArtist")]
+		NSString iTunesMetadataKeyAlbumArtist { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAccountKind")]
+		NSString iTunesMetadataKeyAccountKind { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAppleID")]
+		NSString iTunesMetadataKeyAppleID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyArtistID")]
+		NSString iTunesMetadataKeyArtistID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeySongID")]
+		NSString iTunesMetadataKeySongID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyDiscCompilation")]
+		NSString iTunesMetadataKeyDiscCompilation { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyDiscNumber")]
+		NSString iTunesMetadataKeyDiscNumber { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyGenreID")]
+		NSString iTunesMetadataKeyGenreID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyGrouping")]
+		NSString iTunesMetadataKeyGrouping { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPlaylistID")]
+		NSString iTunesMetadataKeyPlaylistID { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyContentRating")]
+		NSString iTunesMetadataKeyContentRating { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyBeatsPerMin")]
+		NSString iTunesMetadataKeyBeatsPerMin { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyTrackNumber")]
+		NSString iTunesMetadataKeyTrackNumber { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyArtDirector")]
+		NSString iTunesMetadataKeyArtDirector { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyArranger")]
+		NSString iTunesMetadataKeyArranger { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAuthor")]
+		NSString iTunesMetadataKeyAuthor { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyLyrics")]
+		NSString iTunesMetadataKeyLyrics { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyAcknowledgement")]
+		NSString iTunesMetadataKeyAcknowledgement { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyConductor")]
+		NSString iTunesMetadataKeyConductor { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyDescription")]
+		NSString iTunesMetadataKeyDescription { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyDirector")]
+		NSString iTunesMetadataKeyDirector { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyEQ")]
+		NSString iTunesMetadataKeyEQ { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyLinerNotes")]
+		NSString iTunesMetadataKeyLinerNotes { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyRecordCompany")]
+		NSString iTunesMetadataKeyRecordCompany { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyOriginalArtist")]
+		NSString iTunesMetadataKeyOriginalArtist { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPhonogramRights")]
+		NSString iTunesMetadataKeyPhonogramRights { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyProducer")]
+		NSString iTunesMetadataKeyProducer { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPerformer")]
+		NSString iTunesMetadataKeyPerformer { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyPublisher")]
+		NSString iTunesMetadataKeyPublisher { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeySoundEngineer")]
+		NSString iTunesMetadataKeySoundEngineer { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeySoloist")]
+		NSString iTunesMetadataKeySoloist { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyCredits")]
+		NSString iTunesMetadataKeyCredits { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyThanks")]
+		NSString iTunesMetadataKeyThanks { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyOnlineExtras")]
+		NSString iTunesMetadataKeyOnlineExtras { get; }
+		
+		[Field ("AVMetadataiTunesMetadataKeyExecProducer")]
+		NSString iTunesMetadataKeyExecProducer { get; }
+		
+		[Field ("AVMetadataFormatID3Metadata")]
+		NSString FormatID3Metadata { get; }
+		
+		[Field ("AVMetadataKeySpaceID3")]
+		NSString KeySpaceID3 { get; }
+		
+
+		[Field ("AVMetadataID3MetadataKeyAudioEncryption")]
+		NSString ID3MetadataKeyAudioEncryption { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyAttachedPicture")]
+		NSString ID3MetadataKeyAttachedPicture { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyAudioSeekPointIndex")]
+		NSString ID3MetadataKeyAudioSeekPointIndex { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyComments")]
+		NSString ID3MetadataKeyComments { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyCommerical")]
+		NSString ID3MetadataKeyCommerical { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEncryption")]
+		NSString ID3MetadataKeyEncryption { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEqualization")]
+		NSString ID3MetadataKeyEqualization { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEqualization2")]
+		NSString ID3MetadataKeyEqualization2 { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEventTimingCodes")]
+		NSString ID3MetadataKeyEventTimingCodes { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyGeneralEncapsulatedObject")]
+		NSString ID3MetadataKeyGeneralEncapsulatedObject { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyGroupIdentifier")]
+		NSString ID3MetadataKeyGroupIdentifier { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInvolvedPeopleList_v23")]
+		NSString ID3MetadataKeyInvolvedPeopleList { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLink")]
+		NSString ID3MetadataKeyLink { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMusicCDIdentifier")]
+		NSString ID3MetadataKeyMusicCDIdentifier { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMPEGLocationLookupTable")]
+		NSString ID3MetadataKeyMPEGLocationLookupTable { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOwnership")]
+		NSString ID3MetadataKeyOwnership { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPrivate")]
+		NSString ID3MetadataKeyPrivate { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPlayCounter")]
+		NSString ID3MetadataKeyPlayCounter { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPopularimeter")]
+		NSString ID3MetadataKeyPopularimeter { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPositionSynchronization")]
+		NSString ID3MetadataKeyPositionSynchronization { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRecommendedBufferSize")]
+		NSString ID3MetadataKeyRecommendedBufferSize { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRelativeVolumeAdjustment")]
+		NSString ID3MetadataKeyRelativeVolumeAdjustment { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRelativeVolumeAdjustment2")]
+		NSString ID3MetadataKeyRelativeVolumeAdjustment2 { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyReverb")]
+		NSString ID3MetadataKeyReverb { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySeek")]
+		NSString ID3MetadataKeySeek { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySignature")]
+		NSString ID3MetadataKeySignature { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySynchronizedLyric")]
+		NSString ID3MetadataKeySynchronizedLyric { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySynchronizedTempoCodes")]
+		NSString ID3MetadataKeySynchronizedTempoCodes { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyAlbumTitle")]
+		NSString ID3MetadataKeyAlbumTitle { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyBeatsPerMinute")]
+		NSString ID3MetadataKeyBeatsPerMinute { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyComposer")]
+		NSString ID3MetadataKeyComposer { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyContentType")]
+		NSString ID3MetadataKeyContentType { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyCopyright")]
+		NSString ID3MetadataKeyCopyright { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyDate")]
+		NSString ID3MetadataKeyDate { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEncodingTime")]
+		NSString ID3MetadataKeyEncodingTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPlaylistDelay")]
+		NSString ID3MetadataKeyPlaylistDelay { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalReleaseTime")]
+		NSString ID3MetadataKeyOriginalReleaseTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRecordingTime")]
+		NSString ID3MetadataKeyRecordingTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyReleaseTime")]
+		NSString ID3MetadataKeyReleaseTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTaggingTime")]
+		NSString ID3MetadataKeyTaggingTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEncodedBy")]
+		NSString ID3MetadataKeyEncodedBy { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLyricist")]
+		NSString ID3MetadataKeyLyricist { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyFileType")]
+		NSString ID3MetadataKeyFileType { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTime")]
+		NSString ID3MetadataKeyTime { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyContentGroupDescription")]
+		NSString ID3MetadataKeyContentGroupDescription { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTitleDescription")]
+		NSString ID3MetadataKeyTitleDescription { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySubTitle")]
+		NSString ID3MetadataKeySubTitle { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInitialKey")]
+		NSString ID3MetadataKeyInitialKey { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLanguage")]
+		NSString ID3MetadataKeyLanguage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLength")]
+		NSString ID3MetadataKeyLength { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMusicianCreditsList")]
+		NSString ID3MetadataKeyMusicianCreditsList { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMediaType")]
+		NSString ID3MetadataKeyMediaType { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyMood")]
+		NSString ID3MetadataKeyMood { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalAlbumTitle")]
+		NSString ID3MetadataKeyOriginalAlbumTitle { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalFilename")]
+		NSString ID3MetadataKeyOriginalFilename { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalLyricist")]
+		NSString ID3MetadataKeyOriginalLyricist { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalArtist")]
+		NSString ID3MetadataKeyOriginalArtist { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOriginalReleaseYear")]
+		NSString ID3MetadataKeyOriginalReleaseYear { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyFileOwner")]
+		NSString ID3MetadataKeyFileOwner { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyLeadPerformer")]
+		NSString ID3MetadataKeyLeadPerformer { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyBand")]
+		NSString ID3MetadataKeyBand { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyConductor")]
+		NSString ID3MetadataKeyConductor { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyModifiedBy")]
+		NSString ID3MetadataKeyModifiedBy { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPartOfASet")]
+		NSString ID3MetadataKeyPartOfASet { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyProducedNotice")]
+		NSString ID3MetadataKeyProducedNotice { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPublisher")]
+		NSString ID3MetadataKeyPublisher { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTrackNumber")]
+		NSString ID3MetadataKeyTrackNumber { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyRecordingDates")]
+		NSString ID3MetadataKeyRecordingDates { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInternetRadioStationName")]
+		NSString ID3MetadataKeyInternetRadioStationName { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInternetRadioStationOwner")]
+		NSString ID3MetadataKeyInternetRadioStationOwner { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySize")]
+		NSString ID3MetadataKeySize { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyAlbumSortOrder")]
+		NSString ID3MetadataKeyAlbumSortOrder { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPerformerSortOrder")]
+		NSString ID3MetadataKeyPerformerSortOrder { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTitleSortOrder")]
+		NSString ID3MetadataKeyTitleSortOrder { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyInternationalStandardRecordingCode")]
+		NSString ID3MetadataKeyInternationalStandardRecordingCode { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyEncodedWith")]
+		NSString ID3MetadataKeyEncodedWith { get; }
+		
+		[Field ("AVMetadataID3MetadataKeySetSubtitle")]
+		NSString ID3MetadataKeySetSubtitle { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyYear")]
+		NSString ID3MetadataKeyYear { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyUserText")]
+		NSString ID3MetadataKeyUserText { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyUniqueFileIdentifier")]
+		NSString ID3MetadataKeyUniqueFileIdentifier { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyTermsOfUse")]
+		NSString ID3MetadataKeyTermsOfUse { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyUnsynchronizedLyric")]
+		NSString ID3MetadataKeyUnsynchronizedLyric { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyCommercialInformation")]
+		NSString ID3MetadataKeyCommercialInformation { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyCopyrightInformation")]
+		NSString ID3MetadataKeyCopyrightInformation { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialAudioFileWebpage")]
+		NSString ID3MetadataKeyOfficialAudioFileWebpage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialArtistWebpage")]
+		NSString ID3MetadataKeyOfficialArtistWebpage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialAudioSourceWebpage")]
+		NSString ID3MetadataKeyOfficialAudioSourceWebpage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialInternetRadioStationHomepage")]
+		NSString ID3MetadataKeyOfficialInternetRadioStationHomepage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyPayment")]
+		NSString ID3MetadataKeyPayment { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyOfficialPublisherWebpage")]
+		NSString ID3MetadataKeyOfficialPublisherWebpage { get; }
+		
+		[Field ("AVMetadataID3MetadataKeyUserURL")]
+		NSString ID3MetadataKeyUserURL { get; }
+	}
+	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVMetadataItem {
@@ -1128,11 +1939,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("duration")]
 		CMTime Duration { get; }
 
-                [Export ("statusOfValueForKey:error:")]
-                AVKeyValueStatus StatusOfValueForKeyerror (string key, IntPtr outError);
+		[Export ("statusOfValueForKey:error:")]
+		AVKeyValueStatus StatusOfValueForKeyerror (string key, out NSError error);
 
-                [Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
-                void LoadValuesAsynchronously (string [] keys, NSAction handler);
+		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
+		void LoadValuesAsynchronously (string [] keys, NSAction handler);
 	}
 
 	[Since (4,0)]
@@ -1166,6 +1977,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (AVAssetTrack))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVCompositionTrack {
 		[Export ("segments", ArgumentSemantic.Copy)]
 		AVCompositionTrackSegment [] Segments { get; }
@@ -1173,6 +1986,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (AVCompositionTrack))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVMutableCompositionTrack {
 		[Export ("segments", ArgumentSemantic.Copy)]
 		AVCompositionTrackSegment [] Segments { get; set; }
@@ -1230,8 +2045,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("tracks")]
 		AVCompositionTrack [] Tracks { get; }
 
+		[Obsolete ("Deprecated in iOS5")]
 		[Export ("naturalSize")]
-		SizeF NaturalSize { get; set; }
+		SizeF NaturalSize { get; }
 
 	}
 
@@ -1242,7 +2058,7 @@ namespace MonoMac.AVFoundation {
 		AVMutableComposition Create ();
 
 		[Export ("insertTimeRange:ofAsset:atTime:error:")]
-		bool Insert (CMTimeRange insertTimeRange, AVAsset sourceAsset, CMTime atTime, NSError outError);
+		bool Insert (CMTimeRange insertTimeRange, AVAsset sourceAsset, CMTime atTime, out NSError error);
 
 		[Export ("insertEmptyTimeRange:")]
 		void InserEmptyTimeRange (CMTimeRange timeRange);
@@ -1289,6 +2105,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVAssetExportSession {
 		[Export ("presetName")]
 		string PresetName { get;  }
@@ -1454,6 +2272,8 @@ namespace MonoMac.AVFoundation {
 	[Since (5,0)]
 	[BaseType (typeof (NSObject))]
         [Model]
+	// Protocol
+	[DisableDefaultCtor]
         interface AVVideoCompositionValidationHandling {
                 [Export ("videoComposition:shouldContinueValidatingAfterFindingInvalidValueForKey:")]
                 bool ShouldContinueValidatingAfterFindingInvalidValueForKey (AVVideoComposition videoComposition, string key);
@@ -1515,14 +2335,13 @@ namespace MonoMac.AVFoundation {
 		[Export ("backgroundColor")]
 		CGColor BackgroundColor { get; set;  }
 
-		// Already on base class, why does Apple add it here as well?
-		//[Export ("enablePostProcessing")]
-		//bool EnablePostProcessing { get; }
+		[Export ("enablePostProcessing")]
+		bool EnablePostProcessing { get; set; }
 
 		[Export ("layerInstructions", ArgumentSemantic.Copy)]
 		AVVideoCompositionLayerInstruction [] LayerInstructions { get; set;  }
 
-		[Static, Export ("videoComposition")]
+		[Static, Export ("videoCompositionInstruction")]
 		AVVideoCompositionInstruction Create (); 		
 	}
 
@@ -1578,6 +2397,11 @@ namespace MonoMac.AVFoundation {
 		AVVideoCompositionCoreAnimationTool FromLayer (CALayer videoLayer, CALayer animationLayer);
 	}
 
+	interface AVCaptureSessionRuntimeErrorEventArgs {
+		[Export ("AVCaptureSessionErrorKey")]
+		NSError Error { get; }
+	}
+	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVCaptureSession {
@@ -1657,21 +2481,26 @@ namespace MonoMac.AVFoundation {
 		NSString Preset352x288 { get; }
 
 		[Field ("AVCaptureSessionRuntimeErrorNotification")]
+		[Notification (typeof (AVCaptureSessionRuntimeErrorEventArgs))]
 		NSString RuntimeErrorNotification { get; }
 		
 		[Field ("AVCaptureSessionErrorKey")]
 		NSString ErrorKey { get; }
 		
 		[Field ("AVCaptureSessionDidStartRunningNotification")]
+		[Notification]
 		NSString DidStartRunningNotification { get; }
 		
 		[Field ("AVCaptureSessionDidStopRunningNotification")]
+		[Notification]
 		NSString DidStopRunningNotification { get; }
 		
 		[Field ("AVCaptureSessionWasInterruptedNotification")]
+		[Notification]
 		NSString WasInterruptedNotification { get; }
 		
 		[Field ("AVCaptureSessionInterruptionEndedNotification")]
+		[Notification]
 		NSString InterruptionEndedNotification { get; }
 	}
 
@@ -1736,9 +2565,15 @@ namespace MonoMac.AVFoundation {
 	
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: Cannot instantiate AVCaptureInput because it is an abstract superclass.
+	[DisableDefaultCtor]
 	interface AVCaptureInput {
 		[Export ("ports")]
 		AVCaptureInputPort [] Ports { get; }
+
+		[Field ("AVCaptureInputPortFormatDescriptionDidChangeNotification")]
+		[Notification]
+		NSString PortFormatDescriptionDidChangeNotification { get; }
 	}
 
 	[Since (4,0)]
@@ -1760,6 +2595,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (AVCaptureInput))]
+	// crash application if 'init' is called
+	[DisableDefaultCtor]
 	interface AVCaptureDeviceInput {
 		[Export ("device")]
 		AVCaptureDevice Device { get;  }
@@ -1774,6 +2611,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: Cannot instantiate AVCaptureOutput because it is an abstract superclass.
+	[DisableDefaultCtor]
 	interface AVCaptureOutput {
 		[Export ("connections")]
 		NSObject [] Connections { get; }
@@ -1880,6 +2719,8 @@ namespace MonoMac.AVFoundation {
 
 	[BaseType (typeof (AVCaptureOutput))]
 	[Since (4,0)]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: Cannot instantiate AVCaptureFileOutput because it is an abstract superclass.
+	[DisableDefaultCtor]
 	interface AVCaptureFileOutput {
 		[Export ("recordedDuration")]
 		CMTime RecordedDuration { get;  }
@@ -1955,6 +2796,8 @@ namespace MonoMac.AVFoundation {
 		
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: Cannot instantiate a AVCaptureDevice directly.
+	[DisableDefaultCtor]
 	interface AVCaptureDevice {
 		[Export ("uniqueID")]
 		string UniqueID { get;  }
@@ -2042,12 +2885,15 @@ namespace MonoMac.AVFoundation {
 		AVCaptureDevicePosition Position { get; }
 
 		[Field ("AVCaptureDeviceWasConnectedNotification")]
+		[Notification]
 		NSString WasConnectedNotification { get; }
 
 		[Field ("AVCaptureDeviceWasDisconnectedNotification")]
+		[Notification]
 		NSString WasDisconnectedNotification { get; }
 
 		[Field ("AVCaptureDeviceSubjectAreaDidChangeNotification")]
+		[Notification]
 		NSString SubjectAreaDidChangeNotification { get; }
 
 		// 5.0
@@ -2077,8 +2923,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("rate")]
 		float Rate { get; set;  }
 
+		// note: not a property in ObjC
 		[Export ("currentTime")]
-		CMTime CurrentTime { get; set;  }
+		CMTime CurrentTime { get; }
 
 		[Export ("actionAtItemEnd")]
 		AVPlayerActionAtItemEnd ActionAtItemEnd { get; set;  }
@@ -2175,8 +3022,15 @@ namespace MonoMac.AVFoundation {
 
 	delegate void AVTimeHandler (CMTime time);
 
+	interface AVPlayerItemErrorEventArgs {
+		[Export ("AVPlayerItemFailedToPlayToEndTimeErrorKey")]
+		NSError Error { get; }
+	}
+		
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	// 'init' returns NIL
+	[DisableDefaultCtor]
 	interface AVPlayerItem {
 		[Export ("status")]
 		AVPlayerItemStatus Status { get;  }
@@ -2203,7 +3057,7 @@ namespace MonoMac.AVFoundation {
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Export ("currentTime")]
-		CMTime CurrentTime { get; set;  }
+		CMTime CurrentTime { get; }
 
 		[Export ("playbackLikelyToKeepUp")]
 		bool PlaybackLikelyToKeepUp { [Bind ("isPlaybackLikelyToKeepUp")] get;  }
@@ -2252,10 +3106,12 @@ namespace MonoMac.AVFoundation {
 		NSError Error { get; }
 
 		[Field ("AVPlayerItemDidPlayToEndTimeNotification")]
-		NSString DidPLayToEndTimeNotification { get; }
+		[Notification]
+		NSString DidPlayToEndTimeNotification { get; }
 
 		[Since (4,3)]
 		[Field ("AVPlayerItemFailedToPlayToEndTimeNotification")]
+		[Notification (typeof (AVPlayerItemErrorEventArgs))]
 		NSString ItemFailedToPlayToEndTimeNotification { get; }
 
 		[Since (4,3)]
@@ -2284,6 +3140,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (5,0)]
 		[Field ("AVPlayerItemTimeJumpedNotification")]
+		[Notification]
 		NSString TimeJumpedNotification { get; }
 
 		[Since (5,0)]
@@ -2439,18 +3296,18 @@ namespace MonoMac.AVFoundation {
 
 	}
 
-        [BaseType (typeof (NSObject))]
-        [Model]
+	[BaseType (typeof (NSObject))]
+	[Model]
 	[Since (4,0)]
-        interface AVAsynchronousKeyValueLoading {
-                [Abstract]
-                [Export ("statusOfValueForKey:error:")]
-                AVKeyValueStatus StatusOfValueForKeyerror (string key, IntPtr outError);
+	interface AVAsynchronousKeyValueLoading {
+		[Abstract]
+		[Export ("statusOfValueForKey:error:")]
+		AVKeyValueStatus StatusOfValueForKeyerror (string key, IntPtr outError);
 
-                [Abstract]
-                [Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
-                void LoadValuesAsynchronously (string [] keys, NSAction handler);
-        }
+		[Abstract]
+		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
+		void LoadValuesAsynchronously (string [] keys, NSAction handler);
+	}
 
 	[Since (4,1)]
 	[BaseType (typeof (AVPlayer))]
@@ -2478,6 +3335,48 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("removeAllItems")]
 		void RemoveAllItems ();
+	}
+
+	[Static]
+	public interface AVAudioSettings {
+		[Field ("AVFormatIDKey")]
+		NSString AVFormatIDKey { get; }
+		
+		[Field ("AVSampleRateKey")]
+		NSString AVSampleRateKey { get; }
+		
+		[Field ("AVNumberOfChannelsKey")]
+		NSString AVNumberOfChannelsKey { get; }
+		
+		[Field ("AVLinearPCMBitDepthKey")]
+		NSString AVLinearPCMBitDepthKey { get; }
+		
+		[Field ("AVLinearPCMIsBigEndianKey")]
+		NSString AVLinearPCMIsBigEndianKey { get; }
+		
+		[Field ("AVLinearPCMIsFloatKey")]
+		NSString AVLinearPCMIsFloatKey { get; }
+		
+		[Field ("AVLinearPCMIsNonInterleaved")]
+		NSString AVLinearPCMIsNonInterleaved { get; }
+		
+		[Field ("AVEncoderAudioQualityKey")]
+		NSString AVEncoderAudioQualityKey { get; }
+		
+		[Field ("AVEncoderBitRateKey")]
+		NSString AVEncoderBitRateKey { get; }
+		
+		[Field ("AVEncoderBitRatePerChannelKey")]
+		NSString AVEncoderBitRatePerChannelKey { get; }
+		
+		[Field ("AVEncoderBitDepthHintKey")]
+		NSString AVEncoderBitDepthHintKey { get; }
+		
+		[Field ("AVSampleRateConverterAudioQualityKey")]
+		NSString AVSampleRateConverterAudioQualityKey { get; }
+		
+		[Field ("AVChannelLayoutKey")]
+		NSString AVChannelLayoutKey { get; }
 	}
 	
 }

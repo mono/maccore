@@ -7,7 +7,7 @@
 //   Miguel de Icaza
 //
 // Copyright 2009-2010, Novell, Inc.
-// Copyright 2011, Xamarin, Inc.
+// Copyright 2011-2012 Xamarin, Inc.
 //
 //
 // This generator produces various */*.g.cs files based on the
@@ -53,6 +53,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreVideo;
 using MonoMac.OpenGL;
+using MonoMac.CoreMidi;
 #else
 using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
@@ -60,6 +61,7 @@ using MonoTouch.CoreFoundation;
 using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
 using MonoTouch.CoreVideo;
+using MonoTouch.CoreMidi;
 #endif
 
 public static class ReflectionExtensions {
@@ -289,6 +291,10 @@ public class PlainStringAttribute : Attribute {
 	public PlainStringAttribute () {}
 }
 
+public class AutoreleaseAttribute : Attribute {
+	public AutoreleaseAttribute () {}
+}
+
 // When applied, the generator generates a check for the Handle being valid on the main object, to
 // ensure that the user did not Dispose() the object.
 //
@@ -316,28 +322,49 @@ public class ProxyAttribute : Attribute {
 	public ProxyAttribute () {}
 }
 
+// When applied to a member, generates the member as static
 public class StaticAttribute : Attribute {
 	public StaticAttribute () {}
 }
 
+// flags the backing field for the property to with .NET's [ThreadStatic] property
 public class IsThreadStaticAttribute : Attribute {
 	public IsThreadStaticAttribute () {}
 }
 
+// When applied to a member, generates the member as static
+// and passes IntPtr.Zero or null if the parameter is null
 public class NullAllowedAttribute : Attribute {
 	public NullAllowedAttribute () {}
 }
 
+// When applied to a method or property, flags the resulting generated code as internal
 public class InternalAttribute : Attribute {
 	public InternalAttribute () {}
 }
 
+// When this attribute is applied to the interface definition it will
+// flag the default constructor as private.  This means that you can
+// still instantiate object of this class internally from your
+// extension file, but it just wont be accessible to users of your
+// class.
 public class PrivateDefaultCtorAttribute : Attribute {
 	public PrivateDefaultCtorAttribute () {}
 }
 
+// When this attribute is applied to the interface definition it will
+// prevent the generator from producing the default constructor.
 public class DisableDefaultCtorAttribute : Attribute {
 	public DisableDefaultCtorAttribute () {}
+}
+
+//
+// If this attribute is applied to a property, we do not generate a
+// backing field.   See bugzilla #3359 and Assistly 7032 for some
+// background information
+//
+public class TransientAttribute : Attribute {
+	public TransientAttribute () {}
 }
 
 // Used for mandatory methods that must be implemented in a [Model].
@@ -358,6 +385,54 @@ public class NewAttribute : Attribute {
 // Makes the result sealed
 public class SealedAttribute : Attribute {
 	public SealedAttribute () {} 
+}
+
+// Flags the object as being thread safe
+public class ThreadSafeAttribute : Attribute {
+	public ThreadSafeAttribute () {}
+}
+
+// Marks a struct parameter/return value as requiring a certain alignment.
+public class AlignAttribute : Attribute {
+	public int Align { get; set; }
+	public AlignAttribute (int align)
+	{
+		Align = align;
+	}
+	public int Bits {
+		get {
+			int bits = 0;
+			int tmp = Align;
+			while (tmp > 1) {
+				bits++;
+				tmp /= 2;
+			}
+			return bits;
+		}
+	}
+}
+
+//
+// When applied, flags the [Flags] as a notification and generates the
+// code to strongly type the notification.
+//
+[AttributeUsage(AttributeTargets.Property, AllowMultiple=true)]
+public class NotificationAttribute : Attribute {
+	public NotificationAttribute (Type t) { Type = t; }
+	public NotificationAttribute () {}
+	
+	public Type Type { get; set; }
+}
+
+//
+// Applied to attributes in the notification EventArgs
+// to generate code that merely probes for the existance of
+// the key, instead of extracting a value out of the
+// userInfo dictionary
+//
+[AttributeUsage(AttributeTargets.Property, AllowMultiple=true)]
+public class ProbePresenceAttribute : Attribute {
+	public ProbePresenceAttribute () {}
 }
 
 public class EventArgsAttribute : Attribute {
@@ -423,6 +498,45 @@ public class DefaultValueFromArgumentAttribute : Attribute {
 	public string Argument { get; set; }
 }
 
+// Apply to strings parameters that are merely retained or assigned,
+// not copied this is an exception as it is advised in the coding
+// standard for Objective-C to avoid this, but a few properties do use
+// this.  Use this attribtue for properties flagged with `retain' or
+// `assign', which look like this:
+//
+// @property (retain) NSString foo;
+// @property (assign) NSString assigned;
+//
+// This forced the generator to create an NSString before calling the
+// API instead of using the fast string marshalling code.
+public class DisableZeroCopyAttribute : Attribute {
+	public DisableZeroCopyAttribute () {}
+}
+
+//
+// By default, the generator will not do Zero Copying of strings, as most
+// third party libraries do not follow Apple's design guidelines of making
+// string properties and parameters copy parameters, instead many libraries
+// "retain" as a broken optimization [1].
+//
+// The consumer of the genertor can force this by passing
+// --use-zero-copy or setting the [assembly:ZeroCopyStrings] attribute.
+// When these are set, the generator assumes the library perform
+// copies over any NSStrings it keeps instead of retains/assigns and
+// that any property that happens to be a retain/assign has the
+// [DisableZeroCopyAttribute] attribute applied.
+//
+// [1] It is broken becase consumer code can pass an NSMutableString, the
+// library retains the value, but does not have a way of noticing changes
+// that might happen to the mutable string behind its back.
+//
+// In the ZeroCopy case it is a problem because we pass handles to stack-allocated
+// strings that stop existing after the invocation is over.
+//
+[AttributeUsage(AttributeTargets.Assembly|AttributeTargets.Method|AttributeTargets.Interface, AllowMultiple=true)]
+public class ZeroCopyStringsAttribute : Attribute {
+}
+
 [AttributeUsage(AttributeTargets.Method|AttributeTargets.Property, AllowMultiple=true)]
 public class SnippetAttribute : Attribute {
 	public SnippetAttribute (string s)
@@ -481,11 +595,23 @@ public class MarshalInfo {
 	public bool PlainString;
 	public Type Type;
 
+ 	// This is set on a string parameter if the argument parameters are set to
+ 	// Copy.   This means that we can do fast string passing.
+	public bool ZeroCopyStringMarshal;
+
+	public bool IsAligned;
+
 	// Used for parameters
-	public MarshalInfo (ParameterInfo pi)
+	public MarshalInfo (MethodInfo mi, ParameterInfo pi)
 	{
 		PlainString = pi.GetCustomAttributes (typeof (PlainStringAttribute), true).Length > 0;
 		Type = pi.ParameterType;
+		ZeroCopyStringMarshal = (Type == typeof (string)) && PlainString == false && !Generator.HasAttribute (pi, (typeof (DisableZeroCopyAttribute))) && Generator.SharedGenerator.type_wants_zero_copy;
+		IsAligned = Generator.HasAttribute (pi, typeof (AlignAttribute));
+		if (IsAligned)
+			Type = typeof (IntPtr);
+		if (ZeroCopyStringMarshal && Generator.HasAttribute (mi, typeof (DisableZeroCopyAttribute)))
+			ZeroCopyStringMarshal = false;
 	}
 
 	// Used to return values
@@ -493,16 +619,14 @@ public class MarshalInfo {
 	{
 		PlainString = mi.ReturnTypeCustomAttributes.GetCustomAttributes (typeof (PlainStringAttribute), true).Length > 0;
 		Type = mi.ReturnType;
+		IsAligned = Generator.HasAttribute (mi, typeof (AlignAttribute));
+		if (IsAligned)
+			Type = typeof (IntPtr);
 	}
 
-	public static bool UseString (ParameterInfo pi)
+	public static bool UseString (MethodInfo mi, ParameterInfo pi)
 	{
-		return new MarshalInfo (pi).PlainString;
-	}
-
-	public static implicit operator MarshalInfo (ParameterInfo pi)
-	{
-		return new MarshalInfo (pi);
+		return new MarshalInfo (mi, pi).PlainString;
 	}
 
 	public static implicit operator MarshalInfo (MethodInfo mi)
@@ -528,15 +652,19 @@ public class Tuple<A,B> {
 // The Invoke contains the invocation steps necessary to invoke the method
 //
 public class TrampolineInfo {
-	public string UserDelegate, DelegateName, TrampolineName, Parameters, Invoke;
+	public string UserDelegate, DelegateName, TrampolineName, Parameters, Invoke, ReturnType, DelegateReturnType, ReturnFormat, Clear;
 
-	public TrampolineInfo (string userDelegate, string delegateName, string trampolineName, string pars, string invoke)
+	public TrampolineInfo (string userDelegate, string delegateName, string trampolineName, string pars, string invoke, string returnType, string delegateReturnType, string returnFormat, string clear)
 	{
 		UserDelegate = userDelegate;
 		DelegateName = delegateName;
 		Parameters = pars;
 		TrampolineName = trampolineName;
 		Invoke = invoke;
+		ReturnType = returnType;
+		DelegateReturnType = delegateReturnType;
+		ReturnFormat = returnFormat;
+		Clear = clear;
 	}
 
 	public string StaticName {
@@ -611,6 +739,7 @@ public class Generator {
 	List<MarshalType> marshal_types = new List<MarshalType> ();
 	Dictionary<Type,TrampolineInfo> trampolines = new Dictionary<Type,TrampolineInfo> ();
 	Dictionary<Type,Type> delegates_emitted = new Dictionary<Type, Type> ();
+	Dictionary<Type,Type> notification_event_arg_types = new Dictionary<Type,Type> ();
 	
 	public bool Alpha;
 	public bool OnlyX86;
@@ -656,6 +785,9 @@ public class Generator {
 	// Where the assembly messaging is located (core)
 	public string CoreMessagingNS = "MonoTouch.ObjCRuntime";
 
+	// Whether to use ZeroCopy for strings, defaults to false
+	public bool ZeroCopyStrings;
+	
 	// This can be plugged by the user when using btouch/bmac for their own bindings
 	public string MessagingNS = "MonoTouch.ObjCRuntime";
 	
@@ -670,14 +802,42 @@ public class Generator {
 	string [] standard_namespaces = new string [] { "MonoMac.Foundation", "MonoMac.ObjCRuntime", "MonoMac.CoreGraphics" };
 	const string MainPrefix = "MonoMac";
 	const string CoreImageMap = "Quartz";
+	string [] UINamespaces = new string [] {
+		"MonoMac.AppKit"
+	};
+	static bool ThreadProtection = false;
 #else
 	public Type MessagingType = typeof (MonoTouch.ObjCRuntime.Messaging);
 	public Type SampleBufferType = typeof (MonoTouch.CoreMedia.CMSampleBuffer);
 	string [] standard_namespaces = new string [] { "MonoTouch.Foundation", "MonoTouch.ObjCRuntime", "MonoTouch.CoreGraphics" };
 	const string MainPrefix = "MonoTouch";
 	const string CoreImageMap = "CoreImage";
+	string [] UINamespaces = new string [] {
+		"MonoTouch.UIKit",
+		"MonoTouch.Twitter",
+		"MonoTouch.GameKit",
+		"MonoTouch.NewsstandKit",
+		"MonoTouch.iAd",
+		"MonoTouch.QuickLook",
+		"MonoTouch.EventKitUI",
+		"MonoTouch.AddressBookUI",
+		"MonoTouch.MapKit",
+		"MonoTouch.MessageUI",
+	};
+	static bool ThreadProtection = true;
 #endif
 
+	//
+	// We inject thread checks to MonoTouch.UIKit types, unless there is a [ThreadSafe] attribuet on the type.
+	// Set on every call to Generate
+	//
+	bool type_needs_thread_checks;
+
+	//
+	// If set, the members of this type will get zero copy
+	// 
+	internal bool type_wants_zero_copy;
+	
 	//
 	// Used by the public binding generator to populate the
 	// class with types that do not exist
@@ -699,7 +859,7 @@ public class Generator {
 		return (pt == typeof (int) || pt == typeof (long) || pt == typeof (byte) || pt == typeof (short));
 	}
 
-	public string PrimitiveType (Type t)
+	public string PrimitiveType (Type t, bool formatted = false)
 	{
 		if (t == typeof (void))
 			return "void";
@@ -718,7 +878,7 @@ public class Generator {
 		if (t == typeof (bool))
 			return "bool";
 
-		return t.Name;
+		return formatted ? FormatType (null, t) : t.Name;
 	}
 
 	// Is this a wrapped type of NSObject from the MonoTouch/MonoMac binding world?
@@ -734,16 +894,16 @@ public class Generator {
 	//
 	// Returns the type that we use to marshal the given type as a string
 	// for example "UIView" -> "IntPtr"
-	string ParameterGetMarshalType (MarshalInfo mai)
+	string ParameterGetMarshalType (MarshalInfo mai, bool formatted = false)
 	{
 		if (mai.Type.IsEnum)
-			return PrimitiveType (mai.Type);
+			return PrimitiveType (mai.Type, formatted);
 
 		if (IsWrappedType (mai.Type))
 			return "IntPtr";
 
 		if (IsNativeType (mai.Type))
-			return PrimitiveType (mai.Type);
+			return PrimitiveType (mai.Type, formatted);
 
 		if (mai.Type == typeof (string)){
 			if (mai.PlainString)
@@ -758,7 +918,7 @@ public class Generator {
 			return mt.Encoding;
 		
 		if (mai.Type.IsValueType)
-			return PrimitiveType (mai.Type);
+			return PrimitiveType (mai.Type, formatted);
 
 		// Arrays are returned as NSArrays
 		if (mai.Type.IsArray)
@@ -767,8 +927,10 @@ public class Generator {
 		//
 		// Pass "out ValueType" directly
 		//
-		if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType)
-			return "out " + mai.Type.GetElementType ().Name;
+		if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType){
+			Type elementType = mai.Type.GetElementType ();
+			return "out " + (formatted ? FormatType (null, elementType) : elementType.Name);
+		}
 
 		if (mai.Type.IsSubclassOf (typeof (Delegate))){
 			return "IntPtr";
@@ -781,9 +943,7 @@ public class Generator {
 		if (mai.Type.IsByRef && mai.Type.GetElementType ().IsValueType == false)
 			return "IntPtr";
 		
-		Console.WriteLine ("Do not know how to make a signature for {0}", mai.Type);
-		throw new Exception ();
-		//return null;
+		throw new BindingException (1017, true, "Do not know how to make a signature for {0}", mai.Type);
 	}
 
 	//
@@ -799,6 +959,17 @@ public class Generator {
 		var mi = t.GetMethod ("Invoke");
 		var pars = new StringBuilder ();
 		var invoke = new StringBuilder ();
+		var clear = new StringBuilder  ();
+		string returntype;
+		var returnformat = "return {0};";
+		
+		if (IsWrappedType (mi.ReturnType)) {
+			returntype = "IntPtr";
+			returnformat = "return {0} != null ? {0}.Handle : IntPtr.Zero;";
+		} else {
+			returntype = FormatType (mi.DeclaringType, mi.ReturnType);
+		}
+		
 		pars.Append ("IntPtr block");
 		var parameters = mi.GetParameters ();
 		foreach (var pi in parameters){
@@ -820,11 +991,17 @@ public class Generator {
 
 			if (pi.ParameterType.IsByRef){
 				var nt = pi.ParameterType.GetElementType ();
+				if (pi.IsOut){
+					clear.AppendFormat ("{0} = {1};", pi.Name, nt.IsValueType ? "default (" + FormatType (null, nt) + ")" : "null");
+				}
 				if (nt.IsValueType){
-					pars.AppendFormat ("{0} {1} {2}", pi.IsOut ? "out" : "ref", FormatType (null, nt), pi.Name);
+					string marshal = string.Empty;
+					if (nt == typeof (bool))
+						marshal = "[System.Runtime.InteropServices.MarshalAs (System.Runtime.InteropServices.UnmanagedType.I1)] ";
+					pars.AppendFormat ("{3}{0} {1} {2}", pi.IsOut ? "out" : "ref", FormatType (null, nt), pi.Name, marshal);
 					invoke.AppendFormat ("{0} {1}", pi.IsOut ? "out" : "ref", pi.Name);
 					continue;
-				} 
+				}
 			} else if (pi.ParameterType.IsValueType){
 				pars.AppendFormat ("{0} {1}", FormatType (null, pi.ParameterType), pi.Name);
 				invoke.AppendFormat ("{0}", pi.Name);
@@ -843,7 +1020,7 @@ public class Generator {
 			}
 			if (pi.ParameterType == SampleBufferType){
 				pars.AppendFormat ("IntPtr {0}", pi.Name);
-				invoke.AppendFormat ("new CMSampleBuffer ({0})", pi.Name);
+				invoke.AppendFormat ("new CMSampleBuffer ({0}, false)", pi.Name);
 				continue;
 			}
 
@@ -862,14 +1039,16 @@ public class Generator {
 				}
 			}
 			
-			Console.Error.WriteLine ("MakeTrampoline: do not know how to make a trampoline for {0}", pi);
-			throw new Exception ();
+			throw new BindingException (1001, true, "Do not know how to make a trampoline for {0}", pi);
 		}
 
 		var ti = new TrampolineInfo (t.FullName,
 					     "Inner" + t.Name,
 					     "Trampoline" + t.Name,
-					     pars.ToString (), invoke.ToString ());
+					     pars.ToString (), invoke.ToString (),
+					     returntype,
+					     mi.ReturnType.ToString (),
+					     returnformat, clear.ToString ());
 
 		trampolines [t] = ti;
 		return ti.StaticName;
@@ -879,12 +1058,12 @@ public class Generator {
 	// Returns the actual way in which the type t must be marshalled
 	// for example "UIView foo" is generated as  "foo.Handle"
 	//
-	public string MarshalParameter (ParameterInfo pi, bool null_allowed_override)
+	public string MarshalParameter (MethodInfo mi, ParameterInfo pi, bool null_allowed_override)
 	{
 		if (pi.ParameterType.IsByRef && pi.ParameterType.GetElementType ().IsValueType == false){
 			return pi.Name + "Ptr";
 		}
-		
+
 		if (IsWrappedType (pi.ParameterType)){
 			if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
 				return String.Format ("{0} == null ? IntPtr.Zero : {0}.Handle", pi.Name);
@@ -899,13 +1078,27 @@ public class Generator {
 			return pi.Name;
 
 		if (pi.ParameterType == typeof (string)){
-			if (MarshalInfo.UseString (pi))
+			var mai = new MarshalInfo (mi, pi);
+			if (mai.PlainString)
 				return pi.Name;
 			else {
-				if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
-					return String.Format ("ns{0} == null ? IntPtr.Zero : ns{0}.Handle", pi.Name);
-				else 
-					return "ns" + pi.Name + ".Handle";
+				bool allow_null = null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute));
+				
+				if (mai.ZeroCopyStringMarshal){
+					if (allow_null)
+						return String.Format ("{0} == null ? IntPtr.Zero : (IntPtr)(&_s{0})", pi.Name);
+					else
+						return String.Format ("(IntPtr)(&_s{0})", pi.Name);
+				} else {
+#if false
+					if (allow_null)
+						return String.Format ("ns{0} == null ? IntPtr.Zero : ns{0}.Handle", pi.Name);
+					else 
+						return "ns" + pi.Name + ".Handle";
+#else
+					return "ns" + pi.Name;
+#endif
+				}
 			}
 		}
 
@@ -939,8 +1132,7 @@ public class Generator {
 			return String.Format ("(IntPtr) block_ptr_{0}", pi.Name);
 		}
 		
-		Console.WriteLine ("Unknown kind {0}", pi);
-		throw new Exception ();
+		throw new BindingException (1002, true, "Unknown kind {0} in method '{1}.{2}'", pi, mi.DeclaringType.FullName, mi	.Name);
 	}
 
 	public bool ParameterNeedsNullCheck (ParameterInfo pi, MethodInfo mi)
@@ -992,7 +1184,7 @@ public class Generator {
 		return GetAttribute (mi, typeof (BindAttribute)) as BindAttribute;
 	}
 	
-	public bool HasAttribute (ICustomAttributeProvider i, Type t)
+	public static bool HasAttribute (ICustomAttributeProvider i, Type t)
 	{
 		return i.GetCustomAttributes (t, true).Length > 0;
 	}
@@ -1011,8 +1203,8 @@ public class Generator {
 
 		try {
 			sb.Append (ParameterGetMarshalType (mi));
-		} catch {
-			Console.WriteLine ("   in Method `{0}'", mi.Name);
+		} catch (BindingException ex) {
+			throw new BindingException (ex.Code, ex.Error, ex,  "{0} in method `{1}'", ex.Message, mi.Name);
 		}
 
 		sb.Append ("_");
@@ -1025,10 +1217,9 @@ public class Generator {
 				continue;
 			sb.Append ("_");
 			try {
-				sb.Append (ParameterGetMarshalType (new MarshalInfo (pi)).Replace (' ', '_'));
-			} catch {
-				Console.WriteLine ("  in parameter `{0}' from {1}.{2}", pi.Name, mi.DeclaringType, mi.Name);
-				throw;
+				sb.Append (ParameterGetMarshalType (new MarshalInfo (mi, pi)).Replace (' ', '_'));
+			} catch (BindingException ex) {
+				throw new BindingException (ex.Code, ex.Error, ex, "{0} in parameter `{1}' from {2}.{3}", ex.Message, pi.Name, mi.DeclaringType, mi.Name);
 			}
 		}
 
@@ -1051,9 +1242,9 @@ public class Generator {
 			b.Append (", ");
 
 			try {
-				b.Append (ParameterGetMarshalType (pi));
-			} catch {
-				Console.WriteLine ("  in parameter {0} of {1}.{2}", pi.Name, mi.DeclaringType, mi.Name);
+				b.Append (ParameterGetMarshalType (new MarshalInfo (mi, pi), true));
+			} catch (BindingException ex) {
+				throw new BindingException (ex.Code, ex.Error, ex, "{0} in parameter {1} of {2}.{3}", ex.Message, pi.Name, mi.DeclaringType, mi.Name);
 			}
 			b.Append (" ");
 			b.Append ("arg" + (++n));
@@ -1076,8 +1267,8 @@ public class Generator {
 
 		print (m, "\t\t[DllImport (LIBOBJC_DYLIB, EntryPoint=\"{0}\")]", entry_point);
 		print (m, "\t\tpublic extern static {0} {1} ({3}IntPtr receiver, IntPtr selector{2});",
-		       need_stret ? "void" : ParameterGetMarshalType (mi), method_name, b.ToString (),
-		       need_stret ? "out " + FormatType (MessagingType, mi.ReturnType) + " retval, " : "");
+		       need_stret ? "void" : ParameterGetMarshalType (mi, true), method_name, b.ToString (),
+		       need_stret ? (HasAttribute (mi, typeof (AlignAttribute)) ? "IntPtr" : "out " + FormatType (MessagingType, mi.ReturnType)) + " retval, " : "");
 		       
 	}
 
@@ -1157,6 +1348,8 @@ public class Generator {
 		return new ExportAttribute ("set" + Char.ToUpper (source.Selector [0]) + source.Selector.Substring (1) + ":");
 	}
 
+	public static Generator SharedGenerator;
+	
 	public Generator (bool btouch, bool external, bool debug, Type [] types)
 	{
 		Generator.IsBtouch = btouch;
@@ -1164,6 +1357,7 @@ public class Generator {
 		this.debug = debug;
 		this.types = types;
 		basedir = ".";
+		SharedGenerator = this;
 	}
 
 	public void Go ()
@@ -1179,6 +1373,7 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CFRunLoop), "IntPtr", "{0}.Handle", "new CFRunLoop ("));
 		marshal_types.Add (new MarshalType (typeof (CGColorSpace), "IntPtr", "{0}.Handle", "new CGColorSpace ("));
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
+		marshal_types.Add (new MarshalType (typeof (MidiEndpoint), "IntPtr", "{0}.Handle", "new MidiEndpoint ("));
 #if MONOMAC
 		marshal_types.Add (new MarshalType (typeof (CGLContext), "IntPtr", "{0}.Handle", "new CGLContext ("));
 		marshal_types.Add (new MarshalType (typeof (CGLPixelFormat), "IntPtr", "{0}.Handle", "new CGLPixelFormat ("));
@@ -1186,7 +1381,10 @@ public class Generator {
 #endif
 		marshal_types.Add (new MarshalType (typeof (CVPixelBuffer), "IntPtr", "{0}.Handle", "new CVPixelBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (CGLayer), "IntPtr", "{0}.Handle", "new CGLayer ("));
-#if !MONOMAC
+#if MONOMAC
+		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoMac.CoreMedia.CMSampleBuffer ("));
+		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreVideo.CVImageBuffer), "IntPtr", "{0}.Handle", "new MonoMac.CoreVideo.CMImageBuffer ("));
+#else
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreVideo.CVImageBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreVideo.CMImageBuffer ("));
 
@@ -1223,10 +1421,8 @@ public class Generator {
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
-				if (HasAttribute (pi, typeof (IsThreadStaticAttribute)) && !HasAttribute (pi, typeof (StaticAttribute))) {
-					Console.WriteLine ("Error: [IsThreadStatic] is only valid on properties that are also [Static]");
-					Environment.Exit (1);
-				}
+				if (HasAttribute (pi, typeof (IsThreadStaticAttribute)) && !HasAttribute (pi, typeof (StaticAttribute)))
+					throw new BindingException (1008, true, "[IsThreadStatic] is only valid on properties that are also [Static]");
 
 				string wrapname;
 				var export = GetExportAttribute (pi, out wrapname);
@@ -1239,8 +1435,7 @@ public class Generator {
 					if (attrs.Length != 0)
 						continue;
 					
-					Console.WriteLine ("Error: no [Export] attribute on property {0}.{1}", pi.DeclaringType, pi.Name);
-					Environment.Exit (1);
+					throw new BindingException (1018, true, "No [Export] attribute on property {0}.{1}", pi.DeclaringType, pi.Name);
 				}
 				if (HasAttribute (pi, typeof (StaticAttribute)))
 					need_static [t] = true;
@@ -1295,15 +1490,13 @@ public class Generator {
 						if (mi.DeclaringType == t)
 							need_abstract [t] = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute)
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute)
 						continue;
 					else 
-						Console.WriteLine ("Error: Unknown attribute {0} on {1}", attr.GetType (), t);
+						throw new BindingException (1007, true, "Unknown attribute {0} on {1}", attr.GetType (), t);
 
-					if (selector == null){
-						Console.WriteLine ("Error: No selector specified for method `{0}.{1}'", mi.DeclaringType, mi.Name);
-						Environment.Exit (1);
-					}
+					if (selector == null)
+						throw new BindingException (1009, true, "No selector specified for method `{0}.{1}'", mi.DeclaringType, mi.Name);
 					
 					tselectors.Add (selector);
 					if (selector_use.ContainsKey (selector)){
@@ -1337,8 +1530,123 @@ public class Generator {
 		
 		print (m, "\t}\n}");
 		m.Close ();
+
+		// Generate the event arg mappings
+		if (notification_event_arg_types.Count > 0)
+			GenerateEventArgsFile ();
 	}
 
+	static string GenerateNSValue (string propertyToCall)
+	{
+		return "using (var nsv = new NSValue (value))\n\treturn nsv." + propertyToCall + ";";
+	}
+
+	static string GenerateNSNumber (string cast, string propertyToCall)
+	{
+		return "using (var nsn = new NSNumber (value))\n\treturn " + cast + "nsn." + propertyToCall + ";";
+	}
+	
+	void GenerateEventArgsFile ()
+	{
+		var event_args_file = Path.Combine (basedir, "ObjCRuntime/EventArgs.g.cs");
+		GeneratedFiles.Add (event_args_file);
+		sw = new StreamWriter (event_args_file);
+
+		Header (sw);
+		foreach (Type eventType in notification_event_arg_types.Keys){
+			// Do not generate events for stuff with no arguments
+			if (eventType == null)
+				continue;
+			
+			print ("namespace {0} {{", eventType.Namespace); indent++;
+			print ("public class {0} : NSNotificationEventArgs {{", eventType.Name); indent++;
+			print ("public {0} (NSNotification notification) : base (notification) \n{{\n}}\n", eventType.Name);
+			int i = 0;
+			foreach (var prop in eventType.GetProperties (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)){
+				var attrs = prop.GetCustomAttributes (typeof (ExportAttribute), true);
+				if (attrs.Length == 0)
+					throw new BindingException (1010, true, "No Export attribute on {0}.{1} property", eventType, prop.Name);
+
+				var export = attrs [0] as ExportAttribute;
+				var null_allowed = HasAttribute (prop, typeof (NullAllowedAttribute));
+				var nullable_type = prop.PropertyType.IsValueType && null_allowed;
+				var propertyType = prop.PropertyType;
+				var propNamespace = prop.DeclaringType.Namespace;
+				var probe_presence = HasAttribute (prop, typeof (ProbePresenceAttribute));
+				
+				string kn = "k" + (i++);
+				var lib = propNamespace.Substring (propNamespace.IndexOf (".") + 1);
+				print ("static IntPtr {0};", kn);
+				print ("public {0}{1} {2} {{\n\tget {{\n", propertyType, nullable_type ? "?" : "", prop.Name); indent += 2;
+				print ("if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.SlowGetIntPtr (Constants.{2}Library, \"{3}\");", kn, MainPrefix, lib, export.Selector);
+				if (null_allowed || probe_presence){
+					if (probe_presence)
+						print ("if (Notification.UserInfo == null)\n\treturn false;");
+					else
+						print ("if (Notification.UserInfo == null)\n\treturn null;");
+				}
+				print ("var value = Notification.UserInfo.LowlevelObjectForKey ({0});\n", kn);
+				if (probe_presence)
+					print ("return value != IntPtr.Zero;");
+				else {
+					if (null_allowed)
+						print ("if (value == IntPtr.Zero)\n\treturn null;");
+					else if (propertyType.IsArray)
+						print ("if (value == IntPtr.Zero)\n\treturn new {0} [0];", RenderType (propertyType.GetElementType ()));
+					else
+						print ("if (value == IntPtr.Zero)\n\treturn default({0});", RenderType (propertyType));
+
+					var fullname = propertyType.FullName;
+
+					if (propertyType.IsArray && IsWrappedType (propertyType.GetElementType ())){
+						print ("return NSArray.ArrayFromHandle<{0}> (value);", RenderType (propertyType.GetElementType ()));
+					} else if (IsWrappedType (propertyType)){
+						print ("return ({0}) Runtime.GetNSObject (value);", RenderType (propertyType));
+					} else if (fullname == "System.Drawing.RectangleF")
+						print (GenerateNSValue ("RectangleFValue"));
+					else if (propertyType == typeof (double))
+						print (GenerateNSNumber ("", "DoubleValue"));
+					else if (propertyType == typeof (float))
+						print (GenerateNSNumber ("", "FloatValue"));
+					else if (fullname == "System.Drawing.PointF")
+						print (GenerateNSValue ("PointFValue"));
+					else if (fullname == "System.Drawing.SizeF")
+						print (GenerateNSValue ("SizeFValue"));
+					else if (propertyType == typeof (string))
+						print ("return NSString.FromHandle (value);");
+					else if (propertyType == typeof (NSString))
+						print ("return new NSString (value);");
+					else if (propertyType == typeof (string [])){
+						print ("return NSArray.StringArrayFromHandle (value);");
+					} else {
+						Type underlying = propertyType.IsEnum ? Enum.GetUnderlyingType (propertyType) : propertyType;
+						string cast = propertyType.IsEnum ? "(" + propertyType.FullName + ") " : "";
+						
+						if (underlying == typeof (int))
+							print (GenerateNSNumber (cast, "Int32Value"));
+						else if (underlying == typeof (long))
+							print (GenerateNSNumber (cast, "Int64Value"));
+						else if (underlying == typeof (short))
+							print (GenerateNSNumber (cast, "Int16Value"));
+						else if (underlying == typeof (byte))
+							print (GenerateNSNumber (cast, "ByteValue"));
+						else if (underlying == typeof (bool))
+							print (GenerateNSNumber (cast, "BoolValue"));
+						else
+							throw new BindingException (1011, true, "Do not know how to extract type {0}/{1} from an NSDictionary", propertyType, underlying);
+					}
+				}
+				indent -= 2;
+				print ("\t}\n}\n");
+			}
+
+			indent--; print ("}");
+			indent--; print ("}");
+		}
+		sw.Close ();
+	}
+	
+		
 	public void DumpChildren (int level, GeneratedType gt)
 	{
 		string prefix = new string ('\t', level);
@@ -1347,6 +1655,22 @@ public class Generator {
 			DumpChildren (level+1, c);
 	}
 	
+	// this attribute allows the linker to be more clever in removing unused code in bindings - without risking breaking user code
+	// only generate those for monotouch now since we can ensure they will be linked away before reaching the devices
+	public void GeneratedCode (StreamWriter sw, int tabs)
+	{
+#if !MONOMAC
+		for (int i=0; i < tabs; i++)
+			sw.Write ('\t');
+		sw.WriteLine ("[CompilerGenerated]");
+#endif
+	}
+	
+	public void print_generated_code ()
+	{
+		GeneratedCode (sw, indent);
+	}
+
 	public void print (string format)
 	{
 		print (sw, format);
@@ -1484,6 +1808,7 @@ public class Generator {
 	string [] implicit_ns = new string [] {
 		"System", 
 		"System.Drawing", 
+		"System.Runtime.CompilerServices",
 		"System.Runtime.InteropServices",
 #if MONOMAC
 		"MonoMac.CoreFoundation",
@@ -1519,22 +1844,32 @@ public class Generator {
 		print (w, "//\n// Auto-generated from generator.cs, do not edit\n//");
 		print (w, "// We keep references to objects, so warning 414 is expected\n");
 		print (w, "#pragma warning disable 414\n");
-		print (w, from ns in implicit_ns select "using " + ns + ";\n");
+		print (w, from ns in implicit_ns select "using " + ns + ";");
+		print (w, "");
 	}
 
 	void GenerateInvoke (bool stret, bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static)
 	{
 		string target_name = "this";
-
+		string handle = supercall ? ".SuperHandle" : ".Handle";
+		
 		// If we have supercall == false, we can be a Bind methdo that has a [Target]
 		if (supercall == false && !is_static){
 			foreach (var pi in mi.GetParameters ()){
 				if (IsTarget (pi)){
 					if (pi.ParameterType == typeof (string)){
-						if (new MarshalInfo (pi).PlainString){
-							Console.WriteLine ("Trying to use a string as a [Target]");
+						var mai = new MarshalInfo (mi, pi);
+						
+						if (mai.PlainString)
+							ErrorHelper.Show (new BindingException (1101, false, "Trying to use a string as a [Target]"));
+
+						if (mai.ZeroCopyStringMarshal){
+							target_name = "(IntPtr)(&_s" + pi.Name + ")";
+							handle = "";
+						} else {
+							target_name = "ns" + pi.Name;
+							handle = "";
 						}
-						target_name = "ns" + pi.Name;
 					} else
 						target_name = pi.Name;
 					break;
@@ -1551,10 +1886,11 @@ public class Generator {
 			sig = MessagingNS + ".Messaging." + sig;
 		
 		if (stret){
+			string ret_val = HasAttribute (mi, typeof (AlignAttribute)) ? "ret" : "out ret";
 			if (is_static)
-				print ("{0} (out ret, class_ptr, {3}{4});", sig, target_name, supercall ? "Super" : "", selector, args);
+				print ("{0} ({5}, class_ptr, {3}{4});", sig, "/*unusued*/", "/*unusued*/", selector, args, ret_val);
 			else
-				print ("{0} (out ret, {1}.{2}Handle, {3}{4});", sig, target_name, supercall ? "Super" : "", selector, args);
+				print ("{0} ({5}, {1}{2}, {3}{4});", sig, target_name, handle, selector, args, ret_val);
 		} else {
 			bool returns = mi.ReturnType != typeof (void) && mi.Name != "Constructor";
 
@@ -1596,13 +1932,13 @@ public class Generator {
 				print ("{0}{1}{2} (class_ptr, {5}{6}){7};",
 				       returns ? (assign_to_temp ? "ret = " : "return ") : "",
 				       cast_a, sig, target_name, 
-				       supercall ? "Super" : "",
+				       "/*unusued3*/", //supercall ? "Super" : "",
 				       selector, args, cast_b);
 			else
-				print ("{0}{1}{2} ({3}.{4}Handle, {5}{6}){7};",
+				print ("{0}{1}{2} ({3}{4}, {5}{6}){7};",
 				       returns ? (assign_to_temp ? "ret = " : "return ") : "",
-				       cast_a, sig, target_name, 
-				       supercall ? "Super" : "",
+				       cast_a, sig, target_name,
+				       handle,
 				       selector, args, cast_b);
 		}
 	}
@@ -1664,12 +2000,87 @@ public class Generator {
 		MarkRetDirty    = 0x5,
 		StoreRet        = 0x7,
 	}
+
+	public enum ThreadCheck {
+		Off,
+		On,
+	}
+	
+	//
+	// generates the code to marshal a string from C# to Objective-C:
+	//
+	// @probe_null: determines whether null is allowed, and
+	// whether we need to generate code to handle this
+	//
+	// @must_copy: determines whether to create a new NSString, necessary
+	// for NSString properties that are flagged with "retain" instead of "copy"
+	//
+	// @prefix: prefix to prepend on each line
+	//
+	// @property: the name of the property
+	//
+	public string GenerateMarshalString (bool probe_null, bool must_copy)
+	{
+		if (must_copy){
+#if false
+			if (probe_null)
+				return "var ns{0} = {0} == null ? null : new NSString ({0});\n";
+			else
+				return "var ns{0} = new NSString ({0});\n";
+#else
+			return "var ns{0} = NSString.CreateNative ({0});\n";
+#endif
+		}
+		return
+			CoreMessagingNS + ".NSStringStruct _s{0}; Console.WriteLine (\"" + CurrentMethod + ": Marshalling: {{0}}\", {0}); \n" +
+			"_s{0}.ClassPtr = " + CoreMessagingNS + ".NSStringStruct.ReferencePtr;\n" +
+			"_s{0}.Flags = 0x010007d1; // RefCount=1, Unicode, InlineContents = 0, DontFreeContents\n" +
+			"_s{0}.UnicodePtr = _p{0};\n" + 
+			"_s{0}.Length = " + (probe_null ? "{0} == null ? 0 : {0}.Length;" : "{0}.Length;\n");
+	}
+	
+	public string GenerateDisposeString (bool probe_null, bool must_copy)
+	{
+		if (must_copy){
+#if false
+			if (probe_null)
+				return "if (ns{0} != null)\n" + "\tns{0}.Dispose ();";
+			else
+				return "ns{0}.Dispose ();\n";
+#else
+			return "NSString.ReleaseNative (ns{0});\n";
+#endif
+		} else 
+			return "if (_s{0}.Flags != 0x010007d1) throw new Exception (\"String was retained, not copied\");";
+	}
+
+	List<string> CollectFastStringMarshalParameters (MethodInfo mi)
+	{
+		List<string> stringParameters = null;
+		
+		foreach (var pi in mi.GetParameters ()){
+ 			var mai = new MarshalInfo (mi, pi);
+
+ 			if (mai.ZeroCopyStringMarshal){
+ 				if (stringParameters == null)
+ 					stringParameters = new List<string>();
+ 				stringParameters.Add (pi.Name);
+ 			}
+ 		}
+		return stringParameters;
+	}
+
+	string CurrentMethod;
+	
 	//
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options)
+	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck)
 	{
+		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
+		
+		bool needs_thread_check = ThreadProtection && type_needs_thread_checks && threadCheck == ThreadCheck.On;
 		string selector = SelectorField (sel);
 		var args = new StringBuilder ();
 		var convs = new StringBuilder ();
@@ -1678,26 +2089,29 @@ public class Generator {
 
 		indent++;
 
+		if (needs_thread_check)
+			print ("global::MonoTouch.UIKit.UIApplication.EnsureUIThread ();");
+		
 		Inject (mi, typeof (PrologueSnippetAttribute));
 
+		// Collect all strings that can be fast-marshalled
+		List<string> stringParameters = CollectFastStringMarshalParameters (mi);
+		
 		foreach (var pi in mi.GetParameters ()){
-			MarshalInfo mai = new MarshalInfo (pi);
+			MarshalInfo mai = new MarshalInfo (mi, pi);
 
 			if (!IsTarget (pi)){
 				// Construct invocation
 				args.Append (", ");
-				args.Append (MarshalParameter (pi, null_allowed_override));
+				args.Append (MarshalParameter (mi, pi, null_allowed_override));
 			}
 
 			// Construct conversions
 			if (mai.Type == typeof (string) && !mai.PlainString){
-				if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
-					convs.AppendFormat ("var ns{0} = {0} == null ? null : new NSString ({0});\n", pi.Name);
-					disposes.AppendFormat ("if (ns{0} != null)\n\tns{0}.Dispose ();", pi.Name);
-				} else {
-					convs.AppendFormat ("var ns{0} = new NSString ({0});\n", pi.Name);
-					disposes.AppendFormat ("ns{0}.Dispose ();\n", pi.Name);
-				}
+				bool probe_null = null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute));
+
+				convs.AppendFormat (GenerateMarshalString (probe_null, !mai.ZeroCopyStringMarshal), pi.Name);
+				disposes.AppendFormat (GenerateDisposeString (probe_null, !mai.ZeroCopyStringMarshal), pi.Name);
 			}
 
 			if (mai.Type.IsArray){
@@ -1756,7 +2170,11 @@ public class Generator {
 				byRefPostProcessing.AppendLine();
 				byRefPostProcessing.AppendFormat("IntPtr {0}Value = Marshal.ReadIntPtr({0}Ptr);", pi.Name);
 				byRefPostProcessing.AppendLine();
-				byRefPostProcessing.AppendFormat("{0} = {0}Value != IntPtr.Zero ? ({1})Runtime.GetNSObject({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
+				if (mai.Type.GetElementType () == typeof (string)){
+					byRefPostProcessing.AppendFormat("{0} = {0}Value != IntPtr.Zero ? NSString.FromHandle ({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
+				} else {
+					byRefPostProcessing.AppendFormat("{0} = {0}Value != IntPtr.Zero ? ({1})Runtime.GetNSObject({0}Value) : null;", pi.Name, mai.Type.Name.Replace("&", ""));
+				}
 				byRefPostProcessing.AppendLine();
 				byRefPostProcessing.AppendFormat("Marshal.FreeHGlobal({0}Ptr);", pi.Name);
 				byRefPostProcessing.AppendLine();
@@ -1787,10 +2205,17 @@ public class Generator {
 			}
 		}
 
+ 		if (stringParameters != null){
+ 			print ("fixed (char * {0}){{",
+ 			       stringParameters.Select (name => "_p" + name + " = " + name).Aggregate ((first,second) => first + ", " + second));
+ 			indent++;
+ 		}
+
 		if (convs.Length > 0)
 			print (sw, convs.ToString ());
 
 		Inject (mi, typeof (PreSnippetAttribute));
+		AlignAttribute align = GetAttribute (mi, typeof (AlignAttribute)) as AlignAttribute;
 		bool has_postget = HasAttribute (mi, typeof (PostGetAttribute));
 		bool use_temp_return  =
 			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
@@ -1803,7 +2228,11 @@ public class Generator {
 		if (use_temp_return) {
 			if (mi.ReturnType.IsSubclassOf (typeof (Delegate)))
 				print ("BlockLiteral *ret;");
-			else
+			else if (align != null) {
+				print ("{0} ret_real;", FormatType (mi.DeclaringType, mi.ReturnType));
+				print ("IntPtr ret_alloced = Marshal.AllocHGlobal (sizeof ({0}) + {1});", FormatType (mi.DeclaringType, mi.ReturnType), align.Align);
+				print ("IntPtr ret = new IntPtr (((ret_alloced.ToInt32 () + {0}) >> {1}) << {1});", align.Align - 1, align.Bits);
+			} else
 				print ("{0} ret;", FormatType (mi.DeclaringType, mi.ReturnType)); //  = new {0} ();"
 		}
 		
@@ -1873,11 +2302,18 @@ public class Generator {
 				print ("return null;");
 				indent--;
 				print ("return ({0}) (ret->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (ret->global_handle).Target : GCHandle.FromIntPtr (ret->local_handle).Target);", FormatType (mi.DeclaringType, mi.ReturnType));
+			} else if (align != null) {
+				print ("unsafe {{ ret_real = *({0} *) ret; }}", FormatType (mi.DeclaringType, mi.ReturnType));
+				print ("Marshal.FreeHGlobal (ret_alloced);");
+				print ("return ret_real;");
 			} else {
 				print ("return ret;");
 			}
 		}
-
+		if (stringParameters != null){
+			indent--;
+			print ("}");
+		}
 		indent--;
 	}
 
@@ -1923,7 +2359,7 @@ public class Generator {
 	}
 
 	bool DoesPropertyNeedBackingField (PropertyInfo pi) {
-		return DoesTypeNeedBackingField (pi.PropertyType);
+		return DoesTypeNeedBackingField (pi.PropertyType) && !HasAttribute (pi, typeof (TransientAttribute));
 	}
 	
 	bool DoesPropertyNeedDirtyCheck (PropertyInfo pi, ExportAttribute ea) {
@@ -1953,6 +2389,7 @@ public class Generator {
 			is_unsafe = true;
 
 		if (wrap != null){
+			print_generated_code ();
 			print ("{0} {1}{2}{3}{4} {5} {{",
 			       is_public ? "public" : "internal",
 			       is_unsafe ? "unsafe " : "",
@@ -1972,7 +2409,8 @@ public class Generator {
 
 		string var_name = null;
 				
-		if (DoesPropertyNeedBackingField (pi)) {
+		// [Model] has properties that only throws, so there's no point in adding unused backing fields
+		if (!is_model && DoesPropertyNeedBackingField (pi)) {
 			var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
 
 			if (is_thread_static)
@@ -1983,6 +2421,7 @@ public class Generator {
 				instance_fields_to_clear_on_dispose.Add (var_name);
 			}
 		}
+		print_generated_code ();
 		print ("{0} {1}{2}{3}{4} {5} {{",
 		       is_public ? "public" : "internal",
 		       is_unsafe ? "unsafe " : "",
@@ -1992,6 +2431,7 @@ public class Generator {
 		       pi.Name);
 		indent++;
 
+		ThreadCheck threadCheck = HasAttribute (pi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		if (pi.CanRead){
 			var getter = pi.GetGetMethod ();
 			var ba = GetBindAttribute (getter);
@@ -2011,14 +2451,14 @@ public class Generator {
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					if (!DoesPropertyNeedBackingField (pi)) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck);
 					} else if (is_static) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck);
 					} else {
 						if (DoesPropertyNeedDirtyCheck (pi, export))
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck);
 						else
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck);
 					}
 				}
 				print ("}\n");
@@ -2050,7 +2490,7 @@ public class Generator {
 				if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None);
+					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck);
 					if (!is_static && DoesPropertyNeedBackingField (pi)) {
 						if (DoesPropertyNeedDirtyCheck (pi, export)) {
 #if !MONOMAC
@@ -2086,10 +2526,8 @@ public class Generator {
 		object [] attr = mi.GetCustomAttributes (typeof (ExportAttribute), true);
 		if (attr.Length != 1){
 			attr = mi.GetCustomAttributes (typeof (BindAttribute), true);
-			if (attr.Length != 1){
-				Console.WriteLine ("No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
-				Environment.Exit (1);
-			}
+			if (attr.Length != 1)
+				throw new BindingException (1012, true, "No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
 			BindAttribute ba = (BindAttribute) attr [0];
 			selector = ba.Selector;
 			virtual_method = ba.Virtual;
@@ -2110,17 +2548,20 @@ public class Generator {
 		if (is_static)
 			virtual_method = false;
 
+		ThreadCheck threadCheck = HasAttribute (mi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		bool is_abstract = HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
 		bool is_public = !HasAttribute (mi, typeof (InternalAttribute));
 		bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
 		bool is_new = HasAttribute (mi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
 		bool is_unsafe = false;
+		bool is_autorelease = HasAttribute (mi, typeof (AutoreleaseAttribute));
 
 		foreach (ParameterInfo pi in mi.GetParameters ())
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
 				is_unsafe = true;
 
+		print_generated_code ();
 		print ("{0} {1}{2}{3}{4}{5}",
 		       is_public ? "public" : "internal",
 		       is_unsafe ? "unsafe " : "",
@@ -2136,8 +2577,17 @@ public class Generator {
 					
 			if (is_model)
 				print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
-			else
-				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None);
+			else {
+				if (is_autorelease) {
+					indent++;
+					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
+				}
+				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck);
+				if (is_autorelease) {
+					print ("}");
+					indent--;
+				}
+			}
 			print ("}\n");
 		}
 	}
@@ -2149,11 +2599,12 @@ public class Generator {
 			return ((BindAttribute) bindOnType [0]).Selector;
 		else
 			return type.Name;
-		
 	}
-	
+
 	public void Generate (Type type)
 	{
+		type_wants_zero_copy = HasAttribute (type, typeof (ZeroCopyStringsAttribute)) || ZeroCopyStrings;
+		type_needs_thread_checks = UINamespaces.Contains (type.Namespace) && !HasAttribute (type, typeof (ThreadSafeAttribute));
 		string TypeName = GetGeneratedTypeName (type);
 
 		string dir = Path.Combine (basedir, type.Namespace.Replace (MainPrefix + ".", ""));
@@ -2193,7 +2644,7 @@ public class Generator {
 			if (is_model)
 				print ("[Model]");
 
-			print ("public {0}partial class {1} {2} {{",
+			print ("public unsafe {0}partial class {1} {2} {{",
 			       need_abstract.ContainsKey (type) ? "abstract " : "",
 			       TypeName,
 			       base_type != typeof (object) && TypeName != "NSObject" ? ": " + FormatType (type, base_type) : "");
@@ -2202,10 +2653,7 @@ public class Generator {
 			
 			if (!is_model){
 				foreach (var ea in selectors [type]){
-					if (external || IsBtouch)
-						print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
-					else
-						print ("static IntPtr {0} = Selector.sel_registerName (\"{1}\");", SelectorField (ea), ea);
+					print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 				}
 			}
 			print ("");
@@ -2220,29 +2668,36 @@ public class Generator {
 				
 				if (TypeName != "NSObject"){
 					if (external) {
-						if (!disable_default_ctor)
+						if (!disable_default_ctor) {
+							GeneratedCode (sw, 2);
 							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
 							      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix, ctor_visibility);
+						}
 					} else {
-						if (!disable_default_ctor)
+						if (!disable_default_ctor) {
+							GeneratedCode (sw, 2);
 							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
 								      TypeName,
 								      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
 								      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
 								      MainPrefix, ctor_visibility);
+						}
+						GeneratedCode (sw, 2);
 						sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
 							      TypeName,
 							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
 							      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
 							      MainPrefix);
 					}
+					GeneratedCode (sw, 2);
 					sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
+					GeneratedCode (sw, 2);
 					sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
 				}
 			}
 			
-			foreach (var mi in type.GatherMethods (BindingFlags.Public | BindingFlags.Instance)){
-				if (mi.IsSpecialName)
+			foreach (var mi in GetTypeContractMethods (type)){
+				if (mi.IsSpecialName || (mi.Name == "Constructor" && type != mi.DeclaringType))
 					continue;
 
 #if RETAIN_AUDITING
@@ -2263,12 +2718,16 @@ public class Generator {
 			}
 
 			var field_exports = new List<PropertyInfo> ();
+			var notifications = new List<PropertyInfo> ();
 			foreach (var pi in GetTypeContractProperties (type)){
 				if (HasAttribute (pi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
 
 				if (HasAttribute (pi, typeof (FieldAttribute))){
 					field_exports.Add (pi);
+
+					if (HasAttribute (pi, typeof (NotificationAttribute)))
+						notifications.Add (pi);
 					continue;
 				}
 
@@ -2295,11 +2754,19 @@ public class Generator {
 								break;
 							}
 						} 
-					} else
-						library_name = type.Namespace.Substring (MainPrefix.Length+1);
+					} else {
+						library_name = type.Namespace;
+						// note: not every binding namespace will start with MainPrefix (e.g. MonoTouch.)
+						if (library_name.StartsWith (MainPrefix))
+							library_name = library_name.Substring (MainPrefix.Length + 1);
+					}
 
 					if (!libraries.Contains (library_name)) {
-						print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+						if (BindThirdPartyLibrary && library_name == "__Internal") {
+							print ("static IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
+						} else {
+							print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+						}
 						libraries.Add (library_name);
 					}
 
@@ -2334,10 +2801,9 @@ public class Generator {
 						print ("return Dlfcn.GetIntPtr ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else {
 						if (field_pi.PropertyType == typeof (string))
-							Console.WriteLine ("Unsupported type for Fields (string), you probably meant NSString");
+							throw new BindingException (1013, true, "Unsupported type for Fields (string), you probably meant NSString");
 						else
-							Console.WriteLine ("Unsupported type for Fields: {0}", fieldTypeName);
-						Environment.Exit (1);
+							throw new BindingException (1014, true, "Unsupported type for Fields: {0}", fieldTypeName);
 					}
 					
 					indent--;
@@ -2351,10 +2817,8 @@ public class Generator {
 			var delegateTypes = new Dictionary<string,MethodInfo> ();
 
 			if (bta != null && bta.Events != null){
-				if (bta.Delegates == null){
-					Console.WriteLine ("In class {0} You specified the Events property, but did not bind those to names with Delegates", type.FullName);
-					Environment.Exit (1);
-				}
+				if (bta.Delegates == null)
+					throw new BindingException (1015, true, "In class {0} You specified the Events property, but did not bind those to names with Delegates", type.FullName);
 				
 				print ("//");
 				print ("// Events and properties from the delegate");
@@ -2407,10 +2871,8 @@ public class Generator {
 						var pars = mi.GetParameters ();
 						int minPars = bta.Singleton ? 0 : 1;
 
-						if (pars.Length < minPars){
-							Console.WriteLine ("Error, the delegate method {0}.{1} needs to take at least one parameter", dtype.FullName, mi.Name);
-							Environment.Exit (1);
-						}
+						if (pars.Length < minPars)
+							throw new BindingException (1003, true, "The delegate method {0}.{1} needs to take at least one parameter", dtype.FullName, mi.Name);
 						
 						var sender = pars.Length == 0 ? "this" : pars [0].Name;
 
@@ -2431,7 +2893,9 @@ public class Generator {
 						
 						if (mi.ReturnType == typeof (void)){
 							string eaname;
-								
+
+							if (debug)
+								print ("Console.WriteLine (\"Method {0}.{1} invoked\");", dtype.Name, mi.Name);
 							if (pars.Length != minPars){
 								eaname = GetEventArgName (mi);
 								if (!generatedEvents.ContainsKey (eaname) && !eventArgTypes.ContainsKey (eaname)){
@@ -2474,6 +2938,8 @@ public class Generator {
 								generatedDelegates.Add (delname, null);
 								delegateTypes.Add (delname, mi);
 							}
+							if (debug)
+								print ("Console.WriteLine (\"Method {0}.{1} invoked\");", dtype.Name, mi.Name);
 							
 							print ("if ({0} != null)", PascalCase (mi.Name));
 							print ("	return {0} ({1}{2});",
@@ -2482,7 +2948,7 @@ public class Generator {
 
 							var def = GetDefaultValue (mi);
 							if ((def is string) && ((def as string) == "null") && mi.ReturnType.IsValueType)
-								print ("throw new Exception ();");
+								print ("throw new Exception (\"No event handler has been added to the {0} event.\");", mi.Name);
 							else {
 								foreach (var j in pars){
 									if (j.ParameterType.IsByRef && j.IsOut){
@@ -2537,14 +3003,32 @@ public class Generator {
 			// Now the trampolines
 			//
 			foreach (var ti in trampolines.Values){
-				print ("internal delegate void {0} ({1});", ti.DelegateName, ti.Parameters);
+				print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
 				print ("static {0} {1} = new {0} ({2});", ti.DelegateName, ti.StaticName, ti.TrampolineName);
 				print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
-				print ("static unsafe void {0} ({1}) {{", ti.TrampolineName, ti.Parameters);
+				print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
 				indent++;
 				print ("var descriptor = (BlockLiteral *) block;");
 				print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
-				print ("del ({0});", ti.Invoke);
+				bool is_void = ti.ReturnType == "void";
+				// FIXME: right now we only support 'null' when the delegate does not return a value
+				// otherwise we will need to know the default value to be returned (likely uncommon)
+				if (is_void) {
+					print ("if (del != null)");
+					indent++;
+					print ("del ({0});", ti.Invoke);
+					indent--;
+					if (ti.Clear.Length > 0){
+						print ("else");
+						indent++;
+						print (ti.Clear);
+						indent--;
+					}
+
+				} else {
+					print ("{0} retval = del ({1});", ti.DelegateReturnType, ti.Invoke);
+					print (ti.ReturnFormat, "retval");
+				}
 				indent--;
 				print ("}");
 				print ("");
@@ -2618,7 +3102,31 @@ public class Generator {
 				print ("}");
 				print ("");
 			}
+			//
+			// Notification extensions
+			//
 			indent--;
+			if (notifications.Count > 0){
+				print ("\n");
+				print ("//");
+				print ("// Notifications");
+				print ("//");
+			
+				print ("public static partial class Notifications {\n");
+				foreach (var property in notifications){
+					string notification_name = GetNotificationName (property);
+					Type event_args_type = GetNotificationArgType (property);
+					string event_name = event_args_type == null ? "NSNotificationEventArgs" : event_args_type.FullName;
+
+					if (event_args_type != null)
+						notification_event_arg_types [event_args_type] = event_args_type;
+					print ("\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_name);
+					print ("\t{");
+					print ("\t\treturn NSNotificationCenter.DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", property.Name, event_name);
+					print ("\t}");
+				}
+				print ("\n}");
+			}
 
 			print ("}} /* class {0} */", TypeName);
 
@@ -2715,9 +3223,23 @@ public class Generator {
 			indent--;
 			print ("}");
 		}
-
 	}
 
+	string GetNotificationName (PropertyInfo pi)
+	{
+		// TODO: fetch the NotificationAttribute, see if there is an override there.
+		var name = pi.Name;
+		if (name.EndsWith ("Notification"))
+			return name.Substring (0, name.Length-"Notification".Length);
+		return name;
+	}
+
+	Type GetNotificationArgType (PropertyInfo pi)
+	{
+		object [] a = pi.GetCustomAttributes (typeof (NotificationAttribute), true);
+		return (a [0] as NotificationAttribute).Type;
+	}
+	
 	//
 	// Support for the automatic delegate/event generation
 	//
@@ -2786,15 +3308,12 @@ public class Generator {
 			return "EventArgs";
 		
 		var a = GetAttribute (mi, typeof (EventArgsAttribute));
-		if (a == null){
-			Console.WriteLine ("The delegate method {0}.{1} is missing the [EventArgs] attribute (has {2} parameters)", mi.DeclaringType.FullName, mi.Name, mi.GetParameters ().Length);
-			throw new Exception ();
-		}
+		if (a == null)
+			throw new BindingException (1004, true, "The delegate method {0}.{1} is missing the [EventArgs] attribute (has {2} parameters)", mi.DeclaringType.FullName, mi.Name, mi.GetParameters ().Length);
+
 		var ea = (EventArgsAttribute) a;
-		if (ea.ArgName.EndsWith ("EventArgs")){
-			Console.WriteLine ("EventArgs in {0}.{1} attribute should not include the text `EventArgs' at the end", mi.DeclaringType.FullName, mi.Name);
-			throw new Exception ();
-		}
+		if (ea.ArgName.EndsWith ("EventArgs"))
+			throw new BindingException (1005, true, "EventArgs in {0}.{1} attribute should not include the text `EventArgs' at the end", mi.DeclaringType.FullName, mi.Name);
 		
 		if (ea.SkipGeneration){
 			skipGeneration [ea.FullName ? ea.ArgName : ea.ArgName + "EventArgs"] = true;
@@ -2817,11 +3336,10 @@ public class Generator {
 		if (a != null)
 			return ((DelegateNameAttribute) a).Name;
 		a = GetAttribute (mi, typeof (EventArgsAttribute));
-		if (a == null){
-			Console.WriteLine ("The delegate method {0}.{1} is missing the [DelegateName] attribute (or EventArgs)", mi.DeclaringType.FullName, mi.Name);
-			throw new Exception ();
-		}
-		Console.WriteLine ("WARNING: Using the deprecated EventArgs for a delegate signature in {0}.{1}, please use DelegateName instead", mi.DeclaringType.FullName, mi.Name);
+		if (a == null)
+			throw new BindingException (1006, true, "The delegate method {0}.{1} is missing the [DelegateName] attribute (or EventArgs)", mi.DeclaringType.FullName, mi.Name);
+
+		ErrorHelper.Show (new BindingException (1102, false, "Using the deprecated EventArgs for a delegate signature in {0}.{1}, please use DelegateName instead", mi.DeclaringType.FullName, mi.Name));
 		return ((EventArgsAttribute) a).ArgName;
 	}
 	
@@ -2835,14 +3353,13 @@ public class Generator {
 				return fvfa.Argument;
 			}
 			
-			Console.WriteLine ("The delegate method {0}.{1} is missing the [DefaultValue] attribute", mi.DeclaringType.FullName, mi.Name);
-			Environment.Exit (1);
+			throw new BindingException (1016, true, "The delegate method {0}.{1} is missing the [DefaultValue] attribute", mi.DeclaringType.FullName, mi.Name);
 		}
 		var def = ((DefaultValueAttribute) a).Default;
 		if (def == null)
 			return "null";
 
-		if (def.GetType ().FullName == "System.Drawing.RectangleF")
+		if (def == typeof (System.Drawing.RectangleF))
 			return "System.Drawing.RectangleF.Empty";
 		
 		if (def is bool)
@@ -2884,6 +3401,10 @@ public class Generator {
 				return "bool";
 			}
 		}
+		
+		if (t == typeof (void))
+			return "void";
+
 		string ns = t.Namespace;
 		if (implicit_ns.Contains (ns))
 			return t.Name;

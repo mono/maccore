@@ -24,7 +24,7 @@ using System;
 using System.Reflection;
 using System.Collections;
 using System.Runtime.InteropServices;
-
+using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
@@ -71,12 +71,40 @@ namespace MonoMac.Foundation {
 	public partial class NSString : NSObject {
 		static IntPtr selUTF8String = Selector.sel_registerName ("UTF8String");
 		static IntPtr selInitWithUTF8String = Selector.sel_registerName ("initWithUTF8String:");
+		static IntPtr selInitWithCharactersLength = Selector.sel_registerName ("initWithCharacters:length:");
+
+#if COREBUILD
+		static IntPtr class_ptr = Class.GetHandle ("NSString");
+#endif
 		
 #if GENERATOR && !MONOMAC
 		public NSString (IntPtr handle) : base (handle) {
 		}
 #endif
 
+		public static IntPtr CreateNative (string str)
+		{
+			if (str == null)
+				return IntPtr.Zero;
+			
+			unsafe {
+				fixed (char *ptrFirstChar = str){
+					var handle = Messaging.intptr_objc_msgSend (class_ptr, Selector.Alloc);
+					handle = Messaging.intptr_objc_msgsend_intptr_int (handle, selInitWithCharactersLength, (IntPtr) ptrFirstChar, str.Length);
+					return handle;
+				}
+			}
+		}
+
+		public static void ReleaseNative (IntPtr handle)
+		{
+			if (handle == IntPtr.Zero)
+				return;
+			Messaging.void_objc_msgSend (handle, Selector.Release);
+		}
+
+	
+#if false
 		public NSString (string str) {
 			if (str == null)
 				throw new ArgumentNullException ("str");
@@ -87,7 +115,20 @@ namespace MonoMac.Foundation {
 
 			Marshal.FreeHGlobal (bytes);
 		}
+#else
+	
+		public NSString (string str) {
+			if (str == null)
+				throw new ArgumentNullException ("str");
 
+			unsafe {
+				fixed (char *ptrFirstChar = str){
+					Handle = Messaging.intptr_objc_msgsend_intptr_int (Handle, selInitWithCharactersLength, (IntPtr) ptrFirstChar, str.Length);
+				}
+			}
+		}
+#endif
+	
 		public unsafe override string ToString ()
 		{
 			if (Handle == IntPtr.Zero)
@@ -153,5 +194,13 @@ namespace MonoMac.Foundation {
 		{
 			return (int) this.Handle;
 		}
+#if !MONOMAC && !COREBUILD
+		[Obsolete ("Use the version with a `ref float actualFontSize`")]
+		public System.Drawing.SizeF DrawString (System.Drawing.PointF point, float width, MonoTouch.UIKit.UIFont font, float minFontSize, float actualFontSize, MonoTouch.UIKit.UILineBreakMode breakMode, MonoTouch.UIKit.UIBaselineAdjustment adjustment)
+		{
+			float temp = actualFontSize;
+			return DrawString (point, width, font, minFontSize, ref temp, breakMode, adjustment);
+		}
+#endif
 	}
 }

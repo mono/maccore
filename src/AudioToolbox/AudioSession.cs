@@ -386,7 +386,9 @@ namespace MonoMac.AudioToolbox {
 		
 		static NSDictionary AudioRouteDescription {
 			get {
-				return new NSDictionary ((IntPtr) GetInt (AudioSessionProperty.AudioRouteDescription));
+				NSDictionary dict = new NSDictionary ((IntPtr) GetInt (AudioSessionProperty.AudioRouteDescription));
+				dict.Release ();
+				return dict;
 			}
 		}
 

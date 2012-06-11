@@ -31,17 +31,15 @@ namespace MonoMac.ObjCRuntime {
 				case 'S':
 					return typeof (ushort);
 				case 'i':
+				case 'l':
 					return typeof (int);
 				case 'I':
-					return typeof (uint);
-				case 'l':
-					return typeof (long);
 				case 'L':
-					return typeof (ulong);
+					return typeof (uint);
 				case 'q':
-					return typeof (Int64);
+					return typeof (long);
 				case 'Q':
-					return typeof (UInt64);
+					return typeof (ulong);
 				case 'f':
 					return typeof (float);
 				case 'd':
@@ -104,10 +102,8 @@ namespace MonoMac.ObjCRuntime {
 			if (type == typeof (ushort)) return "S";
 			if (type == typeof (int)) return "i";
 			if (type == typeof (uint)) return "I";
-			if (type == typeof (long)) return "l";
-			if (type == typeof (ulong)) return "L";
-			if (type == typeof (Int64)) return "q";
-			if (type == typeof (Int64)) return "Q";
+			if (type == typeof (long)) return "q";
+			if (type == typeof (ulong)) return "Q";
 			if (type == typeof (float)) return "f";
 			if (type == typeof (double)) return "d";
 			if (type == typeof (bool)) return "B";

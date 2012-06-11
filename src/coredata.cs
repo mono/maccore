@@ -14,10 +14,12 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreData
 {
 	[BaseType (typeof (NSPersistentStore))]
+	// Objective-C exception thrown.  Name: NSInternalInconsistencyException Reason: NSMappedObjectStore must be initialized with initWithPersistentStoreCoordinator:configurationName:URL:options
+	[DisableDefaultCtor]
 	public interface NSAtomicStore {
 
 		[Export ("initWithPersistentStoreCoordinator:configurationName:URL:options:")]
-		IntPtr Constructor (NSPersistentStoreCoordinator coordinator, string configurationName, NSUrl url, NSDictionary options);
+		IntPtr Constructor (NSPersistentStoreCoordinator coordinator, string configurationName, NSUrl url, [NullAllowed] NSDictionary options);
 
 		[Export ("load:")]
 		bool Load (out NSError error);
@@ -54,6 +56,8 @@ namespace MonoMac.CoreData
 
 	}
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: NSAtomicStoreCacheNodes must be initialized using initWithObjectID:(NSManagedObjectID *)
+	[DisableDefaultCtor]
 	public interface NSAtomicStoreCacheNode {
 
 		[Export ("initWithObjectID:")]
@@ -115,7 +119,7 @@ namespace MonoMac.CoreData
 		[Export ("name")]
 		string Name { get; set; }
 
-		[Export ("isAbstract")]
+		[Export ("Abstract")]
 		bool Abstract { [Bind("isAbstract")] get; set; }
 
 		[Export ("subentitiesByName")]
@@ -348,6 +352,9 @@ namespace MonoMac.CoreData
 	}
 
 	[BaseType (typeof (NSObject))]
+	// 'init' issues a warning: CoreData: error: Failed to call designated initializer on NSManagedObject class 'NSManagedObject' 
+	// then crash while disposing the instance
+	[DisableDefaultCtor]
 	public interface NSManagedObject {
 		[Export ("initWithEntity:insertIntoManagedObjectContext:")]
 		IntPtr Constructor (NSEntityDescription entity, NSManagedObjectContext context);
@@ -557,10 +564,10 @@ namespace MonoMac.CoreData
 		IntPtr Constructor (NSManagedObjectContextConcurrencyType ct);
 
 		[Export ("performBlock:")]
-		void Perform (NSAction action);
+		void Perform (/* non null */ NSAction action);
 
 		[Export ("performBlockAndWait:")]
-		void PerformAndWait (NSAction action);
+		void PerformAndWait (/* non null */ NSAction action);
 
 		[Export ("userInfo")]
 		NSMutableDictionary UserInfo { get; }
@@ -572,7 +579,10 @@ namespace MonoMac.CoreData
 		[Export ("parentContext")]
 		NSManagedObjectContext ParentContext { get; set; }
 	}
+
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -URIRepresentation cannot be sent to an abstract object of class NSManagedObjectID: Create a concrete instance!
+	[DisableDefaultCtor]
 	public interface NSManagedObjectID {
 
 		[Export ("entity")]
@@ -868,22 +878,71 @@ namespace MonoMac.CoreData
 		[Export ("tryLock")]
 		bool TryLock { get; }
 
+#if MONOMAC
 		[Obsolete("Deprecated in MAC OSX 10.5 and later")]
 		[Static, Export ("metadataForPersistentStoreWithURL:error:")]
 		NSDictionary MetadataForPersistentStoreWithUrl (NSUrl url, out NSError error);
-
+#endif
 		[Field ("NSSQLiteStoreType")]
 		NSString SQLiteStoreType { get; }
-		
+#if MONOMAC
 		[Field ("NSXMLStoreType")]
 		NSString XMLStoreType { get; }
-		
+#endif	
 		[Field ("NSBinaryStoreType")]
 		NSString BinaryStoreType { get; }
 		
 		[Field ("NSInMemoryStoreType")]
 		NSString InMemoryStoreType { get; }
-		
+
+		[Field ("NSStoreUUIDKey")]
+		NSString StoreUUIDKey { get; }
+
+		[Field ("NSAddedPersistentStoresKey")]
+		NSString AddedPersistentStoresKey { get; }
+
+		[Field ("NSRemovedPersistentStoresKey")]
+		NSString RemovedPersistentStoresKey { get; }
+
+		[Field ("NSUUIDChangedPersistentStoresKey")]
+		NSString UUIDChangedPersistentStoresKey { get; }
+
+		[Field ("NSReadOnlyPersistentStoreOption")]
+		NSString ReadOnlyPersistentStoreOption { get; }
+#if MONOMAC
+		[Field ("NSValidateXMLStoreOption")]
+		NSString ValidateXMLStoreOption { get; }
+#endif
+		[Field ("NSPersistentStoreTimeoutOption")]
+		NSString PersistentStoreTimeoutOption { get; }
+
+		[Field ("NSSQLitePragmasOption")]
+		NSString SQLitePragmasOption { get; }
+
+		[Field ("NSSQLiteAnalyzeOption")]
+		NSString SQLiteAnalyzeOption { get; }
+
+		[Field ("NSSQLiteManualVacuumOption")]
+		NSString SQLiteManualVacuumOption { get; }
+
+		[Field ("NSIgnorePersistentStoreVersioningOption")]
+		NSString IgnorePersistentStoreVersioningOption { get; }
+
+		[Field ("NSMigratePersistentStoresAutomaticallyOption")]
+		NSString MigratePersistentStoresAutomaticallyOption { get; }
+
+		[Field ("NSInferMappingModelAutomaticallyOption")]
+		NSString InferMappingModelAutomaticallyOption { get; }
+
+		[Field ("NSStoreModelVersionHashesKey")]
+		NSString StoreModelVersionHashesKey { get; }
+
+		[Field ("NSStoreModelVersionIdentifiersKey")]
+		NSString StoreModelVersionIdentifiersKey { get; }
+
+		[Field ("NSPersistentStoreOSCompatibility")]
+		NSString PersistentStoreOSCompatibility { get; }
+
 		[Field ("NSStoreTypeKey")]
 		NSString StoreTypeKey { get; }
 
@@ -902,6 +961,14 @@ namespace MonoMac.CoreData
 		NSString DidImportUbiquitousContentChangesNotification { get; }
 
 		
+		[Field ("NSPersistentStoreUbiquitousContentNameKey")]
+		NSString PersistentStoreUbiquitousContentNameKey { get; }
+
+		[Field ("NSPersistentStoreUbiquitousContentURLKey")]
+		NSString PersistentStoreUbiquitousContentUrlLKey { get; }
+
+		[Field ("NSPersistentStoreFileProtectionKey")]
+		NSString PersistentStoreFileProtectionKey { get; }
 	}
 
 	[BaseType (typeof (NSObject))]

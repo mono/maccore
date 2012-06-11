@@ -225,22 +225,22 @@ namespace MonoMac.CoreAnimation {
 		bool MasksToBounds { get; set; }
 
 		[Export ("convertPoint:fromLayer:")]
-		PointF ConvertPointFromLayer (PointF point, CALayer layer);
+		PointF ConvertPointFromLayer (PointF point, [NullAllowed] CALayer layer);
 		
 		[Export ("convertPoint:toLayer:")]
-		PointF ConvertPointToLayer (PointF point, CALayer layer);
+		PointF ConvertPointToLayer (PointF point, [NullAllowed] CALayer layer);
 		
 		[Export ("convertRect:fromLayer:")]
-		RectangleF ConvertRectfromLayer (RectangleF rect, CALayer layer);
+		RectangleF ConvertRectFromLayer (RectangleF rect, [NullAllowed] CALayer layer);
 		
 		[Export ("convertRect:toLayer:")]
-		RectangleF ConvertRectToLayer (RectangleF rect, CALayer layer);
+		RectangleF ConvertRectToLayer (RectangleF rect, [NullAllowed] CALayer layer);
 
 		[Export ("convertTime:fromLayer:")]
-		double ConvertTimeFromLayer (double rect, [NullAllowed] CALayer layer);
+		double ConvertTimeFromLayer (double timeInterval, [NullAllowed] CALayer layer);
 		
 		[Export ("convertTime:toLayer:")]
-		double ConvertTimeToLayer (double t, CALayer layer);
+		double ConvertTimeToLayer (double timeInterval, [NullAllowed] CALayer layer);
 
 		[Export ("hitTest:")]
 		CALayer HitTest (PointF p);
@@ -248,7 +248,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("containsPoint:")]
 		bool Contains (PointF p);
 
-		[Export ("contents", ArgumentSemantic.Retain)]
+		[Export ("contents", ArgumentSemantic.Retain), NullAllowed]
 		CGImage Contents { get; set; }
 
 #if MONOMAC
@@ -593,10 +593,10 @@ namespace MonoMac.CoreAnimation {
 		[Export ("layer"), New, Static]
 		CALayer Create ();
 
-		[Export ("path")]
+		[Export ("path")] [NullAllowed]
 		CGPath Path { get; set; }
 
-		[Export ("fillColor")]
+		[Export ("fillColor")] [NullAllowed]
 		CGColor FillColor { get; set; }
 
 		[Export ("fillRule", ArgumentSemantic.Copy)]
@@ -605,7 +605,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("lineCap", ArgumentSemantic.Copy)]
 		NSString LineCap { get; set; }
 
-		[Export ("lineDashPattern", ArgumentSemantic.Copy)]
+		[Export ("lineDashPattern", ArgumentSemantic.Copy)] [NullAllowed]
 		NSNumber [] LineDashPattern { get; set; }
 
 		[Export ("lineDashPhase")]
@@ -620,7 +620,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("miterLimit")]
 		float MiterLimit { get; set; }
 
-		[Export ("strokeColor")]
+		[Export ("strokeColor")] [NullAllowed]
 		CGColor StrokeColor { get; set; }
 
 		[Since (4,2)]
@@ -750,6 +750,8 @@ namespace MonoMac.CoreAnimation {
 
 	[BaseType (typeof (NSObject))]
 	[Model]
+	// protocol
+	[DisableDefaultCtor]
 	public interface CAAction {
 		[Export ("runActionForKey:object:arguments:")]
 		void RunAction (string eventKey, NSObject obj, NSDictionary arguments);
@@ -981,7 +983,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("animationDuration")]
 		double AnimationDuration { get; set; }
 	
-		[Static]
+		[Static, NullAllowed]
 		[Export ("animationTimingFunction")]
 		CAMediaTimingFunction AnimationTimingFunction { get; set; }
 	
@@ -998,7 +1000,7 @@ namespace MonoMac.CoreAnimation {
 		void SetValueForKey (NSObject anObject, NSString key);
 
 		[Since (4,0)]
-		[Static, Export ("completionBlock")]
+		[Static, Export ("completionBlock"), NullAllowed]
 		NSAction CompletionBlock { get; set; }
 
 		[Field ("kCATransactionAnimationDuration")]
@@ -1213,10 +1215,10 @@ namespace MonoMac.CoreAnimation {
 		[Export ("greenSpeed")]
 		float GreenSpeed { get; set;  }
 
-		[Export ("BlueSpeed")]
+		[Export ("blueSpeed")]
 		float BlueSpeed { get; set;  }
 
-		[Export ("AlphaSpeed")]
+		[Export ("alphaSpeed")]
 		float AlphaSpeed { get; set;  }
 
 		[Export ("contents")]
@@ -1357,7 +1359,7 @@ namespace MonoMac.CoreAnimation {
 		[Field ("kCAEmitterLayerOldestFirst")]
 		NSString RenderOldestFirst { get; }			
 
-		[Field ("kCAEmitterLayerOldestLastt")]
+		[Field ("kCAEmitterLayerOldestLast")]
 		NSString RenderOldestLast { get; }			
 
 		[Field ("kCAEmitterLayerBackToFront")]

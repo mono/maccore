@@ -290,6 +290,48 @@ namespace MonoMac.Foundation {
 			}
 		}
 
+		public override NSObject this [NSString key] {
+			get {
+				if (key == null)
+					throw new ArgumentNullException ("key");
+				return ObjectForKey (key);
+			}
+			set {
+				if (key == null)
+					throw new ArgumentNullException ("key");
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				if (IsDirectBinding) {
+					MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selSetObjectForKey_, value.Handle, key.Handle);
+				} else {
+					MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selSetObjectForKey_, value.Handle, key.Handle);
+				}
+			}
+		}
+
+		public override NSObject this [string key] {
+			get {
+				if (key == null)
+					throw new ArgumentNullException ("key");
+				using (var nss = new NSString (key)){
+					return ObjectForKey (nss);
+				}
+			}
+			set {
+				if (key == null)
+					throw new ArgumentNullException ("key");
+				if (value == null)
+					throw new ArgumentNullException ("value");
+				using (var nss = new NSString (key)){
+					if (IsDirectBinding) {
+						MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selSetObjectForKey_, value.Handle, nss.Handle);
+					} else {
+						MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selSetObjectForKey_, value.Handle, nss.Handle);
+					}
+				}
+			}
+		}
+
 		ICollection<NSObject> IDictionary<NSObject, NSObject>.Keys {
 			get {return Keys;}
 		}

@@ -210,5 +210,23 @@ namespace MonoMac.CoreGraphics {
 				return CGColorSpaceGetNumberOfComponents (handle);
 			}
 		}
+		
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static /*size_t*/ IntPtr CGColorSpaceGetColorTableCount (IntPtr /* CGColorSpaceRef */ space);
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGColorSpaceGetColorTable (IntPtr /* CGColorSpaceRef */ space, byte[] table);
+		
+		static byte[] Empty = new byte [0];
+		
+		public byte[] GetColorTable ()
+		{
+			int n = CGColorSpaceGetColorTableCount (handle).ToInt32 ();
+			if (n == 0)
+				return Empty;
+			
+			byte[] table = new byte [n * GetBaseColorSpace ().Components];
+			CGColorSpaceGetColorTable (handle, table);
+			return table;
+		}
 	}
 }

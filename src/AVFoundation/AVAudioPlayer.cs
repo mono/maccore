@@ -41,7 +41,7 @@ namespace MonoMac.AVFoundation {
 				var data = dict.ObjectForKey (AVAudioPlayer.AVChannelLayoutKey) as NSData;
 				if (data == null)
 					return new AudioChannelLayout ();
-				return AudioFile.AudioChannelLayoutFromHandle (data.Bytes);
+				return AudioChannelLayout.FromHandle (data.Bytes);
 			}
 		}
 
@@ -151,6 +151,12 @@ namespace MonoMac.AVFoundation {
 			get {
 				return new AVAudioPlayerSettings (_Settings);
 			}
+		}
+
+		[Obsolete ("This method was incorrectly named, use PlayAtTime instead")]
+		public bool PlayAtTimetime (double time)
+		{
+			return PlayAtTime (time);
 		}
 	}
 }

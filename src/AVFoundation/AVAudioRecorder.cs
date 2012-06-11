@@ -56,8 +56,8 @@ namespace MonoMac.AVFoundation {
 			dict.SetObject (new NSNumber (NumberChannels), AVAudioPlayer.AVNumberOfChannelsKey);
 
 			if (AudioFormat == AudioFormatType.LinearPCM){
-				IntPtr thandle = CFBoolean.TrueObject.Handle;
-				IntPtr fhandle = CFBoolean.FalseObject.Handle;
+				IntPtr thandle = CFBoolean.True.Handle;
+				IntPtr fhandle = CFBoolean.False.Handle;
 				
 				if (LinearPcmBitDepth != 0){
 					if (LinearPcmBitDepth == 8 || LinearPcmBitDepth == 16 || LinearPcmBitDepth == 32 || LinearPcmBitDepth == 24)

@@ -268,6 +268,8 @@ namespace MonoMac.CoreLocation {
 
 	[Since (5,0)]
 	[BaseType (typeof (NSObject))]
+	// instances created with 'init' crash when Dispose is called
+	[DisableDefaultCtor]
 	interface CLPlacemark {
 		[Export("addressDictionary")]
 		NSDictionary AddressDictionary { get; }

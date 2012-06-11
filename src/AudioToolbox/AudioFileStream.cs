@@ -456,7 +456,7 @@ namespace MonoMac.AudioToolbox {
 				if (h == IntPtr.Zero)
 					return null;
 				
-				var layout = AudioFile.AudioChannelLayoutFromHandle (h);
+				var layout = AudioChannelLayout.FromHandle (h);
 				Marshal.FreeHGlobal (h);
 
 				return layout;

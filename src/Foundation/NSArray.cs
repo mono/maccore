@@ -81,27 +81,27 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("items");
 			
 			IntPtr buf = Marshal.AllocHGlobal (items.Length * IntPtr.Size);
-			NSString [] strings = new NSString [items.Length];
-			
-			for (int i = 0; i < items.Length; i++){
-				IntPtr val;
+			try {
+				NSString [] strings = new NSString [items.Length];
 				
-				if (items [i] != null){
+				for (int i = 0; i < items.Length; i++){
+					IntPtr val;
+					
+					if (items [i] == null)
+						throw new ArgumentNullException (string.Format ("items[{0}]", i));
+					
 					strings [i] = new NSString (items [i]);
 					val = strings [i].Handle;
-				} else
-					val = IntPtr.Zero;
-				
-				Marshal.WriteIntPtr (buf, i * IntPtr.Size, val);
-			}
-			NSArray arr = NSArray.FromObjects (buf, items.Length);
-			foreach (NSString ns in strings){
-				if (ns != null)
+	
+					Marshal.WriteIntPtr (buf, i * IntPtr.Size, val);
+				}
+				NSArray arr = NSArray.FromObjects (buf, items.Length);
+				foreach (NSString ns in strings)
 					ns.Dispose ();
+				return arr;
+			} finally {
+				Marshal.FreeHGlobal (buf);
 			}
-			
-			Marshal.FreeHGlobal (buf);
-			return arr;
 		}
 
 		static public NSArray FromIntPtrs (IntPtr [] vals)

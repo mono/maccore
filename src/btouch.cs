@@ -51,6 +51,10 @@ class BindingTouch {
 	static string compiler = "/Developer/MonoTouch/usr/bin/smcs";
 #endif
 
+	public static string ToolName {
+		get { return tool_name; }
+	}
+
 	static void ShowHelp (OptionSet os)
 	{
 		Console.WriteLine ("{0} - Mono Objective-C API binder", tool_name);
@@ -61,7 +65,18 @@ class BindingTouch {
 	
 	static int Main (string [] args)
 	{
+		try {
+			return Main2 (args);
+		} catch (Exception ex) {
+			ErrorHelper.Show (ex);
+			return 1;
+		}
+	}
+	
+	static int Main2 (string [] args)
+	{
 		bool show_help = false;
+		bool zero_copy = false;
 		bool alpha = false;
 		string basedir = null;
 		string tmpdir = null;
@@ -69,7 +84,7 @@ class BindingTouch {
 		string outfile = null;
 		bool delete_temp = true, debug = false;
 		bool verbose = false;
-		bool unsafef = false;
+		bool unsafef = true;
 		bool external = false;
 		bool pmode = true;
 		List<string> sources;
@@ -106,9 +121,10 @@ class BindingTouch {
 			{ "s=", "Adds a source file required to build the API", v => core_sources.Add (v) },
 			{ "v", "Sets verbose mode", v => verbose = true },
 			{ "x=", "Adds the specified file to the build, used after the core files are compiled", v => extra_sources.Add (v) },
-			{ "e", "Sets external mode", v => external = true },
+			{ "e", "Generates smaller classes that can not be subclassed (previously called 'external mode')", v => external = true },
 			{ "p", "Sets private mode", v => pmode = false },
 			{ "baselib=", "Sets the base library", v => baselibdll = v },
+			{ "use-zero-copy", v=> zero_copy = true },
 #if !MONOMAC
 			{ "link-with=,", "Link with a native library {0:FILE} to the binding, embedded as a resource named {1:ID}",
 				(path, id) => {
@@ -225,6 +241,7 @@ class BindingTouch {
 				BindThirdPartyLibrary = binding_third_party,
 				CoreNSObject = CoreObject,
 				BaseDir = basedir != null ? basedir : tmpdir,
+				ZeroCopyStrings = zero_copy,
 #if MONOMAC
 				OnlyX86 = true,
 #endif

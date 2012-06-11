@@ -44,12 +44,15 @@ using MonoMac.CoreVideo;
 #if !MONOMAC
 using MonoTouch.OpenGLES;
 using MonoTouch.UIKit;
+#else
+using MonoMac.AppKit;
 #endif
 
 namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	public interface CIColor {
 		[Static]
 		[Export ("colorWithCGColor:")]
@@ -103,16 +106,17 @@ namespace MonoMac.CoreImage {
 
         [BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	public interface CIContext {
 		// When we bind OpenGL add these:
 		//[Export ("contextWithCGLContext:pixelFormat:colorSpace:options:")]
 		//CIContext ContextWithCGLContextpixelFormatcolorSpaceoptions (CGLContextObj ctx, CGLPixelFormatObj pf, CGColorSpaceRef cs, NSDictionary dict, );
 
+#if MONOMAC
 		[Internal, Static]
 		[Export ("contextWithCGContext:options:")]
 		CIContext FromContext (CGContext ctx, [NullAllowed] NSDictionary options);
-
-#if !MONOMAC
+#else
 		[Static]
 		[Export ("contextWithEAGLContext:")]
 		CIContext FromContext (EAGLContext eaglContext);
@@ -175,6 +179,7 @@ namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	public interface CIFilter {
 		[Export ("inputKeys")]
 		string [] InputKeys { get; }
@@ -189,7 +194,7 @@ namespace MonoMac.CoreImage {
 		NSDictionary Attributes { get; }
 
 		[Export ("name")]
-		string Name { get; set;}
+		string Name { get; }
 
 		[Static]
 		[Export ("filterWithName:")]
@@ -405,10 +410,10 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIAttributeTypeRectangle", "+CoreImage")]
 		NSString TypeRectangle  { get; }
 
+#if MONOMAC
 		[Field ("kCIAttributeTypeOpaqueColor", "+CoreImage")]
 		NSString TypeOpaqueColor  { get; }
 
-#if MONOMAC
 		[Field ("kCIAttributeTypeGradient", "+CoreImage")]
 		NSString TypeGradient  { get; }
 #else
@@ -522,6 +527,7 @@ namespace MonoMac.CoreImage {
 	
 #if MONOMAC
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
 	public interface CIFilterGenerator {
 		[Static, Export ("filterGenerator")]
 		CIFilterGenerator Create ();
@@ -575,6 +581,7 @@ namespace MonoMac.CoreImage {
 	}
 
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
 	public interface CIFilterShape {
 		[Export ("shapeWithRect:")]
 		CIFilterShape FromRect (RectangleF rect);
@@ -604,6 +611,7 @@ namespace MonoMac.CoreImage {
 	
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	public interface CIImage {
 		[Static]
 		[Export ("imageWithCGImage:")]
@@ -672,13 +680,14 @@ namespace MonoMac.CoreImage {
 		//[Export ("imageWithIOSurface:options:")]
 		//CIImage ImageWithIOSurfaceoptions (IOSurfaceRef surface, NSDictionary d, );
 
+		[Static]
 		[Export ("imageWithColor:")]
 		CIImage ImageWithColor (CIColor color);
 
 		[Static]
 		[Export ("emptyImage")]
 		CIImage EmptyImage { get; }
-
+		
 		[Export ("initWithCGImage:")]
 		IntPtr Constructor (CGImage image);
 
@@ -688,9 +697,9 @@ namespace MonoMac.CoreImage {
 		// FIXME: bindingneeded
 		[Export ("initWithCGLayer:")]
 		IntPtr Constructor (CGLayer layer);
-		
+
 		[Export ("initWithCGLayer:options:")]
-		NSObject IntPtr (CGLayer layer, NSDictionary d);
+		IntPtr Constructor (CGLayer layer, NSDictionary d);
 
 		[Export ("initWithData:")]
 		IntPtr Constructor (NSData data);
@@ -726,6 +735,17 @@ namespace MonoMac.CoreImage {
 		[Export ("initWithColor:")]
 		IntPtr Constructor (CIColor color);
 
+#if MONOMAC
+		[Export ("initWithBitmapImageRep:")]
+		IntPtr Constructor (NSImageRep imageRep);
+		
+		[Export ("drawAtPoint:fromRect:operation:fraction:")]
+		void Draw (PointF point, RectangleF srcRect, NSCompositingOperation op, float delta); 
+
+		[Export ("drawInRect:fromRect:operation:fraction:")]
+		void Draw (RectangleF dstRect, RectangleF srcRect, NSCompositingOperation op, float delta); 
+#endif
+
 		[Export ("imageByApplyingTransform:")]
 		CIImage ImageByApplyingTransform (CGAffineTransform matrix);
 
@@ -738,12 +758,14 @@ namespace MonoMac.CoreImage {
 		//[Export ("definition")]
 		//CIFilterShape Definition ();
 
+		// can't see this in either iOS or OSX
+#if false
 		[Export ("url")]
 		NSUrl Url { get; }
 
 		[Export ("colorSpace")]
 		CGColorSpace ColorSpace { get; }
-
+#endif
 #if MONOMAC
 		[Field ("kCIFormatARGB8")]
 		int FormatARGB8 { get; }
@@ -762,6 +784,9 @@ namespace MonoMac.CoreImage {
 
 		[Field ("kCIFormatRGBA8")]
 		int FormatRGBA8 { get; }
+
+		[Internal, Field ("kCIImageColorSpace")]
+		NSString CIImageColorSpace { get; }
 
 		// UIKit extensions
 		[Export ("initWithImage:")]
@@ -887,6 +912,7 @@ namespace MonoMac.CoreImage {
 	
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	interface CIVector {
 		[Static, Internal, Export ("vectorWithValues:count:")]
 		CIVector _FromValues (IntPtr values, int count);
@@ -979,6 +1005,7 @@ namespace MonoMac.CoreImage {
 
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	interface CIDetector {
 		[Static, Export ("detectorOfType:context:options:"), Internal]
 		CIDetector FromType (NSString detectorType, CIContext context, [NullAllowed] NSDictionary options);
@@ -1007,16 +1034,21 @@ namespace MonoMac.CoreImage {
 	
 	[BaseType (typeof (NSObject))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	interface CIFeature {
 		[Export ("type")]
 		NSString Type { get; }
 
 		[Export ("bounds")]
 		RectangleF Bounds { get; }
+
+		[Field ("CIFeatureTypeFace")]
+		NSString TypeFace { get; }
 	}
 
 	[BaseType (typeof (CIFeature))]
 	[Since (5,0)]
+	[DisableDefaultCtor]
 	interface CIFaceFeature {
 		[Export ("hasLeftEyePosition")]
 		bool HasLeftEyePosition { get; }
