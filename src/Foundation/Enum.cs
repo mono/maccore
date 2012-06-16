@@ -450,7 +450,8 @@ namespace MonoMac.Foundation  {
 	public enum NSFileCoordinatorWritingOptions {
 		ForDeleting = 1,
 		ForMoving = 2,
-		ForMerging = 4
+		ForMerging = 4,
+		ForReplacing = 8
 	}
 
 	[Flags]
