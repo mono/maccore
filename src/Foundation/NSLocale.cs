@@ -38,6 +38,11 @@ namespace MonoMac.Foundation {
 				return (string) (NSString) ObjectForKey (_Identifier);
 			}
 		}
+
+		public string GetIdentifierDisplayName (string value)
+		{
+			return DisplayNameForKey (_Identifier, value);
+		}
 		
 		public string LanguageCode {
 			get {
@@ -45,10 +50,20 @@ namespace MonoMac.Foundation {
 			}
 		}
 		
+		public string GetLanguageCodeDisplayName (string value)
+		{
+			return DisplayNameForKey (_LanguageCode, value);
+		}
+		
 		public string CountryCode {
 			get {
 				return (string) (NSString) ObjectForKey (_CountryCode);
 			}
+		}
+
+		public string GetCountryCodeDisplayName (string value)
+		{
+			return DisplayNameForKey (_CountryCode, value);
 		}
 		
 		public string ScriptCode {

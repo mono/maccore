@@ -1691,6 +1691,9 @@ namespace MonoMac.Foundation
 		[Export ("objectForKey:"), Internal]
 		NSObject ObjectForKey (NSString key);
 
+		[Export ("displayNameForKey:value:"), Internal]
+		NSString DisplayNameForKey (NSString key, string value);
+
 		[Internal, Field ("NSLocaleIdentifier")]
 		NSString _Identifier { get; }
 		
