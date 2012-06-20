@@ -335,6 +335,12 @@ namespace MonoMac.CoreGraphics {
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGPathAddEllipseInRect(IntPtr path, ref CGAffineTransform m, RectangleF rect);
+		public void AddEllipseInRect (CGAffineTransform m, RectangleF rect)
+		{
+			CGPathAddEllipseInRect (handle, ref m, rect);
+		}
+		
+		[Obsolete ("Use AddEllipseInRect instead")]
 		public void AddElipseInRect (CGAffineTransform m, RectangleF rect)
 		{
 			CGPathAddEllipseInRect (handle, ref m, rect);
