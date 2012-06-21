@@ -176,6 +176,65 @@ namespace MonoMac.Foundation
 		[Export ("drawWithRect:options:")]
 		void DrawString (RectangleF rect, NSStringDrawingOptions options);
 		
+#else
+		[Field ("NSFontAttributeName", "UIKit")]
+		NSString FontAttributeName { get; }
+		
+		[Field ("NSParagraphStyleAttributeName", "UIKit")]
+		NSString ParagraphStyleAttributeName { get; }
+
+		[Field ("NSForegroundColorAttributeName", "UIKit")]
+		NSString ForegroundColorAttributeName { get; }
+		
+		[Field ("NSBackgroundColorAttributeName", "UIKit")]
+		NSString BackgroundColorAttributeName { get; }
+		
+		[Field ("NSLigatureAttributeName", "UIKit")]
+		NSString LigatureAttributeName { get; }
+		
+		[Field ("NSBaselineOffsetAttributeName", "UIKit")]
+		NSString BaselineOffsetAttributeName { get; }
+
+		[Field ("NSKernAttributeName", "UIKit")]
+		NSString KernAttributeName { get; }
+
+		[Field ("NSStrikethroughStyleAttributeName", "UIKit")]
+		NSString StrikethroughStyleAttributeName { get; }
+
+		[Field ("NSUnderlineStyleAttributeName", "UIKit")]
+		NSString UnderlineStyleAttributeName { get; }
+
+		[Field ("NSStrokeColorAttributeName", "UIKit")]
+		NSString StrokeColorAttributeName { get; }
+
+		[Field ("NSStrokeWidthAttributeName", "UIKit")]
+		NSString StrokeWidthAttributeName { get; }
+
+		[Field ("NSShadowAttributeName", "UIKit")]
+		NSString ShadowAttributeName { get; }
+		
+		[Field ("NSVerticalGlyphFormAttributeName", "UIKit")]
+		NSString VerticalGlyphFormAttributeName { get; }
+
+		[Since (6,0)]
+		[Export ("size")]
+		SizeF Size { get; }
+
+		[Since (6,0)]
+		[Export ("drawAtPoint:")]
+		void DrawString (PointF point);
+
+		[Since (6,0)]
+		[Export ("drawAtPoint:")]
+		void DrawString (RectangleF rect);
+
+		[Since (6,0)]
+		[Export ("drawWithRect:options:context:")]
+		void DrawString (RectangleF rect, NSStringDrawingOptions options, NSStringDrawingContext context);
+
+		[Since (6,0)]
+		[Export ("boundingRectWithSize:options:context:")]
+		RectangleF GetBoundingRect (SizeF size, NSStringDrawingOptions options, NSStringDrawingContext context);
 #endif
 	}
 
@@ -3347,6 +3406,25 @@ namespace MonoMac.Foundation
 		[Export ("stringByReplacingCharactersInRange:withString:")]
 		NSString Replace (NSRange range, NSString replacement);
 
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	public interface NSStringDrawingContext {
+		[Export ("minimumScaleFactor")]
+		float MinimumScaleFactor { get; set;  }
+
+		[Export ("minimumTrackingAdjustment")]
+		float MinimumTrackingAdjustment { get; set;  }
+
+		[Export ("actualScaleFactor")]
+		float ActualScaleFactor { get;  }
+
+		[Export ("actualTrackingAdjustment")]
+		float ActualTrackingAdjustment { get;  }
+
+		[Export ("totalBounds")]
+		RectangleF TotalBounds { get;  }
 	}
 	
 	[BaseType (typeof (NSStream))]

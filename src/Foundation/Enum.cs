@@ -530,4 +530,23 @@ namespace MonoMac.Foundation  {
 		Reverse = 1 << 1,
 		LongestEffectiveRangeNotRequired = 1 << 20
 	}
+
+	public enum NSUnderlineStyle {
+		None, Single
+	}
+
+	public enum NSTextAlignment {
+		Left,
+#if MONOMAC
+		Right, Center,
+#else
+		Center, Right,
+#endif
+		Justified,
+		Natural
+	}
+
+	public enum NSWritingDirection {
+		Natural = -1, LeftToRight = 0, RightToLeft = -1
+	}
 }
