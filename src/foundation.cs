@@ -3571,6 +3571,47 @@ namespace MonoMac.Foundation
 		[Export ("stringByReplacingCharactersInRange:withString:")]
 		NSString Replace (NSRange range, NSString replacement);
 
+		// methods from the category NSStringPathExtensions
+		
+		[Export ("pathComponents")]
+		string[] PathComponents { [Bind("pathComponents")] get; }
+		
+		[Export("isAbsolutePath")]
+		bool AbsolutePath { [Bind("isAbsolutePath")] get; }
+		
+		[Export("lastPathComponent")]
+		string LastPathComponent { [Bind("lastPathComponent")] get; }
+		
+		[Export("stringByDeletingPathComponent")]
+		string StringByDeletingPathComponent();
+		
+		[Export("stringByAppendingPathComponent:")]
+		string StringByAppendingPathComponent( string str );
+		
+		[Export("pathExtension")]
+		string PathExtension { [Bind("pathExtension")] get;}
+		
+		[Export("stringByDeletingPathExtension")]
+		string StringByDeletingPathExtension();
+		
+		[Export("stringByAppendingPathExtension:")]
+		string StringByAppendingPathExtension(string str);
+		
+		[Export("stringByAbbreviatingWithTildeInPath")]
+		string StringByAbbreviatingWithTildeInPath();
+		
+		[Export("stringByExpandingTildeInPath")]
+		string StringByExpandingTildeInPath();
+		
+		[Export("stringByStandardizingPath")]
+		string StringByStandardizingPath();
+		
+		[Export("stringByResolvingSymlinksInPath")]
+		string StringByResolvingSymlinksInPath();
+		
+		[Export("stringsByAppendingPaths:")]
+		string StringsByAppendingPaths(string[] paths);
+
 		[Since (6,0)]
 		[Export ("capitalizedStringWithLocale:")]
 		string Capitalize (NSLocale locale);
