@@ -2057,6 +2057,21 @@ namespace MonoMac.Foundation
 	}
 #endif
 	
+	[BaseType (typeof (NSObject), Name="NSUUID")]
+	public interface NSUuid {
+		[Export ("initWithUUIDString:")]
+		IntPtr Constructor (string str);
+
+		[Export ("initWithUUIDBytes:"), Internal]
+		IntPtr Constructor (IntPtr bytes, bool unused);
+
+		[Export ("getUUIDBytes:"), Internal]
+		void GetUUIDBytes (IntPtr uuid);
+
+		[Export ("UUIDString")]
+		string AsString ();
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSUserDefaults {
 		[Static]
