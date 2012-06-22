@@ -4048,6 +4048,12 @@ namespace MonoMac.Foundation
 
 		[Export ("section")]
 		int Section { get; }
+
+#if !MONOMAC
+		[Static]
+		[Export ("indexPathForItem:inSection:")]
+		NSIndexPath FromItemSection (int item, int section);
+#endif
 		
 	}
 
