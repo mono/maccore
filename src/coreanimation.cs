@@ -506,6 +506,10 @@ namespace MonoMac.CoreAnimation {
 		[Since (3,2)]
 		[Export ("rasterizationScale")]
 		float RasterizationScale { get; set; }
+
+		[Since (6,0)]
+		[Export ("drawsAsynchronously")]
+		bool DrawsAsynchronously { get; set; }
 #endif
 	}
 
