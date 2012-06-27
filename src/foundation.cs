@@ -4567,6 +4567,12 @@ namespace MonoMac.Foundation
 
 		[Static, Export ("valueWithMKCoordinateSpan:")]
 		NSValue FromMKCoordinateSpan (MonoTouch.MapKit.MKCoordinateSpan coordinateSpan);
+
+		[Export ("MKCoordinateValue")]
+		MonoTouch.CoreLocation.CLLocationCoordinate2D CoordinateValue { get; }
+		
+		[Export ("MKCoordinateSpanValue")]
+		MonoTouch.MapKit.MKCoordinateSpan CoordinateSpanValue { get; }
 #endif
 	}
 	
