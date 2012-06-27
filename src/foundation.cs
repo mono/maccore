@@ -4562,7 +4562,11 @@ namespace MonoMac.Foundation
 		[Export ("CATransform3DValue")]
 		MonoMac.CoreAnimation.CATransform3D CATransform3DValue { get; }
 
-		
+		[Static, Export ("valueWithMKCoordinate:")]
+		NSValue FromMKCoordinate (MonoTouch.CoreLocation.CLLocationCoordinate2D coordinate);
+
+		[Static, Export ("valueWithMKCoordinateSpan:")]
+		NSValue FromMKCoordinateSpan (MonoTouch.MapKit.MKCoordinateSpan coordinateSpan);
 #endif
 	}
 	
