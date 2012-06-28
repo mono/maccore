@@ -38,12 +38,13 @@ using MonoMac.Foundation;
 namespace MonoMac.CoreFoundation {
 
 	public struct CFRange {
-		public int Location, Length;
-		
-		public CFRange (int l, int len)
+		IntPtr loc; // defined as 'long' in native code
+		IntPtr len; // defined as 'long' in native code
+
+		public CFRange (long l, long len)
 		{
-			Location = l;
-			Length = len;
+			this.loc = new IntPtr (l);
+			this.len = new IntPtr (len);
 		}
 	}
 
