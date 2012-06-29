@@ -257,6 +257,9 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIInputImageKey", "+CoreImage")]
 		NSString Image  { get; }
 
+		[Field ("kCIInputVersionKey", "+CoreImage")]
+		NSString Versionkey { get; }
+
 #if MONOMAC
 		[Field ("kCIInputTimeKey", "+CoreImage")]
 		NSString Time  { get; }
@@ -320,6 +323,7 @@ namespace MonoMac.CoreImage {
 
 		[Field ("kCIInputExtentKey", "+CoreImage")]
 		NSString Extent  { get; }
+
 #endif
 	}
 		
@@ -1030,6 +1034,12 @@ namespace MonoMac.CoreImage {
 
 		[Field ("CIDetectorAccuracyHigh"), Internal]
 		NSString AccuracyHigh { get; }
+
+		[Field ("CIDetectorTracking"), Internal]
+		NSString Tracking { get; }
+
+		[Field ("CIDetectorMinFeatureSize"), Internal]
+		NSString MinFeatureSize { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -1044,6 +1054,22 @@ namespace MonoMac.CoreImage {
 
 		[Field ("CIFeatureTypeFace")]
 		NSString TypeFace { get; }
+
+		[Since (6,0)]
+		[Export ("hasTrackingID")]
+		bool HasTrackingId { get; }
+		
+		[Since (6,0)]
+		[Export ("trackingID")]
+		int TrackingId { get; }
+		
+		[Since (6,0)]
+		[Export ("hasTrackingFrameCount")]
+		bool HasTrackingFrameCount { get; }
+
+		[Since (6,0)]
+		[Export ("trackingFrameCount")]
+		int TrackingFrameCount { get; }
 	}
 
 	[BaseType (typeof (CIFeature))]
