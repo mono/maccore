@@ -41,6 +41,27 @@ namespace MonoMac.CoreFoundation {
 		IntPtr loc; // defined as 'long' in native code
 		IntPtr len; // defined as 'long' in native code
 
+		public int Location {
+			get { return loc.ToInt32 (); }
+		}
+		
+		public int Length {
+			get { return len.ToInt32 (); }
+		}
+		
+		public long LongLocation {
+			get { return loc.ToInt64 (); }
+		}
+		
+		public long LongLength {
+			get { return len.ToInt64 (); }
+		}
+
+		public CFRange (int loc, int len)
+			: this ((long) loc, (long) len)
+		{
+		}
+
 		public CFRange (long l, long len)
 		{
 			this.loc = new IntPtr (l);
