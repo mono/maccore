@@ -1,9 +1,12 @@
 // 
 // CFDictionary.cs: P/Invokes for CFDictionary, CFMutableDictionary
 //
-// Authors: Mono Team
+// Authors:
+//    Mono Team
+//    Rolf Bjarne Kvinge (rolf@xamarin.com)
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,8 +36,84 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreFoundation {
 
 	[Since (3,2)]
-	static class CFDictionary {
+	class CFDictionary : INativeObject, IDisposable {
+		public IntPtr Handle { get; private set; }
+	
+		public static IntPtr KeyCallbacks;
+		public static IntPtr ValueCallbacks;
 
+		public CFDictionary (IntPtr handle)
+			: this (handle, false)
+		{
+		}
+
+		public CFDictionary (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CFObject.CFRetain (handle);
+			this.Handle = handle;
+		}
+		
+		~CFDictionary ()
+		{
+			Dispose (false);
+		}
+
+		public void Dispose ()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		public virtual void Dispose (bool disposing)
+		{
+			if (Handle != IntPtr.Zero){
+				CFObject.CFRelease (Handle);
+				Handle = IntPtr.Zero;
+			}
+		}
+
+		static CFDictionary ()
+		{
+			var lib = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
+			try {
+				KeyCallbacks = Dlfcn.GetIndirect (lib, "kCFTypeDictionaryKeyCallBacks");
+				ValueCallbacks = Dlfcn.GetIndirect (lib, "kCFTypeDictionaryValueCallBacks");
+			} finally {
+				Dlfcn.dlclose (lib);
+			}
+		}
+		
+		public static CFDictionary FromObjectAndKey (INativeObject obj, INativeObject key)
+		{
+			return new CFDictionary (CFDictionaryCreate (IntPtr.Zero, new IntPtr[] { key.Handle }, new IntPtr [] { obj.Handle }, 1, KeyCallbacks, ValueCallbacks), true);
+		}
+		
+		public static CFDictionary FromObjectsAndKeys (INativeObject[] objects, INativeObject[] keys)
+		{
+			if (objects == null)
+				throw new ArgumentNullException ("objects");
+
+			if (keys == null)
+				throw new ArgumentNullException ("keys");
+
+			if (objects.Length != keys.Length)
+				throw new ArgumentException ("The length of both arrays must be the same");
+
+			IntPtr [] k = new IntPtr [keys.Length];
+			IntPtr [] v = new IntPtr [keys.Length];
+			
+			for (int i = 0; i < k.Length; i++) {
+				k [i] = keys [i].Handle;
+				v [i] = objects [i].Handle;
+			}
+
+			return new CFDictionary (CFDictionaryCreate (IntPtr.Zero, k, v, k.Length, KeyCallbacks, ValueCallbacks), true);
+		}
+	
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static IntPtr CFDictionaryCreate (IntPtr allocator, IntPtr[] keys, IntPtr[] vals, int len, IntPtr keyCallbacks, IntPtr valCallbacks);
+		
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static IntPtr CFDictionaryGetValue (IntPtr theDict, IntPtr key);
 		public static IntPtr GetValue (IntPtr theDict, IntPtr key)
@@ -49,6 +128,51 @@ namespace MonoMac.CoreFoundation {
 				return false;
 			return CFBoolean.GetValue (value);
 		}
+		
+		public string GetStringValue (string key)
+		{
+			using (var str = new CFString (key)) {
+				return CFString.FetchString (CFDictionaryGetValue (Handle, str.handle));
+			}
+		}
+
+		public int GetInt32Value (string key)
+		{
+			int value = 0;
+			using (var str = new CFString (key)) {
+				if (!CFNumberGetValue (CFDictionaryGetValue (Handle, str.Handle), /* kCFNumberSInt32Type */ 3, out value))
+					throw new System.Collections.Generic.KeyNotFoundException (string.Format ("Key {0} not found", key));
+				return value;
+			}
+		}
+
+		public IntPtr GetIntPtrValue (string key)
+		{
+			using (var str = new CFString (key)) {
+				return CFDictionaryGetValue (Handle, str.handle);
+			}
+		}
+
+		public CFDictionary GetDictionaryValue (string key)
+		{
+			using (var str = new CFString (key)) {
+				var ptr = CFDictionaryGetValue (Handle, str.handle);
+				return ptr == IntPtr.Zero ? null : new CFDictionary (ptr);
+			}
+		}
+
+		public bool ContainsKey (string key)
+		{
+			using (var str = new CFString (key)) {
+				return CFDictionaryContainsKey (Handle, str.handle);
+			}
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		static extern bool CFNumberGetValue (IntPtr number, int theType, out int value);
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static bool CFDictionaryContainsKey (IntPtr theDict, IntPtr key);
 	}
 
 	static class CFMutableDictionary {
