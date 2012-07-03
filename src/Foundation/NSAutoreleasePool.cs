@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
-	[Register ("NSAutoreleasePool")]
+	[Register ("NSAutoreleasePool", true)]
 	public class NSAutoreleasePool : NSObject, IDisposable {
 		static IntPtr class_ptr = Class.GetHandle ("NSAutoreleasePool");
 
