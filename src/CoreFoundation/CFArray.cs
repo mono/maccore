@@ -1,9 +1,13 @@
 // 
 // CFArray.cs: P/Invokes for CFArray
 //
-// Authors: Mono Team
+// Authors:
+//    Mono Team
+//    Rolf Bjarne Kvinge (rolf@xamarin.com)
+//
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -37,6 +41,11 @@ namespace MonoMac.CoreFoundation {
 	class CFArray : INativeObject, IDisposable {
 
 		internal IntPtr handle;
+
+		internal CFArray (IntPtr handle)
+			: this (handle, false)
+		{
+		}
 
 		[Preserve (Conditional = true)]
 		internal CFArray (IntPtr handle, bool owns)
@@ -104,6 +113,14 @@ namespace MonoMac.CoreFoundation {
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static IntPtr CFArrayCreate (IntPtr allocator, IntPtr values, CFIndex numValues, IntPtr callbacks);
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static IntPtr CFArrayGetValueAtIndex (IntPtr theArray, IntPtr index);
+
+		public IntPtr GetValue (int index)
+		{
+			return CFArrayGetValueAtIndex (handle, new IntPtr (index));
+		}
 
 		public static unsafe IntPtr Create (params IntPtr[] values)
 		{

@@ -2850,6 +2850,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("isTorchModeSupported:")]
 		bool IsTorchModeSupported (AVCaptureTorchMode torchMode);
 
+		[Export ("isFocusModeSupported:")]
+		bool IsFocusModeSupported (AVCaptureFocusMode focusMode);
+		
 		[Export ("focusMode")]
 		AVCaptureFocusMode FocusMode { get; set;  }
 
@@ -2874,7 +2877,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("adjustingExposure")]
 		bool AdjustingExposure { [Bind ("isAdjustingExposure")] get;  }
 
-
+		[Export ("isWhiteBalanceModeSupported:")]
+		bool IsWhiteBalanceModeSupported (AVCaptureWhiteBalanceMode whiteBalanceMode);
+		
 		[Export ("whiteBalanceMode")]
 		AVCaptureWhiteBalanceMode WhiteBalanceMode { get; set;  }
 

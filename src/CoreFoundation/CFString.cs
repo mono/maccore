@@ -3,6 +3,9 @@
 //
 // Authors:
 //    Miguel de Icaza (miguel@novell.com)
+//    Rolf Bjarne Kvinge (rolf@xamarin.com)
+//
+// Copyright 2012 Xamarin Inc
 //
 // The class can be either constructed from a string (from user code)
 // or from a handle (from iphone-sharp.dll internal calls).  This
@@ -37,13 +40,41 @@ using MonoMac.Foundation;
 
 namespace MonoMac.CoreFoundation {
 
+	[StructLayout (LayoutKind.Sequential)]
 	public struct CFRange {
-		public int Location, Length;
+		IntPtr loc; // defined as 'long' in native code
+		IntPtr len; // defined as 'long' in native code
+
+		public int Location {
+			get { return loc.ToInt32 (); }
+		}
 		
-		public CFRange (int l, int len)
+		public int Length {
+			get { return len.ToInt32 (); }
+		}
+		
+		public long LongLocation {
+			get { return loc.ToInt64 (); }
+		}
+		
+		public long LongLength {
+			get { return len.ToInt64 (); }
+		}
+
+		public CFRange (int loc, int len)
+			: this ((long) loc, (long) len)
 		{
-			Location = l;
-			Length = len;
+		}
+
+		public CFRange (long l, long len)
+		{
+			this.loc = new IntPtr (l);
+			this.len = new IntPtr (len);
+		}
+		
+		public override string ToString ()
+		{
+			return string.Format ("CFRange [Location: {0} Length: {1}]", loc, len);
 		}
 	}
 

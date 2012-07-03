@@ -1,9 +1,12 @@
 // 
 // CFUrl.cs: Implements the managed CFUrl
 //
-// Authors: Miguel de Icaza
+// Authors:
+//     Miguel de Icaza
+//     Rolf Bjarne Kvinge <rolf@xamarin.com>
 //     
 // Copyright 2009 Novell, Inc
+// Copyright 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -101,6 +104,16 @@ namespace MonoMac.CoreFoundation {
 		{
 			using (var str = new CFString (CFURLGetString (handle))) {
 				return str.ToString ();
+			}
+		}
+		
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static IntPtr CFURLCopyFileSystemPath (IntPtr cfUrl, int style);
+		
+		public string FileSystemPath {
+			get {
+				using (var str = new CFString (CFURLCopyFileSystemPath (handle, 0), true))
+					return str.ToString ();
 			}
 		}
 	}

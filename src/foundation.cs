@@ -156,7 +156,49 @@ namespace MonoMac.Foundation
 		NSString LigatureAttributeName { get; } 
 
 		[Field ("NSObliquenessAttributeName", "AppKit")]
-		NSString ObliquenessAttributeName { get; } 
+		NSString ObliquenessAttributeName { get; }
+
+		[Field ("NSSuperscriptAttributeName", "AppKit")]
+		NSString SuperscriptAttributeName { get; }
+
+		[Field ("NSAttachmentAttributeName", "AppKit")]
+		NSString AttachmentAttributeName { get; }
+		
+		[Field ("NSBaselineOffsetAttributeName", "AppKit")]
+		NSString BaselineOffsetAttributeName { get; }
+		
+		[Field ("NSKernAttributeName", "AppKit")]
+		NSString KernAttributeName { get; }
+		
+		[Field ("NSStrokeColorAttributeName", "AppKit")]
+		NSString StrokeColorAttributeName { get; }
+		
+		[Field ("NSUnderlineColorAttributeName", "AppKit")]
+		NSString UnderlineColorAttributeName { get; }
+		
+		[Field ("NSStrikethroughColorAttributeName", "AppKit")]
+		NSString StrikethroughColorAttributeName { get; }
+		
+		[Field ("NSShadowAttributeName", "AppKit")]
+		NSString ShadowAttributeName { get; }
+		
+		[Field ("NSExpansionAttributeName", "AppKit")]
+		NSString ExpansionAttributeName { get; }
+		
+		[Field ("NSCursorAttributeName", "AppKit")]
+		NSString CursorAttributeName { get; }
+		
+		[Field ("NSToolTipAttributeName", "AppKit")]
+		NSString ToolTipAttributeName { get; }
+		
+		[Field ("NSMarkedClauseSegmentAttributeName", "AppKit")]
+		NSString MarkedClauseSegmentAttributeName { get; }
+		
+		[Field ("NSWritingDirectionAttributeName", "AppKit")]
+		NSString WritingDirectionAttributeName { get; }
+		
+		[Field ("NSVerticalGlyphFormAttributeName", "AppKit")]
+		NSString VerticalGlyphFormAttributeName { get; }
 		
 		[Export ("initWithData:options:documentAttributes:error:")]
 		IntPtr Constructor (NSData data, NSDictionary options, out NSDictionary docAttributes, out NSError error);
@@ -1707,6 +1749,9 @@ namespace MonoMac.Foundation
 
 		[Export ("objectForKey:"), Internal]
 		NSObject ObjectForKey (NSString key);
+
+		[Export ("displayNameForKey:value:"), Internal]
+		NSString DisplayNameForKey (NSString key, string value);
 
 		[Internal, Field ("NSLocaleIdentifier")]
 		NSString _Identifier { get; }
