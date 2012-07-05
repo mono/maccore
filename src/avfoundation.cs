@@ -641,6 +641,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
 		void LoadValuesAsynchronously (string [] keys, NSAction handler);
+
+		[Since (6,0)]
+		[Export ("chapterMetadataGroupsBestMatchingPreferredLanguages:")]
+		AVTimedMetadataGroup [] GetChapterMetadataGroupsBestMatchingPreferredLanguages (string [] preferredLanguages);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -810,6 +814,46 @@ namespace MonoMac.AVFoundation {
 		NSDictionary WeakVideoSettings { get; }
 	}
 
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	interface AVAssetResourceLoader {
+		[Export ("delegate")]
+		AVAssetResourceLoaderDelegate Delegate { get;  }
+
+		[Export ("delegateQueue")]
+		DispatchQueue DelegateQueue { get;  }
+
+		[Export ("setDelegate:queue:")]
+		void SetDelegate (AVAssetResourceLoaderDelegate resourceLoaderDelegate, DispatchQueue delegateQueue);
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface AVAssetResourceLoaderDelegate {
+		[Abstract]
+		[Export ("resourceLoader:shouldWaitForLoadingOfRequestedResource:")]
+		bool ShouldWaitForLoadingOfRequestedResource (AVAssetResourceLoader resourceLoader, AVAssetResourceLoadingRequest loadingRequest);
+	}
+
+	[BaseType (typeof (NSObject))]
+	interface AVAssetResourceLoadingRequest {
+		[Export ("request")]
+		NSUrlRequest Request { get;  }
+
+		[Export ("finished")]
+		bool Finished { get;  }
+
+		[Export ("finishLoadingWithResponse:data:redirect:")]
+		void FinishLoading (NSUrlResponse usingResponse, NSData data, NSUrlRequest redirect);
+
+		[Export ("finishLoadingWithError:")]
+		void FinishLoadingWithError (NSError error);
+
+		[Export ("streamingContentKeyRequestDataForApp:contentIdentifier:options:error:")]
+		NSData GetStreamingContentKey (NSData appIdentifier, NSData contentIdentifier, NSDictionary options, NSError outError);
+	}
+	
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriter initWithURL:fileType:error:] invalid parameter not satisfying: outputURL != ((void*)0)
@@ -970,6 +1014,10 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Static, Export ("isPlayableExtendedMIMEType:")]
 		bool IsPlayable (string extendedMimeType);
+
+		[Since (6,0)]
+		[Export ("resourceLoader")]
+		AVAssetResourceLoader ResourceLoader { get;  }
 	}
 
 	[BaseType (typeof (NSObject))]
