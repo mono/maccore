@@ -41,6 +41,14 @@ namespace MonoMac.CoreText {
 		End = 1,
 		Middle = 2
 	}
+
+	public enum CTLineBoundsOptions {
+		ExcludeTypographicLeading  = 1 << 0,
+		ExcludeTypographicShifts   = 1 << 1,
+		UseHangingPunctuation      = 1 << 2,
+		UseGlyphPathBounds         = 1 << 3,
+		UseOpticalBounds           = 1 << 4
+    }
 	
 	[Since (3,2)]
 	public class CTLine : INativeObject, IDisposable {
@@ -165,6 +173,14 @@ namespace MonoMac.CoreText {
 			if (context == null)
 				throw new ArgumentNullException ("context");
 			return CTLineGetImageBounds (handle, context.Handle);
+		}
+
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern RectangleF CTLineGetBoundsWithOptions (IntPtr line, CTLineBoundsOptions options);
+		[Since (6,0)]
+		public RectangleF GetBounds (CTLineBoundsOptions options)
+		{
+			return CTLineGetBoundsWithOptions (handle, options);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]

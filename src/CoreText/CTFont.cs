@@ -121,7 +121,7 @@ namespace MonoMac.CoreText {
 		HorizontalStyle            = 0x68737479,  // 'Hsty'
 		JustificationJust          = 0x6a757374,  // 'Just'
 		Kerning                    = 0x6b65726e,  // 'Kern'
-	        ExtendedKerning            = 0x6b657278,  // 'Kerx'
+		ExtendedKerning            = 0x6b657278,  // 'Kerx'
 		LigatureCaret              = 0x6c636172,  // 'Lcar'
 		IndexToLocation            = 0x6c6f6361,  // 'Loca'
 		MaximumProfile             = 0x6d617870,  // 'Maxp'
@@ -137,6 +137,7 @@ namespace MonoMac.CoreText {
 		VerticalMetrics            = 0x766d7478,  // 'Vmtx'
 		SBitmapData 		   = 0x73626974, // 'sbit'
 		SExtendedBitmapData        = 0x73626978, // 'sbix'
+		AnchorPoints               = 0x616e6b72, // 'ankr'
 	}
 
 	[Since (3,2)]
@@ -905,6 +906,18 @@ namespace MonoMac.CoreText {
 			AssertLength ("boundingRects",  boundingRects, count, true);
 
 			return CTFontGetBoundingRectsForGlyphs (handle, orientation, glyphs, boundingRects, count);
+		}
+
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern RectangleF CTFontGetOpticalBoundsForGlyphs (IntPtr font, [In] CGGlyph[] glyphs, [Out] RectangleF[] boundingRects, int count, CTFontOptions options);
+		[Since (6,0)]
+		public RectangleF GetOpticalBounds (CGGlyph[] glyphs, RectangleF[] boundingRects, int count, CTFontOptions options = 0)
+		{
+			AssertCount (count);
+			AssertLength ("glyphs",         glyphs, count);
+			AssertLength ("boundingRects",  boundingRects, count, true);
+
+			return CTFontGetOpticalBoundsForGlyphs (handle, glyphs, boundingRects, count, 0);
 		}
 
 		public RectangleF GetBoundingRects (CTFontOrientation orientation, CGGlyph[] glyphs)

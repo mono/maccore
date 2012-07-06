@@ -57,10 +57,14 @@ namespace MonoMac.CoreText {
 	}
 
 	[Since (3,2)]
+	[Flags]
 	public enum CTWritingDirection : sbyte {
 		Natural     = -1,
 		LeftToRight = 0,
 		RightToLeft = 1,
+
+		Embedding = (0 << 1),
+		Override = (1 << 1)
 	}
 
 	internal enum CTParagraphStyleSpecifier : uint {
@@ -81,8 +85,9 @@ namespace MonoMac.CoreText {
 		MaximumLineSpacing      = 14,
 		MinimumLineSpacing      = 15,
 		LineSpacingAdjustment   = 16,
+		LineBoundsOptions       = 17,
 
-		Count = 14,
+		Count = 18,
 	}
 
 	internal struct CTParagraphStyleSetting {
