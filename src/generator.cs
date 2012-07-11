@@ -5,6 +5,7 @@
 // Authors:
 //   Geoff Norton
 //   Miguel de Icaza
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2009-2010, Novell, Inc.
 // Copyright 2011-2012 Xamarin, Inc.
@@ -1042,9 +1043,10 @@ public class Generator {
 			throw new BindingException (1001, true, "Do not know how to make a trampoline for {0}", pi);
 		}
 
-		var ti = new TrampolineInfo (t.FullName,
-					     "Inner" + t.Name,
-					     "Trampoline" + t.Name,
+		var trampoline_name = t.Name.Replace ("`", "Arity");
+		var ti = new TrampolineInfo (FormatType (null, t),
+					     "Inner" + trampoline_name,
+					     "Trampoline" + trampoline_name,
 					     pars.ToString (), invoke.ToString (),
 					     returntype,
 					     mi.ReturnType.ToString (),
@@ -1750,18 +1752,27 @@ public class Generator {
 			return "float";
 		if (type == typeof (bool))
 			return "bool";
-
-		if (usedIn != null && type.Namespace == usedIn.Namespace)
-			return type.Name;
-
-		if (standard_namespaces.Contains (type.Namespace))
-			return type.Name;
-
 		if (type == typeof (string))
 			return "string";
 
-		// Use fully qualified name
-		return type.ToString ();
+		string tname;
+		if ((usedIn != null && type.Namespace == usedIn.Namespace) || standard_namespaces.Contains (type.Namespace))
+			tname = type.Name;
+		else
+			tname = type.FullName;
+
+		var targs = type.GetGenericArguments ();
+		if (targs.Length > 0) {
+			return RemoveArity (tname) + "<" + string.Join (", ", targs.Select (l => FormatType (usedIn, l)).ToArray ()) + ">";
+		}
+
+		return tname;
+	}
+
+	static string RemoveArity (string typeName)
+	{
+		var arity = typeName.IndexOf ('`');
+		return arity > 0 ? typeName.Substring (0, arity) : typeName;
 	}
 
 	//
@@ -3006,7 +3017,7 @@ public class Generator {
 			//
 			foreach (var ti in trampolines.Values){
 				print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
-				print ("static {0} {1} = new {0} ({2});", ti.DelegateName, ti.StaticName, ti.TrampolineName);
+				print ("static readonly {0} {1} = {2};", ti.DelegateName, ti.StaticName, ti.TrampolineName);
 				print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
 				print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
 				indent++;
