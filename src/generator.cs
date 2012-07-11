@@ -1810,6 +1810,7 @@ public class Generator {
 		"System.Drawing", 
 		"System.Runtime.CompilerServices",
 		"System.Runtime.InteropServices",
+		"System.Diagnostics",
 #if MONOMAC
 		"MonoMac.CoreFoundation",
 		"MonoMac.Foundation",
@@ -2390,6 +2391,8 @@ public class Generator {
 			if (!is_model && DoesPropertyNeedBackingField (pi)) {
 				var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
 
+				print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
+
 				if (is_thread_static)
 					print ("[ThreadStatic]");
 				print ("{1}object {0};", var_name, is_static ? "static " : "");
@@ -2647,12 +2650,14 @@ public class Generator {
 			
 			if (!is_model){
 				foreach (var ea in selectors [type]){
+					print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
 					print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 				}
 			}
 			print ("");
 
 			if (!is_static_class){
+				print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
 				print ("static IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
 				if (!is_model && !external) {
 					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
@@ -2756,6 +2761,7 @@ public class Generator {
 					}
 
 					if (!libraries.Contains (library_name)) {
+						print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
 						if (BindThirdPartyLibrary && library_name == "__Internal") {
 							print ("static IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
 						} else {
@@ -2765,9 +2771,11 @@ public class Generator {
 					}
 
 					string fieldTypeName = FormatType (field_pi.DeclaringType, field_pi.PropertyType);
-					// Value types we dont cache for now, to avoid Nullabel<T>
-					if (!field_pi.PropertyType.IsValueType)
+					// Value types we dont cache for now, to avoid Nullable<T>
+					if (!field_pi.PropertyType.IsValueType) {
+						print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
 						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
+					}
 
 					print ("{0} static {1} {2} {{", HasAttribute (field_pi, typeof (InternalAttribute)) ? "internal" : "public", fieldTypeName, field_pi.Name);
 					indent++;
