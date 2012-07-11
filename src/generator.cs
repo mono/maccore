@@ -2379,48 +2379,32 @@ public class Generator {
 		bool is_new = HasAttribute (pi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
 		bool is_unsafe = false;
-		
+
+		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
+			is_unsafe = true;
+
+		string var_name = null;
+				
+		if (wrap == null) {
+			// [Model] has properties that only throws, so there's no point in adding unused backing fields
+			if (!is_model && DoesPropertyNeedBackingField (pi)) {
+				var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
+
+				if (is_thread_static)
+					print ("[ThreadStatic]");
+				print ("{1}object {0};", var_name, is_static ? "static " : "");
+
+				if (!is_static){
+					instance_fields_to_clear_on_dispose.Add (var_name);
+				}
+			}
+		}
+
 		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
 			print ("[Obsolete (\"{0}\", {1})]",
 			       oa.Message, oa.IsError ? "true" : "false");
 		}
 
-		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
-			is_unsafe = true;
-
-		if (wrap != null){
-			print_generated_code ();
-			print ("{0} {1}{2}{3}{4} {5} {{",
-			       is_public ? "public" : "internal",
-			       is_unsafe ? "unsafe " : "",
-			       is_new ? "new " : "",
-			       (is_static ? "static " : ""),
-			       FormatType (pi.DeclaringType,  pi.PropertyType),
-			       pi.Name);
-			indent++;
-			if (pi.CanRead)
-				print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
-			if (pi.CanWrite)
-				print ("set {{ {0} = value; }}", wrap);
-			indent--;
-			print ("}\n");
-			return;
-		}
-
-		string var_name = null;
-				
-		// [Model] has properties that only throws, so there's no point in adding unused backing fields
-		if (!is_model && DoesPropertyNeedBackingField (pi)) {
-			var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
-
-			if (is_thread_static)
-				print ("[ThreadStatic]");
-			print ("{1}object {0};", var_name, is_static ? "static " : "");
-
-			if (!is_static){
-				instance_fields_to_clear_on_dispose.Add (var_name);
-			}
-		}
 		print_generated_code ();
 		print ("{0} {1}{2}{3}{4} {5} {{",
 		       is_public ? "public" : "internal",
@@ -2430,6 +2414,16 @@ public class Generator {
 		       FormatType (pi.DeclaringType,  pi.PropertyType),
 		       pi.Name);
 		indent++;
+
+		if (wrap != null) {
+			if (pi.CanRead)
+				print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+			if (pi.CanWrite)
+				print ("set {{ {0} = value; }}", wrap);
+			indent--;
+			print ("}\n");
+			return;			
+		}
 
 		ThreadCheck threadCheck = HasAttribute (pi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		if (pi.CanRead){
