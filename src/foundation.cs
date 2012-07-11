@@ -2111,7 +2111,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (IntPtr bytes, bool unused);
 
 		[Export ("getUUIDBytes:"), Internal]
-		void GetUUIDBytes (IntPtr uuid);
+		void GetUuidBytes (IntPtr uuid);
 
 		[Export ("UUIDString")]
 		string AsString ();
