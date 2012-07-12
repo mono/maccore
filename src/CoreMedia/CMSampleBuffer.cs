@@ -20,6 +20,25 @@ using MonoMac.CoreVideo;
 
 namespace MonoMac.CoreMedia {
 
+	public enum CMSampleBufferError {
+		None							= 0,
+		AllocationFailed				= -12730,
+		RequiredParameterMissing		= -12731,
+		AlreadyHasDataBuffer			= -12732,
+		BufferNotReady					= -12733,
+		SampleIndexOutOfRange			= -12734,
+		BufferHasNoSampleSizes			= -12735,
+		BufferHasNoSampleTimingInfo		= -12736,
+		ArrayTooSmall					= -12737,
+		InvalidEntryCount				= -12738,
+		CannotSubdivide					= -12739,
+		SampleTimingInfoInvalid			= -12740,
+		InvalidMediaTypeForOperation	= -12741,
+		InvalidSampleData				= -12742,
+		InvalidMediaFormat				= -12743,
+		Invalidated						= -12744,
+	}
+
 	[Since (4,0)]
 	public class CMSampleBuffer : INativeObject, IDisposable {
 		internal IntPtr handle;
@@ -288,9 +307,9 @@ namespace MonoMac.CoreMedia {
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		extern static int CMSampleBufferSetOutputPresentationTimeStamp (IntPtr handle, CMTime outputPresentationTimeStamp);
+		extern static CMSampleBufferError CMSampleBufferSetOutputPresentationTimeStamp (IntPtr handle, CMTime outputPresentationTimeStamp);
 		
-		public int SetOutputPresentationTimeStamp (CMTime outputPresentationTimeStamp)
+		public CMSampleBufferError SetOutputPresentationTimeStamp (CMTime outputPresentationTimeStamp)
 		{
 			return CMSampleBufferSetOutputPresentationTimeStamp (handle, outputPresentationTimeStamp);
 		}
@@ -385,9 +404,9 @@ namespace MonoMac.CoreMedia {
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		extern static int CMSampleBufferInvalidate (IntPtr handle);
+		extern static CMSampleBufferError CMSampleBufferInvalidate (IntPtr handle);
 		
-		public int Invalidate()
+		public CMSampleBufferError Invalidate()
 		{
 			return CMSampleBufferInvalidate (handle);
 		}
@@ -404,17 +423,17 @@ namespace MonoMac.CoreMedia {
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		extern static int CMSampleBufferMakeDataReady (IntPtr handle);
+		extern static CMSampleBufferError CMSampleBufferMakeDataReady (IntPtr handle);
 		
-		public int MakeDataReady ()
+		public CMSampleBufferError MakeDataReady ()
 		{
 			return CMSampleBufferMakeDataReady (handle);
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		extern static int CMSampleBufferSetDataBuffer (IntPtr handle, IntPtr dataBufferHandle);
+		extern static CMSampleBufferError CMSampleBufferSetDataBuffer (IntPtr handle, IntPtr dataBufferHandle);
 		
-		public int SetDataBuffer (CMBlockBuffer dataBuffer)
+		public CMSampleBufferError SetDataBuffer (CMBlockBuffer dataBuffer)
 		{
 			var dataBufferHandle = IntPtr.Zero;
 			if (dataBuffer != null)
@@ -434,9 +453,9 @@ namespace MonoMac.CoreMedia {
 		);*/
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		extern static int CMSampleBufferSetDataReady (IntPtr handle);
+		extern static CMSampleBufferError CMSampleBufferSetDataReady (IntPtr handle);
 		
-		public int SetDataReady ()
+		public CMSampleBufferError SetDataReady ()
 		{
 			return CMSampleBufferSetDataReady (handle);
 		}
@@ -449,9 +468,9 @@ namespace MonoMac.CoreMedia {
 		);*/
 				
 		[DllImport(Constants.CoreMediaLibrary)]
-		extern static int CMSampleBufferTrackDataReadiness (IntPtr handle, IntPtr handleToTrack);
+		extern static CMSampleBufferError CMSampleBufferTrackDataReadiness (IntPtr handle, IntPtr handleToTrack);
 		
-		public int TrackDataReadiness (CMSampleBuffer bufferToTrack)
+		public CMSampleBufferError TrackDataReadiness (CMSampleBuffer bufferToTrack)
 		{
 			var handleToTrack = IntPtr.Zero;
 			if (bufferToTrack != null) {
