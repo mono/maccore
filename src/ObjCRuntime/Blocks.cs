@@ -83,7 +83,7 @@ namespace MonoMac.ObjCRuntime {
 		internal static IntPtr global_descriptor_ptr;
 
 		static BlockLiteral () {
-			global_descriptor_ptr = Marshal.AllocHGlobal (Marshal.SizeOf (typeof (int))*2 + Marshal.SizeOf (typeof (IntPtr))*2);
+			global_descriptor_ptr = Marshal.AllocHGlobal (Marshal.SizeOf (typeof (IntPtr))*2 + Marshal.SizeOf (typeof (IntPtr))*2);
 			Marshal.StructureToPtr (global_descriptor, global_descriptor_ptr, false);
 		}
 

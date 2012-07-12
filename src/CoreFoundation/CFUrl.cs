@@ -90,11 +90,16 @@ namespace MonoMac.CoreFoundation {
 		static public CFUrl FromUrlString (string url, CFUrl baseurl)
 		{
 			using (var str = new CFString (url)){
-				IntPtr handle = CFURLCreateWithString (IntPtr.Zero, str.Handle, baseurl != null ? baseurl.Handle : IntPtr.Zero);
-				if (handle == IntPtr.Zero)
-					return null;
-				return new CFUrl (handle);
+				return FromStringHandle (str.Handle, baseurl);
 			}
+		}
+
+		internal static CFUrl FromStringHandle (IntPtr cfstringHandle, CFUrl baseurl)
+		{
+			IntPtr handle = CFURLCreateWithString (IntPtr.Zero, cfstringHandle, baseurl != null ? baseurl.Handle : IntPtr.Zero);
+			if (handle == IntPtr.Zero)
+				return null;
+			return new CFUrl (handle);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -112,9 +117,14 @@ namespace MonoMac.CoreFoundation {
 		
 		public string FileSystemPath {
 			get {
-				using (var str = new CFString (CFURLCopyFileSystemPath (handle, 0), true))
-					return str.ToString ();
+				return GetFileSystemPath (handle);
 			}
+		}
+
+		static internal string GetFileSystemPath (IntPtr hcfurl)
+		{
+			using (var str = new CFString (CFURLCopyFileSystemPath (hcfurl, 0), true))
+				return str.ToString ();
 		}
 	}
 	

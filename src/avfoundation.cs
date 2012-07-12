@@ -3044,11 +3044,11 @@ namespace MonoMac.AVFoundation {
 
 		[Since (5,0)]
 		[Export ("seekToTime:completionHandler:")]
-		void Seek (CMTime time, AVCompletionHandler completion);
+		void Seek (CMTime time, AVCompletion completion);
 
 		[Since (5,0)]
 		[Export ("seekToTime:toleranceBefore:toleranceAfter:completionHandler:")]
-		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletionHandler completion);
+		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletion completion);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -3206,7 +3206,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (5,0)]
 		[Export ("seekToTime:toleranceBefore:toleranceAfter:completionHandler:")]
-		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletionHandler completion);
+		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletion completion);
 
 		[Since (5,0)]
 		[Export ("selectMediaOption:inMediaSelectionGroup:")]
