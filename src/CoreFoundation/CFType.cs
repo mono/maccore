@@ -13,7 +13,7 @@ namespace MonoMac.CoreFoundation {
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static IntPtr CFCopyDescription (IntPtr ptr);
 
-		public GetDescription (IntPtr handle)
+		public string GetDescription (IntPtr handle)
 		{
 			if (handle == IntPtr.Zero)
 				throw new ArgumentNullException ("handle");
