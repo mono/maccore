@@ -117,9 +117,14 @@ namespace MonoMac.CoreFoundation {
 		
 		public string FileSystemPath {
 			get {
-				using (var str = new CFString (CFURLCopyFileSystemPath (handle, 0), true))
-					return str.ToString ();
+				return GetFileSystemPath (handle);
 			}
+		}
+
+		static internal string GetFileSystemPath (IntPtr hcfurl)
+		{
+			using (var str = new CFString (CFURLCopyFileSystemPath (hcfurl, 0), true))
+				return str.ToString ();
 		}
 	}
 	
