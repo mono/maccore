@@ -25,7 +25,7 @@ using System;
 namespace MonoMac {
 
 	[AttributeUsage (AttributeTargets.Delegate)]
-	class MonoNativeFunctionWrapperAttribute : Attribute {
+	public class MonoNativeFunctionWrapperAttribute : Attribute {
 	}
 }
 

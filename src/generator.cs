@@ -1039,6 +1039,12 @@ public class Generator {
 					continue;
 				}
 			}
+
+			if (pi.ParameterType.IsSubclassOf (typeof (Delegate))){
+				pars.AppendFormat ("IntPtr {0}", pi.Name);
+				invoke.AppendFormat ("({0}) Marshal.GetDelegateForFunctionPointer ({1}, typeof ({0}))", pi.ParameterType, pi.Name);
+				continue;
+			}
 			
 			throw new BindingException (1001, true, "Do not know how to make a trampoline for {0}", pi);
 		}
@@ -3158,7 +3164,17 @@ public class Generator {
 
 				// This formats the delegate 
 				var delmethod = deltype.GetMethod ("Invoke");
-				var del = new StringBuilder ("public delegate ");
+				var del = new StringBuilder ();
+
+				// Propagate MonoTouch.MonoNativeFunctionWrapperAttribute
+				var attrs = deltype.GetCustomAttributes (false);
+				foreach (var a in attrs){
+					if (a.GetType ().FullName.IndexOf ("MonoNativeFunctionWrapperAttribute") != -1){
+						del.Append ("[MonoNativeFunctionWrapper]\n");
+						break;
+					}
+				}
+				del.Append ("public delegate ");
 				del.Append (FormatType (type, delmethod.ReturnType));
 				del.Append (" ");
 				del.Append (deltype.Name);
