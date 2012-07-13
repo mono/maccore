@@ -5,6 +5,7 @@
 //   Miguel de Icaza (miguel@xamarin.com)
 //   Frank Krueger
 //   Mono Team
+//   Marek Safar (marek.safar@gmail.com)	
 //     
 // Copyright 2010 Novell, Inc
 // Copyright 2012 Xamarin Inc
@@ -22,6 +23,12 @@ using MonoMac.AudioToolbox;
 #endif
 
 namespace MonoMac.CoreMedia {
+
+	public enum CMFormatDescriptionError {
+		None				= 0,
+		InvalidParameter	= -12710,
+		AllocationFailed	= -12711,
+	}
 
 	[Since (4,0)]
 	public class CMFormatDescription : INativeObject, IDisposable {
@@ -119,7 +126,22 @@ namespace MonoMac.CoreMedia {
 		{
 			return CMFormatDescriptionGetTypeID ();
 		}
+
 #if !COREBUILD
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static CMFormatDescriptionError CMFormatDescriptionCreate (IntPtr allocator, CMMediaType mediaType, uint mediaSubtype, IntPtr extensions, out IntPtr handle);
+
+		public static CMFormatDescription Create (CMMediaType mediaType, uint mediaSubtype, out CMFormatDescriptionError error)
+		{
+			IntPtr handle;
+			error = CMFormatDescriptionCreate (IntPtr.Zero, mediaType, mediaSubtype, IntPtr.Zero, out handle);
+			if (error != CMFormatDescriptionError.None)
+				return null;
+
+			return new CMFormatDescription (handle, true);
+		}
+
 		[DllImport (Constants.CoreMediaLibrary)]
 		extern static IntPtr CMAudioFormatDescriptionGetStreamBasicDescription (IntPtr handle);
 
@@ -210,20 +232,72 @@ namespace MonoMac.CoreMedia {
 					return *ret;
 				}
 			}
+		}		
+#endif
+	}
+
+	[Since (4,0)]
+	public class CMVideoFormatDescription : CMFormatDescription {
+		
+		internal CMVideoFormatDescription (IntPtr handle)
+			: base (handle)
+		{
+		}
+
+		internal CMVideoFormatDescription (IntPtr handle, bool owns)
+			: base (handle, owns)
+		{
 		}
 
 		[DllImport (Constants.CoreMediaLibrary)]
 		extern static Size CMVideoFormatDescriptionGetDimensions (IntPtr handle);
-		public Size  VideoDimensions {
+		public Size Dimensions {
 			get {
 				return CMVideoFormatDescriptionGetDimensions (handle);
 			}
 		}
 
 		[DllImport (Constants.CoreMediaLibrary)]
+		static extern CMFormatDescriptionError CMVideoFormatDescriptionCreate (IntPtr allocator, 
+			CMVideoCodecType codecType,
+			int width, int height,
+			IntPtr extensions,
+			out IntPtr outDesc);
+
+		public static CMVideoFormatDescription Create (CMVideoCodecType codecType, Size size, out CMFormatDescriptionError error)
+		{
+			IntPtr desc;
+			error = CMVideoFormatDescriptionCreate (IntPtr.Zero, codecType, size.Width, size.Height, IntPtr.Zero, out desc);
+			if (error != CMFormatDescriptionError.None)
+				return null;
+
+			return new CMVideoFormatDescription (desc, true);
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		static extern CMFormatDescriptionError CMVideoFormatDescriptionCreateForImageBuffer (IntPtr allocator, 
+			IntPtr imageBuffer,
+			out IntPtr outDesc);
+
+		public static CMVideoFormatDescription CreateForImageBuffer (CVImageBuffer imageBuffer, out CMFormatDescriptionError error)
+		{
+			if (imageBuffer == null)
+				throw new ArgumentNullException ("imageBuffer");
+
+			IntPtr desc;
+			error = CMVideoFormatDescriptionCreateForImageBuffer (IntPtr.Zero, imageBuffer.handle, out desc);
+			if (error != CMFormatDescriptionError.None)
+				return null;
+
+			return new CMVideoFormatDescription (desc, true);
+		}
+
+#if !COREBUILD
+
+		[DllImport (Constants.CoreMediaLibrary)]
 		extern static RectangleF CMVideoFormatDescriptionGetCleanAperture (IntPtr handle, bool originIsAtTopLeft);
 
-		public RectangleF GetVideoCleanAperture (bool originIsAtTopLeft)
+		public RectangleF GetCleanAperture (bool originIsAtTopLeft)
 		{
 			return CMVideoFormatDescriptionGetCleanAperture (handle, originIsAtTopLeft);
 		}
@@ -239,7 +313,7 @@ namespace MonoMac.CoreMedia {
 		[DllImport (Constants.CoreMediaLibrary)]
 		extern static SizeF CMVideoFormatDescriptionGetPresentationDimensions (IntPtr handle, bool usePixelAspectRatio, bool useCleanAperture);
 
-		public SizeF GetVideoPresentationDimensions (bool usePixelAspectRatio, bool useCleanAperture)
+		public SizeF GetPresentationDimensions (bool usePixelAspectRatio, bool useCleanAperture)
 		{
 			return CMVideoFormatDescriptionGetPresentationDimensions (handle, usePixelAspectRatio, useCleanAperture);
 		}
@@ -253,7 +327,6 @@ namespace MonoMac.CoreMedia {
 				throw new ArgumentNullException ("imageBuffer");
 			return CMVideoFormatDescriptionMatchesImageBuffer (handle, imageBuffer.Handle) != 0;
 		}
-			
 #endif
 	}
 }
