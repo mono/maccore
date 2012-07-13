@@ -20,7 +20,9 @@ using MonoMac.ObjCRuntime;
 #if !COREBUILD
 using MonoMac.AudioToolbox;
 using MonoMac.CoreVideo;
+#if !MONOMAC
 using MonoTouch.UIKit;
+#endif
 #endif
 
 namespace MonoMac.CoreMedia {
