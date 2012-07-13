@@ -1,13 +1,16 @@
 // 
-// CMSampelBuffer.cs: Implements the managed CMSampleBuffer
+// CMSampleBuffer.cs: Implements the managed CMSampleBuffer
 //
 // Authors: Mono Team
+//			Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2012 Xamarin Inc
 //
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 using MonoMac;
 using MonoMac.Foundation;
@@ -15,7 +18,9 @@ using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
 
 #if !COREBUILD
+using MonoMac.AudioToolbox;
 using MonoMac.CoreVideo;
+using MonoTouch.UIKit;
 #endif
 
 namespace MonoMac.CoreMedia {
@@ -79,21 +84,44 @@ namespace MonoMac.CoreMedia {
 				handle = IntPtr.Zero;
 			}
 		}
-		
-/*		[DllImport(Constants.CoreMediaLibrary)]
-		int CMAudioSampleBufferCreateWithPacketDescriptions (
-		   CFAllocatorRef allocator,
-		   CMBlockBufferRef dataBuffer,
-		   Boolean dataReady,
-		   CMSampleBufferMakeDataReadyCallback makeDataReadyCallback,
-		   void *makeDataReadyRefcon,
-		   CMFormatDescriptionRef formatDescription,
+
+#if !COREBUILD
+		[DllImport(Constants.CoreMediaLibrary)]
+		extern static CMSampleBufferError CMAudioSampleBufferCreateWithPacketDescriptions (
+		   IntPtr allocator,
+		   IntPtr dataBuffer,
+		   bool dataReady,
+		   IntPtr makeDataReadyCallback,
+		   IntPtr makeDataReadyRefcon,
+		   IntPtr formatDescription,
 		   int numSamples,
 		   CMTime sbufPTS,
-		   const AudioStreamPacketDescription *packetDescriptions,
-		   CMSampleBufferRef *sBufOut
-		);
+		   AudioStreamPacketDescription[] packetDescriptions,
+		   out IntPtr sBufOut);
 
+		public static CMSampleBuffer CreateWithPacketDescriptions (CMBlockBuffer dataBuffer, CMFormatDescription formatDescription, int samplesCount,
+			CMTime sampleTimestamp, AudioStreamPacketDescription[] packetDescriptions, out CMSampleBufferError error)
+		{
+			if (formatDescription == null)
+				throw new ArgumentNullException ("formatDescription");
+			if (samplesCount <= 0)
+				throw new ArgumentOutOfRangeException ("samplesCount");
+
+			IntPtr buffer;
+			error = CMAudioSampleBufferCreateWithPacketDescriptions (IntPtr.Zero,
+				dataBuffer == null ? IntPtr.Zero : dataBuffer.handle,
+				true, IntPtr.Zero, IntPtr.Zero,
+				formatDescription.handle,
+				samplesCount, sampleTimestamp,
+				packetDescriptions,
+				out buffer);
+
+			if (error != CMSampleBufferError.None)
+				return null;
+
+			return new CMSampleBuffer (buffer, true);
+		}
+/*
 		[DllImport(Constants.CoreMediaLibrary)]
 		int CMSampleBufferCallForEachSample (
 		   CMSampleBufferRef sbuf,
@@ -139,20 +167,38 @@ namespace MonoMac.CoreMedia {
 		   int numSampleTimingEntries,
 		   const CMSampleTimingInfo *sampleTimingArray,
 		   CMSampleBufferRef *sBufCopyOut
-		);
-
-		[DllImport(Constants.CoreMediaLibrary)]
-		int CMSampleBufferCreateForImageBuffer (
-		   CFAllocatorRef allocator,
-		   CVImageBufferRef imageBuffer,
-		   Boolean dataReady,
-		   CMSampleBufferMakeDataReadyCallback makeDataReadyCallback,
-		   void *makeDataReadyRefcon,
-		   CMVideoFormatDescriptionRef formatDescription,
-		   const CMSampleTimingInfo *sampleTiming,
-		   CMSampleBufferRef *sBufOut
 		);*/
 
+		[DllImport(Constants.CoreMediaLibrary)]
+		static extern CMSampleBufferError CMSampleBufferCreateForImageBuffer (IntPtr allocator,
+		   IntPtr imageBuffer, bool dataReady,
+		   IntPtr makeDataReadyCallback, IntPtr makeDataReadyRefcon,
+		   IntPtr formatDescription,
+		   IntPtr sampleTiming,
+		   out IntPtr bufOut
+		);
+
+		public static CMSampleBuffer CreateForImageBuffer (CVImageBuffer imageBuffer, bool dataReady, CMVideoFormatDescription formatDescription, out CMSampleBufferError error)
+		{
+			if (imageBuffer == null)
+				throw new ArgumentNullException ("imageBuffer");
+			if (formatDescription == null)
+				throw new ArgumentNullException ("formatDescription");
+
+			IntPtr buffer;
+			error = CMSampleBufferCreateForImageBuffer (IntPtr.Zero,
+				imageBuffer.handle, dataReady,
+				IntPtr.Zero, IntPtr.Zero,
+				formatDescription.handle,
+				IntPtr.Zero,
+				out buffer);
+
+			if (error != CMSampleBufferError.None)
+				return null;
+
+			return new CMSampleBuffer (buffer, true);
+		}
+#endif
 		[DllImport(Constants.CoreMediaLibrary)]
 		extern static bool CMSampleBufferDataIsReady (IntPtr handle);
 		
@@ -338,16 +384,16 @@ namespace MonoMac.CoreMedia {
 		[DllImport(Constants.CoreMediaLibrary)]
 		extern static IntPtr CMSampleBufferGetSampleAttachmentsArray (IntPtr handle, bool createIfNecessary);
 		
-		public NSMutableDictionary [] GetSampleAttachments (bool createIfNecessary)
+		public CMSampleBufferAttachmentSettings [] GetSampleAttachments (bool createIfNecessary)
 		{
 			var cfArrayRef = CMSampleBufferGetSampleAttachmentsArray (handle, createIfNecessary);
 			if (cfArrayRef == IntPtr.Zero)
 			{
-				return new NSMutableDictionary [0];
+				return new CMSampleBufferAttachmentSettings [0];
 			}
 			else
 			{
-				return NSArray.ArrayFromHandle (cfArrayRef, h => (NSMutableDictionary) Runtime.GetNSObject (h));
+				return NSArray.ArrayFromHandle (cfArrayRef, h => new CMSampleBufferAttachmentSettings ((NSMutableDictionary) Runtime.GetNSObject (h)));
 			}
 		}
 		
@@ -480,4 +526,118 @@ namespace MonoMac.CoreMedia {
 		}
 
 	}
+
+#if !COREBUILD
+	public class CMSampleBufferAttachmentSettings
+	{
+		static class Selectors
+		{
+			public static readonly NSString NotSync;
+			public static readonly NSString PartialSync;
+			public static readonly NSString HasRedundantCoding;
+			public static readonly NSString IsDependedOnByOthers;
+			public static readonly NSString DependsOnOthers;
+			public static readonly NSString EarlierDisplayTimesAllowed;
+			public static readonly NSString DisplayImmediately;
+			public static readonly NSString DoNotDisplay;
+			public static readonly NSString ResetDecoderBeforeDecoding;
+			public static readonly NSString DrainAfterDecoding;
+			public static readonly NSString PostNotificationWhenConsumed;
+			public static readonly NSString ResumeOutput;
+			public static readonly NSString TransitionID;
+			public static readonly NSString TrimDurationAtStart;
+			public static readonly NSString TrimDurationAtEnd;
+			public static readonly NSString SpeedMultiplier;
+			public static readonly NSString Reverse;
+			public static readonly NSString FillDiscontinuitiesWithSilence;
+			public static readonly NSString EmptyMedia;
+			public static readonly NSString PermanentEmptyMedia;
+			public static readonly NSString DisplayEmptyMediaImmediately;
+			public static readonly NSString EndsPreviousSampleDuration;
+			public static readonly NSString SampleReferenceURL;
+			public static readonly NSString SampleReferenceByteOffset;
+			public static readonly NSString GradualDecoderRefresh;
+			// Since 6,0
+			public static readonly NSString DroppedFrameReason;
+
+			static Selectors ()
+			{
+				var handle = Dlfcn.dlopen (Constants.CoreMediaLibrary, 0);
+				if (handle == IntPtr.Zero)
+					return;
+				try {
+					NotSync    	= Dlfcn.GetStringConstant (handle, "kCMSampleAttachmentKey_NotSync");
+					PartialSync = Dlfcn.GetStringConstant (handle, "kCMSampleAttachmentKey_PartialSync");
+					HasRedundantCoding    		= Dlfcn.GetStringConstant (handle, "kCMSampleAttachmentKey_HasRedundantCoding");
+					IsDependedOnByOthers		= Dlfcn.GetStringConstant (handle, "kCMSampleAttachmentKey_IsDependedOnByOthers");		
+					DependsOnOthers				= Dlfcn.GetStringConstant (handle, "kCMSampleAttachmentKey_DependsOnOthers");										
+					EarlierDisplayTimesAllowed	= Dlfcn.GetStringConstant (handle, "kCMSampleAttachmentKey_EarlierDisplayTimesAllowed");
+					DisplayImmediately			= Dlfcn.GetStringConstant (handle, "kCMSampleAttachmentKey_DisplayImmediately");
+					DoNotDisplay				= Dlfcn.GetStringConstant (handle, "kCMSampleAttachmentKey_DoNotDisplay");
+					ResetDecoderBeforeDecoding	= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_ResetDecoderBeforeDecoding");
+					DrainAfterDecoding			= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_DrainAfterDecoding");
+					PostNotificationWhenConsumed	= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_PostNotificationWhenConsumed");
+					ResumeOutput				= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_ResumeOutput");
+					TransitionID				= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_TransitionID");
+					TrimDurationAtStart			= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_TrimDurationAtStart");
+					TrimDurationAtEnd			= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_TrimDurationAtEnd");
+					SpeedMultiplier				= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_SpeedMultiplier");
+					Reverse						= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_Reverse");
+					FillDiscontinuitiesWithSilence	= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_FillDiscontinuitiesWithSilence");
+					EmptyMedia					= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_EmptyMedia");
+					PermanentEmptyMedia			= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_PermanentEmptyMedia");
+
+					DisplayEmptyMediaImmediately	= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_DisplayEmptyMediaImmediately");
+					EndsPreviousSampleDuration	= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_EndsPreviousSampleDuration");
+					SampleReferenceURL			= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_SampleReferenceURL");
+					SampleReferenceByteOffset	= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_SampleReferenceByteOffset");
+					GradualDecoderRefresh		= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_GradualDecoderRefresh");
+#if !MONOMAC
+					var version = new Version (UIDevice.CurrentDevice.SystemVersion);
+					if (version.Major >= 6) {
+						DroppedFrameReason		= Dlfcn.GetStringConstant (handle, "kCMSampleBufferAttachmentKey_DroppedFrameReason");
+					}
+#endif
+				} finally {
+					Dlfcn.dlclose (handle);
+				}
+			}
+		}
+
+		internal CMSampleBufferAttachmentSettings (NSMutableDictionary dictionary)
+		{
+			Dictionary = dictionary;
+		}
+
+		public NSDictionary Dictionary { get; private set; }
+
+		public bool? NotSync {
+			get {
+				return GetBoolValue (Selectors.NotSync);
+			}
+			set {
+				SetValue (Selectors.NotSync, value);
+			}
+		}
+
+		// TODO: Implement all selector properties
+
+		void SetValue (NSObject key, bool? value)
+		{
+			if (value != null) {
+				var cf = (CFBoolean) value.Value;
+				CFMutableDictionary.SetValue (Dictionary.Handle, key.Handle, cf.Handle);
+			} else {
+				IDictionary<NSObject, NSObject> d = Dictionary;
+				d.Remove (key);
+			}
+		}
+
+		bool? GetBoolValue (NSObject key)
+		{
+			var value = CFDictionary.GetValue (Dictionary.Handle, key.Handle);
+			return value == IntPtr.Zero ? null : (bool?)CFBoolean.GetValue (value);
+		}
+	}
+#endif
 }
