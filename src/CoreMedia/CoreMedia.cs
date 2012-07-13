@@ -280,7 +280,22 @@ namespace MonoMac.CoreMedia {
 		ClosedCaption = 1668047728, // 'clcp'
 		Subtitle      = 1935832172, // 'sbtl'
 		TimeCode      = 1953325924, // 'tmcd'
+		[Obsolete ("Use Metadata instead")]
 		TimedMetadata = 1953326452, // 'tmet'
+		Metadata      = TimedMetadata,
+	}
+
+	public enum CMSubtitleFormatType : uint
+	{
+		Text3G  = 0x74783367, // 'tx3g'
+		WebVTT  = 0x77767474, // 'wvtt'
+	}
+
+	public enum CMMetadataFormatType : uint
+	{
+		ICY   = 0x69637920, // 'icy '
+		ID3   = 0x69643320, // 'id3 '
+		Boxed = 0x6d656278, // 'mebx'
 	}
 	
 	public enum CMTimeRoundingMethod 
