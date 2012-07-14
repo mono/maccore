@@ -1320,7 +1320,8 @@ public class Generator {
 			Console.WriteLine ("   in Method: {0}", mi);
 		}
 	}
-
+	static char [] invalid_selector_chars = new char [] { '*', '^' };
+	
 	//
 	// Either we have an [Export] attribute, or we have a [Wrap] one
 	//
@@ -1345,8 +1346,15 @@ public class Generator {
 			}
 			return null;
 		}
+		
+		var export = (ExportAttribute) attrs [0];
 
-		return (ExportAttribute) attrs [0];
+		if (export.Selector.IndexOfAny (invalid_selector_chars) != -1){
+			Console.Error.WriteLine ("Export attribute contains invalid selector name: {0}", export.Selector);
+			Environment.Exit (1);
+		}
+		
+		return export;
 	}
 
 	public ExportAttribute MakeSetAttribute (ExportAttribute source)
