@@ -176,11 +176,11 @@ namespace MonoMac.CoreMedia {
 		   IntPtr imageBuffer, bool dataReady,
 		   IntPtr makeDataReadyCallback, IntPtr makeDataReadyRefcon,
 		   IntPtr formatDescription,
-		   IntPtr sampleTiming,
+		   ref CMSampleTimingInfo sampleTiming,
 		   out IntPtr bufOut
 		);
 
-		public static CMSampleBuffer CreateForImageBuffer (CVImageBuffer imageBuffer, bool dataReady, CMVideoFormatDescription formatDescription, out CMSampleBufferError error)
+		public static CMSampleBuffer CreateForImageBuffer (CVImageBuffer imageBuffer, bool dataReady, CMVideoFormatDescription formatDescription, CMSampleTimingInfo sampleTiming, out CMSampleBufferError error)
 		{
 			if (imageBuffer == null)
 				throw new ArgumentNullException ("imageBuffer");
@@ -192,7 +192,7 @@ namespace MonoMac.CoreMedia {
 				imageBuffer.handle, dataReady,
 				IntPtr.Zero, IntPtr.Zero,
 				formatDescription.handle,
-				IntPtr.Zero,
+				ref sampleTiming,
 				out buffer);
 
 			if (error != CMSampleBufferError.None)

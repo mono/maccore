@@ -310,7 +310,7 @@ namespace MonoMac.CoreMedia {
 	}
 	
 	[StructLayout(LayoutKind.Sequential)]
-	struct CMSampleTimingInfo
+	public struct CMSampleTimingInfo
 	{
 		public CMTime Duration;
 		public CMTime PresentationTimeStamp;
