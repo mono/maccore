@@ -75,14 +75,27 @@ namespace MonoMac.CoreVideo {
 #if !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static CVReturn CVPixelBufferCreate (IntPtr allocator, IntPtr width, IntPtr height, CVPixelFormatType pixelFormatType, IntPtr pixelBufferAttributes, IntPtr pixelBufferOut);
+
+		public CVPixelBuffer (Size size, CVPixelFormatType pixelFormat)
+			: this (size.Width, size.Height, pixelFormat, null)
+		{
+		}	
+			
 		public CVPixelBuffer (int width, int height, CVPixelFormatType pixelFormatType, NSDictionary pixelBufferAttributes)
 		{
+			if (width <= 0)
+				throw new ArgumentOutOfRangeException ("width");
+
+			if (height <= 0)
+				throw new ArgumentOutOfRangeException ("height");
+
 			IntPtr pixelBufferOut = Marshal.AllocHGlobal (Marshal.SizeOf (typeof (IntPtr)));
-			CVReturn ret = CVPixelBufferCreate (IntPtr.Zero, (IntPtr) width, (IntPtr) height, pixelFormatType, pixelBufferAttributes.Handle, pixelBufferOut);
+			CVReturn ret = CVPixelBufferCreate (IntPtr.Zero, (IntPtr) width, (IntPtr) height, pixelFormatType,
+				pixelBufferAttributes == null ? IntPtr.Zero : pixelBufferAttributes.Handle, pixelBufferOut);
 
 			if (ret != CVReturn.Success) {
 				Marshal.FreeHGlobal (pixelBufferOut);
-				throw new Exception ("CVPixelBufferCreate returned: " + ret);
+				throw new ArgumentException (ret.ToString ());
 			}
 
 			this.handle = Marshal.ReadIntPtr (pixelBufferOut);
