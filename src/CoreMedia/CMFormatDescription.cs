@@ -314,13 +314,6 @@ namespace MonoMac.CoreMedia {
 		{
 		}
 
-#if !COREBUILD
-		public Size Dimensions {
-			get {
-				return CMVideoFormatDescriptionGetDimensions (handle);
-			}
-		}
-
 		[DllImport (Constants.CoreMediaLibrary)]
 		static extern CMFormatDescriptionError CMVideoFormatDescriptionCreate (IntPtr allocator,
 			CMVideoCodecType codecType,
@@ -328,14 +321,19 @@ namespace MonoMac.CoreMedia {
 			IntPtr extensions,
 			out IntPtr outDesc);
 
-		public static CMVideoFormatDescription Create (CMVideoCodecType codecType, Size size, out CMFormatDescriptionError error)
+		public CMVideoFormatDescription (CMVideoCodecType codecType, Size size)
+			: base (IntPtr.Zero)
 		{
-			IntPtr desc;
-			error = CMVideoFormatDescriptionCreate (IntPtr.Zero, codecType, size.Width, size.Height, IntPtr.Zero, out desc);
+			var error = CMVideoFormatDescriptionCreate (IntPtr.Zero, codecType, size.Width, size.Height, IntPtr.Zero, out handle);
 			if (error != CMFormatDescriptionError.None)
-				return null;
+				throw new ArgumentException (error.ToString ());
+		}
 
-			return new CMVideoFormatDescription (desc, true);
+#if !COREBUILD
+		public Size Dimensions {
+			get {
+				return CMVideoFormatDescriptionGetDimensions (handle);
+			}
 		}
 
 		[DllImport (Constants.CoreMediaLibrary)]
