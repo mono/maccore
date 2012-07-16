@@ -232,8 +232,73 @@ namespace MonoMac.CoreMedia {
 					return *ret;
 				}
 			}
-		}		
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		internal extern static Size CMVideoFormatDescriptionGetDimensions (IntPtr handle);
+
+		[Obsolete ("Use CMVideoFormatDescription")]
+		public Size  VideoDimensions {
+			get {
+				return CMVideoFormatDescriptionGetDimensions (handle);
+			}
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		internal extern static RectangleF CMVideoFormatDescriptionGetCleanAperture (IntPtr handle, bool originIsAtTopLeft);
+
+		[Obsolete ("Use CMVideoFormatDescription")]
+		public RectangleF GetVideoCleanAperture (bool originIsAtTopLeft)
+		{
+			return CMVideoFormatDescriptionGetCleanAperture (handle, originIsAtTopLeft);
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static IntPtr CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers ();
+
+		// Belongs to CMVideoFormatDescription
+		public static NSObject [] GetExtensionKeysCommonWithImageBuffers ()
+		{
+			var arr = CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers ();
+			return NSArray.ArrayFromHandle<NSString> (arr);
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		internal extern static SizeF CMVideoFormatDescriptionGetPresentationDimensions (IntPtr handle, bool usePixelAspectRatio, bool useCleanAperture);
+
+		[Obsolete ("Use CMVideoFormatDescription")]
+		public SizeF GetVideoPresentationDimensions (bool usePixelAspectRatio, bool useCleanAperture)
+		{
+			return CMVideoFormatDescriptionGetPresentationDimensions (handle, usePixelAspectRatio, useCleanAperture);
+		}
+
+		[DllImport (Constants.CoreMediaLibrary)]
+		extern static int CMVideoFormatDescriptionMatchesImageBuffer (IntPtr handle, IntPtr imageBufferRef);
+
+		// Belongs to CMVideoFormatDescription
+		public bool VideoMatchesImageBuffer (CVImageBuffer imageBuffer)
+		{
+			if (imageBuffer == null)
+				throw new ArgumentNullException ("imageBuffer");
+			return CMVideoFormatDescriptionMatchesImageBuffer (handle, imageBuffer.Handle) != 0;
+		}
 #endif
+	}
+
+	[Since (4,0)]
+	public class CMAudioFormatDescription : CMFormatDescription {
+		
+		internal CMAudioFormatDescription (IntPtr handle)
+			: base (handle)
+		{
+		}
+
+		internal CMAudioFormatDescription (IntPtr handle, bool owns)
+			: base (handle, owns)
+		{
+		}
+
+		// TODO: Move more audio specific methods here
 	}
 
 	[Since (4,0)]
@@ -249,8 +314,7 @@ namespace MonoMac.CoreMedia {
 		{
 		}
 
-		[DllImport (Constants.CoreMediaLibrary)]
-		extern static Size CMVideoFormatDescriptionGetDimensions (IntPtr handle);
+#if !COREBUILD
 		public Size Dimensions {
 			get {
 				return CMVideoFormatDescriptionGetDimensions (handle);
@@ -258,7 +322,7 @@ namespace MonoMac.CoreMedia {
 		}
 
 		[DllImport (Constants.CoreMediaLibrary)]
-		static extern CMFormatDescriptionError CMVideoFormatDescriptionCreate (IntPtr allocator, 
+		static extern CMFormatDescriptionError CMVideoFormatDescriptionCreate (IntPtr allocator,
 			CMVideoCodecType codecType,
 			int width, int height,
 			IntPtr extensions,
@@ -292,8 +356,6 @@ namespace MonoMac.CoreMedia {
 			return new CMVideoFormatDescription (desc, true);
 		}
 
-#if !COREBUILD
-
 		[DllImport (Constants.CoreMediaLibrary)]
 		extern static RectangleF CMVideoFormatDescriptionGetCleanAperture (IntPtr handle, bool originIsAtTopLeft);
 
@@ -302,30 +364,9 @@ namespace MonoMac.CoreMedia {
 			return CMVideoFormatDescriptionGetCleanAperture (handle, originIsAtTopLeft);
 		}
 
-		[DllImport (Constants.CoreMediaLibrary)]
-		extern static IntPtr CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers ();
-		public static NSObject [] GetExtensionKeysCommonWithImageBuffers ()
-		{
-			var arr = CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers ();
-			return NSArray.ArrayFromHandle<NSString> (arr);
-		}
-
-		[DllImport (Constants.CoreMediaLibrary)]
-		extern static SizeF CMVideoFormatDescriptionGetPresentationDimensions (IntPtr handle, bool usePixelAspectRatio, bool useCleanAperture);
-
 		public SizeF GetPresentationDimensions (bool usePixelAspectRatio, bool useCleanAperture)
 		{
 			return CMVideoFormatDescriptionGetPresentationDimensions (handle, usePixelAspectRatio, useCleanAperture);
-		}
-
-		[DllImport (Constants.CoreMediaLibrary)]
-		extern static int CMVideoFormatDescriptionMatchesImageBuffer (IntPtr handle, IntPtr imageBufferRef);
-
-		public bool VideoMatchesImageBuffer (CVImageBuffer imageBuffer)
-		{
-			if (imageBuffer == null)
-				throw new ArgumentNullException ("imageBuffer");
-			return CMVideoFormatDescriptionMatchesImageBuffer (handle, imageBuffer.Handle) != 0;
 		}
 #endif
 	}

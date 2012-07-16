@@ -279,7 +279,8 @@ namespace MonoMac.CoreMedia {
 
 		[DllImport(Constants.CoreMediaLibrary)]
 		extern static IntPtr CMSampleBufferGetFormatDescription (IntPtr handle);
-		
+
+		[Obsolete ("Use GetAudioFormatDescription or GetVideoFormatDescription")]		
 		public CMFormatDescription GetFormatDescription ()
 		{
 			var desc = default(CMFormatDescription);
@@ -289,6 +290,24 @@ namespace MonoMac.CoreMedia {
 				desc = new CMFormatDescription (descHandle, false);
 			}
 			return desc;					
+		}
+
+		public CMAudioFormatDescription GetAudioFormatDescription ()
+		{
+			var descHandle = CMSampleBufferGetFormatDescription (handle);
+			if (descHandle == IntPtr.Zero)
+				return null;
+
+			return new CMAudioFormatDescription (descHandle, false);
+		}
+
+		public CMVideoFormatDescription GetVideoFormatDescription ()
+		{
+			var descHandle = CMSampleBufferGetFormatDescription (handle);
+			if (descHandle == IntPtr.Zero)
+				return null;
+
+			return new CMVideoFormatDescription (descHandle, false);
 		}
 
 #if !COREBUILD
