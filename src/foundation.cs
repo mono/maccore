@@ -234,9 +234,6 @@ namespace MonoMac.Foundation
 		[Field ("NSLigatureAttributeName", "UIKit")]
 		NSString LigatureAttributeName { get; }
 		
-		[Field ("NSBaselineOffsetAttributeName", "UIKit")]
-		NSString BaselineOffsetAttributeName { get; }
-
 		[Field ("NSKernAttributeName", "UIKit")]
 		NSString KernAttributeName { get; }
 
