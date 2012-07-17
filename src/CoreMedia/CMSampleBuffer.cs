@@ -641,7 +641,158 @@ namespace MonoMac.CoreMedia {
 			}
 		}
 
-		// TODO: Implement all selector properties
+		public bool? PartialSync {
+			get {
+				return GetBoolValue (Selectors.PartialSync);
+			}
+			set {
+				SetValue (Selectors.PartialSync, value);
+			}
+		}
+
+		public bool? RedundantCoding {
+			get {
+				return GetBoolValue (Selectors.HasRedundantCoding);
+			}
+			set {
+				SetValue (Selectors.HasRedundantCoding, value);
+			}
+		}
+
+		public bool? DependedOnByOthers {
+			get {
+				return GetBoolValue (Selectors.IsDependedOnByOthers);
+			}
+			set {
+				SetValue (Selectors.IsDependedOnByOthers, value);
+			}
+		}
+
+		public bool? DependsOnOthers {
+			get {
+				return GetBoolValue (Selectors.DependsOnOthers);
+			}
+			set {
+				SetValue (Selectors.DependsOnOthers, value);
+			}
+		}
+
+		public bool? EarlierDisplayTimesAllowed {
+			get {
+				return GetBoolValue (Selectors.EarlierDisplayTimesAllowed);
+			}
+			set {
+				SetValue (Selectors.EarlierDisplayTimesAllowed, value);
+			}
+		}
+
+		public bool? DisplayImmediately {
+			get {
+				return GetBoolValue (Selectors.DisplayImmediately);
+			}
+			set {
+				SetValue (Selectors.DisplayImmediately, value);
+			}
+		}
+
+		public bool? DoNotDisplay {
+			get {
+				return GetBoolValue (Selectors.DoNotDisplay);
+			}
+			set {
+				SetValue (Selectors.DoNotDisplay, value);
+			}
+		}
+
+		public bool? ResetDecoderBeforeDecoding {
+			get {
+				return GetBoolValue (Selectors.ResetDecoderBeforeDecoding);
+			}
+			set {
+				SetValue (Selectors.ResetDecoderBeforeDecoding, value);
+			}
+		}
+
+		public bool? DrainAfterDecoding {
+			get {
+				return GetBoolValue (Selectors.DrainAfterDecoding);
+			}
+			set {
+				SetValue (Selectors.DrainAfterDecoding, value);
+			}
+		}
+
+		public bool? Reverse {
+			get {
+				return GetBoolValue (Selectors.Reverse);
+			}
+			set {
+				SetValue (Selectors.Reverse, value);
+			}
+		}
+
+		public bool? FillDiscontinuitiesWithSilence {
+			get {
+				return GetBoolValue (Selectors.FillDiscontinuitiesWithSilence);
+			}
+			set {
+				SetValue (Selectors.FillDiscontinuitiesWithSilence, value);
+			}
+		}
+
+		public bool? EmptyMedia {
+			get {
+				return GetBoolValue (Selectors.EmptyMedia);
+			}
+			set {
+				SetValue (Selectors.EmptyMedia, value);
+			}
+		}
+
+		public bool? PermanentEmptyMedia {
+			get {
+				return GetBoolValue (Selectors.PermanentEmptyMedia);
+			}
+			set {
+				SetValue (Selectors.PermanentEmptyMedia, value);
+			}
+		}
+
+		public bool? DisplayEmptyMediaImmediately {
+			get {
+				return GetBoolValue (Selectors.DisplayEmptyMediaImmediately);
+			}
+			set {
+				SetValue (Selectors.DisplayEmptyMediaImmediately, value);
+			}
+		}
+
+		public bool? EndsPreviousSampleDuration {
+			get {
+				return GetBoolValue (Selectors.EndsPreviousSampleDuration);
+			}
+			set {
+				SetValue (Selectors.EndsPreviousSampleDuration, value);
+			}
+		}
+
+		[Since (6,0)]
+		public string DroppedFrameReason {
+			get {
+				return GetStringValue (Selectors.DroppedFrameReason);
+			}
+		}
+
+		// TODO: Implement remaining selector properties
+		// PostNotificationWhenConsumed
+		// ResumeOutput
+		// TransitionID
+		// TrimDurationAtStart
+		// TrimDurationAtEnd
+		// SpeedMultiplier
+		// SampleReferenceURL
+		// SampleReferenceByteOffset
+		// GradualDecoderRefresh
 
 		void SetValue (NSObject key, bool? value)
 		{
@@ -658,6 +809,15 @@ namespace MonoMac.CoreMedia {
 		{
 			var value = CFDictionary.GetValue (Dictionary.Handle, key.Handle);
 			return value == IntPtr.Zero ? null : (bool?)CFBoolean.GetValue (value);
+		}
+
+		string GetStringValue (NSString key)
+		{
+			NSObject value;
+			if (!Dictionary.TryGetValue (key, out value))
+				return null;
+
+			return CFString.FetchString (value.Handle);
 		}
 	}
 #endif
