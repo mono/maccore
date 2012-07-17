@@ -42,6 +42,7 @@ namespace MonoMac.AVFoundation {
 	delegate void AVAssetImageGeneratorCompletionHandler (CMTime requestedTime, IntPtr imageRef, CMTime actualTime, AVAssetImageGeneratorResult result, NSError error);
 	delegate void AVCompletion (bool finished);
 	
+	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))][Static]
 	interface AVMediaType {
@@ -64,10 +65,15 @@ namespace MonoMac.AVFoundation {
 		NSString Timecode { get; }
 
 		[Field ("AVMediaTypeTimedMetadata")]
+		[Obsolete ("Deprecated in iOS 6.0, see Metadata")]
 		NSString TimedMetadata { get; }
 
 		[Field ("AVMediaTypeMuxed")]
 		NSString Muxed { get; }
+
+		[Since (6,0)]
+		[Field ("AVMediaTypeMetadata")]
+		NSString Metadata { get; }
 	}
 
 	[Since (4,0)]
@@ -102,6 +108,9 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVMediaCharacteristicDescribesVideoForAccessibility")]
 		NSString DescribesVideoForAccessibility { get;  }
+
+		[Field ("AVMediaCharacteristicEasyToRead")]
+		NSString EasyToRead { get; }
 	}
 
 	[Since (4,0)]
@@ -176,10 +185,12 @@ namespace MonoMac.AVFoundation {
 		
 		[Field ("AVVideoProfileLevelH264Baseline31")]
 		NSString ProfileLevelH264Baseline31 { get; }
-		
+
+		[Since (6,0)]
 		[Field ("AVVideoProfileLevelH264Main30")]
 		NSString ProfileLevelH264Main30 { get; }
 		
+		[Since (6,0)]
 		[Field ("AVVideoProfileLevelH264Main31")]
 		NSString ProfileLevelH264Main31 { get; }
 
@@ -191,6 +202,12 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVVideoProfileLevelH264Main41")]
 		NSString ProfileLevelH264Main41 { get; }
+
+		[Field ("AVVideoProfileLevelH264High40")]
+		NSString ProfileLevelH264High40 { get; }
+		
+		[Field ("AVVideoProfileLevelH264High41")]
+		NSString ProfileLevelH264High41 { get; }
 		
 		[Field ("AVVideoPixelAspectRatioKey")]
 		NSString PixelAspectRatioKey { get; }
@@ -215,6 +232,7 @@ namespace MonoMac.AVFoundation {
 		
 		[Field ("AVVideoCleanApertureVerticalOffsetKey")]
 		NSString CleanApertureVerticalOffsetKey { get; }
+
 	}	
 	
 	[BaseType (typeof (NSObject))]
@@ -1994,6 +2012,44 @@ namespace MonoMac.AVFoundation {
 		void LoadValuesAsynchronously (string [] keys, NSAction handler);
 	}
 
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	interface AVMetadataObject {
+		[Export ("duration")]
+		CMTime Duration { get;  }
+
+		[Export ("bounds")]
+		RectangleF Bounds { get;  }
+
+		[Export ("type")]
+		string Type { get;  }
+
+		[Export ("time")]
+		CMTime Time{ get;}
+
+		[Field ("AVMetadataObjectTypeFace")]
+		NSString TypeFace { get; }
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (AVMetadataObject))]
+	interface AVMetadataFaceObject {
+		[Export ("hasRollAngle")]
+		bool HasRollAngle { get;  }
+
+		[Export ("rollAngle")]
+		float RollAngle { get;  }
+
+		[Export ("hasYawAngle")]
+		bool HasYawAngle { get;  }
+
+		[Export ("yawAngle")]
+		float YawAngle { get;  }
+
+		[Export ("faceID")]
+		int FaceID { get; }
+	}
+	
 	[Since (4,0)]
 	[BaseType (typeof (AVMetadataItem))]
 	interface AVMutableMetadataItem {
@@ -2599,6 +2655,26 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("videoScaleAndCropFactor")]
 		float VideoScaleAndCropFactor { get; set;  }
+
+		[Since (6,0)]
+		[Export ("videoPreviewLayer")]
+		AVCaptureVideoPreviewLayer VideoPreviewLayer { get;  }
+
+		[Since (6,0)]
+		[Export ("automaticallyAdjustsVideoMirroring")]
+		bool AutomaticallyAdjustsVideoMirroring { get; set;  }
+
+		[Since (6,0)]
+		[Export ("supportsVideoStabilization")]
+		bool SupportsVideoStabilization { [Bind ("isVideoStabilizationSupported")] get;  }
+
+		[Since (6,0)]
+		[Export ("videoStabilizationEnabled")]
+		bool VideoStabilizationEnabled { [Bind ("isVideoStabilizationEnabled")] get;  }
+
+		[Since (6,0)]
+		[Export ("enablesVideoStabilizationWhenAvailable")]
+		bool EnablesVideoStabilizationWhenAvailable { get; set;  }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -2676,18 +2752,23 @@ namespace MonoMac.AVFoundation {
                 AVCaptureSession Session { get; set;  }
 
                 [Export ("orientation")]
+		[Obsolete ("Deprecated in iOS 6.0")]
                 AVCaptureVideoOrientation Orientation { get; set;  }
 
                 [Export ("automaticallyAdjustsMirroring")]
+		[Obsolete ("Deprecated in iOS 6.0")]
                 bool AutomaticallyAdjustsMirroring { get; set;  }
 
                 [Export ("mirrored")]
+		[Obsolete ("Deprecated in iOS 6.0")]
                 bool Mirrored { [Bind ("isMirrored")] get; set;  }
 
 		[Export ("isMirroringSupported")]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		bool MirroringSupported { get; }
 
 		[Export ("isOrientationSupported")]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		bool OrientationSupported { get; }
 
 		[Export ("videoGravity")]
@@ -2698,6 +2779,22 @@ namespace MonoMac.AVFoundation {
 
                 [Export ("initWithSession:")]
                 IntPtr Constructor (AVCaptureSession session);
+
+		[Since (6,0)]
+		[Export ("connection")]
+		AVCaptureConnection Connection { get; }
+
+		[Since (6,0)]
+		[Export ("captureDevicePointOfInterestForPoint:")]
+		PointF CaptureDevicePointOfInterestForPoint (PointF pointInLayer);
+
+		[Since (6,0)]
+		[Export ("pointForCaptureDevicePointOfInterest:")]
+		PointF PointForCaptureDevicePointOfInterest (PointF captureDevicePointOfInterest);
+
+		[Since (6,0)]
+		[Export ("rectForMetadataObject:")]
+		RectangleF RectForMetadataObject (AVMetadataObject metadataObject);
         }
 	
 	[Since (4,0)]
@@ -2950,18 +3047,31 @@ namespace MonoMac.AVFoundation {
 		NSString SubjectAreaDidChangeNotification { get; }
 
 		// 5.0
-
+		[Since(5,0)]
 		[Export ("isFlashAvailable")]
 		bool FlashAvailable { get;  }
 
+		[Since(5,0)]
 		[Export ("isFlashActive")]
 		bool FlashActive { get; }
 
+		[Since(5,0)]
 		[Export ("isTorchAvailable")]
 		bool TorchAvailable { get; }
 
+		[Since(5,0)]
 		[Export ("torchLevel")]
 		float TorchLevel { get; }
+
+		// 6.0
+		[Since (6,0)]
+		[Export ("torchActive")]
+		bool TorchActive { [Bind ("isTorchActive")] get;  }
+
+		[Since (6,0)]
+		[Export ("setTorchModeOnWithLevel:error:")]
+		bool SetTorchModeLevel (float torchLevel, out NSError outError);
+
 	}
 
 	public delegate void AVCompletionHandler ();
@@ -3049,6 +3159,31 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("seekToTime:toleranceBefore:toleranceAfter:completionHandler:")]
 		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletion completion);
+
+		[Since (6,0)]
+		[Export ("seekToDate:")]
+		void Seek (NSDate date);
+
+		[Since (6,0)]
+		[Export ("seekToDate:completionHandler")]
+		void Seek (NSDate date, AVCompletion onComplete);
+
+		[Since (6,0)]
+		[Export ("setRate:time:atHostTime:")]
+		void SetRate (float rate, CMTime itemTime, CMTime hostClockTime);
+
+		[Since (6,0)]
+		[Export ("prerollAtRate:completionHandler:")]
+		void Preroll (float rate, AVCompletion onComplete);
+
+		[Since (6,0)]
+		[Export ("cancelPendingPrerolls")]
+		void CancelPendingPrerolls ();
+
+		[Since (6,0)]
+		[Export ("outputObscuredDueToInsufficientExternalProtection")]
+		bool OutputObscuredDueToInsufficientExternalProtection { get; }
+		
 	}
 
 	[BaseType (typeof (NSObject))]

@@ -155,7 +155,11 @@ namespace MonoMac.AVFoundation {
 		InvalidVideoComposition = -11841,
 		MediaServicesWereReset = -11820,
 		//[Since (5,1)]
-		InvalidOutputURLPathExtension = -11843
+		InvalidOutputURLPathExtension = -11843,
+		ScreenCaptureFailed = -11844,
+		DisplayWasDisabled = -11845,
+		TorchLevelUnavailable = -11846,
+			
 	}
 
 	[Since (4,0)]
@@ -197,5 +201,13 @@ namespace MonoMac.AVFoundation {
 
 	public enum AVAssetImageGeneratorResult {
 		Succeeded, Failed, Cancelled
+	}
+
+	public enum AVCaptureDeviceTransportControlsPlaybackMode {
+		NotPlaying, Playing
+	}
+
+	public enum AVVideoFieldMode {
+		Both, TopOnly, BottomOnly, Deinterlace
 	}
 }
