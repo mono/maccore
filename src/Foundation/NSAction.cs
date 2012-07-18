@@ -32,14 +32,17 @@ namespace MonoMac.Foundation {
 
 	// Use this for synchronous operations
 	[Register ("__MonoMac_NSActionDispatcher")]
-	internal class NSActionDispatcher : NSObject {
+	internal sealed class NSActionDispatcher : NSObject {
 
-		public static Selector Selector = new Selector ("apply");
+		public static readonly Selector Selector = new Selector ("apply");
 
-		NSAction action;
+		readonly NSAction action;
 
 		public NSActionDispatcher (NSAction action)
 		{
+			if (action == null)
+				throw new ArgumentNullException ("action");
+
 			this.action = action;
 		}
 
