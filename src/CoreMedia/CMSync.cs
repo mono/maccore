@@ -262,6 +262,65 @@ namespace MonoMac.CoreMedia {
 		{
 			return CMTimebaseNotificationBarrier (handle);
 		}
+
+		public const double VeryLongTimeInterval = 256.0 * 365.0 * 24.0 * 60.0 * 60.0;
+
+ #if !COREBUILD
+		[DllImport(Constants.CoreMediaLibrary)]
+		extern static CMTimebaseError CMTimebaseAddTimer(IntPtr timebase, /*CFRunLoopTimerRef*/ IntPtr timer, /*CFRunLoopRef*/ IntPtr runloop);
+
+		public CMTimebaseError AddTimer (NSTimer timer, NSRunLoop runloop)
+		{
+			if (timer == null)
+				throw new ArgumentNullException ("timer");
+			if (runloop == null)
+				throw new ArgumentNullException ("runloop");
+
+			// FIXME: Crashes inside CoreMedia
+			return CMTimebaseAddTimer (Handle, timer.Handle, runloop.Handle);
+		}
+
+		[DllImport(Constants.CoreMediaLibrary)]
+		extern static CMTimebaseError CMTimebaseRemoveTimer (IntPtr timebase, /*CFRunLoopTimerRef*/ IntPtr timer);
+
+		public CMTimebaseError RemoveTimer (NSTimer timer)
+		{
+			if (timer == null)
+				throw new ArgumentNullException ("timer");
+
+			return CMTimebaseRemoveTimer (Handle, timer.Handle);
+		}
+
+		[DllImport(Constants.CoreMediaLibrary)]
+		extern static CMTimebaseError CMTimebaseSetTimerNextFireTime (IntPtr timebase, /*CFRunLoopTimerRef*/ IntPtr timer, CMTime fireTime, uint flags);
+
+		public CMTimebaseError SetTimerNextFireTime (NSTimer timer, CMTime fireTime)
+		{
+			if (timer == null)
+				throw new ArgumentNullException ("timer");
+
+			return CMTimebaseSetTimerNextFireTime (Handle, timer.Handle, fireTime, 0);
+		}
+
+		[DllImport(Constants.CoreMediaLibrary)]
+		extern static CMTimebaseError CMTimebaseSetTimerToFireImmediately (IntPtr timebase, /*CFRunLoopTimerRef*/ IntPtr timer);
+
+		public CMTimebaseError SetTimerToFireImmediately (NSTimer timer)
+		{
+			if (timer == null)
+				throw new ArgumentNullException ("timer");
+
+			return CMTimebaseSetTimerToFireImmediately (Handle, timer.Handle);
+		}
+#endif
+
+		//
+		// Dispatch timers not supported
+		//
+		// CMTimebaseAddTimerDispatchSource
+		// CMTimebaseRemoveTimerDispatchSource
+		// CMTimebaseSetTimerDispatchSourceNextFireTime
+		// CMTimebaseSetTimerDispatchSourceToFireImmediately
 	}
 
 	public enum CMSyncError {
