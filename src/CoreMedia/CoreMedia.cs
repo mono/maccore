@@ -2,6 +2,7 @@
 // CoreMedia.cs: Basic definitions for CoreMedia
 //
 // Authors: Mono Team
+//          Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2010-2011 Novell Inc
 // Copyright 2012 Xamarin Inc
@@ -69,6 +70,22 @@ namespace MonoMac.CoreMedia {
 	public struct CMTimeMapping {
 		public CMTime Source;
 		public CMTime Target;
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct CMTimeScale
+	{
+		public static readonly CMTimeScale MaxValue = new CMTimeScale (0x7fffffff);
+
+		public int Value;
+
+		public CMTimeScale (int value)
+		{
+			if (value < 0 || value > 0x7fffffff)
+				throw new ArgumentOutOfRangeException ("value");
+
+			this.Value = value;
+		}
 	}
 
 	public enum CMVideoCodecType 
