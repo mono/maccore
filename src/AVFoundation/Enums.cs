@@ -210,4 +210,41 @@ namespace MonoMac.AVFoundation {
 	public enum AVVideoFieldMode {
 		Both, TopOnly, BottomOnly, Deinterlace
 	}
+
+	[Flags]
+	public enum AVAudioSessionInterruptionOptions {
+		ShouldResume = 1
+	}
+
+	[Flags]
+	public enum AVAudioSessionSetActiveOptions {
+		NotifyOthersOnDeactivation = 1
+	}
+
+	public enum AVAudioSessionPortOverride {
+		None = 0,
+		Speaker = 0x73706b72 // 'spkr'
+	}
+
+	public enum AVAudioSessionRouteChangeReason {
+		Unknown,
+		NewDeviceAvailable,
+		OldDeviceUnavailable,
+		CategoryChange,
+		Override,
+		WakeFromSleep,
+		NoSuitableRouteForCategory
+	}
+
+	[Flags]
+	public enum AVAudioSessionCategoryOptions {
+		MixWithOthers = 1,
+		DuckOthers = 2,
+		AllowBluetooth = 4,
+		DefaultToSpeaker = 8 
+	}
+
+	public enum AVAudioSessionInterruptionType  {
+		Ended, Began
+	}
 }

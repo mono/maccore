@@ -41,7 +41,7 @@ namespace MonoMac.AVFoundation {
 
 	delegate void AVAssetImageGeneratorCompletionHandler (CMTime requestedTime, IntPtr imageRef, CMTime actualTime, AVAssetImageGeneratorResult result, NSError error);
 	delegate void AVCompletion (bool finished);
-	
+	delegate void AVCompatibleFilesHandler (string [] fileTypes);
 	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))][Static]
@@ -327,6 +327,10 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVSampleRateKey"), Internal]
 		NSString AVSampleRateKey { get; }
+
+		[Since (6,0)]
+		[Export ("channelAssignments")]
+		AVAudioSessionChannelDescription [] ChannelAssignments { get; set; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -428,6 +432,10 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVSampleRateConverterAudioQualityKey"), Internal]
 		NSString AVSampleRateConverterAudioQualityKey { get; }
+
+		[Since (6,0)]
+		[Export ("channelAssignments")]
+		AVAudioSessionChannelDescription [] ChannelAssignments { get; set; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -459,23 +467,26 @@ namespace MonoMac.AVFoundation {
 		NSObject WeakDelegate { get; set;  }
 
 		[Wrap ("WeakDelegate")]
+		[Obsolete ("AVAudioSession.Delegate is deprecated on iOS 6.0, use AVAudioSession.Notification.Observe* methods instead")]
 		AVAudioSessionDelegate Delegate { get; set;  }
 	
-		[Export ("setActive:error:"), Internal]
-		bool SetActive (bool beActive, IntPtr outError);
+		[Export ("setActive:error:")]
+		bool SetActive (bool beActive, out NSError outError);
 
-		[Export ("setActive:withFlags:error:"), Internal]
 		[Since (4,0)]
-		bool _SetActive (bool beActive, int flags, IntPtr outError);
+		[Export ("setActive:withFlags:error:")]
+		[Obsolete ("Obsolete in iOS 6.0, use SetActive (bool, AVAudioSessionSetActiveOptions, out NSError) instead")]
+		bool SetActive (bool beActive, AVAudioSessionFlags flags, out NSError outError);
 
-		[Export ("setCategory:error:"), Internal]
-		bool SetCategory (NSString theCategory, IntPtr outError);
+		[Export ("setCategory:error:")]
+		bool SetCategory (NSString theCategory, out NSError outError);
 	
-		[Export ("setPreferredHardwareSampleRate:error:"), Internal]
-		bool SetPreferredHardwareSampleRate (double sampleRate, IntPtr outError);
+		[Obsolete ("Obsoleted in iOS 6.0, use SetPreferredSampleRate")]
+		[Export ("setPreferredHardwareSampleRate:error:")]
+		bool SetPreferredHardwareSampleRate (double sampleRate, out NSError outError);
 	
-		[Export ("setPreferredIOBufferDuration:error:"), Internal]
-		bool SetPreferredIOBufferDuration (double duration, IntPtr outError);
+		[Export ("setPreferredIOBufferDuration:error:")]
+		bool SetPreferredIOBufferDuration (double duration, out NSError outError);
 	
 		[Export ("category")]
 		NSString Category { get;  }
@@ -487,21 +498,26 @@ namespace MonoMac.AVFoundation {
 		bool SetMode (NSString mode, out NSError error);
 	
 		[Export ("preferredHardwareSampleRate")]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		double PreferredHardwareSampleRate { get;  }
 	
 		[Export ("preferredIOBufferDuration")]
 		double PreferredIOBufferDuration { get;  }
 	
 		[Export ("inputIsAvailable")]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		bool InputIsAvailable { get;  }
 	
 		[Export ("currentHardwareSampleRate")]
+		[Obsolete ("Deprecated in iOS 6.0, use SampleRate instead")]
 		double CurrentHardwareSampleRate { get;  }
 	
 		[Export ("currentHardwareInputNumberOfChannels")]
-		int currentHardwareInputNumberOfChannels { get;  }
+		[Obsolete ("Deprecated in iOS 6.0, use InputNumberOfChannels instead")]
+		int CurrentHardwareInputNumberOfChannels { get;  }
 	
 		[Export ("currentHardwareOutputNumberOfChannels")]
+		[Obsolete ("Deprecated in iOS 6.0, use OutputNumberOfChannels instead")]
 		int CurrentHardwareOutputNumberOfChannels { get;  }
 
 		[Field ("AVAudioSessionCategoryAmbient")]
@@ -536,6 +552,109 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVAudioSessionModeGameChat")]
 		NSString ModeGameChat { get; }
+
+		[Since (6,0)]
+		[Export ("setActive:withOptions:error:")]
+		bool SetActive (bool active, AVAudioSessionSetActiveOptions options, out NSError outError);
+
+		[Since (6,0)]
+		[Export ("setCategory:withOptions:error:")]
+		bool SetCategory (string category, AVAudioSessionCategoryOptions options, out NSError outError);
+
+		[Since (6,0)]
+		[Export ("categoryOptions")]
+		AVAudioSessionCategoryOptions CategoryOptions { get;  }
+
+		[Since (6,0)]
+		[Export ("overrideOutputAudioPort:error:")]
+		bool OverrideOutputAudioPort (AVAudioSessionPortOverride portOverride, out NSError outError);
+
+		[Since (6,0)]
+		[Export ("otherAudioPlaying")]
+		bool OtherAudioPlaying { [Bind ("isOtherAudioPlaying")] get;  }
+
+		[Since (6,0)]
+		[Export ("currentRoute")]
+		AVAudioSessionRouteDescription CurrentRoute { get;  }
+
+		[Since (6,0)]
+		[Export ("setPreferredSampleRate:error:")]
+		bool SetPreferredSampleRate (double sampleRate, out NSError error);
+		
+		[Since (6,0)]
+		[Export ("preferredSampleRate")]
+		double PreferredSampleRate { get;  }
+
+		[Since (6,0)]
+		[Export ("inputGain")]
+		float InputGain { get;  }
+
+		[Since (6,0)]
+		[Export ("inputGainSettable")]
+		bool InputGainSettable { [Bind ("isInputGainSettable")] get;  }
+
+		[Since (6,0)]
+		[Export ("inputAvailable")]
+		bool InputAvailable { [Bind ("isInputAvailable")] get;  }
+
+		[Since (6,0)]
+		[Export ("sampleRate")]
+		double SampleRate { get;  }
+
+		[Since (6,0)]
+		[Export ("inputNumberOfChannels")]
+		int InputNumberOfChannels { get;  }
+
+		[Since (6,0)]
+		[Export ("outputNumberOfChannels")]
+		int OutputNumberOfChannels { get;  }
+
+		[Since (6,0)]
+		[Export ("outputVolume")]
+		float OutputVolume { get;  }
+
+		[Since (6,0)]
+		[Export ("inputLatency")]
+		double InputLatency { get;  }
+
+		[Since (6,0)]
+		[Export ("outputLatency")]
+		double OutputLatency { get;  }
+
+		[Since (6,0)]
+		[Export ("IOBufferDuration")]
+		double IOBufferDuration { get;  }
+
+		[Since (6,0)]
+		[Export ("setInputGain:error:")]
+		bool SetInputGain (float gain, out NSError outError);
+
+		[Since (6,0)]
+		[Field ("AVAudioSessionInterruptionNotification")]
+		[Notification (typeof (AVAudioSessionInterruptionEventArgs))]
+		NSString InterruptionNotification { get; }
+
+		[Since (6,0)]
+		[Field ("AVAudioSessionRouteChangeNotification")]
+		[Notification (typeof (AVAudioSessionRouteChangeEventArgs))]
+		NSString RouteChangeNotification { get; }
+		
+	}
+
+	interface AVAudioSessionInterruptionEventArgs {
+		[Export ("AVAudioSessionInterruptionTypeKey")]
+		AVAudioSessionInterruptionType InterruptionType { get; }
+
+		[Export ("AVAudioSessionInterruptionOptionKey")]
+		AVAudioSessionInterruptionOptions Option { get; }
+	}
+
+	interface AVAudioSessionRouteChangeEventArgs {
+		[Export ("AVAudioSessionRouteChangeReasonKey")]
+		AVAudioSessionRouteChangeReason Reason { get; }
+		
+		[Export ("AVAudioSessionRouteChangePreviousRouteKey")]
+		AVAudioSessionRouteDescription PreviousRoute { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -553,6 +672,46 @@ namespace MonoMac.AVFoundation {
 		[Since (4,0)]
 		[Export ("endInterruptionWithFlags:")]
 		void EndInterruption (AVAudioSessionInterruptionFlags flags);
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	interface AVAudioSessionChannelDescription {
+		[Export ("channelName")]
+		string ChannelName { get;  }
+
+		[Export ("owningPortUID")]
+		string OwningPortUID { get;  }
+
+		[Export ("channelNumber")]
+		int ChannelNumber { get;  }
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	interface AVAudioSessionPortDescription {
+		[Export ("portType")]
+		string PortType { get;  }
+
+		[Export ("portName")]
+		string PortName { get;  }
+
+		[Export ("UID")]
+		string UID { get;  }
+
+		[Export ("channels")]
+		AVAudioSessionChannelDescription [] Channels { get;  }
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	interface AVAudioSessionRouteDescription {
+		[Export ("inputs")]
+		AVAudioSessionPortDescription [] Inputs { get;  }
+
+		[Export ("outputs")]
+		AVAudioSessionPortDescription [] Outputs { get;  }
+
 	}
 
 	[Since (4,0)]
@@ -940,6 +1099,10 @@ namespace MonoMac.AVFoundation {
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriterInput initWithMediaType:outputSettings:] invalid parameter not satisfying: mediaType != ((void*)0)
 	[DisableDefaultCtor]
 	interface AVAssetWriterInput {
+		[Since (6,0)]
+		[Export ("initWithMediaType:outputSettings:sourceFormatHint:")]
+		IntPtr Constructor (string mediaType, [NullAllowed] NSDictionary outputSettings, CMFormatDescription sourceFormatHint);
+
 		[Export ("mediaType")]
 		string MediaType { get;  }
 
@@ -975,6 +1138,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("mediaTimeScale")]
 		int MediaTimeScale { get; set; }
+
+		[Since (6,0)]
+		[Export ("sourceFormatHint")]
+		CMFormatDescription SourceFormatHint { get; }
 	}
 
 	[Since (4,1)]
@@ -2224,6 +2391,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("outputURL", ArgumentSemantic.Copy)]
 		NSUrl OutputUrl { get; set;  }
 
+		[Static, Export ("exportSessionWithAsset:presetName:")]
+		AVAssetExportSession FromAsset (AVAsset asset, string presetName);
+		
 		[Export ("status")]
 		AVAssetExportSessionStatus Status { get;  }
 
@@ -2300,6 +2470,14 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("estimatedOutputFileLength")]
 		long EstimatedOutputFileLength { get; }
+
+		[Since (6,0)]
+		[Static, Export ("determineCompatibilityOfExportPreset:withAsset:outputFileType:completionHandler:")]
+		void DetermineCompatibilityOfExportPreset (string presetName, AVAsset asset, string outputFileType, Action<bool> isCompatibleResult);
+
+		[Since (6,0)]
+		[Export ("determineCompatibleFileTypesWithCompletionHandler:")]
+		void DetermineCompatibleFileTypes (AVCompatibleFilesHandler compatibleFileTypesHandler);
 	}
 	
 	[BaseType (typeof (NSObject))]

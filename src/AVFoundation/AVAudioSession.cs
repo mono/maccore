@@ -35,38 +35,6 @@ namespace MonoMac.AVFoundation {
 			return SetActive (beActive, out outError);
 		}
 
-		public bool SetActive (bool beActive, out NSError outError)
-		{
-			unsafe {
-				IntPtr errhandle;
-				IntPtr ptrtohandle = (IntPtr) (&errhandle);
-
-				if (SetActive (beActive, ptrtohandle)){
-					outError = null;
-					return true;
-				} else {
-					outError = (NSError) Runtime.GetNSObject (errhandle);
-					return false;
-				}
-			}			
-		}
-
-		[Since (4,0)]
-		public bool SetActive (bool beActive, AVAudioSessionFlags flags, out NSError outError)
-		{
-			unsafe {
-				IntPtr errhandle;
-				IntPtr ptrtohandle = (IntPtr) (&errhandle);
-
-				if (_SetActive (beActive, (int) flags, ptrtohandle)){
-					outError = null;
-					return true;
-				} else {
-					outError = (NSError) Runtime.GetNSObject (errhandle);
-					return false;
-				}
-			}			
-		}
 
 		[Obsolete ("Use SetCategory(bool, out NSError) instead")]
 		public bool SetCategory (NSString theCategory, NSError outError)
@@ -75,43 +43,11 @@ namespace MonoMac.AVFoundation {
 			return SetCategory (theCategory, out outError);
 		}
 
-		public bool SetCategory (NSString theCategory, out NSError outError)
-		{
-			unsafe {
-				IntPtr errhandle;
-				IntPtr ptrtohandle = (IntPtr) (&errhandle);
-
-				if (SetCategory (theCategory, ptrtohandle)){
-					outError = null;
-					return true;
-				} else {
-					outError = (NSError) Runtime.GetNSObject (errhandle);
-					return false;
-				}
-			}			
-		}
-
-		[Obsolete ("Use SetPreferredHardwareSampleRate(bool, out NSError) instead")]
+		[Obsolete ("Use SetPreferredSampleRate(bool, out NSError) on iOS 6.0 instead")]
 		public bool SetPreferredHardwareSampleRate (double sampleRate, NSError outError)
 		{
 			// Effectively discarded due to original binding error
 			return SetPreferredHardwareSampleRate (sampleRate, out outError);
-		}
-
-		public bool SetPreferredHardwareSampleRate (double sampleRate, out NSError outError)
-		{
-			unsafe {
-				IntPtr errhandle;
-				IntPtr ptrtohandle = (IntPtr) (&errhandle);
-
-				if (SetPreferredHardwareSampleRate (sampleRate, ptrtohandle)){
-					outError = null;
-					return true;
-				} else {
-					outError = (NSError) Runtime.GetNSObject (errhandle);
-					return false;
-				}
-			}			
 		}
 
 		[Obsolete ("Use SetPreferredIOBufferDuration(bool, out NSError) instead")]
@@ -120,22 +56,5 @@ namespace MonoMac.AVFoundation {
 			// Effectively discarded due to original binding error
 			return SetPreferredIOBufferDuration (duration, out outError);
 		}
-
-		public bool SetPreferredIOBufferDuration (double duration, out NSError outError)
-		{
-			unsafe {
-				IntPtr errhandle;
-				IntPtr ptrtohandle = (IntPtr) (&errhandle);
-
-				if (SetPreferredIOBufferDuration (duration, ptrtohandle)){
-					outError = null;
-					return true;
-				} else {
-					outError = (NSError) Runtime.GetNSObject (errhandle);
-					return false;
-				}
-			}			
-		}
-		
 	}
 }
