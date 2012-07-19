@@ -99,11 +99,37 @@ namespace MonoMac.AddressBook {
 			InitConstants.Init ();
 		}
 
-		internal ABAddressBook (IntPtr handle)
+		[DllImport (Constants.AddressBookLibrary)]
+		internal extern static IntPtr ABAddressBookCreateWithOptions (IntPtr dictionary, out IntPtr cfError);
+
+		public static ABAddressBook FromOptions (NSDictionary dictionary, out NSError outError)
 		{
-			this.handle = CFObject.CFRetain (handle);
+			IntPtr error;
+			
+			InitConstants.Init ();
+			var handle = ABAddressBookCreateWithOptions (dictionary == null ? IntPtr.Zero : dictionary.Handle, out error);
+			if (handle == IntPtr.Zero){
+				outError = new NSError (error);
+				return null;
+			}
+			outError = null;
+			return new ABAddressBook (handle, true);
+		}
+			
+		internal ABAddressBook (IntPtr handle, bool owns)
+		{
+			InitConstants.Init ();
+			if (!owns)
+				CFObject.CFRetain (handle);
+			this.handle = handle;
 		}
 
+		internal ABAddressBook (IntPtr handle)
+		{
+			InitConstants.Init ();
+			this.handle = handle;
+		}
+		
 		static ABAddressBook ()
 		{
 			var handle = Dlfcn.dlopen (Constants.AddressBookLibrary, 0);
@@ -259,7 +285,7 @@ namespace MonoMac.AddressBook {
 			if (self == null)
 				return;
 			self.OnExternalChange (new ExternalChangeEventArgs (
-						new ABAddressBook (addressBook),
+					       new ABAddressBook (addressBook, false),
 						(NSDictionary) Runtime.GetNSObject (info)));
 		}
 
