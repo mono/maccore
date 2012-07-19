@@ -638,7 +638,67 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVAudioSessionRouteChangeNotification")]
 		[Notification (typeof (AVAudioSessionRouteChangeEventArgs))]
 		NSString RouteChangeNotification { get; }
+
+		[Since (6,0)]
+		[Field ("AVAudioSessionMediaServicesWereResetNotification")]
+		[Notification]
+		NSString MediaServicesWereResetNotification { get; }
+
+		[Since (6,0)]
+		[Field ("AVAudioSessionCategoryMultiRoute")]
+		NSString CategoryMultiRoute { get; }
 		
+		[Since (6,0)]
+		[Field ("AVAudioSessionModeMoviePlayback")]
+		NSString ModeMoviePlayback { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortLineIn")]
+		NSString PortLineIn { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortBuiltInMic")]
+		NSString PortBuiltInMic { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortHeadsetMic")]
+		NSString PortHeadsetMic { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortLineOut")]
+		NSString PortLineOut { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortHeadphones")]
+		NSString PortHeadphones { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortBluetoothA2DP")]
+		NSString PortBluetoothA2DP { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortBuiltInReceiver")]
+		NSString PortBuiltInReceiver { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortBuiltInSpeaker")]
+		NSString PortBuiltInSpeaker { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortHDMI")]
+		NSString PortHdmi { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortAirPlay")]
+		NSString PortAirPlay { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortBluetoothHFP")]
+		NSString PortBluetoothHfp { get; }
+		
+		[Since (6,0)]
+		[Field ("AVAudioSessionPortUSBAudio")]
+		NSString PortUsbAudio { get; }
 	}
 
 	interface AVAudioSessionInterruptionEventArgs {
@@ -691,7 +751,7 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (NSObject))]
 	interface AVAudioSessionPortDescription {
 		[Export ("portType")]
-		string PortType { get;  }
+		NSString PortType { get;  }
 
 		[Export ("portName")]
 		string PortName { get;  }
@@ -3368,6 +3428,39 @@ namespace MonoMac.AVFoundation {
 		
 	}
 
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	interface AVTextStyleRule {
+		// Keys from CMTextMarkup
+		[Export ("textMarkupAttributes")]
+		NSDictionary TextMarkupAttributes { get;  }
+
+		[Export ("textSelector")]
+		string TextSelector { get;  }
+
+		[Static]
+		[Export ("propertyListForTextStyleRules:")]
+		NSObject ToPropertyList (AVTextStyleRule [] textStyleRules);
+
+		[Static]
+		[Export ("textStyleRulesFromPropertyList:")]
+		AVTextStyleRule [] FromPropertyList (NSObject plist);
+
+		[Static]
+		[Export ("textStyleRuleWithTextMarkupAttributes:")]
+		AVTextStyleRule FromTextMarkupAttributes (NSDictionary textMarkupAttributes);
+
+		[Static]
+		[Export ("textStyleRuleWithTextMarkupAttributes:textSelector:")]
+		AVTextStyleRule FromTextMarkupAttributes (NSDictionary textMarkupAttributes, string textSelector);
+
+		[Export ("initWithTextMarkupAttributes:")]
+		IntPtr Constructor (NSDictionary textMarkupAttributes);
+
+		[Export ("initWithTextMarkupAttributes:textSelector:")]
+		IntPtr Constructor (NSDictionary textMarkupAttributes, string textSelector);
+	}
+
 	[BaseType (typeof (NSObject))]
 	[Since (4,3)]
 	interface AVTimedMetadataGroup {
@@ -3531,6 +3624,126 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("selectedMediaOptionInMediaSelectionGroup:")]
 		AVMediaSelectionOption SelectedMediaOption (AVMediaSelectionGroup inMediaSelectionGroup);
+
+		[Since (6,0)]
+		[Export ("canPlaySlowForward")]
+		bool CanPlaySlowForward { get;  }
+
+		[Since (6,0)]
+		[Export ("canPlayReverse")]
+		bool CanPlayReverse { get;  }
+
+		[Since (6,0)]
+		[Export ("canPlaySlowReverse")]
+		bool CanPlaySlowReverse { get;  }
+
+		[Since (6,0)]
+		[Export ("canStepForward")]
+		bool CanStepForward { get;  }
+
+		[Since (6,0)]
+		[Export ("canStepBackward")]
+		bool CanStepBackward { get;  }
+		
+		[Since (6,0)]
+		[Export ("outputs")]
+		AVPlayerItemOutput Outputs { get;  }
+
+		[Since (6,0)]
+		[Export ("addOutput:")]
+		[PostGet ("Outputs")]
+		void AddOutput (AVPlayerItemOutput output);
+
+		[Since (6,0)]
+		[Export ("removeOutput:")]
+		[PostGet ("Outputs")]
+		void RemoveOutput (AVPlayerItemOutput output);
+
+		[Since (6,0)]
+		[Export ("timebase")]
+		CMTimebase Timebase { get;  }
+
+		[Since (6,0)]
+		[Export ("seekToDate:completionHandler:")]
+		bool Seek (NSDate date, AVCompletion completion);
+
+		[Since (6,0)]
+		[Export ("seekingWaitsForVideoCompositionRendering")]
+		bool SeekingWaitsForVideoCompositionRendering { get; set;  }
+
+		[Since (6,0)]
+		[Export ("textStyleRules")]
+		AVTextStyleRule [] TextStyleRules { get; set;  }
+
+		[Export ("numberOfMediaRequests")]
+		int NumberOfMediaRequests { get; }
+
+		[Field ("AVPlayerItemPlaybackStalledNotification")]
+		[Notification]
+		NSString PlaybackStalledNotification { get; }
+		
+		[Field ("AVPlayerItemNewAccessLogEntryNotification")]
+		[Notification]
+		NSString NewAccessLogEntryNotification { get; }
+		
+		[Field ("AVPlayerItemNewErrorLogEntryNotification")]
+		[Notification]
+		NSString NewErrorLogEntryNotification { get; }
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	interface AVPlayerItemOutput {
+		[Export ("itemTimeForHostTime:")]
+		CMTime GetItemTime (double hostTimeInSeconds);
+
+		[Export ("itemTimeForMachAbsoluteTime:")]
+		CMTime GetItemTime (long machAbsoluteTime);
+
+		//[Export ("itemTimeForCVTimeStamp:")]
+		//CMTime GetItemTime (CVTimeStamp timestamp);
+
+		[Export ("suppressesPlayerRendering")]
+		bool SuppressesPlayerRendering { get; set; }
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (AVPlayerItemOutput))]
+	interface AVPlayerItemVideoOutput {
+		[Export ("delegate")]
+		NSObject WeakDelegate { get;  }
+		
+		[Wrap ("WeakDelegate")]
+		AVPlayerItemOutputPullDelegate Delegate  { get;  }
+
+		[Export ("delegateQueue")]
+		DispatchQueue DelegateQueue { get;  }
+
+		[Export ("initWithPixelBufferAttributes:")]
+		IntPtr Constructor (NSDictionary pixelBufferAttributes);
+
+		[Export ("hasNewPixelBufferForItemTime:")]
+		bool HasNewPixelBufferForItemTime (CMTime itemTime);
+
+		[Export ("copyPixelBufferForItemTime:itemTimeForDisplay:")]
+		CVPixelBuffer CopyPixelBuffer (CMTime itemTime, ref CMTime outItemTimeForDisplay);
+
+		[Export ("setDelegate:queue:")]
+		void SetDelegate (AVPlayerItemOutputPullDelegate delegateClass, DispatchQueue delegateQueue);
+
+		[Export ("requestNotificationOfMediaDataChangeWithAdvanceInterval:")]
+		void RequestNotificationOfMediaDataChange (double advanceInterval);
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface AVPlayerItemOutputPullDelegate {
+		[Export ("outputMediaDataWillChange:")]
+		void OutputMediaDataWillChange (AVPlayerItemOutput sender);
+
+		[Export ("outputSequenceWasFlushed:")]
+		void OutputSequenceWasFlushed (AVPlayerItemOutput output);
 	}
 
 	[BaseType (typeof (NSObject))]

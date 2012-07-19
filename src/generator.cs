@@ -1382,6 +1382,7 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CGColorSpace), "IntPtr", "{0}.Handle", "new CGColorSpace ("));
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
 		marshal_types.Add (new MarshalType (typeof (MidiEndpoint), "IntPtr", "{0}.Handle", "new MidiEndpoint ("));
+		marshal_types.Add (new MarshalType (typeof (CMTimebase), "IntPtr", "{0}.Handle", "new CMTimebase ("));
 #if MONOMAC
 		marshal_types.Add (new MarshalType (typeof (CGLContext), "IntPtr", "{0}.Handle", "new CGLContext ("));
 		marshal_types.Add (new MarshalType (typeof (CGLPixelFormat), "IntPtr", "{0}.Handle", "new CGLPixelFormat ("));
@@ -1853,6 +1854,7 @@ public class Generator {
 		"MonoTouch.CoreGraphics",
 		"MonoTouch.NewsstandKit",
 		"MonoTouch.GLKit",
+		"MonoTouch.CoreVideo",
 		"OpenTK"
 #endif
 	};

@@ -28,8 +28,11 @@ namespace MonoMac.CoreMedia {
 	[Since (6,0)]
 	public class CMClock : CMClockOrTimebase
 	{
-		internal CMClock (IntPtr handle)
-			: base (handle)
+		public CMClock (IntPtr handle) : base (handle)
+		{
+		}
+
+		public CMClock (IntPtr handle, bool owns) : base (handle)
 		{
 		}
 
@@ -98,8 +101,13 @@ namespace MonoMac.CoreMedia {
 	[Since (6,0)]
 	public class CMTimebase : CMClockOrTimebase
 	{
-		private CMTimebase (IntPtr handle)
+		public CMTimebase (IntPtr handle)
 			: base (handle)
+		{
+		}
+
+		[Preserve (Conditional=true)]
+		internal CMTimebase (IntPtr handle, bool owns) : base (handle, owns)
 		{
 		}
 
@@ -339,10 +347,16 @@ namespace MonoMac.CoreMedia {
 		{
 		}
 
-		internal CMClockOrTimebase (IntPtr handle)
+		public CMClockOrTimebase (IntPtr handle)
 		{
 			this.handle = handle;
-			CFObject.CFRetain (Handle);
+		}
+
+		public CMClockOrTimebase (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CFObject.CFRetain (Handle);
+			this.handle = handle;
 		}
 
 		~CMClockOrTimebase ()
