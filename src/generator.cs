@@ -46,6 +46,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Drawing;
 
 #if MONOMAC
 using MonoMac.ObjCRuntime;
@@ -2832,6 +2833,8 @@ public class Generator {
 						print ("return Dlfcn.GetFloat ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else if (field_pi.PropertyType == typeof (IntPtr)){
 						print ("return Dlfcn.GetIntPtr ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+					} else if (field_pi.PropertyType == typeof (SizeF)){
+						print ("return Dlfcn.GetSizeF ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else {
 						if (field_pi.PropertyType == typeof (string))
 							throw new BindingException (1013, true, "Unsupported type for Fields (string), you probably meant NSString");
