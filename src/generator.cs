@@ -740,6 +740,7 @@ public class Generator {
 	Dictionary<string,string> original_methods = new Dictionary<string,string> ();
 	List<MarshalType> marshal_types = new List<MarshalType> ();
 	Dictionary<Type,TrampolineInfo> trampolines = new Dictionary<Type,TrampolineInfo> ();
+	Dictionary<Type,int> trampolines_generic_versions = new Dictionary<Type,int> ();
 	Dictionary<Type,Type> delegates_emitted = new Dictionary<Type, Type> ();
 	Dictionary<Type,Type> notification_event_arg_types = new Dictionary<Type,Type> ();
 	
@@ -1051,6 +1052,15 @@ public class Generator {
 		}
 
 		var trampoline_name = t.Name.Replace ("`", "Arity");
+		if (t.IsGenericType) {
+			var gdef = t.GetGenericTypeDefinition ();
+
+			if (!trampolines_generic_versions.ContainsKey (gdef))
+				trampolines_generic_versions.Add (gdef, 0);
+
+			trampoline_name = trampoline_name + "V" + trampolines_generic_versions [gdef]++;
+		}
+
 		var ti = new TrampolineInfo (FormatType (null, t),
 					     "Inner" + trampoline_name,
 					     "Trampoline" + trampoline_name,
@@ -3153,7 +3163,7 @@ public class Generator {
 			print ("}} /* class {0} */", TypeName);
 
 			//
-			// Copy delegates from the API files into the output if they were delcared there
+			// Copy delegates from the API files into the output if they were declared there
 			//
 			var rootAssembly = types [0].Assembly;
 			foreach (var deltype in trampolines.Keys){
