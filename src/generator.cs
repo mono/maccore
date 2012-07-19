@@ -1328,7 +1328,7 @@ public class Generator {
 			Console.WriteLine ("   in Method: {0}", mi);
 		}
 	}
-	static char [] invalid_selector_chars = new char [] { '*', '^' };
+	static char [] invalid_selector_chars = new char [] { '*', '^', '(', ')' };
 	
 	//
 	// Either we have an [Export] attribute, or we have a [Wrap] one
