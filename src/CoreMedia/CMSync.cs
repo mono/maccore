@@ -32,7 +32,8 @@ namespace MonoMac.CoreMedia {
 		{
 		}
 
-		public CMClock (IntPtr handle, bool owns) : base (handle)
+		internal CMClock (IntPtr handle, bool owns) 
+			: base (handle, owns)
 		{
 		}
 
@@ -41,7 +42,7 @@ namespace MonoMac.CoreMedia {
 
 		public static CMClock HostTimeClock {
 			get {
-				return new CMClock (CMClockGetHostTimeClock ());
+				return new CMClock (CMClockGetHostTimeClock (), false);
 			}
 		}
 
@@ -106,8 +107,8 @@ namespace MonoMac.CoreMedia {
 		{
 		}
 
-		[Preserve (Conditional=true)]
-		internal CMTimebase (IntPtr handle, bool owns) : base (handle, owns)
+		private CMTimebase (IntPtr handle, bool owns) 
+			: base (handle, owns)
 		{
 		}
 
@@ -192,7 +193,7 @@ namespace MonoMac.CoreMedia {
 			if (ptr == IntPtr.Zero)
 				return null;
 
-			return new CMTimebase (ptr);			
+			return new CMTimebase (ptr, false);			
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]
@@ -204,7 +205,7 @@ namespace MonoMac.CoreMedia {
 			if (ptr == IntPtr.Zero)
 				return null;
 
-			return new CMClock (ptr);
+			return new CMClock (ptr, false);
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]
@@ -216,7 +217,7 @@ namespace MonoMac.CoreMedia {
 			if (ptr == IntPtr.Zero)
 				return null;
 
-			return new CMClockOrTimebase (ptr);
+			return new CMClockOrTimebase (ptr, false);
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]
@@ -228,7 +229,7 @@ namespace MonoMac.CoreMedia {
 			if (ptr == IntPtr.Zero)
 				return null;
 
-			return new CMClock (ptr);
+			return new CMClock (ptr, false);
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]
@@ -352,7 +353,7 @@ namespace MonoMac.CoreMedia {
 			this.handle = handle;
 		}
 
-		public CMClockOrTimebase (IntPtr handle, bool owns)
+		internal CMClockOrTimebase (IntPtr handle, bool owns)
 		{
 			if (!owns)
 				CFObject.CFRetain (Handle);
