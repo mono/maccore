@@ -1099,9 +1099,11 @@ namespace MonoMac.AVFoundation {
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriterInput initWithMediaType:outputSettings:] invalid parameter not satisfying: mediaType != ((void*)0)
 	[DisableDefaultCtor]
 	interface AVAssetWriterInput {
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("initWithMediaType:outputSettings:sourceFormatHint:")]
 		IntPtr Constructor (string mediaType, [NullAllowed] NSDictionary outputSettings, CMFormatDescription sourceFormatHint);
+#endif
 
 		[Export ("mediaType")]
 		string MediaType { get;  }
@@ -1139,9 +1141,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("mediaTimeScale")]
 		int MediaTimeScale { get; set; }
 
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("sourceFormatHint")]
 		CMFormatDescription SourceFormatHint { get; }
+#endif
 	}
 
 	[Since (4,1)]
