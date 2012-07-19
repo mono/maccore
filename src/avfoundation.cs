@@ -41,7 +41,6 @@ namespace MonoMac.AVFoundation {
 
 	delegate void AVAssetImageGeneratorCompletionHandler (CMTime requestedTime, IntPtr imageRef, CMTime actualTime, AVAssetImageGeneratorResult result, NSError error);
 	delegate void AVCompletion (bool finished);
-	delegate void AVCompatibleFilesHandler (string [] fileTypes);
 	
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))][Static]
@@ -2586,7 +2585,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (6,0)]
 		[Export ("determineCompatibleFileTypesWithCompletionHandler:")]
-		void DetermineCompatibleFileTypes (AVCompatibleFilesHandler compatibleFileTypesHandler);
+		void DetermineCompatibleFileTypes (Action<string []> compatibleFileTypesHandler);
 	}
 	
 	[BaseType (typeof (NSObject))]
