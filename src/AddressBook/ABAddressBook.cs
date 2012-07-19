@@ -38,9 +38,17 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.AddressBook {
 
 	public enum ABAddressBookError {
-		OperationNotPermittedByStore = 0
+		OperationNotPermittedByStore = 0,
+		NotPermittedByUserError
 	}
 
+	public enum ABAuthorizationStatus {
+		NotDetermined,
+		Restricted,
+		Denied,
+		Authorized
+	}
+	
 	public class ExternalChangeEventArgs : EventArgs {
 		public ExternalChangeEventArgs (ABAddressBook addressBook, NSDictionary info)
 		{
@@ -174,6 +182,47 @@ namespace MonoMac.AddressBook {
 				AssertValid ();
 				return handle;
 			}
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static ABAuthorizationStatus ABAddressBookGetAuthorizationStatus ();
+
+		[Since (6,0)]
+		public static ABAuthorizationStatus GetAuthorizationStatus ()
+		{
+			return ABAddressBookGetAuthorizationStatus ();
+		}
+
+		
+		[DllImport (Constants.AddressBookLibrary)]
+		extern unsafe static void ABAddressBookRequestAccessWithCompletion (IntPtr addressbook, void * completion);
+
+		[Since (6,0)]
+		public void RequestAccess (Action<bool,NSError> onCompleted)
+		{
+			if (onCompleted == null)
+				throw new ArgumentNullException ("onCompleted");
+			unsafe {
+				BlockLiteral *block_ptr_handler;
+				BlockLiteral block_handler;
+				block_handler = new BlockLiteral ();
+				block_ptr_handler = &block_handler;
+				block_handler.SetupBlock (static_completionHandler, onCompleted);
+
+				ABAddressBookRequestAccessWithCompletion (Handle, (void*) block_ptr_handler);
+				block_ptr_handler->CleanupBlock ();
+			}
+		}
+
+                internal delegate void InnerCompleted (IntPtr block, bool success, IntPtr error);
+		static readonly InnerCompleted static_completionHandler = TrampolineCompletionHandler;
+                [MonoPInvokeCallback (typeof (InnerCompleted))]
+		static unsafe void TrampolineCompletionHandler (IntPtr block, bool success, IntPtr error)
+		{
+                        var descriptor = (BlockLiteral *) block;
+                        var del = (Action<bool,NSError>) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);
+                        if (del != null)
+                                del (success, error == null ? null : (MonoMac.Foundation.NSError) Runtime.GetNSObject (error));
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
