@@ -159,7 +159,10 @@ namespace MonoMac.AVFoundation {
 		ScreenCaptureFailed = -11844,
 		DisplayWasDisabled = -11845,
 		TorchLevelUnavailable = -11846,
-			
+		OperationInterrupted = -11847,
+		IncompatibleAsset = -11848,
+		FailedToLoadMediaData = -11849,
+		ServerIncorrectlyConfigured = -11850,			
 	}
 
 	[Since (4,0)]

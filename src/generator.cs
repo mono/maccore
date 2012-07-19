@@ -1394,6 +1394,7 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
 		marshal_types.Add (new MarshalType (typeof (MidiEndpoint), "IntPtr", "{0}.Handle", "new MidiEndpoint ("));
 		marshal_types.Add (new MarshalType (typeof (CMTimebase), "IntPtr", "{0}.Handle", "new CMTimebase ("));
+		marshal_types.Add (new MarshalType (typeof (CMClock), "IntPtr", "{0}.Handle", "new CMClock ("));
 #if MONOMAC
 		marshal_types.Add (new MarshalType (typeof (CGLContext), "IntPtr", "{0}.Handle", "new CGLContext ("));
 		marshal_types.Add (new MarshalType (typeof (CGLPixelFormat), "IntPtr", "{0}.Handle", "new CGLPixelFormat ("));

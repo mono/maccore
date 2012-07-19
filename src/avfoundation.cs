@@ -699,7 +699,44 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Field ("AVAudioSessionPortUSBAudio")]
 		NSString PortUsbAudio { get; }
+
+		[Since (6,0)]
+		[Export ("inputDataSources")]
+                AVAudioSessionDataSourceDescription [] InputDataSources { get;  }
+
+		[Since (6,0)]
+                [Export ("inputDataSource")]
+                AVAudioSessionDataSourceDescription InputDataSource { get;  }
+
+		[Since (6,0)]
+                [Export ("outputDataSources")]
+                AVAudioSessionDataSourceDescription [] OutputDataSources { get;  }
+
+		[Since (6,0)]
+                [Export ("outputDataSource")]
+                AVAudioSessionDataSourceDescription OutputDataSource { get;  }
+		
+		[Since (6,0)]
+                [Export ("setInputDataSource:error:")]
+		[PostGet ("InputDataSource")]
+                bool SetInputDataSource (AVAudioSessionDataSourceDescription dataSource, out NSError outError);
+
+		[Since (6,0)]
+                [Export ("setOutputDataSource:error:")]
+		[PostGet ("OutputDataSource")]
+                bool SetOutputDataSource (AVAudioSessionDataSourceDescription dataSource, out NSError outError);
+
 	}
+
+	[Since (6,0)]
+        [BaseType (typeof (NSObject))]
+        interface AVAudioSessionDataSourceDescription {
+                [Export ("dataSourceID")]
+                NSNumber DataSourceID { get;  }
+
+                [Export ("dataSourceName")]
+                string DataSourceName { get;  }
+        }
 
 	interface AVAudioSessionInterruptionEventArgs {
 		[Export ("AVAudioSessionInterruptionTypeKey")]
@@ -934,6 +971,10 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("requestedTimeToleranceAfter")]
 		CMTime RequestedTimeToleranceAfter { get; set;  }
+
+		[Since (6,0)]
+		[Export ("asset")]
+		AVAsset Asset { get; }
 	}
 	
 	[Since (4,1)]
@@ -1372,7 +1413,7 @@ namespace MonoMac.AVFoundation {
 
 		[Static]
 		[Export ("mediaSelectionOptionsFromArray:withoutMediaCharacteristics:")]
-		AVMediaSelectionOption [] MediaSelectionOptionsExcludingCharacteristics (NSArray array, NSString [] avmediaCharacteristics);
+		AVMediaSelectionOption [] MediaSelectionOptionsExcludingCharacteristics (AVMediaSelectionOption [] source, NSString [] avmediaCharacteristics);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -2230,7 +2271,7 @@ namespace MonoMac.AVFoundation {
 
 		[Static]
 		[Export ("metadataItemsFromArray:withKey:keySpace:")]
-		AVMetadataItem [] FilterWithKey (AVMetadataItem [] array, NSObject key, string keySpace);
+		AVMetadataItem [] FilterWithKey (AVMetadataItem [] metadataItems, NSObject key, string keySpace);
 
 		[Since (4,2)]
 		[Export ("duration")]
@@ -2241,6 +2282,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
 		void LoadValuesAsynchronously (string [] keys, NSAction handler);
+
+		[Since (6,0)]
+		[Static, Export ("metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:")]
+		AVMetadataItem [] FilterFromPreferredLanguages (AVMetadataItem [] metadataItems, string [] preferredLanguages);
 	}
 
 	[Since (6,0)]
@@ -2613,6 +2658,10 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("isValidForAsset:timeRange:validationDelegate:")]
                 bool IsValidForAsset (AVAsset asset, CMTimeRange timeRange, AVVideoCompositionValidationHandling validationDelegate);
+
+		[Since (6,0)]
+		[Static, Export ("videoCompositionWithPropertiesOfAsset:")]
+		AVVideoComposition FromAssetProperties (AVAsset asset);
 	}
 
 	[Since (5,0)]
@@ -2985,6 +3034,9 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("connectionWithMediaType:")]
                 AVCaptureConnection ConnectionFromMediaType (NSString avMediaType);
+
+		[Export ("transformedMetadataObjectForMetadataObject:connection:")]
+		AVMetadataObject GetTransformedMetadataObject (AVMetadataObject metadataObject, AVCaptureConnection connection);
 	}
 
 	[Since (4,0)]
@@ -3036,7 +3088,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (6,0)]
 		[Export ("rectForMetadataObject:")]
-		RectangleF RectForMetadataObject (AVMetadataObject metadataObject);
+		AVMetadataObject GetTransformedMetadataObject (AVMetadataObject metadataObject);
         }
 	
 	[Since (4,0)]
@@ -3102,6 +3154,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("captureOutput:didOutputSampleBuffer:fromConnection:")]
 		void DidOutputSampleBuffer (AVCaptureOutput captureOutput, CMSampleBuffer sampleBuffer, AVCaptureConnection connection);
 
+		[Export ("captureOutput:didDropSampleBuffer:fromConnection:")]
+		void DidDropSampleBuffer (AVCaptureOutput captureOutput, CMSampleBuffer sampleBuffer, AVCaptureConnection connection);
 	}
 
 	[BaseType (typeof (AVCaptureOutput))]
@@ -3148,6 +3202,35 @@ namespace MonoMac.AVFoundation {
 		void FinishedRecording (AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject [] connections, NSError error);
 	}
 
+#if !MONOMAC
+	[Since (6,0)]
+	[BaseType (typeof (AVCaptureOutput))]
+	interface AVCaptureMetadataOutput {
+		[Export ("metadataObjectsDelegate")]
+		AVCaptureMetadataOutputObjectsDelegate Delegate { get;  }
+
+		[Export ("metadataObjectsCallbackQueue")]
+		DispatchQueue CallbackQueue { get;  }
+
+		[Export ("availableMetadataObjectTypes")]
+		NSString [] AvailableMetadataObjectTypes { get;  }
+
+		[Export ("metadataObjectTypes")]
+		NSArray MetadataObjectTypes { get; set;  }
+
+		[Export ("setMetadataObjectsDelegate:queue:")]
+		void SetDelegate (AVCaptureMetadataOutputObjectsDelegate  objectsDelegate, DispatchQueue objectsCallbackQueue);
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface AVCaptureMetadataOutputObjectsDelegate {
+		[Export ("captureOutput:didOutputMetadataObjects:fromConnection:")]
+		void DidOutputMetadataObjects (AVCaptureMetadataOutput captureOutput, AVMetadataObject [] metadataObjects, AVCaptureConnection connection);
+	}
+#endif
+	
 	[Since (4,0)]
 	[BaseType (typeof (AVCaptureFileOutput))]
 	interface AVCaptureMovieFileOutput {
@@ -3314,6 +3397,10 @@ namespace MonoMac.AVFoundation {
 		[Export ("setTorchModeOnWithLevel:error:")]
 		bool SetTorchModeLevel (float torchLevel, out NSError outError);
 
+		[Since (6,0)]
+		[Field ("AVCaptureMaxAvailableTorchLevel")]
+		float MaxAvailableTorchLevel { get; }
+
 	}
 
 	public delegate void AVCompletionHandler ();
@@ -3425,7 +3512,10 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("outputObscuredDueToInsufficientExternalProtection")]
 		bool OutputObscuredDueToInsufficientExternalProtection { get; }
-		
+
+		[Since (6,0)]
+		[Export ("masterClock")]
+		CMClock MasterClock { get; }
 	}
 
 	[Since (6,0)]
