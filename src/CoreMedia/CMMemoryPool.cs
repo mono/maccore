@@ -81,7 +81,7 @@ namespace MonoMac.CoreMedia {
 
 		public CFAllocator GetAllocator ()
 		{
-			return new CFAllocator (CMMemoryPoolGetAllocator (Handle));
+			return new CFAllocator (CMMemoryPoolGetAllocator (Handle), false);
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]
