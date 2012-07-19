@@ -55,6 +55,7 @@ using MonoMac.CoreGraphics;
 using MonoMac.CoreVideo;
 using MonoMac.OpenGL;
 using MonoMac.CoreMidi;
+using MonoMac.CoreMedia;
 #else
 using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
