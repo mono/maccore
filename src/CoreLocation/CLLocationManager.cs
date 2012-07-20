@@ -73,4 +73,13 @@ namespace MonoMac.CoreLocation {
 		}
 #endif
 	}
+
+	[Obsolete ("Use CLAuthorizationChangedEventArgs")]
+	public class CLAuthroziationChangedEventArgs : CLAuthorizationChangedEventArgs
+	{
+		public CLAuthroziationChangedEventArgs (CLAuthorizationStatus status)
+			: base (status)
+		{
+		}
+	}
 }
