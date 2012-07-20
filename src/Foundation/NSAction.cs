@@ -62,7 +62,7 @@ namespace MonoMac.Foundation {
 		// Since we detach the handle from the managed instance when Dispose is called,
 		// there is no way we can get the existing managed instance (which has possibly 
 		// been freed anyway) when ObjC calls release (which ends up in NSObject.NativeRelease).
-		[Obsolete ("Do not use")]
+		[Obsolete ("Do not use, this method is only used internally")]
 		public NSAsyncActionDispatcher (IntPtr handle)
 			: base (handle)
 		{
@@ -83,7 +83,14 @@ namespace MonoMac.Foundation {
 			} finally {
 				action = null; // this is a one-shot dispatcher
 				gch.Free ();
-				Dispose ();
+
+				//
+				// Although I would like to call Dispose here, to
+				// reduce the load on the GC, we have some useful diagnostic
+				// code in our runtime that is useful to track down
+				// problems, so we are removing the Dispose and letting
+				// the GC and our pipeline do their job.
+				// 
 			}
 		}
 	}
