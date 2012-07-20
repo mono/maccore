@@ -100,6 +100,7 @@ namespace MonoMac.CoreMedia {
 		[DllImport(Constants.CoreMediaLibrary)]
 		extern static uint CMFormatDescriptionGetMediaSubType (IntPtr handle);
 		
+		[Obsolete ("Use specific SubType property")]
 		public uint MediaSubType
 		{
 			get
@@ -107,7 +108,43 @@ namespace MonoMac.CoreMedia {
 				return CMFormatDescriptionGetMediaSubType (handle);
 			}
 		}
-		
+
+		public CMSubtitleFormatType SubtitleFormatType {
+			get {
+				return MediaType == CMMediaType.Subtitle ? (CMSubtitleFormatType) MediaSubType : 0;
+			}
+		}
+
+		public CMClosedCaptionFormatType ClosedCaptionFormatType {
+			get {
+				return MediaType == CMMediaType.ClosedCaption ? (CMClosedCaptionFormatType) MediaSubType : 0;				
+			}
+		}
+
+		public CMMuxedStreamType MuxedStreamType {
+			get {
+				return MediaType == CMMediaType.Muxed ? (CMMuxedStreamType) MediaSubType : 0;	
+			}
+		}
+
+		public CMVideoCodecType VideoCodecType {
+			get {
+				return MediaType == CMMediaType.Video ? (CMVideoCodecType) MediaSubType : 0;
+			}
+		}
+
+		public CMMetadataFormatType MetadataFormatType {
+			get {
+				return MediaType == CMMediaType.Metadata ? (CMMetadataFormatType) MediaSubType : 0;
+			}
+		}
+
+		public CMTimeCodeFormatType TimeCodeFormatType {
+			get {
+				return MediaType == CMMediaType.TimeCode ? (CMTimeCodeFormatType) MediaSubType : 0;				
+			}
+		}
+
 		[DllImport(Constants.CoreMediaLibrary)]
 		extern static CMMediaType CMFormatDescriptionGetMediaType (IntPtr handle);
 		
@@ -132,6 +169,7 @@ namespace MonoMac.CoreMedia {
 		[DllImport (Constants.CoreMediaLibrary)]
 		extern static CMFormatDescriptionError CMFormatDescriptionCreate (IntPtr allocator, CMMediaType mediaType, uint mediaSubtype, IntPtr extensions, out IntPtr handle);
 
+		// TODO: Better overloads for each FormatType
 		public static CMFormatDescription Create (CMMediaType mediaType, uint mediaSubtype, out CMFormatDescriptionError error)
 		{
 			IntPtr handle;

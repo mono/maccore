@@ -28,6 +28,21 @@ namespace MonoMac.CoreMedia {
 		Metadata      = TimedMetadata,
 	}
 
+	public enum CMClosedCaptionFormatType : uint
+	{
+		CEA608	= 0x63363038, // 'c608',
+		CEA708	= 0x63373038, // 'c708',
+		ATSC	= 0x61746363, // 'atcc'
+	}
+
+	public enum CMMuxedStreamType : uint
+	{
+		MPEG1System		= 0x6D703173, // 'mp1s',
+		MPEG2Transport	= 0x6D703274, // 'mp2t',
+		MPEG2Program	= 0x6D703270, // 'mp2p',
+		DV				= 0x64762020, // 'dv  '
+	}
+
 	public enum CMSubtitleFormatType : uint
 	{
 		Text3G  = 0x74783367, // 'tx3g'
@@ -40,7 +55,15 @@ namespace MonoMac.CoreMedia {
 		ID3   = 0x69643320, // 'id3 '
 		Boxed = 0x6d656278, // 'mebx'
 	}
-	
+
+	public enum CMTimeCodeFormatType : uint
+	{
+		TimeCode32	= 0x746D6364, // 'tmcd',
+		TimeCode64	= 0x74633634, // 'tc64',
+		Counter32	= 0x636E3332, // 'cn32',
+		Counter64	= 0x636E3634, // 'cn64'
+	}
+
 	public enum CMTimeRoundingMethod 
 	{
 		RoundHalfAwayFromZero = 1,
