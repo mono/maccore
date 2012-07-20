@@ -175,5 +175,14 @@ namespace MonoMac.CoreVideo {
 				return CVImageBufferGetDisplaySize (handle);
 			}
 		}
+
+		[DllImport (Constants.CoreVideoLibrary)]
+		extern static bool CVImageBufferIsFlipped (IntPtr imageBuffer);
+		
+		public bool IsFlipped {
+			get {
+				return CVImageBufferIsFlipped (handle);
+			}
+		}
 	}
 }

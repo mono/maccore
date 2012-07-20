@@ -539,4 +539,23 @@ namespace MonoMac.Foundation  {
 	public enum NSWritingDirection {
 		Natural = -1, LeftToRight = 0, RightToLeft = -1
 	}
+
+	[Flags]
+	public enum NSByteCountFormatterUnits {
+		UseDefault      = 0,
+		UseBytes        = 1 << 0,
+		UseKB           = 1 << 1,
+		UseMB           = 1 << 2,
+		UseGB           = 1 << 3,
+		UseTB           = 1 << 4,
+		UsePB           = 1 << 5,
+		UseEB           = 1 << 6,
+		UseZB           = 1 << 7,
+		UseYBOrHigher   = 0x0FF << 8,
+		UseAll          = 0x0FFFF
+	}
+
+	public enum NSByteCountFormatterCountStyle {
+		File, Memory, Decimal, Binary
+	}
 }

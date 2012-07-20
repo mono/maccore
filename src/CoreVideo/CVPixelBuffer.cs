@@ -30,6 +30,7 @@ namespace MonoMac.CoreVideo {
 		public static readonly NSString OpenGLCompatibilityKey;
 		public static readonly NSString IOSurfacePropertiesKey;
 		public static readonly NSString PlaneAlignmentKey;
+		public static readonly NSString OpenGLESCompatibilityKey;
 
 		public static readonly int CVImageBufferType;
 		
@@ -57,6 +58,7 @@ namespace MonoMac.CoreVideo {
 				IOSurfacePropertiesKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferIOSurfacePropertiesKey");
 				PlaneAlignmentKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferPlaneAlignmentKey");
 				CVImageBufferType = CVPixelBufferGetTypeID ();
+				OpenGLESCompatibilityKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferOpenGLESCompatibilityKey");
 			}
 			finally {
 				Dlfcn.dlclose (handle);

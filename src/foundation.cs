@@ -688,6 +688,38 @@ namespace MonoMac.Foundation
 		int YearForWeekOfYear { get; set; }
 	}
 	
+	[Since (6,0)]
+	[BaseType (typeof (NSFormatter))]
+	interface NSByteCountFormatter {
+		[Export ("allowsNonnumericFormatting")]
+		bool AllowsNonnumericFormatting { get; set; }
+
+		[Export ("includesUnit")]
+		bool IncludesUnit { get; set; }
+
+		[Export ("includesCount")]
+		bool IncludesCount { get; set; }
+
+		[Export ("includesActualByteCount")]
+		bool IncludesActualByteCount { get; set; }
+		
+		[Export ("adaptive")]
+		bool Adaptive { [Bind ("isAdaptive")] get; set;  }
+
+		[Export ("zeroPadsFractionDigits")]
+		bool ZeroPadsFractionDigits { get; set;  }
+
+		[Static]
+		[Export ("stringFromByteCount:countStyle:")]
+		string Format (long byteCount, NSByteCountFormatterCountStyle countStyle);
+
+		[Export ("stringFromByteCount:")]
+		string Format (long byteCount);
+
+		[Export ("allowedUnits")]
+		NSByteCountFormatterUnits AllowedUnits { get; set; }
+	}
+
 	[BaseType (typeof (NSFormatter))]
 	public interface NSDateFormatter {
 		[Export ("stringFromDate:")]
