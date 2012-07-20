@@ -56,6 +56,16 @@ namespace MonoMac.CoreMedia {
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]
+		extern static CMClockError CMAudioClockCreate (IntPtr allocator, out IntPtr clockOut);
+
+		public static CMClock CreateAudioClock (out CMClockError clockError)
+		{
+			IntPtr ptr;
+			clockError = CMAudioClockCreate (IntPtr.Zero, out ptr);
+			return clockError == CMClockError.None ? new CMClock (ptr) : null;
+		}
+
+		[DllImport(Constants.CoreMediaLibrary)]
 		extern static CMClockError CMClockGetAnchorTime (IntPtr clock, out CMTime outClockTime, out CMTime outReferenceClockTime);
 
 		public CMClockError GetAnchorTime (out CMTime clockTime, out CMTime referenceClockTime)
