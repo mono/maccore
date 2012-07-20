@@ -56,7 +56,7 @@ namespace MonoMac.CoreLocation {
 		CLLocationCoordinate2D Coordinate { get;  }
 	
 		[Export ("altitude")]
-		double Altitude { get;  }
+		CLLocationDistance Altitude { get;  }
 	
 		[Export ("horizontalAccuracy")]
 		double HorizontalAccuracy { get;  }
@@ -77,22 +77,23 @@ namespace MonoMac.CoreLocation {
 		IntPtr Constructor (double latitude, double longitude);
 	
 		[Export ("initWithCoordinate:altitude:horizontalAccuracy:verticalAccuracy:timestamp:")]
-		IntPtr Constructor (CLLocationCoordinate2D coordinate, double altitude, double hAccuracy, double vAccuracy, NSDate timestamp);
+		IntPtr Constructor (CLLocationCoordinate2D coordinate, CLLocationDistance altitude, double hAccuracy, double vAccuracy, NSDate timestamp);
 	
 		[Export ("description")]
 		string Description ();
 	
 		[Export ("getDistanceFrom:")]
+		[Obsolete ("Replaced by DistanceFrom")]
 		double Distancefrom (CLLocation  location);
 
 		// NOTE: The old selector was renamed to this guy in 3.2
 		[Since (3,2)]
 		[Export ("distanceFromLocation:")]
-		double DistanceFrom (CLLocation location);
+		CLLocationDistance DistanceFrom (CLLocation location);
 
 		[Since (4,2)]
 		[Export ("initWithCoordinate:altitude:horizontalAccuracy:verticalAccuracy:course:speed:timestamp:")]
-		IntPtr Constructor (CLLocationCoordinate2D coordinate, double altitude, double hAccuracy, double vAccuracy, double course, double speed, NSDate timestamp);
+		IntPtr Constructor (CLLocationCoordinate2D coordinate, CLLocationDistance altitude, double hAccuracy, double vAccuracy, double course, double speed, NSDate timestamp);
 
 		[Since (5,0)]
 		[Field ("kCLErrorUserInfoAlternateRegionKey")]
@@ -111,7 +112,7 @@ namespace MonoMac.CoreLocation {
 		bool _LocationServicesEnabledInstance { get;  }
 	
 		[Export ("distanceFilter", ArgumentSemantic.Assign)]
-		double DistanceFilter { get; set;  }
+		CLLocationDistance DistanceFilter { get; set;  }
 	
 		[Export ("desiredAccuracy", ArgumentSemantic.Assign)]
 		double DesiredAccuracy { get; set;  }
@@ -177,7 +178,7 @@ namespace MonoMac.CoreLocation {
 
 		[Export ("maximumRegionMonitoringDistance")]
 		[Since (4,0)]
-		double MaximumRegionMonitoringDistance { get; }
+		CLLocationDistance MaximumRegionMonitoringDistance { get; }
 
 		[Export ("monitoredRegions")]
 		[Since (4,0)]
@@ -279,7 +280,7 @@ namespace MonoMac.CoreLocation {
 		CLLocationCoordinate2D Center { get;  }
 
 		[Export ("radius")]
-		double Radius { get;  }
+		CLLocationDistance Radius { get;  }
 
 		[Export ("identifier")]
 		string Identifier { get;  }
