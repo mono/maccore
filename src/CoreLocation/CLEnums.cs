@@ -60,4 +60,10 @@ namespace MonoMac.CoreLocation {
 		Denied,
 		Authorized
 	}
+
+	public enum CLActivityType {
+		Other = 1,
+		VehicularNavigation,
+ 		Fitness
+    }
 }

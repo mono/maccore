@@ -146,6 +146,7 @@ namespace MonoMac.CoreLocation {
 		void DismissHeadingCalibrationDisplay ();
 	
 		[Since (3,2)]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		[Export ("purpose", ArgumentSemantic.Copy)]
 		string Purpose { get; set; }
 
@@ -162,6 +163,7 @@ namespace MonoMac.CoreLocation {
 		bool RegionMonitoringAvailable { get; }
 
 		[Since (4,0)]
+		[Obsolete ("Replaced by RegionMonitoringAvailable in iOS 6.0")]
 		[Export ("regionMonitoringEnabled"), Static]
 		bool RegionMonitoringEnabled { get; }
 
@@ -190,6 +192,7 @@ namespace MonoMac.CoreLocation {
 		void StopMonitoringSignificantLocationChanges ();
 
 		[Since (4,0)]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		[Export ("startMonitoringForRegion:desiredAccuracy:")]
 		void StartMonitoring (CLRegion region, double desiredAccuracy);
 
@@ -203,12 +206,22 @@ namespace MonoMac.CoreLocation {
 
 		[Export ("startMonitoringForRegion:")]
 		void StartMonitoring (CLRegion region);
+
+		[Since (6,0)]
+		[Export ("activityType", ArgumentSemantic.Assign)]
+		CLActivityType ActivityType  { get; set; }
+
+		[Since (6,0)]
+		[Export ("pausesLocationUpdatesAutomatically", ArgumentSemantic.Assign)]
+		bool PausesLocationUpdatesAutomatically { get; set; }
 #endif
 	}
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
-	partial interface CLLocationManagerDelegate {
+	partial interface CLLocationManagerDelegate
+	{
+		[Obsolete ("Deprecated in iOS 6.0")]
 		[Export ("locationManager:didUpdateToLocation:fromLocation:"), EventArgs ("CLLocationUpdated")]
 		void UpdatedLocation (CLLocationManager  manager, CLLocation newLocation, CLLocation oldLocation);
 	
@@ -244,6 +257,18 @@ namespace MonoMac.CoreLocation {
 		[Since (4,2)]
 		[Export ("locationManager:didChangeAuthorizationStatus:"), EventArgs ("CLAuthroziationChanged")]
 		void AuthorizationChanged (CLLocationManager manager, CLAuthorizationStatus status);
+
+		[Since (6,0)]
+		[Export ("locationManager:didUpdateLocations:"), EventArgs ("CLLocationsUpdated")]
+		void LocationsUpdated (CLLocationManager manager, CLLocation[] locations);
+
+		[Since (6,0)]
+		[Export ("locationManagerDidPauseLocationUpdates:"), EventArgs ("")]
+		void LocationUpdatesPaused (CLLocationManager manager);
+
+		[Since (6,0)]
+		[Export ("locationManagerDidResumeLocationUpdates:"), EventArgs ("")]
+		void LocationUpdatesResumed (CLLocationManager manager);
 	}
 
 #if !MONOMAC
