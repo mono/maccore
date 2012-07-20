@@ -35,42 +35,26 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreLocation {
 
-	public struct CLLocationDistance
+	public static class CLLocationDistance
 	{
-		public double Distance;
-
-		public CLLocationDistance (double distance)
-		{
-			this.Distance = distance;
-		}
-
 		static double? max_distance;
+		static double? filter_none;
+		
 		[Since (6, 0)]
-		public static CLLocationDistance MaxDistance {
+		public static double MaxDistance {
 			get {
 				if (max_distance == null)
 					max_distance = GetConstant ("CLLocationDistanceMax");
-				return new CLLocationDistance (max_distance.Value); 
+				return max_distance.Value; 
 			}
 		}
 
-		static double? filter_none;
-		public static CLLocationDistance FilterNone {
+		public static double FilterNone {
 			get {
 				if (filter_none == null)
 					filter_none = GetConstant ("kCLDistanceFilterNone");
-				return new CLLocationDistance (filter_none.Value);
+				return filter_none.Value;
 			}
-		}
-
-		public static implicit operator CLLocationDistance (double distance)
-		{
-			return new CLLocationDistance (distance);
-		}
-
-		public static implicit operator double (CLLocationDistance distance)
-		{
-			return distance.Distance;
 		}
 
 		static double GetConstant (string constantName)
