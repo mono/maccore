@@ -1113,6 +1113,7 @@ namespace MonoMac.AVFoundation {
 		bool ShouldWaitForLoadingOfRequestedResource (AVAssetResourceLoader resourceLoader, AVAssetResourceLoadingRequest loadingRequest);
 	}
 
+	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVAssetResourceLoadingRequest {
 		[Export ("request")]
@@ -2289,6 +2290,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSGenericException Reason: Cannot instantiate AVMetadataObject because it is an abstract superclass.
+	[DisableDefaultCtor]
 	interface AVMetadataObject {
 		[Export ("duration")]
 		CMTime Duration { get;  }
@@ -3493,7 +3496,7 @@ namespace MonoMac.AVFoundation {
 		void Seek (NSDate date);
 
 		[Since (6,0)]
-		[Export ("seekToDate:completionHandler")]
+		[Export ("seekToDate:completionHandler:")]
 		void Seek (NSDate date, AVCompletion onComplete);
 
 		[Since (6,0)]
@@ -3764,9 +3767,6 @@ namespace MonoMac.AVFoundation {
 		[Export ("textStyleRules")]
 		AVTextStyleRule [] TextStyleRules { get; set;  }
 
-		[Export ("numberOfMediaRequests")]
-		int NumberOfMediaRequests { get; }
-
 		[Field ("AVPlayerItemPlaybackStalledNotification")]
 		[Notification]
 		NSString PlaybackStalledNotification { get; }
@@ -3782,6 +3782,8 @@ namespace MonoMac.AVFoundation {
 
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
+	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** initialization method -init cannot be sent to an abstract object of class AVPlayerItemOutput: Create a concrete instance!
+	[DisableDefaultCtor]
 	interface AVPlayerItemOutput {
 		[Export ("itemTimeForHostTime:")]
 		CMTime GetItemTime (double hostTimeInSeconds);
@@ -3905,6 +3907,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("numberOfDroppedVideoFrames")]
 		int DroppedVideoFrameCount { get; }
+
+		[Since (6,0)]
+		[Export ("numberOfMediaRequests")]
+		int NumberOfMediaRequests { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
