@@ -117,10 +117,16 @@ namespace MonoMac.CoreVideo {
 		CV30RGB = 0x5231306b,
 		CV4444AYpCbCr8   = 0x79343038,
 		CV4444AYpCbCr16  = 0x79343136,
-		//[Since (5,1)]
+		// Since 5.1
 		OneComponent8 = 0x4C303038,
-		//[Since (5,1)]
-		TwoComponent8 = 0x32433038
+		TwoComponent8 = 0x32433038,
+		// Since 6.0
+		OneComponent16Half	= 0x4C303068, // 'L00h'
+ 		OneComponent32Float = 0x4C303066, // 'L00f'
+		TwoComponent16Half  = 0x32433068, // '2C0h'
+		TwoComponent32Float = 0x32433066, // '2C0f'
+		CV64RGBAHalf		= 0x52476841, // 'RGhA'
+		CV128RGBAFloat		= 0x52476641, // 'RGfA'
 	}
 
 	public enum CVOptionFlags : long {
