@@ -71,29 +71,35 @@ using MonoMac.AudioToolbox;
 	public enum AudioTypeConverter {
 			
 		AU=0x636f6e76, // 'conv'
-#if MONOMAC
 		Varispeed=0x76617269, // 'vari'
 		DeferredRenderer=0x64656672, // 'defr'
-		TimePitch=0x746d7074, // 'tmpt'
 		Splitter=0x73706c74, // 'splt'
 		Merger=0x6d657267, // 'merg'
+		NewTimePitch=0x6e757470, // 'nutp'
+#if MONOMAC
+		TimePitch=0x746d7074, // 'tmpt'
+		RoundTripAAC=0x72616163, // 'raac'
 #else
 		AUiPodTime=0x6970746d, // 'iptm'
+		AUiPodTimeOther=0x6970746f // 'ipto'
+
 #endif
 	}
 
 	public enum AudioTypeEffect {
-#if MONOMAC
-		Delay=0x64656c79, // 'dely'
-		LowPassFilter=0x6c706173, // 'lpas'
-		HighPassFilter=0x68706173, // 'hpas'
-		BandPassFilter=0x62706173, // 'bpas'
-		HighShelfFilter=0x68736866, // 'hshf'
-		LowShelfFilter=0x6c736866, // 'lshf'
-		ParametricEQ=0x706d6571, // 'pmeq'
-		GraphicEQ=0x67726571, // 'greq'
 		PeakLimiter=0x6c6d7472, // 'lmtr'
 		DynamicsProcessor=0x64636d70, // 'dcmp'
+		LowPassFilter=0x6c706173, // 'lpas'
+		HighPassFilter=0x68706173, // 'hpas'
+		HighShelfFilter=0x68736866, // 'hshf'
+		LowShelfFilter=0x6c736866, // 'lshf'
+		DCFilter=0x6463666c, // 'dcfl'
+		ParametricEQ=0x706d6571, // 'pmeq'
+		Delay=0x64656c79, // 'dely'
+		Distortion=0x64697374, // 'dist'
+		BandPassFilter=0x62706173, // 'bpas'
+#if MONOMAC
+		GraphicEQ=0x67726571, // 'greq'
 		MultiBandCompressor=0x6d636d70, // 'mcmp'
 		MatrixReverb=0x6d726576, // 'mrev'
 		SampleDelay=0x73646c79, // 'sdly'
@@ -104,15 +110,17 @@ using MonoMac.AudioToolbox;
 		RogerBeep=0x726f6772, // 'rogr'
 #else
 		AUiPodEQ=0x69706571, // 'ipeq'
+		Reverb2=0x72766232, // 'rvb2'
+		NBandEq=0x6e626571, // 'nbeq'
 #endif
 	}
 
 	public enum AudioTypeMixer {
 		MultiChannel=0x6d636d78, // 'mcmx'
+		Matrix=0x6d786d78, // 'mxmx'
 #if MONOMAC
 		Stereo=0x736d7872, // 'smxr'
 		ThreeD=0x33646d78, // '3dmx'
-		Matrix=0x6d786d78, // 'mxmx'
 #else
 		Embedded3D=0x3364656d, // '3dem'
 #endif
