@@ -744,6 +744,11 @@ public class Generator {
 	Dictionary<Type,int> trampolines_generic_versions = new Dictionary<Type,int> ();
 	Dictionary<Type,Type> delegates_emitted = new Dictionary<Type, Type> ();
 	Dictionary<Type,Type> notification_event_arg_types = new Dictionary<Type,Type> ();
+
+	//
+	// This contains delegates that are referenced in the source and need to be generated.
+	//
+	Dictionary<string,MethodInfo> delegate_types = new Dictionary<string,MethodInfo> ();
 	
 	public bool Alpha;
 	public bool OnlyX86;
@@ -1044,6 +1049,9 @@ public class Generator {
 			}
 
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate))){
+				if (!delegate_types.ContainsKey (pi.ParameterType.Name)){
+					delegate_types [pi.ParameterType.FullName] = pi.ParameterType.GetMethod ("Invoke");
+				}
 				pars.AppendFormat ("IntPtr {0}", pi.Name);
 				invoke.AppendFormat ("({0}) Marshal.GetDelegateForFunctionPointer ({1}, typeof ({0}))", pi.ParameterType, pi.Name);
 				continue;
@@ -1334,7 +1342,8 @@ public class Generator {
 			Console.WriteLine ("   in Method: {0}", mi);
 		}
 	}
-
+	static char [] invalid_selector_chars = new char [] { '*', '^', '(', ')' };
+	
 	//
 	// Either we have an [Export] attribute, or we have a [Wrap] one
 	//
@@ -1359,8 +1368,15 @@ public class Generator {
 			}
 			return null;
 		}
+		
+		var export = (ExportAttribute) attrs [0];
 
-		return (ExportAttribute) attrs [0];
+		if (export.Selector.IndexOfAny (invalid_selector_chars) != -1){
+			Console.Error.WriteLine ("Export attribute contains invalid selector name: {0}", export.Selector);
+			Environment.Exit (1);
+		}
+		
+		return export;
 	}
 
 	public ExportAttribute MakeSetAttribute (ExportAttribute source)
@@ -1556,6 +1572,9 @@ public class Generator {
 		// Generate the event arg mappings
 		if (notification_event_arg_types.Count > 0)
 			GenerateEventArgsFile ();
+
+		if (delegate_types.Count > 0)
+			GenerateIndirectDelegateFile ();
 	}
 
 	static string GenerateNSValue (string propertyToCall)
@@ -1567,7 +1586,17 @@ public class Generator {
 	{
 		return "using (var nsn = new NSNumber (value))\n\treturn " + cast + "nsn." + propertyToCall + ";";
 	}
-	
+
+	void GenerateIndirectDelegateFile ()
+	{
+		var support_delegate_file = Path.Combine (basedir, "SupportDelegates.g.cs");
+		GeneratedFiles.Add (support_delegate_file);
+		sw = new StreamWriter (support_delegate_file);
+		Header (sw);
+		RenderDelegates (delegate_types);
+		sw.Close ();
+	}
+
 	void GenerateEventArgsFile ()
 	{
 		var event_args_file = Path.Combine (basedir, "ObjCRuntime/EventArgs.g.cs");
@@ -1579,7 +1608,7 @@ public class Generator {
 			// Do not generate events for stuff with no arguments
 			if (eventType == null)
 				continue;
-			
+		
 			print ("namespace {0} {{", eventType.Namespace); indent++;
 			print ("public class {0} : NSNotificationEventArgs {{", eventType.Name); indent++;
 			print ("public {0} (NSNotification notification) : base (notification) \n{{\n}}\n", eventType.Name);
@@ -1595,7 +1624,7 @@ public class Generator {
 				var propertyType = prop.PropertyType;
 				var propNamespace = prop.DeclaringType.Namespace;
 				var probe_presence = HasAttribute (prop, typeof (ProbePresenceAttribute));
-				
+			
 				string kn = "k" + (i++);
 				var lib = propNamespace.Substring (propNamespace.IndexOf (".") + 1);
 				print ("static IntPtr {0};", kn);
@@ -1643,7 +1672,7 @@ public class Generator {
 					} else {
 						Type underlying = propertyType.IsEnum ? Enum.GetUnderlyingType (propertyType) : propertyType;
 						string cast = propertyType.IsEnum ? "(" + propertyType.FullName + ") " : "";
-						
+					
 						if (underlying == typeof (int))
 							print (GenerateNSNumber (cast, "Int32Value"));
 						else if (underlying == typeof (long))
@@ -2630,6 +2659,33 @@ public class Generator {
 			return type.Name;
 	}
 
+	void RenderDelegates (Dictionary<string,MethodInfo> delegateTypes)
+	{
+		// Group the delegates by namespace
+		var groupedTypes = from fullname in delegateTypes.Keys
+			let p = fullname.LastIndexOf (".")
+			let ns = fullname.Substring (0, p)
+			group fullname by ns into g
+			select new {Namespace = g.Key, Fullname=g};
+		
+		foreach (var group in groupedTypes){
+			print ("namespace {0} {{", group.Namespace);
+			indent++;
+			foreach (var deltype in group.Fullname){
+				int p = deltype.LastIndexOf (".");
+				var shortName = deltype.Substring (p+1);
+				var mi = delegateTypes [deltype];
+				
+				print ("public delegate {0} {1} ({2});",
+				       RenderType (mi.ReturnType),
+				       shortName,
+				       RenderParameterDecl (mi.GetParameters ()));
+			}
+			indent--;
+			print ("}\n");
+		}
+	}
+	
 	public void Generate (Type type)
 	{
 		type_wants_zero_copy = HasAttribute (type, typeof (ZeroCopyStringsAttribute)) || ZeroCopyStrings;
@@ -2850,7 +2906,6 @@ public class Generator {
 			}
 
 			var eventArgTypes = new Dictionary<string,ParameterInfo[]> ();
-			var delegateTypes = new Dictionary<string,MethodInfo> ();
 
 			if (bta != null && bta.Events != null){
 				if (bta.Delegates == null)
@@ -2970,9 +3025,9 @@ public class Generator {
 						} else {
 							var delname = GetDelegateName (mi);
 
-							if (!generatedDelegates.ContainsKey (delname) && !delegateTypes.ContainsKey (delname)){
+							if (!generatedDelegates.ContainsKey (delname) && !delegate_types.ContainsKey (delname)){
 								generatedDelegates.Add (delname, null);
-								delegateTypes.Add (delname, mi);
+								delegate_types.Add (type.Namespace + "." + delname, mi);
 							}
 							if (debug)
 								print ("Console.WriteLine (\"Method {0}.{1} invoked\");", dtype.Name, mi.Name);
@@ -3111,7 +3166,7 @@ public class Generator {
 				print ("");
 				print ("public partial class {0} : {1} {{", appearance_type_name, base_class);
 				indent++;
-				print ("internal {0} (IntPtr handle) : base (handle) {{}}\n", appearance_type_name);
+				print ("internal {0} (IntPtr handle) : base (handle) {{}}", appearance_type_name);
 
 				if (appearance_selectors != null){
 					var currently_ignored_fields = new List<string> ();
@@ -3125,23 +3180,23 @@ public class Generator {
 				}
 				
 				indent--;
-				print ("}");
-				print ("public static {0}{1} Appearance {{\n", parent_implements_appearance ? "new " : "", appearance_type_name);
+				print ("}\n");
+				print ("public static {0}{1} Appearance {{", parent_implements_appearance ? "new " : "", appearance_type_name);
 				indent++;
 				print ("get {{ return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (class_ptr, UIAppearance.SelectorAppearance)); }}", appearance_type_name);
 				indent--;
-				print ("}");
+				print ("}\n");
 				print ("public static {0}{1} AppearanceWhenContainedIn (params Type [] containers)", parent_implements_appearance ? "new " : "", appearance_type_name);
 				print ("{");
 				indent++;
 				print ("return new {0} (UIAppearance.GetAppearance (class_ptr, containers));", appearance_type_name);
+				indent--;
 				print ("}");
 				print ("");
 			}
 			//
 			// Notification extensions
 			//
-			indent--;
 			if (notifications.Count > 0){
 				print ("\n");
 				print ("//");
@@ -3164,8 +3219,9 @@ public class Generator {
 				print ("\n}");
 			}
 
+			indent--;
 			print ("}} /* class {0} */", TypeName);
-
+			
 			//
 			// Copy delegates from the API files into the output if they were declared there
 			//
@@ -3248,22 +3304,6 @@ public class Generator {
 					print ("public {0} {1} {{ get; set; }}", RenderType (bareType), GetPublicParameterName (p));
 				}
 				indent--; print ("}\n");
-			}
-
-			if (delegateTypes.Count > 0){
-				print ("\n");
-				print ("//");
-				print ("// Delegate classes");
-				print ("//");
-			}
-			// Now add the delegate declarations
-			foreach (var delname in delegateTypes.Keys){
-				var mi = delegateTypes [delname];
-				
-				print ("public delegate {0} {1} ({2});",
-				       RenderType (mi.ReturnType),
-				       delname,
-				       RenderParameterDecl (mi.GetParameters ()));
 			}
 
 			indent--;
