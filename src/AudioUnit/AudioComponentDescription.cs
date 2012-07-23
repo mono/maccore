@@ -106,7 +106,6 @@ using MonoMac.AudioToolbox;
 		Pitch=0x70697463, // 'pitc'
 		AUFilter=0x66696c74, // 'filt'
 		NetSend=0x6e736e64, // 'nsnd'
-		Distortion=0x64697374, // 'dist'
 		RogerBeep=0x726f6772, // 'rogr'
 #else
 		AUiPodEQ=0x69706571, // 'ipeq'
