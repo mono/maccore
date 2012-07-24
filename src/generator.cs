@@ -2446,7 +2446,8 @@ public class Generator {
 			is_unsafe = true;
 
 		string var_name = null;
-				
+		string override_mod;
+		
 		if (wrap == null) {
 			// [Model] has properties that only throws, so there's no point in adding unused backing fields
 			if (!is_model && DoesPropertyNeedBackingField (pi)) {
@@ -2462,6 +2463,9 @@ public class Generator {
 					instance_fields_to_clear_on_dispose.Add (var_name);
 				}
 			}
+			override_mod = is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual ")));
+		} else {
+			override_mod = is_static ? "static" : "";
 		}
 
 		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
@@ -2474,7 +2478,7 @@ public class Generator {
 		       is_public ? "public" : "internal",
 		       is_unsafe ? "unsafe " : "",
 		       is_new ? "new " : "",
-		       is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual "))),
+		       override_mod,
 		       FormatType (pi.DeclaringType,  pi.PropertyType),
 		       pi.Name);
 		indent++;
