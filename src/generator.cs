@@ -2465,7 +2465,7 @@ public class Generator {
 			}
 			override_mod = is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual ")));
 		} else {
-			override_mod = is_static ? "static" : "";
+			override_mod = is_static ? "static " : "";
 		}
 
 		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
