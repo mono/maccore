@@ -2453,7 +2453,7 @@ public class Generator {
 			if (!is_model && DoesPropertyNeedBackingField (pi)) {
 				var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
 
-				print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
+				print ("[CompilerGenerated]");
 
 				if (is_thread_static)
 					print ("[ThreadStatic]");
@@ -2742,14 +2742,14 @@ public class Generator {
 			
 			if (!is_model){
 				foreach (var ea in selectors [type]){
-					print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
-					print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
+					print ("[CompilerGenerated]");
+					print ("static readonly IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 				}
 			}
 			print ("");
 
 			if (!is_static_class){
-				print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
+				print ("[CompilerGenerated]");
 				print ("static IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
 				if (!is_model && !external) {
 					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
@@ -2853,11 +2853,11 @@ public class Generator {
 					}
 
 					if (!libraries.Contains (library_name)) {
-						print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
+						print ("[CompilerGenerated]");
 						if (BindThirdPartyLibrary && library_name == "__Internal") {
-							print ("static IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
+							print ("static readonly IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
 						} else {
-							print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+							print ("static readonly IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
 						}
 						libraries.Add (library_name);
 					}
@@ -2865,7 +2865,7 @@ public class Generator {
 					string fieldTypeName = FormatType (field_pi.DeclaringType, field_pi.PropertyType);
 					// Value types we dont cache for now, to avoid Nullable<T>
 					if (!field_pi.PropertyType.IsValueType) {
-						print ("[DebuggerBrowsable (DebuggerBrowsableState.Never)]");
+						print ("[CompilerGenerated]");
 						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
 					}
 
@@ -3099,6 +3099,7 @@ public class Generator {
 			//
 			foreach (var ti in trampolines.Values){
 				print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
+				print ("[CompilerGenerated]");
 				print ("static readonly {0} {1} = {2};", ti.DelegateName, ti.StaticName, ti.TrampolineName);
 				print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
 				print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
