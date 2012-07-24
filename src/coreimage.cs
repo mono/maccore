@@ -138,6 +138,7 @@ namespace MonoMac.CoreImage {
 		SizeF OutputImageMaximumSize { get; }
 #endif
 
+		[Obsolete ("Use DrawImage (CIImage, RectangleF, RectangleF) instead")]
 		[Export ("drawImage:atPoint:fromRect:")]
 		void DrawImage (CIImage image, PointF atPoint, RectangleF fromRect);
 
@@ -234,6 +235,14 @@ namespace MonoMac.CoreImage {
 #else
 		[Export ("outputImage")]
 		CIImage OutputImage { get; }
+
+		[Since (6,0)]
+		[Export ("serializedXMPFromFilters:inputImageExtent:"), Static]
+		NSData SerializedXMP (CIFilter[] filters, RectangleF extent); 
+
+		[Since (6,0)]
+		[Export ("filterArrayFromSerializedXMP:inputImageExtent:error:"), Static]
+		CIFilter[] FromSerializedXMP (NSData xmpData, RectangleF extent, out NSError error);
 #endif
 
 		[Export ("setValue:forKey:"), Internal]
@@ -640,9 +649,10 @@ namespace MonoMac.CoreImage {
 		CIImage FromData (NSData bitmapData, int bpr, SizeF size, int ciImageFormat, CGColorSpace colorspace);
 
 #if MONOMAC
+		[Since (6,0)]
 		[Static]
 		[Export ("imageWithTexture:size:flipped:colorSpace:")]
-		CIImage ImageWithTexturesizeflippedcolorSpace (int glTextureName, SizeF size, bool flag, CGColorSpace colorspace);
+		CIImage ImageWithTexture (uint glTextureName, SizeF size, bool flipped, CGColorSpace colorspace);
 #endif
 
 		[Static]
@@ -714,8 +724,9 @@ namespace MonoMac.CoreImage {
 		[Export ("initWithBitmapData:bytesPerRow:size:format:colorSpace:")]
 		IntPtr Constructor (NSData d, int bpr, SizeF size, int f, CGColorSpace c);
 
+		[Since (6,0)]
 		[Export ("initWithTexture:size:flipped:colorSpace:")]
-		IntPtr Constructor (int glTextureName, SizeF size, bool flag, CGColorSpace cs);
+		IntPtr Constructor (int glTextureName, SizeF size, bool flipped, CGColorSpace cs);
 
 		[Export ("initWithContentsOfURL:")]
 		IntPtr Constructor (NSUrl url);
@@ -1035,9 +1046,11 @@ namespace MonoMac.CoreImage {
 		[Field ("CIDetectorAccuracyHigh"), Internal]
 		NSString AccuracyHigh { get; }
 
+		[Since (6,0)]
 		[Field ("CIDetectorTracking"), Internal]
 		NSString Tracking { get; }
 
+		[Since (6,0)]
 		[Field ("CIDetectorMinFeatureSize"), Internal]
 		NSString MinFeatureSize { get; }
 	}

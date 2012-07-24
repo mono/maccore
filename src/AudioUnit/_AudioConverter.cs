@@ -124,7 +124,7 @@ namespace MonoMac.AudioUnitWrapper
         }
         #endregion
 
-        #region IDisposable メンバ
+        #region IDisposable
         public void Dispose()
         {
             _handle.Free();            
