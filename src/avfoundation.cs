@@ -36,6 +36,9 @@ using MonoMac.CoreAnimation;
 using MonoMac.CoreVideo;
 using System;
 using System.Drawing;
+#if !MONOMAC
+using MonoTouch.MediaToolbox;
+#endif
 
 namespace MonoMac.AVFoundation {
 
@@ -2616,6 +2619,12 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("getVolumeRampForTime:startVolume:endVolume:timeRange:")]
 		bool GetVolumeRamp (CMTime forTime, float startVolume, float endVolume, CMTimeRange timeRange);
+
+#if !MONOMAC
+		[Since (6,0)]
+		[Export ("audioTapProcessor", ArgumentSemantic.Retain)]
+		MTAudioProcessingTap AudioTapProcessor { get; }
+#endif
 	}
 
 
@@ -2637,6 +2646,12 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("setVolume:atTime:")]
 		void SetVolume (float volume, CMTime atTime);
+
+#if !MONOMAC
+		[Since (6,0)]
+		[Export ("audioTapProcessor", ArgumentSemantic.Retain)]
+		MTAudioProcessingTap AudioTapProcessor { get; set; }
+#endif
 	}
 
 	[Since (4,0)]
