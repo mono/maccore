@@ -36,7 +36,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreFoundation {
 
 	[Since (3,2)]
-	class CFDictionary : INativeObject, IDisposable {
+	public class CFDictionary : INativeObject, IDisposable {
 		public IntPtr Handle { get; private set; }
 	
 		public static IntPtr KeyCallbacks;

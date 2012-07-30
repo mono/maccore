@@ -651,7 +651,7 @@ namespace MonoMac.CoreFoundation {
 		}
 #endif
 		
-		class CFWebProxy : IWebProxy {
+		public class CFWebProxy : IWebProxy {
 			public CFWebProxy ()
 			{
 				

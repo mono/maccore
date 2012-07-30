@@ -38,7 +38,7 @@ using CFIndex = System.Int32;
 
 namespace MonoMac.CoreFoundation {
 	
-	class CFArray : INativeObject, IDisposable {
+	public class CFArray : INativeObject, IDisposable {
 
 		internal IntPtr handle;
 
