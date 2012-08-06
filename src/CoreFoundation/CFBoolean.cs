@@ -37,7 +37,7 @@ using MonoMac.Foundation;
 
 namespace MonoMac.CoreFoundation {
 	[Since (3,2)]
-	class CFBoolean : INativeObject, IDisposable {
+	public class CFBoolean : INativeObject, IDisposable {
 		IntPtr handle;
 
 		public static readonly CFBoolean True;

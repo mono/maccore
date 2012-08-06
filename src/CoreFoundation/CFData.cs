@@ -32,7 +32,7 @@ using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreFoundation {	
-	class CFData : INativeObject, IDisposable {
+	public class CFData : INativeObject, IDisposable {
 		internal IntPtr handle;
 
 		public CFData (IntPtr handle)
