@@ -438,6 +438,18 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("channelAssignments")]
 		AVAudioSessionChannelDescription [] ChannelAssignments { get; set; }
+
+		[Since (6,0)]
+		[Export ("recordAtTime:")]
+		void RecordAt (double time);
+
+		[Since (6,0)]
+		[Export ("recordAtTime:forDuration:")]
+		void RecordAt (double time, float duration);
+
+		[Since (6,0)]
+		[Export ("deviceCurrentTime")]
+		double DeviceCurrentTime { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -1192,7 +1204,12 @@ namespace MonoMac.AVFoundation {
 		void CancelWriting ();
 
 		[Export ("finishWriting")]
+		[Obsolete ("This is a synchronous methods, use the asynchronous FinishWriting(NSAction completionHandler) instead")]
 		bool FinishWriting ();
+
+		[Since (6,0)]
+		[Export ("finishWritingWithCompletionHandler:")]
+		void FinishWriting (NSAction completionHandler);
 
 		[Export ("movieTimeScale")]
 		int MovieTimeScale { get; set; }

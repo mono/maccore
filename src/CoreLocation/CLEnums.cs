@@ -63,7 +63,8 @@ namespace MonoMac.CoreLocation {
 
 	public enum CLActivityType {
 		Other = 1,
-		VehicularNavigation,
- 		Fitness
+		AutomotiveNavigation,
+ 		Fitness,
+		OtherNavigation
     }
 }
