@@ -40,7 +40,7 @@ namespace MonoMac.CoreFoundation {
 		Windows = 2
 	};
 	
-	public class CFUrl : IDisposable {
+	public class CFUrl : INativeObject, IDisposable {
 		internal IntPtr handle;
 
 		~CFUrl ()
@@ -126,6 +126,9 @@ namespace MonoMac.CoreFoundation {
 			using (var str = new CFString (CFURLCopyFileSystemPath (hcfurl, 0), true))
 				return str.ToString ();
 		}
+
+		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFURLGetTypeID")]
+		public extern static int GetTypeID ();
 	}
 	
 }
