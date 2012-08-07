@@ -464,7 +464,7 @@ namespace MonoMac.Foundation  {
 	}
 
 	public enum NSUbiquitousKeyValueStoreChangeReason {
-		ServerChange, InitialSyncChange, QuotaViolationChange
+		ServerChange, InitialSyncChange, QuotaViolationChange, AccountChange
 	}
 
 	[Flags]

@@ -3280,7 +3280,9 @@ namespace MonoMac.Foundation
 
 		[New][Export ("HTTPShouldHandleCookies")]
 		bool ShouldHandleCookies { get; set; }
-		
+
+		[Export ("allowsCellularAccess")]
+		bool AllowsCellularAccess { get; set; }
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLResponse")]
@@ -3495,6 +3497,17 @@ namespace MonoMac.Foundation
 		[Export ("stringByReplacingCharactersInRange:withString:")]
 		NSString Replace (NSRange range, NSString replacement);
 
+		[Since (6,0)]
+		[Export ("capitalizedStringWithLocale:")]
+		string CapitalizeWithLocale (NSLocale locale);
+		
+		[Since (6,0)]
+		[Export ("lowercaseStringWithLocale:")]
+		string LowercaseWithLocale (NSLocale locale);
+		
+		[Since (6,0)]
+		[Export ("uppercaseStringWithLocale:")]
+		string UppercaseWithLocale (NSLocale locale);
 	}
 
 	[Since (6,0)]
