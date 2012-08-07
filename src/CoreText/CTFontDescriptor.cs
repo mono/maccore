@@ -63,6 +63,18 @@ namespace MonoMac.CoreText {
 		Process      =  60000,
 	}
 
+	public enum CTFontDescriptorMatchingState {
+		DidBegin,
+		DidFinish,
+		WillBeginQuerying,
+		Stalled,
+		WillBeginDownloading,
+		Downloading,
+		DidFinishDownloading,
+		DidMatch,
+		DidFailWithError
+	}
+	
 	[Since (3,2)]
 	public static class CTFontDescriptorAttributeKey {
 
