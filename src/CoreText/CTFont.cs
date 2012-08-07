@@ -1104,6 +1104,28 @@ namespace MonoMac.CoreText {
 		}
 #endregion
 
+#region
+		[DllImport (Constants.CoreTextLibrary, EntryPoint="CTFontGetTypeID")]
+		extern static IntPtr CTFontCopyDefaultCascadeListForLanguages (IntPtr font, IntPtr languagePrefList);
+
+		public CTFontDescriptor [] DefaultCascadeList (string [] languages)
+		{
+			if (languages == null)
+				throw new ArgumentNullException ("languages");
+			using (var arr = NSArray.FromStrings (languages)){
+				using (var retArray = new CFArray (CTFontCopyDefaultCascadeListForLanguages (handle, arr.Handle), true)){
+					int n = retArray.Count;
+
+					var ret = new CTFontDescriptor [n];
+					for (int i = 0; i < n; i++)
+						ret [i] = new CTFontDescriptor (retArray.GetValue (i), true);
+
+					return ret;
+				}
+			}
+		}
+
+#endregion
 		public override string ToString ()
 		{
 			return FullName;
