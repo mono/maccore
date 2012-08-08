@@ -42,6 +42,15 @@ namespace MonoMac.CoreLocation {
 		RegionMonitoringFailure,
 		[Since (4,0)]
 		RegionMonitoringSetupDelayed,
+		
+		// ios5 osx10.8
+		RegionMonitoringResponseDelayed,
+		// ios5 osx10.7
+		GeocodeFoundNoResult,
+		// ios5 osx10.8
+		GeocodeFoundPartialResult,
+		// ios5 osx10.7
+		GeocodeCanceled
 	}
 
 	public enum CLDeviceOrientation {
