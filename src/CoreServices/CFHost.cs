@@ -1,10 +1,11 @@
-// 
-// CFData.cs: Implements the managed CFData
+//
+// MonoMac.CoreServices.CFHost
 //
 // Authors:
-//    Rolf Bjarne Kvinge (rolf@xamarin.com)
-//     
-// Copyright 2012 Xamarin Inc
+//      Martin Baulig (martin.baulig@gmail.com)
+//
+// Copyright 2012 Xamarin Inc. (http://www.xamarin.com)
+//
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -27,28 +28,23 @@
 //
 
 using System;
+using System.Net;
 using System.Runtime.InteropServices;
+using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
-namespace MonoMac.CoreFoundation {
+namespace MonoMac.CoreServices {
 
-	class CFData : INativeObject, IDisposable {
+	class CFHost : INativeObject, IDisposable {
 		internal IntPtr handle;
 
-		public CFData (IntPtr handle)
-			: this (handle, false)
+		CFHost (IntPtr handle)
 		{
-		}
-
-		public CFData (IntPtr handle, bool owns)
-		{
-			if (!owns)
-				CFObject.CFRetain (handle);
 			this.handle = handle;
 		}
 
-		~CFData ()
+		~CFHost ()
 		{
 			Dispose (false);
 		}
@@ -70,38 +66,15 @@ namespace MonoMac.CoreFoundation {
 				handle = IntPtr.Zero;
 			}
 		}
-		
-		public static CFData FromDataNoCopy (IntPtr buffer, int length)
+
+		[DllImport (Constants.CFNetworkLibrary)]
+		extern static IntPtr CFHostCreateWithAddress (IntPtr allocator, IntPtr address);
+
+		public static CFHost CreateWithAddress (IPAddress address)
 		{
-			return new CFData (CFDataCreateWithBytesNoCopy (IntPtr.Zero, buffer, length, CFAllocator.Null), true);
-		}
-		
-		[DllImport (Constants.CoreFoundationLibrary)]
-		extern static IntPtr CFDataCreateWithBytesNoCopy (IntPtr allocator, IntPtr bytes, int len, IntPtr deallocator);
-
-		public int Length {
-			get { return CFDataGetLength (handle); }
-		}
-
-		[DllImport (Constants.CoreFoundationLibrary)]
-		extern static CFIndex CFDataGetLength (IntPtr data);
-
-		public byte[] GetBuffer ()
-		{
-			var buffer = new byte [Length];
-			var ptr = CFDataGetBytePtr (handle);
-			Marshal.Copy (ptr, buffer, 0, buffer.Length);
-			return buffer;
-		}
-
-		[DllImport (Constants.CoreFoundationLibrary)]
-		extern static IntPtr CFDataGetBytePtr (IntPtr data);
-
-		/*
-		 * Exposes a read-only pointer to the underlying storage.
-		 */
-		public IntPtr Bytes {
-			get { return CFDataGetBytePtr (handle); }
+			using (var data = new CFSocketAddress (new IPEndPoint (address, 0))) {
+				return new CFHost (CFHostCreateWithAddress (IntPtr.Zero, data.Handle));
+			}
 		}
 	}
 }
