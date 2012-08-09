@@ -91,9 +91,10 @@ class DocumentGeneratedCode {
 			NewLineChars = Environment.NewLine
 		};
 		using (var output = File.CreateText (xmldocpath)){
-			var xmlw = XmlWriter.Create (output, xmlSettings);
-			xmldoc.Save (xmlw);
-			output.WriteLine ();
+			using (var xmlw = XmlWriter.Create (output, xmlSettings)){
+				xmldoc.Save (xmlw);
+				output.WriteLine ();
+			}
 		}
 	}
 	
@@ -145,11 +146,11 @@ class DocumentGeneratedCode {
 				// Make this pretty, the first paragraph we turn into the summary,
 				// the rest we put in the remarks section
 				//
-				summary.Value = "";
+				summary.RemoveAll ();
 				summary.Add (section);
 
 				var skipOne = summary.Nodes ().Skip (2).ToArray ();
-				remarks.Value = "";
+				remarks.RemoveAll ();
 				remarks.Add (skipOne);
 				foreach (var n in skipOne)
 					n.Remove ();
@@ -199,10 +200,9 @@ class DocumentGeneratedCode {
 			}
 		}
 
-		if (remarks.Value == "To be added.")
-			remarks.Value = "";
-		
-		remarks.AddFirst (XElement.Parse (String.Format ("<para id='tool-remark'>If you want to subscribe to this notification, you can use the convenience <see cref='T:{0}+Notifications'/>.<see cref='M:{0}+Notifications.Observe{1}'/> method which offers strongly typed access to the parameters of the notification.</para>", t.Name, mname)));
+		remarks.RemoveAll ();
+		remarks.Add (XElement.Parse ("<para id='tool-remark'>This constant can be used with the <see cref=\"T:MonoTouch.Foundation.NSNotificationCenter\"/> to register a listener for this notification.   This is an NSString instead of a string, because these values can be used as tokens in some native libraries instead of being used purely for their actual string content.    The 'notification' parameter to the callback contains extra information that is specific to the notification type.</para>"));
+		remarks.Add (XElement.Parse (String.Format ("<para id='tool-remark'>If you want to subscribe to this notification, you can use the convenience <see cref='T:{0}+Notifications'/>.<see cref='M:{0}+Notifications.Observe{1}'/> method which offers strongly typed access to the parameters of the notification.</para>", t.Name, mname)));
 		remarks.Add (XElement.Parse ("<para>The following example shows how to use the strongly typed Notifications class, to take the guesswork out of the available properties in the notification:</para>"));
 		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
 							    "//\n// Lambda style\n//\n\n// listening\n" +
@@ -216,6 +216,16 @@ class DocumentGeneratedCode {
 							    "    notification = {0}.Notifications.Observe{1} (Callback);\n}}\n\n" +
 							    "void Teardown ()\n{{\n" +
 							    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body)));
+		remarks.Add (XElement.Parse ("<para>The following example shows how to use the notification with the DefaultCenter API:</para>"));
+		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
+						      "// Lambda style\n" +
+						      "NSNotificationCenter.DefaultCenter.AddObserver (\n        {0}.{1}, (notification) => {{Console.WriteLine (\"Received the notification {0}\", notification); }}\n\n\n" +
+						      "// Method style\n" +
+						      "void Callback (NSNotification notification)\n{{\n" +
+						      "    Console.WriteLine (\"Received a notification {0}\", notification);\n}}\n\n" +
+						      "void Setup ()\n{{\n" +
+						      "    NSNotificationCenter.DefaultCenter.AddObserver ({0}.{1}, Callback);\n}}\n</code></example>", t.Name, name)));
+		
 
 		// Keep track of the uses, so we can list all of the observers.
 		if (notification_event_args != null){
@@ -243,7 +253,7 @@ class DocumentGeneratedCode {
 		var class_remarks = class_doc.XPathSelectElement ("Type/Docs/remarks");
 
 		class_summary.Value = "Notification posted by the <see cref =\"T:" + t.FullName + "\"/> class.";
-		class_remarks.Value = "";
+		class_remarks.RemoveAll ();
 		class_remarks.Add (XElement.Parse ("<para>This is a static class which contains various helper methods that allow developers to observe events posted " +
 						   "in the iOS notification hub (<see cref=\"T:MonoTouch.Foundation.NSNotificationCenter\"/>).</para>"));
 		class_remarks.Add (XElement.Parse ("<para>The methods defined in this class post events invoke the provided method or lambda with a " +
@@ -271,7 +281,7 @@ class DocumentGeneratedCode {
 			handler.Value = "Method to invoke when the notification is posted.";
 			summary.Value = "Registers a method to be notified when the " + notification.Item2 + " notification is posted.";
 			returns.Value = "The returned NSObject represents the registered notification.   Either call Dispose on the object to stop receiving notifications, or pass it to <see cref=\"M:MonoTouch.Foundation.NSNotification.RemoveObserver\"/>";
-			remarks.Value = "";
+			remarks.RemoveAll ();
 			remarks.Add (XElement.Parse ("<para>The following example shows how you can use this method in your code</para>"));
 
 			remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
