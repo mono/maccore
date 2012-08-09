@@ -87,7 +87,8 @@ class DocumentGeneratedCode {
 		var xmlSettings = new XmlWriterSettings (){
 			Indent = true,
 			Encoding = new UTF8Encoding (false),
-			OmitXmlDeclaration = true
+			OmitXmlDeclaration = true,
+			NewLineChars = Environment.NewLine
 		};
 		using (var output = File.CreateText (xmldocpath)){
 			var xmlw = XmlWriter.Create (output, xmlSettings);
@@ -381,17 +382,19 @@ class DocumentGeneratedCode {
 		assembly_dir = Path.Combine (dir, "en");
 		assembly = Assembly.LoadFrom (lib);
 
-		docGenerator = new AppleDocMerger (new AppleDocMerger.Options {
-			DocBase = Path.Combine (docBase, "Contents/Resources/Documents/documentation"),
-			DebugDocs = debugDoc,
-			MonodocArchive = new MDocDirectoryArchive (assembly_dir),
-			Assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly (lib),
-			BaseAssemblyNamespace = ns,
-			ImportSamples = false
-		});
+		if (mergeAppledocs){
+			docGenerator = new AppleDocMerger (new AppleDocMerger.Options {
+				DocBase = Path.Combine (docBase, "Contents/Resources/Documents/documentation"),
+				DebugDocs = debugDoc,
+				MonodocArchive = new MDocDirectoryArchive (assembly_dir),
+					Assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly (lib),
+					BaseAssemblyNamespace = ns,
+					ImportSamples = false
+					});
+		}
 
 		foreach (Type t in assembly.GetTypes ()){
-			if (debugDoc){
+			if (debugDoc && mergeAppledocs){
 				string str = docGenerator.GetAppleDocFor (ToCecilType (t));
 				if (str == null){
 					Console.WriteLine ("Could not find docs for {0}", t);
