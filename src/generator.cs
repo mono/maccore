@@ -2209,7 +2209,7 @@ public class Generator {
 				convs.AppendFormat ("BlockLiteral block_{0};\n", pi.Name);
 				if (null_allowed){
 					convs.AppendFormat ("if ({0} == null){{\n", pi.Name);
-					convs.AppendFormat ("\tblock_ptr_{0} = (BlockLiteral *) 0;\n", pi.Name);
+					convs.AppendFormat ("\tblock_ptr_{0} = null;\n", pi.Name);
 					convs.AppendFormat ("}} else {{\n");
 					extra = "\t";
 				}
@@ -2220,7 +2220,7 @@ public class Generator {
 					convs.AppendFormat ("}}");
 
 				if (null_allowed){
-					disposes.AppendFormat ("if (block_ptr_{0} != (BlockLiteral *) 0)\n", pi.Name);
+					disposes.AppendFormat ("if (block_ptr_{0} != null)\n", pi.Name);
 				}
 				disposes.AppendFormat (extra + "block_ptr_{0}->CleanupBlock ();\n", pi.Name);
 			}
