@@ -1,11 +1,11 @@
 //
-// Authors:
-//   Miguel de Icaza (miguel@gnome.org)
+// MonoMac.CoreFoundation.CFIndex
 //
-// The class can be either constructed from a string (from user code)
-// or from a handle (from iphone-sharp.dll internal calls).  This
-// delays the creation of the actual managed string until actually
-// required
+// Authors:
+//      Martin Baulig (martin.baulig@gmail.com)
+//
+// Copyright 2012 Xamarin Inc. (http://www.xamarin.com)
+//
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,54 +26,31 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-using MonoMac.ObjCRuntime;
+using System;
 
-namespace MonoMac.CoreLocation {
+namespace MonoMac.CoreFoundation {
 
-	public  enum CLError {
-		LocationUnknown  = 0,
-		Denied,              
-		Network,             
-		HeadingFailure,
+	public struct CFIndex {
+		IntPtr value;
 
-		[Since (4,0)]
-		RegionMonitoringDenied,
-		[Since (4,0)]
-		RegionMonitoringFailure,
-		[Since (4,0)]
-		RegionMonitoringSetupDelayed,
-		
-		// ios5 osx10.8
-		RegionMonitoringResponseDelayed,
-		// ios5 osx10.7
-		GeocodeFoundNoResult,
-		// ios5 osx10.8
-		GeocodeFoundPartialResult,
-		// ios5 osx10.7
-		GeocodeCanceled
+		private CFIndex (IntPtr value)
+		{
+			this.value = value;
+		}
+
+		public static implicit operator int (CFIndex index)
+		{
+			return index.value.ToInt32 ();
+		}
+
+		public static implicit operator CFIndex (int value)
+		{
+			return new CFIndex (new IntPtr (value));
+		}
+
+		public static implicit operator long (CFIndex index)
+		{
+			return index.value.ToInt64 ();
+		}
 	}
-
-	public enum CLDeviceOrientation {
-		Unknown,
-		Portrait,
-		PortraitUpsideDown,
-		LandscapeLeft,
-		LandscapeRight,
-		FaceUp,
-		FaceDown
-	} 
-
-	public enum CLAuthorizationStatus {
-		NotDetermined = 0,
-		Restricted,
-		Denied,
-		Authorized
-	}
-
-	public enum CLActivityType {
-		Other = 1,
-		AutomotiveNavigation,
- 		Fitness,
-		OtherNavigation
-    }
 }

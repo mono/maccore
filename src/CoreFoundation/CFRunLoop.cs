@@ -3,6 +3,7 @@
 //
 // Authors:
 //    Miguel de Icaza (miguel@novell.com)
+//    Martin Baulig (martin.baulig@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -40,13 +41,32 @@ namespace MonoMac.CoreFoundation {
 		HandledSource = 4
 	}
 
-#if false // this will eventually need to be exposed for CFNetwork.ExecuteAutoConfiguration*()
+	[StructLayout (LayoutKind.Sequential)]
+	internal struct CFRunLoopSourceContext {
+		public CFIndex Version;
+		public IntPtr Info;
+		public IntPtr Retain;
+		public IntPtr Release;
+		public IntPtr CopyDescription;
+		public IntPtr Equal;
+		public IntPtr Hash;
+		public IntPtr Schedule;
+		public IntPtr Cancel;
+		public IntPtr Perform;
+	}
+
 	public class CFRunLoopSource : INativeObject, IDisposable {
 		internal IntPtr handle;
 
 		internal CFRunLoopSource (IntPtr handle)
+			: this (handle, false)
 		{
-			CFObject.CFRetain (handle);
+		}
+
+		internal CFRunLoopSource (IntPtr handle, bool ownsHandle)
+		{
+			if (!ownsHandle)
+				CFObject.CFRetain (handle);
 			this.handle = handle;
 		}
 
@@ -55,19 +75,6 @@ namespace MonoMac.CoreFoundation {
 			Dispose (false);
 		}
 
-		// TODO: Bind struct CFRunLoopSourceContext and its callbacks
-		//[DllImport (Constants.CoreFoundationLibrary)]
-		//extern static IntPtr CFRunLoopSourceCreate (IntPtr allocator, int order, IntPtr context);
-		//public static CFRunLoopSource Create (int order, CFRunLoopSourceContext context)
-		//{
-		//	IntPtr source = CFRunLoopSourceCreate (IntPtr.Zero, order, context);
-		//
-		//	if (source != IntPtr.Zero)
-		//		return new CFRunLoopSource (source);
-		//
-		//	return null;
-		//}
-
 		public IntPtr Handle {
 			get {
 				return handle;
@@ -75,8 +82,7 @@ namespace MonoMac.CoreFoundation {
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
-		// FIXME: CFRunLoopSourceGetOrder() returns CFIndex which is a typedef for 'signed long'
-		extern static int CFRunLoopSourceGetOrder (IntPtr source);
+		extern static CFIndex CFRunLoopSourceGetOrder (IntPtr source);
 		public int Order {
 			get {
 				return CFRunLoopSourceGetOrder (handle);
@@ -119,7 +125,92 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 	}
-#endif
+
+	public abstract class CFRunLoopSourceCustom : CFRunLoopSource {
+		GCHandle gch;
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static IntPtr CFRunLoopSourceCreate (IntPtr allocator, int order, IntPtr context);
+
+		protected CFRunLoopSourceCustom ()
+			: base (IntPtr.Zero, true)
+		{
+			gch = GCHandle.Alloc (this);
+			var ctx = new CFRunLoopSourceContext ();
+			ctx.Info = GCHandle.ToIntPtr (gch);
+			ctx.Schedule = Marshal.GetFunctionPointerForDelegate ((ScheduleCallback)Schedule);
+			ctx.Cancel = Marshal.GetFunctionPointerForDelegate ((CancelCallback)Cancel);
+			ctx.Perform = Marshal.GetFunctionPointerForDelegate ((PerformCallback)Perform);
+
+			var ptr = Marshal.AllocHGlobal (Marshal.SizeOf (typeof(CFRunLoopSourceContext)));
+			try {
+				Marshal.StructureToPtr (ctx, ptr, false);
+				handle = CFRunLoopSourceCreate (IntPtr.Zero, 0, ptr);
+			} finally {
+				Marshal.FreeHGlobal (ptr);
+			}
+
+			if (handle == IntPtr.Zero)
+				throw new NotSupportedException ();
+		}
+
+		delegate void ScheduleCallback (IntPtr info, IntPtr runLoop, IntPtr mode);
+		[MonoPInvokeCallback (typeof(ScheduleCallback))]
+		static void Schedule (IntPtr info, IntPtr runLoop, IntPtr mode)
+		{
+			var source = GCHandle.FromIntPtr (info).Target as CFRunLoopSourceCustom;
+
+			var loop = new CFRunLoop (runLoop);
+			var mstring = new CFString (mode);
+
+			try {
+				source.OnSchedule (loop, (string)mstring);
+			} finally {
+				loop.Dispose ();
+				mstring.Dispose ();
+			}
+		}
+
+		protected abstract void OnSchedule (CFRunLoop loop, string mode);
+
+		delegate void CancelCallback (IntPtr info, IntPtr runLoop, IntPtr mode);
+		[MonoPInvokeCallback (typeof(CancelCallback))]
+		static void Cancel (IntPtr info, IntPtr runLoop, IntPtr mode)
+		{
+			var source = GCHandle.FromIntPtr (info).Target as CFRunLoopSourceCustom;
+
+			var loop = new CFRunLoop (runLoop);
+			var mstring = new CFString (mode);
+
+			try {
+				source.OnCancel (loop, (string)mstring);
+			} finally {
+				loop.Dispose ();
+				mstring.Dispose ();
+			}
+		}
+
+		protected abstract void OnCancel (CFRunLoop loop, string mode);
+
+		delegate void PerformCallback (IntPtr info);
+		[MonoPInvokeCallback (typeof(PerformCallback))]
+		static void Perform (IntPtr info)
+		{
+			var source = GCHandle.FromIntPtr (info).Target as CFRunLoopSourceCustom;
+			source.OnPerform ();
+		}
+
+		protected abstract void OnPerform ();
+
+		public override void Dispose (bool disposing)
+		{
+			if (disposing) {
+				if (gch.IsAllocated)
+					gch.Free ();
+			}
+			base.Dispose (disposing);
+		}
+	}
 
 	public class CFRunLoop : INativeObject, IDisposable {
 		static IntPtr CoreFoundationLibraryHandle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
@@ -218,7 +309,6 @@ namespace MonoMac.CoreFoundation {
 			return (CFRunLoopExitReason) v;
 		}
 
-#if false // will eventually be needed by CFNetwork.ExecuteAutoConfiguration*()
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static void CFRunLoopAddSource (IntPtr loop, IntPtr source, IntPtr mode);
 		public void AddSource (CFRunLoopSource source, NSString mode)
@@ -248,7 +338,6 @@ namespace MonoMac.CoreFoundation {
 
 			return CFRunLoopRemoveSource (handle, source.Handle, mode.Handle);
 		}
-#endif
 
 		internal CFRunLoop (IntPtr handle)
 			: this (handle, false)

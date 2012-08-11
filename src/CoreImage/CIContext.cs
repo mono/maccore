@@ -51,11 +51,12 @@ namespace MonoMac.CoreImage {
 	}
 	
 	public partial class CIContext {
+#if MONOMAC
 		public static CIContext FromContext (CGContext ctx, CIContextOptions options)
 		{
 			NSDictionary dict = options == null ? null : options.ToDictionary ();
 
-			return FromContext (ctx, options);
+			return FromContext (ctx, dict);
 		}
 		
 		public static CIContext FromContext (CGContext ctx)
@@ -67,8 +68,7 @@ namespace MonoMac.CoreImage {
 		{
 			return CreateCGLayer (size, null);
 		}
-
-#if !MONOMAC
+#else
 		public static CIContext FromOptions (CIContextOptions options)
 		{
 			return FromOptions (options == null ? null : options.ToDictionary ());

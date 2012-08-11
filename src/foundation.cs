@@ -1916,6 +1916,9 @@ namespace MonoMac.Foundation
 		[Export ("isEqualToSet:")]
 		bool IsEqualToSet (NSSet other);
 
+		[Export ("objectEnumerator"), Internal]
+		NSEnumerator _GetEnumerator ();
+		
 		[Export ("isSubsetOfSet:")]
 		bool IsSubsetOf (NSSet other);
 		[Export ("enumerateObjectsUsingBlock:")]

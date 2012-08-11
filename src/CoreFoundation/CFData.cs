@@ -31,7 +31,8 @@ using System.Runtime.InteropServices;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
-namespace MonoMac.CoreFoundation {	
+namespace MonoMac.CoreFoundation {
+
 	class CFData : INativeObject, IDisposable {
 		internal IntPtr handle;
 
@@ -77,6 +78,30 @@ namespace MonoMac.CoreFoundation {
 		
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static IntPtr CFDataCreateWithBytesNoCopy (IntPtr allocator, IntPtr bytes, int len, IntPtr deallocator);
+
+		public int Length {
+			get { return CFDataGetLength (handle); }
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static CFIndex CFDataGetLength (IntPtr data);
+
+		public byte[] GetBuffer ()
+		{
+			var buffer = new byte [Length];
+			var ptr = CFDataGetBytePtr (handle);
+			Marshal.Copy (ptr, buffer, 0, buffer.Length);
+			return buffer;
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static IntPtr CFDataGetBytePtr (IntPtr data);
+
+		/*
+		 * Exposes a read-only pointer to the underlying storage.
+		 */
+		public IntPtr Bytes {
+			get { return CFDataGetBytePtr (handle); }
+		}
 	}
-	
 }

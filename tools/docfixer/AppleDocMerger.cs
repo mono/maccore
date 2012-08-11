@@ -354,10 +354,12 @@ namespace macdoc
 				}
 			}
 			
-			var s = new XmlWriterSettings ();
-			s.Indent = true;
-			s.Encoding = Encoding.UTF8;
-			s.OmitXmlDeclaration = true;
+			var s = new XmlWriterSettings () {
+				Indent = true,
+				Encoding = Encoding.UTF8,
+				OmitXmlDeclaration = true,
+				NewLineChars = Environment.NewLine
+			};
 			using (var output = File.CreateText (xmldocpath)){
 				var xmlw = XmlWriter.Create (output, s);
 				xmldoc.Save (xmlw);

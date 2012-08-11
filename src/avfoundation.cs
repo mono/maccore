@@ -3064,7 +3064,7 @@ namespace MonoMac.AVFoundation {
 	[DisableDefaultCtor]
 	interface AVCaptureOutput {
 		[Export ("connections")]
-		NSObject [] Connections { get; }
+		AVCaptureConnection [] Connections { get; }
 
 		[Export ("connectionWithMediaType:")]
                 AVCaptureConnection ConnectionFromMediaType (NSString avMediaType);

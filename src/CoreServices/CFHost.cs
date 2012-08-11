@@ -1,11 +1,11 @@
 //
-// Authors:
-//   Miguel de Icaza (miguel@gnome.org)
+// MonoMac.CoreServices.CFHost
 //
-// The class can be either constructed from a string (from user code)
-// or from a handle (from iphone-sharp.dll internal calls).  This
-// delays the creation of the actual managed string until actually
-// required
+// Authors:
+//      Martin Baulig (martin.baulig@gmail.com)
+//
+// Copyright 2012 Xamarin Inc. (http://www.xamarin.com)
+//
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,54 +26,55 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
+using System;
+using System.Net;
+using System.Runtime.InteropServices;
+using MonoMac.CoreFoundation;
+using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
-namespace MonoMac.CoreLocation {
+namespace MonoMac.CoreServices {
 
-	public  enum CLError {
-		LocationUnknown  = 0,
-		Denied,              
-		Network,             
-		HeadingFailure,
+	class CFHost : INativeObject, IDisposable {
+		internal IntPtr handle;
 
-		[Since (4,0)]
-		RegionMonitoringDenied,
-		[Since (4,0)]
-		RegionMonitoringFailure,
-		[Since (4,0)]
-		RegionMonitoringSetupDelayed,
+		CFHost (IntPtr handle)
+		{
+			this.handle = handle;
+		}
+
+		~CFHost ()
+		{
+			Dispose (false);
+		}
 		
-		// ios5 osx10.8
-		RegionMonitoringResponseDelayed,
-		// ios5 osx10.7
-		GeocodeFoundNoResult,
-		// ios5 osx10.8
-		GeocodeFoundPartialResult,
-		// ios5 osx10.7
-		GeocodeCanceled
+		public void Dispose ()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		public IntPtr Handle {
+			get { return handle; }
+		}
+		
+		protected virtual void Dispose (bool disposing)
+		{
+			if (handle != IntPtr.Zero){
+				CFObject.CFRelease (handle);
+				handle = IntPtr.Zero;
+			}
+		}
+
+		[DllImport (Constants.CFNetworkLibrary)]
+		extern static IntPtr CFHostCreateWithAddress (IntPtr allocator, IntPtr address);
+
+		public static CFHost CreateWithAddress (IPAddress address)
+		{
+			using (var data = new CFSocketAddress (new IPEndPoint (address, 0))) {
+				return new CFHost (CFHostCreateWithAddress (IntPtr.Zero, data.Handle));
+			}
+		}
 	}
-
-	public enum CLDeviceOrientation {
-		Unknown,
-		Portrait,
-		PortraitUpsideDown,
-		LandscapeLeft,
-		LandscapeRight,
-		FaceUp,
-		FaceDown
-	} 
-
-	public enum CLAuthorizationStatus {
-		NotDetermined = 0,
-		Restricted,
-		Denied,
-		Authorized
-	}
-
-	public enum CLActivityType {
-		Other = 1,
-		AutomotiveNavigation,
- 		Fitness,
-		OtherNavigation
-    }
 }
