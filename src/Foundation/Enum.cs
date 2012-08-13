@@ -151,7 +151,9 @@ namespace MonoMac.Foundation  {
 	public enum NSDataWritingOptions : uint {
 		Atomic = 1,
 
-		[Since (5,0)]
+		WithoutOverwriting  = 2,
+			
+		[Obsolete ("no longer available")]
 		Coordinated = 1 << 2,
 			
 		[Since (4,0)]
@@ -557,5 +559,21 @@ namespace MonoMac.Foundation  {
 
 	public enum NSByteCountFormatterCountStyle {
 		File, Memory, Decimal, Binary
+	}
+
+	[Flags]
+	public enum NSUrlBookmarkCreationOptions {
+		PreferFileIDResolution = 1 << 8,
+		MinimalBookmark = 1 << 9,
+		SuitableForBookmarkFile = 1 << 10,
+		WithSecurityScope = 1 << 11,
+		SecurityScopeAllowOnlyReadAccess = 1 << 12
+	}
+
+	[Flags]
+	public enum NSUrlBookmarkResolutionOptions {
+		WithoutUI = 1 << 8,
+		WithoutMounting = 1 << 9,
+		WithSecurityScope = 1 << 10,
 	}
 }

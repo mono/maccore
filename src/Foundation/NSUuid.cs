@@ -11,10 +11,15 @@ using System.Runtime.InteropServices;
 
 namespace MonoMac.Foundation {
 	partial class NSUuid {
-		static unsafe IntPtr GetIntPtr (byte [] array)
+		static unsafe IntPtr GetIntPtr (byte [] bytes)
 		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+			if (bytes.Length < 16)
+				throw new ArgumentException ("lenght must be at least 16 bytes");
+			
 			IntPtr ret;
-			fixed (byte *p = &array [0]){
+			fixed (byte *p = &bytes [0]){
 				ret = (IntPtr) p;
 			}
 			return ret;

@@ -30,6 +30,7 @@ using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
+using MonoMac.CoreGraphics;
 
 namespace MonoMac.CoreVideo {
 
@@ -182,6 +183,15 @@ namespace MonoMac.CoreVideo {
 		public bool IsFlipped {
 			get {
 				return CVImageBufferIsFlipped (handle);
+			}
+		}
+
+		[DllImport (Constants.CoreVideoLibrary)]
+		extern static IntPtr CVImageBufferGetColorSpace (IntPtr handle);
+		
+		public CGColorSpace ColorSpace {
+			get {
+				return new CGColorSpace (CVImageBufferGetColorSpace (handle));
 			}
 		}
 	}
