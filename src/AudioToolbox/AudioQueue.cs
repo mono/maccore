@@ -804,9 +804,9 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		public AudioStreamPacketDescription AudioStreamPacketDescription {
+		public AudioStreamBasicDescription AudioStreamPacketDescription {
 			get {
-				return GetProperty<AudioStreamPacketDescription> (AudioQueueProperty.StreamDescription);
+				return GetProperty<AudioStreamBasicDescription> (AudioQueueProperty.StreamDescription);
 			}
 		}
 
