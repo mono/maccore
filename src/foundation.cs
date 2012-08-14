@@ -3830,7 +3830,7 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[__NSArrayM insertObject:atIndex:]: object cannot be nil
 	[DisableDefaultCtor]
-	interface NSOrthography {
+	public interface NSOrthography {
 		[Export ("dominantScript")]
 		string DominantScript { get;  }
 
