@@ -2112,7 +2112,7 @@ public class Generator {
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck)
+	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo = null)
 	{
 		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
 		
@@ -2314,15 +2314,18 @@ public class Generator {
 			print ("{0} = ret;", var_name);
 		}
 
-
-		if (has_postget) {
-			PostGetAttribute [] attr = (PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true);
-			for (int i = 0; i < attr.Length; i++) {
-				print ("#pragma warning disable 168");
-				print ("var postget{0} = {1};", i, attr [i].MethodName);
-				print ("#pragma warning restore 168");
-			}
+		PostGetAttribute [] postget = null;
+		if (has_postget)
+			postget = ((PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true));
+		else if (propInfo != null)
+			postget = ((PostGetAttribute []) propInfo.GetCustomAttributes (typeof (PostGetAttribute), true));
+		if ((postget != null) && (postget.Length > 0)) {
+			print ("#pragma warning disable 168");
+			for (int i = 0; i < postget.Length; i++)
+				print ("var postget{0} = {1};", i, postget [i].MethodName);
+			print ("#pragma warning restore 168");
 		}
+		
 		if (HasAttribute (mi, typeof (FactoryAttribute)))
 			print ("ret.Release (); // Release implicit ref taken by GetNSObject");
 		if (byRefPostProcessing.Length > 0)
@@ -2487,14 +2490,14 @@ public class Generator {
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					if (!DoesPropertyNeedBackingField (pi)) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck, pi);
 					} else if (is_static) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck, pi);
 					} else {
 						if (DoesPropertyNeedDirtyCheck (pi, export))
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck, pi);
 						else
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck, pi);
 					}
 				}
 				print ("}\n");
@@ -2526,7 +2529,7 @@ public class Generator {
 				if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck);
+					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck, pi);
 					if (!is_static && DoesPropertyNeedBackingField (pi)) {
 						if (DoesPropertyNeedDirtyCheck (pi, export)) {
 #if !MONOMAC
