@@ -41,6 +41,7 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -1845,6 +1846,7 @@ public class Generator {
 		"System.Drawing", 
 		"System.Runtime.CompilerServices",
 		"System.Runtime.InteropServices",
+		"System.Diagnostics",
 		"System.ComponentModel",
 #if MONOMAC
 		"MonoMac.CoreFoundation",
@@ -2406,29 +2408,41 @@ public class Generator {
 		return DoesPropertyNeedBackingField (pi) && needs_ref;		
 	}
 
-	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
+	void PrintPropertyAttributes (PropertyInfo pi)
 	{
-		string wrap;
-		var export = GetExportAttribute (pi, out wrap);
-		bool is_static = HasAttribute (pi, typeof (StaticAttribute));
-		bool is_thread_static = HasAttribute (pi, typeof (IsThreadStaticAttribute));
-		bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
-		bool is_public = !HasAttribute (pi, typeof (InternalAttribute));
-		bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType,  type);
-		bool is_new = HasAttribute (pi, typeof (NewAttribute));
-		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
-		bool is_unsafe = false;
-		
 		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
 			print ("[Obsolete (\"{0}\", {1})]",
 			       oa.Message, oa.IsError ? "true" : "false");
 		}
+		foreach (DebuggerBrowsableAttribute ba in pi.GetCustomAttributes (typeof (DebuggerBrowsableAttribute), false)) {
+			print ("[DebuggerBrowsable (DebuggerBrowsableState.{0})]", ba.State);
+		}
+		foreach (DebuggerDisplayAttribute da in pi.GetCustomAttributes (typeof (DebuggerDisplayAttribute), false)) {
+			var narg = da.Name != null ? string.Format (", Name = \"{0}\"", da.Name) : string.Empty;
+			var targ = da.Type != null ? string.Format (", Type = \"{0}\"", da.Type) : string.Empty;
+			print ("[DebuggerDisplay (\"{0}\"{1}{2})]", da.Value, narg, targ);
+		}
+	}
 
+	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
+	{
+		string wrap;
+		var export = GetExportAttribute (pi, out wrap);
+		bool is_static = HasAttribute (pi, typeof(StaticAttribute));
+		bool is_thread_static = HasAttribute (pi, typeof(IsThreadStaticAttribute));
+		bool is_abstract = HasAttribute (pi, typeof(AbstractAttribute)) && pi.DeclaringType == type;
+		bool is_public = !HasAttribute (pi, typeof(InternalAttribute));
+		bool is_override = HasAttribute (pi, typeof(OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType, type);
+		bool is_new = HasAttribute (pi, typeof(NewAttribute));
+		bool is_sealed = HasAttribute (pi, typeof(SealedAttribute));
+		bool is_unsafe = false;
+		
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
 			is_unsafe = true;
 
 		if (wrap != null){
 			print_generated_code ();
+			PrintPropertyAttributes (pi);
 			print ("{0} {1}{2}{3}{4} {5} {{",
 			       is_public ? "public" : "internal",
 			       is_unsafe ? "unsafe " : "",
@@ -2460,7 +2474,10 @@ public class Generator {
 				instance_fields_to_clear_on_dispose.Add (var_name);
 			}
 		}
+
 		print_generated_code ();
+		PrintPropertyAttributes (pi);
+
 		print ("{0} {1}{2}{3}{4} {5} {{",
 		       is_public ? "public" : "internal",
 		       is_unsafe ? "unsafe " : "",
