@@ -56,7 +56,7 @@ namespace MonoMac.Foundation {
 			for (int i = 0; i < items.Length; i++){
 				var k = NSObject.FromObject (items [i]);
 				if (k == null)
-					throw new Exception (String.Format ("Do not know how to marshal object of type {0} to an NSObject", k.GetType ()));
+					throw new ArgumentException (String.Format ("Do not know how to marshal object of type '{0}' to an NSObject", items [i].GetType ()));
 				nsoa [i] = k;
 			}
 			return FromNSObjects (nsoa);
