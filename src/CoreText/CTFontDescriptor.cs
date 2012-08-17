@@ -63,16 +63,16 @@ namespace MonoMac.CoreText {
 		Process      =  60000,
 	}
 
-	public enum CTFontDescriptorMatchingState {
-		DidBegin,
-		DidFinish,
+	public enum CTFontDescriptorMatchingState : uint {
+		Started,
+		Finished,
 		WillBeginQuerying,
 		Stalled,
 		WillBeginDownloading,
 		Downloading,
-		DidFinishDownloading,
-		DidMatch,
-		DidFailWithError
+		DownloadingFinished,
+		Matched,
+		FailedWithError
 	}
 	
 	[Since (3,2)]
@@ -545,5 +545,17 @@ namespace MonoMac.CoreText {
 			return o;
 		}
 #endregion
+
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern bool CTFontDescriptorMatchFontDescriptorsWithProgressHandler (IntPtr descriptors, IntPtr mandatoryAttributes,
+			Func<CTFontDescriptorMatchingState, IntPtr, bool> progressHandler);
+		[Since (6,0)]
+		public static bool MatchFontDescriptors (CTFontDescriptor[] descriptors, NSSet mandatoryAttributes, Func<CTFontDescriptorMatchingState, IntPtr, bool> progressHandler)
+		{
+			// FIXME: SIGSEGV probably due to mandatoryAttributes mismatch
+			using (var ar = CFArray.FromNativeObjects (descriptors)) {
+				return CTFontDescriptorMatchFontDescriptorsWithProgressHandler (ar.Handle, nss.Handle, progressHandler);
+			}
+		}
 	}
 }
