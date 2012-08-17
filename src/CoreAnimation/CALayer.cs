@@ -46,6 +46,7 @@ namespace MonoMac.CoreAnimation {
 				Messaging.intptr_objc_msgSendSuper_intptr (SuperHandle, selInitWithLayer, other.Handle);
 				Clone (other);
 			}
+			Retain ();
 		}
 
 		public virtual void Clone (CALayer other)
