@@ -552,9 +552,10 @@ namespace MonoMac.CoreText {
 		[Since (6,0)]
 		public static bool MatchFontDescriptors (CTFontDescriptor[] descriptors, NSSet mandatoryAttributes, Func<CTFontDescriptorMatchingState, IntPtr, bool> progressHandler)
 		{
+			var ma = mandatoryAttributes == null ? IntPtr.Zero : mandatoryAttributes.Handle;
 			// FIXME: SIGSEGV probably due to mandatoryAttributes mismatch
 			using (var ar = CFArray.FromNativeObjects (descriptors)) {
-				return CTFontDescriptorMatchFontDescriptorsWithProgressHandler (ar.Handle, nss.Handle, progressHandler);
+				return CTFontDescriptorMatchFontDescriptorsWithProgressHandler (ar.Handle, ma, progressHandler);
 			}
 		}
 	}
