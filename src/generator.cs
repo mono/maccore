@@ -499,6 +499,9 @@ public class DefaultValueFromArgumentAttribute : Attribute {
 	public string Argument { get; set; }
 }
 
+public class NoDefaultValueAttribute : Attribute {
+}
+
 // Apply to strings parameters that are merely retained or assigned,
 // not copied this is an exception as it is advised in the coding
 // standard for Objective-C to avoid this, but a few properties do use
@@ -1491,6 +1494,10 @@ public class Generator {
 
 				if (HasAttribute (mi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
+
+				bool seenAbstract = false;
+				bool seenDefaultValue = false;
+				bool seenNoDefaultValue = false;
 				
 				foreach (Attribute attr in mi.GetCustomAttributes (typeof (Attribute), true)){
 					string selector = null;
@@ -1512,8 +1519,15 @@ public class Generator {
 					} else  if (attr is AbstractAttribute){
 						if (mi.DeclaringType == t)
 							need_abstract [t] = true;
+						seenAbstract = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute)
+					} else if (attr is DefaultValueAttribute || attr is DefaultValueFromArgumentAttribute) {
+						seenDefaultValue = true;
+						continue;
+					} else if (attr is NoDefaultValueAttribute) {
+						seenNoDefaultValue = true;
+						continue;
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute)
 						continue;
 					else 
 						throw new BindingException (1007, true, "Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -1527,6 +1541,11 @@ public class Generator {
 					} else
 						selector_use [selector] = 1;
 				}
+
+				if (seenNoDefaultValue && seenAbstract)
+					throw new BindingException (1019, true, "Cannot use [NoDefaultValue] on abstract method `{0}.{1}'", mi.DeclaringType, mi.Name);
+				else if (seenNoDefaultValue && seenDefaultValue)
+					throw new BindingException (1019, true, "Cannot use both [NoDefaultValue] and [DefaultValue] on method `{0}.{1}'", mi.DeclaringType, mi.Name);
 
 				DeclareInvoker (mi);
 			}
@@ -2941,6 +2960,8 @@ public class Generator {
 					print ("}");
 					print ("return (_{0}) del;", dtype.Name);
 					indent--; print ("}\n");
+
+					var noDefaultValue = new List<MethodInfo> ();
 					
 					print ("[Register]");
 					print ("class _{0} : {1} {{ ", dtype.Name, RenderType (dtype));
@@ -2962,6 +2983,9 @@ public class Generator {
 						
 						var pars = mi.GetParameters ();
 						int minPars = bta.Singleton ? 0 : 1;
+
+						if (mi.GetCustomAttributes (typeof (NoDefaultValueAttribute), false).Length > 0)
+							noDefaultValue.Add (mi);
 
 						if (pars.Length < minPars)
 							throw new BindingException (1003, true, "The delegate method {0}.{1} needs to take at least one parameter", dtype.FullName, mi.Name);
@@ -3044,23 +3068,53 @@ public class Generator {
 							       sender,
 							       pars.Length == minPars ? "" : String.Format (", {0}", RenderArgs (pars.Skip (1))));
 
-							var def = GetDefaultValue (mi);
-							if ((def is string) && ((def as string) == "null") && mi.ReturnType.IsValueType)
-								print ("throw new Exception (\"No event handler has been added to the {0} event.\");", mi.Name);
+							if (mi.GetCustomAttributes (typeof (NoDefaultValueAttribute), false).Length > 0)
+								print ("throw new You_Should_Not_Call_base_In_This_Method ();");
 							else {
-								foreach (var j in pars){
-									if (j.ParameterType.IsByRef && j.IsOut){
-										print ("{0} = null;", j.Name);
+								var def = GetDefaultValue (mi);
+								if ((def is string) && ((def as string) == "null") && mi.ReturnType.IsValueType)
+									print ("throw new Exception (\"No event handler has been added to the {0} event.\");", mi.Name);
+								else {
+									foreach (var j in pars){
+										if (j.ParameterType.IsByRef && j.IsOut){
+											print ("{0} = null;", j.Name);
+										}
 									}
-								}
 										
-								print ("return {0};", def);
+									print ("return {0};", def);
+								}
 							}
 						}
 						
 						indent--;
 						print ("}\n");
 					}
+
+					if (noDefaultValue.Count > 0) {
+						foreach (var mi in noDefaultValue) {
+							var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
+							var export = (ExportAttribute)eattrs[0];
+							print ("static IntPtr sel{0} = Selector.GetHandle (\"{1}\");", mi.Name, export.Selector);
+						}
+						print ("static IntPtr selRespondsToSelector = Selector.GetHandle (\"respondsToSelector:\");");
+
+						print ("[Export (\"respondsToSelector:\")]");
+						print ("bool _RespondsToSelector (IntPtr selHandle)");
+						print ("{");
+						++indent;
+						foreach (var mi in noDefaultValue) {
+							var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
+							var export = (ExportAttribute)eattrs[0];
+							print ("if (selHandle.Equals (sel{0}))", mi.Name);
+							++indent;
+							print ("return {0} != null;", PascalCase (mi.Name));
+							--indent;
+						}
+						print ("return Messaging.bool_objc_msgSendSuper_intptr (SuperHandle, selRespondsToSelector, selHandle);");
+						--indent;
+						print ("}");
+					}
+
 					indent--;
 					print ("}");
 				}
