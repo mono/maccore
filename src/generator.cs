@@ -2719,13 +2719,13 @@ public class Generator {
 			
 			if (!is_model){
 				foreach (var ea in selectors [type]){
-					print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
+					print ("static readonly IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 				}
 			}
 			print ("");
 
 			if (!is_static_class){
-				print ("static IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
+				print ("static readonly IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
 				if (!is_model && !external) {
 					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
 				}
@@ -2829,9 +2829,9 @@ public class Generator {
 
 					if (!libraries.Contains (library_name)) {
 						if (BindThirdPartyLibrary && library_name == "__Internal") {
-							print ("static IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
+							print ("static readonly IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
 						} else {
-							print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+							print ("static readonly IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
 						}
 						libraries.Add (library_name);
 					}
