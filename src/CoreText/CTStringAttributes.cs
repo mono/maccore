@@ -2,8 +2,10 @@
 // CTStringAttributes.cs: Implements the managed CTStringAttributes
 //
 // Authors: Mono Team
+//          Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2012, Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -95,6 +97,13 @@ namespace MonoMac.CoreText {
 		internal static readonly NSString BaselineInfo;
 		internal static readonly NSString BaselineReferenceInfo;
 		internal static readonly NSString WritingDirection;
+#if !MONOMAC
+		internal static readonly NSString ForegroundColor_uikit;
+		internal static readonly NSString BackgroundColor_uikit;
+		internal static readonly NSString StrikethroughStyle;
+		internal static readonly NSString StrokeColor_uikit;
+		internal static readonly NSString Shadow_uikit;
+#endif
 
 		static CTStringAttributeKey ()
 		{
@@ -125,6 +134,25 @@ namespace MonoMac.CoreText {
 					BaselineInfo            = Dlfcn.GetStringConstant (handle, "kCTBaselineInfoAttributeName");
 					BaselineReferenceInfo   = Dlfcn.GetStringConstant (handle, "kCTBaselineReferenceInfoAttributeName");
 					WritingDirection        = Dlfcn.GetStringConstant (handle, "kCTWritingDirectionAttributeName");
+
+					var uikit_handle = Dlfcn.dlopen (Constants.UIKitLibrary, 0);
+					if (uikit_handle != IntPtr.Zero) {
+						ForegroundColor_uikit  = Dlfcn.GetStringConstant (uikit_handle, "NSForegroundColorAttributeName");
+						BackgroundColor_uikit  = Dlfcn.GetStringConstant (uikit_handle, "NSBackgroundColorAttributeName");
+						StrokeColor_uikit      = Dlfcn.GetStringConstant (uikit_handle, "NSStrokeColorAttributeName");
+						StrikethroughStyle     = Dlfcn.GetStringConstant (uikit_handle, "NSStrikethroughStyleAttributeName");
+						Shadow_uikit           = Dlfcn.GetStringConstant (uikit_handle, "NSShadowAttributeName");
+
+						// Following UIKit keys use same key value as CT
+						// LigatureAttributeName
+						// KernAttributeName
+						// UnderlineStyleAttributeName
+						// StrokeWidthAttributeName
+
+						// NSVerticalGlyphFormAttributeName is supported but has always horizontal value
+
+						Dlfcn.dlclose (uikit_handle);
+					}
 				}
 #endif
 			}
@@ -303,6 +331,88 @@ namespace MonoMac.CoreText {
 			set {Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.RunDelegate, value);}
 		}
 
+#if !MONOMAC
+		[Since (6,0)]
+		public UIColor ForegroundColorUI {
+			get {
+				var h = CFDictionary.GetValue (Dictionary.Handle, CTStringAttributeKey.ForegroundColor_uikit.Handle);
+				return h == IntPtr.Zero ? null : new UIColor (h);
+			}
+			set {
+				Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.ForegroundColor_uikit, value);
+			}
+		}
+
+		[Since (6,0)]
+		public UIColor BackgroundColorUI {
+			get {
+				var h = CFDictionary.GetValue (Dictionary.Handle, CTStringAttributeKey.BackgroundColor_uikit.Handle);
+				return h == IntPtr.Zero ? null : new UIColor (h);
+			}
+			set {
+				Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.BackgroundColor_uikit, value);
+			}			
+		}
+
+		[Since (6,0)]
+		public UIFont FontUI {
+			get {
+				var h = CFDictionary.GetValue (Dictionary.Handle, CTStringAttributeKey.Font.Handle);
+				return h == IntPtr.Zero ? null : new UIFont (h);
+			}
+			set {
+				Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.Font, value);
+			}
+		}
+
+#if NAME_CLASH_WITH_MUTABLE
+		[Since (6,0)]
+		public NSParagraphStyle ParagraphStyleUI {
+			get {
+				var h = CFDictionary.GetValue (Dictionary.Handle, CTStringAttributeKey.ParagraphStyle.Handle);
+				return h == IntPtr.Zero ? null : new NSParagraphStyle (h, false);
+			}
+			set {
+				Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.ParagraphStyle, value);
+			}
+		}
+#endif
+
+		// TODO: Better binding, it should return enum of some kind but no value seems to work
+		/*
+		[Since (6,0)]
+		public int? StrikethroughStyle {
+			get {
+				return Adapter.GetInt32Value (Dictionary, CTStringAttributeKey.StrikethroughStyle);
+			}
+			set {
+				Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.StrikethroughStyle, NSNumber.FromInt32 (value.Value));
+			}
+		}
+		*/
+
+		[Since (6,0)]
+		public UIColor StrokeColorUI {
+			get {
+				var h = CFDictionary.GetValue (Dictionary.Handle, CTStringAttributeKey.StrokeColor_uikit.Handle);
+				return h == IntPtr.Zero ? null : new UIColor (h);
+			}
+			set {
+				Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.StrokeColor_uikit, value);
+			}			
+		}
+
+		[Since (6,0)]
+		public NSShadow ShadowUI {
+			get {
+				var h = CFDictionary.GetValue (Dictionary.Handle, CTStringAttributeKey.Shadow_uikit.Handle);
+				return h == IntPtr.Zero ? null : new NSShadow (h);
+			}
+			set {
+				Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.Shadow_uikit, value);
+			}			
+		}
+#endif
 		[Since (6, 0)]
 		public CTBaselineClass? BaselineClass {
 			get {
