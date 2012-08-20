@@ -2970,7 +2970,12 @@ public class Generator {
 							} else
 								eaname = "<NOTREACHED>";
 							
-							print ("if ({0} != null){{", PascalCase (mi.Name));
+							if (bta.Singleton || mi.GetParameters ().Length == 1)
+								print ("EventHandler handler = {0};", PascalCase (mi.Name));
+							else
+								print ("EventHandler<{0}> handler = {1};", GetEventArgName (mi), PascalCase (mi.Name));
+
+							print ("if (handler != null){");
 							indent++;
 							string eventArgs;
 							if (pars.Length == minPars)
@@ -2979,8 +2984,8 @@ public class Generator {
 								print ("var args = new {0} ({1});", eaname, RenderArgs (pars.Skip (minPars), true));
 								eventArgs = "args";
 							}
-							
-							print ("{0} ({1}, {2});", PascalCase (mi.Name), sender, eventArgs);
+
+							print ("handler ({0}, {1});", sender, eventArgs);
 							if (pars.Length != minPars && MustPullValuesBack (pars.Skip (minPars))){
 								foreach (var par in pars.Skip (minPars)){
 									if (!par.ParameterType.IsByRef)
@@ -3005,10 +3010,11 @@ public class Generator {
 							}
 							if (debug)
 								print ("Console.WriteLine (\"Method {0}.{1} invoked\");", dtype.Name, mi.Name);
-							
-							print ("if ({0} != null)", PascalCase (mi.Name));
-							print ("	return {0} ({1}{2});",
-							       PascalCase (mi.Name), sender,
+
+							print ("{0} handler = {1};", delname, PascalCase (mi.Name));
+							print ("if (handler != null)");
+							print ("	return handler ({0}{1});",
+							       sender,
 							       pars.Length == minPars ? "" : String.Format (", {0}", RenderArgs (pars.Skip (1))));
 
 							var def = GetDefaultValue (mi);
