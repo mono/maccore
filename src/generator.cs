@@ -2719,13 +2719,13 @@ public class Generator {
 			
 			if (!is_model){
 				foreach (var ea in selectors [type]){
-					print ("static IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
+					print ("static readonly IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 				}
 			}
 			print ("");
 
 			if (!is_static_class){
-				print ("static IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
+				print ("static readonly IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
 				if (!is_model && !external) {
 					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
 				}
@@ -2829,9 +2829,9 @@ public class Generator {
 
 					if (!libraries.Contains (library_name)) {
 						if (BindThirdPartyLibrary && library_name == "__Internal") {
-							print ("static IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
+							print ("static readonly IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
 						} else {
-							print ("static IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+							print ("static readonly IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
 						}
 						libraries.Add (library_name);
 					}
@@ -2970,7 +2970,12 @@ public class Generator {
 							} else
 								eaname = "<NOTREACHED>";
 							
-							print ("if ({0} != null){{", PascalCase (mi.Name));
+							if (bta.Singleton || mi.GetParameters ().Length == 1)
+								print ("EventHandler handler = {0};", PascalCase (mi.Name));
+							else
+								print ("EventHandler<{0}> handler = {1};", GetEventArgName (mi), PascalCase (mi.Name));
+
+							print ("if (handler != null){");
 							indent++;
 							string eventArgs;
 							if (pars.Length == minPars)
@@ -2979,8 +2984,8 @@ public class Generator {
 								print ("var args = new {0} ({1});", eaname, RenderArgs (pars.Skip (minPars), true));
 								eventArgs = "args";
 							}
-							
-							print ("{0} ({1}, {2});", PascalCase (mi.Name), sender, eventArgs);
+
+							print ("handler ({0}, {1});", sender, eventArgs);
 							if (pars.Length != minPars && MustPullValuesBack (pars.Skip (minPars))){
 								foreach (var par in pars.Skip (minPars)){
 									if (!par.ParameterType.IsByRef)
@@ -3005,10 +3010,11 @@ public class Generator {
 							}
 							if (debug)
 								print ("Console.WriteLine (\"Method {0}.{1} invoked\");", dtype.Name, mi.Name);
-							
-							print ("if ({0} != null)", PascalCase (mi.Name));
-							print ("	return {0} ({1}{2});",
-							       PascalCase (mi.Name), sender,
+
+							print ("{0} handler = {1};", delname, PascalCase (mi.Name));
+							print ("if (handler != null)");
+							print ("	return handler ({0}{1});",
+							       sender,
 							       pars.Length == minPars ? "" : String.Format (", {0}", RenderArgs (pars.Skip (1))));
 
 							var def = GetDefaultValue (mi);
