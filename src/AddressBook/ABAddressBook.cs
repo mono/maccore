@@ -43,7 +43,7 @@ namespace MonoMac.AddressBook {
 	}
 
 	public enum ABAuthorizationStatus {
-		NotDetermined,
+		NotDetermined = 0,
 		Restricted,
 		Denied,
 		Authorized
@@ -100,6 +100,8 @@ namespace MonoMac.AddressBook {
 
 		[DllImport (Constants.AddressBookLibrary)]
 		internal extern static IntPtr ABAddressBookCreate ();
+
+		[Obsolete ("Use static Create method in iOS 6.0")]
 		public ABAddressBook ()
 		{
 			this.handle = ABAddressBookCreate ();
@@ -110,17 +112,18 @@ namespace MonoMac.AddressBook {
 		[DllImport (Constants.AddressBookLibrary)]
 		internal extern static IntPtr ABAddressBookCreateWithOptions (IntPtr dictionary, out IntPtr cfError);
 
-		public static ABAddressBook FromOptions (NSDictionary dictionary, out NSError outError)
+		[Since (6,0)]
+		public static ABAddressBook Create (out NSError error)
 		{
-			IntPtr error;
+			IntPtr e;
 			
 			InitConstants.Init ();
-			var handle = ABAddressBookCreateWithOptions (dictionary == null ? IntPtr.Zero : dictionary.Handle, out error);
+			var handle = ABAddressBookCreateWithOptions (IntPtr.Zero, out e);
 			if (handle == IntPtr.Zero){
-				outError = new NSError (error);
+				error = new NSError (e);
 				return null;
 			}
-			outError = null;
+			error = null;
 			return new ABAddressBook (handle, true);
 		}
 			
@@ -256,6 +259,9 @@ namespace MonoMac.AddressBook {
 		extern static bool ABAddressBookAddRecord (IntPtr addressBook, IntPtr record, out IntPtr error);
 		public void Add (ABRecord record)
 		{
+			if (record == null)
+				throw new ArgumentNullException ("record");
+
 			AssertValid ();
 			IntPtr error;
 			if (!ABAddressBookAddRecord (Handle, record.Handle, out error))
@@ -267,6 +273,9 @@ namespace MonoMac.AddressBook {
 		extern static bool ABAddressBookRemoveRecord (IntPtr addressBook, IntPtr record, out IntPtr error);
 		public void Remove (ABRecord record)
 		{
+			if (record == null)
+				throw new ArgumentNullException ("record");
+
 			AssertValid ();
 			IntPtr error;
 			if (!ABAddressBookRemoveRecord (Handle, record.Handle, out error))
@@ -314,6 +323,9 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr ABAddressBookCopyLocalizedLabel (IntPtr label);
 		public static string LocalizedLabel (NSString label)
 		{
+			if (label == null)
+				throw new ArgumentNullException ("label");
+
 			using (var s = new NSString (ABAddressBookCopyLocalizedLabel (label.Handle)))
 				return s.ToString ();
 		}
