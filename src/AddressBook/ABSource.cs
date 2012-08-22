@@ -33,7 +33,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
-namespace MonoTouch.AddressBook {
+namespace MonoMac.AddressBook {
 	
 	// note: not a true flag
 	public enum ABSourceType {	
