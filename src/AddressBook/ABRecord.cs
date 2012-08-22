@@ -40,7 +40,7 @@ namespace MonoMac.AddressBook {
 		Source = 2
 	}
 
-	public enum ABPropertyType : ushort {
+	public enum ABPropertyType : uint {
 		Invalid         = 0,
 		String          = 0x1,
 		Integer         = 0x2,
@@ -61,29 +61,38 @@ namespace MonoMac.AddressBook {
 
 		IntPtr handle;
 
-		internal ABRecord (IntPtr handle, ABAddressBook addressbook)
+		internal ABRecord (IntPtr handle, bool owns)
 		{
-			AddressBook = addressbook;
+			if (!owns)
+				CFObject.CFRetain (handle);
 			this.handle = handle;
 		}
 
-		internal static ABRecord FromHandle (IntPtr handle, ABAddressBook addressbook)
+		internal static ABRecord FromHandle (IntPtr handle, ABAddressBook addressbook, bool owns = true)
 		{
 			if (handle == IntPtr.Zero)
 				throw new ArgumentNullException ("handle");
 			// TODO: does ABGroupCopyArrayOfAllMembers() have Create or Get
 			// semantics for the array elements?
 			var type = ABRecordGetRecordType (handle);
+			ABRecord rec;
+
 			switch (type) {
 				case ABRecordType.Person:
-					return new ABPerson (handle, addressbook);
+					rec = new ABPerson (handle, owns);
+					break;
 				case ABRecordType.Group:
-					return new ABGroup (handle, addressbook);
+					rec = new ABGroup (handle, owns);
+					break;
 				case ABRecordType.Source:
-					return new ABSource (handle, addressbook);
+					rec = new ABSource (handle, owns);
+					break;
 				default:
 					throw new NotSupportedException ("Could not determine record type.");
 			}
+
+			rec.AddressBook = addressbook;
+			return rec;
 		}
 
 		~ABRecord ()
@@ -119,6 +128,9 @@ namespace MonoMac.AddressBook {
 			get {
 				AssertValid ();
 				return handle;
+			}
+			internal set {
+				handle = value;				
 			}
 		}
 

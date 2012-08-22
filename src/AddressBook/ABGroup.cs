@@ -2,8 +2,10 @@
 // ABGroup.cs: Implements the managed ABGroup
 //
 // Authors: Mono Team
+//          Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright (C) 2009 Novell, Inc
+// Copyright (C) 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -65,19 +67,52 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr ABGroupCreate ();
 
 		public ABGroup ()
-			: base (ABGroupCreate (), null)
+			: base (ABGroupCreate (), true)
 		{
 			InitConstants.Init ();
 		}
 
-		internal ABGroup (IntPtr handle, ABAddressBook addressbook)
-			: base (CFObject.CFRetain (handle), addressbook)
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABGroupCreateInSource (IntPtr source);
+
+		[Since (4,0)]
+		public ABGroup (ABRecord source)
+			: base (IntPtr.Zero, true)
 		{
+			if (source == null)
+				throw new ArgumentNullException ("source");
+
+			Handle = ABGroupCreateInSource (source.Handle);
+		}
+
+		internal ABGroup (IntPtr handle, bool owns)
+			: base (handle, owns)
+		{
+		}
+
+		internal ABGroup (IntPtr handle, ABAddressBook addressbook)
+        	: base (handle, false)
+		{
+			AddressBook = addressbook;
 		}
 
 		public string Name {
 			get {return PropertyToString (ABGroupProperty.Name);}
 			set {SetValue (ABGroupProperty.Name, value);}
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABGroupCopySource (IntPtr group);
+
+		[Since (4,0)]
+		public ABRecord Source {
+			get {
+				var h = ABGroupCopySource (Handle);
+				if (h == IntPtr.Zero)
+					return null;
+
+				return FromHandle (h, null);
+			}
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]

@@ -2,8 +2,10 @@
 // ABPerson.cs: Implements the managed ABPerson
 //
 // Authors: Mono Team
+//          Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright (C) 2009 Novell, Inc
+// Copyright (C) 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -356,6 +358,7 @@ namespace MonoMac.AddressBook {
 		public static NSString Mobile {get; private set;}
 		public static NSString Pager {get; private set;}
 		public static NSString WorkFax {get; private set;}
+		public static NSString OtherFax { get; private set; }
 
 		static ABPersonPhoneLabel ()
 		{
@@ -374,6 +377,9 @@ namespace MonoMac.AddressBook {
 				Mobile  = Dlfcn.GetStringConstant (handle, "kABPersonPhoneMobileLabel");
 				Pager   = Dlfcn.GetStringConstant (handle, "kABPersonPhonePagerLabel");
 				WorkFax = Dlfcn.GetStringConstant (handle, "kABPersonPhoneWorkFAXLabel");
+
+				// Since 5.0
+				OtherFax = Dlfcn.GetStringConstant (handle, "kABPersonPhoneOtherFAXLabel");
 			}
 			finally {
 				Dlfcn.dlclose (handle);
@@ -414,6 +420,8 @@ namespace MonoMac.AddressBook {
 	public static class ABPersonInstantMessageKey {
 		public static NSString Service {get; private set;}
 		public static NSString Username {get; private set;}
+
+		// TODO: More is available
 
 		static ABPersonInstantMessageKey ()
 		{
@@ -530,14 +538,33 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr ABPersonCreate ();
 
 		public ABPerson ()
-			: base (ABPersonCreate (), null)
+			: base (ABPersonCreate (), true)
 		{
 			InitConstants.Init ();
 		}
 
-		internal ABPerson (IntPtr handle, ABAddressBook addressbook)
-			: base (CFObject.CFRetain (handle), addressbook)
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABPersonCreateInSource (IntPtr source);
+
+		[Since (4,0)]
+		public ABPerson (ABRecord source)
+			: base (IntPtr.Zero, true)
 		{
+			if (source == null)
+				throw new ArgumentNullException ("source");
+
+			Handle = ABPersonCreateInSource (source.Handle);
+		}
+
+		internal ABPerson (IntPtr handle, bool owns)
+			: base (handle, owns)
+		{
+		}
+
+		internal ABPerson (IntPtr handle, ABAddressBook addressbook)
+			: base (handle, false)
+		{
+			AddressBook = addressbook;
 		}
 
 		int IComparable.CompareTo (object o)
@@ -677,6 +704,20 @@ namespace MonoMac.AddressBook {
 		public string Department {
 			get {return PropertyToString (ABPersonPropertyId.Department);}
 			set {SetValue (ABPersonPropertyId.Department, value);}
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABPersonCopySource (IntPtr group);
+
+		[Since (4,0)]
+		public ABRecord Source {
+			get {
+				var h = ABPersonCopySource (Handle);
+				if (h == IntPtr.Zero)
+					return null;
+
+				return FromHandle (h, null);
+			}
 		}
 
 		internal static string ToString (IntPtr value)
@@ -853,13 +894,56 @@ namespace MonoMac.AddressBook {
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABPersonCopyArrayOfAllLinkedPeople (IntPtr person);
+
+		[Since (4,0)]
+		public ABPerson[] GetLinkedPeople ()
+		{
+			var linked = ABPersonCopyArrayOfAllLinkedPeople (Handle);
+			return NSArray.ArrayFromHandle (linked, l => new ABPerson (l, null));
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
 		extern static IntPtr ABPersonCopyImageDataWithFormat (IntPtr handle, ABPersonImageFormat format);
 		
 		[Since (4,1)]
-		NSData CopyImage (ABPersonImageFormat format)
+		public NSData GetImage (ABPersonImageFormat format)
 		{
-			return new NSData (ABPersonCopyImageDataWithFormat (Handle, format));
+			return (NSData) Runtime.GetNSObject (ABPersonCopyImageDataWithFormat (Handle, format));
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABPersonCreateVCardRepresentationWithPeople (IntPtr people);
+
+		[Since (5,0)]
+		public static NSData GetVCards (params ABPerson[] people)
+		{
+			if (people == null)
+				throw new ArgumentNullException ("people");
+
+			var ptrs = new IntPtr [people.Length];
+			for (int i = 0; i < people.Length; ++i) {
+				ptrs[i] = people[i].Handle;
+			}
+
+			var ptr = ABPersonCreateVCardRepresentationWithPeople (CFArray.Create (ptrs));
+			return new NSData (ptr, true);
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABPersonCreatePeopleInSourceWithVCardRepresentation (IntPtr source, IntPtr vCardData);
+
+		[Since (5,0)]
+		public static ABPerson[] CreateFromVCard (ABRecord source, NSData vCardData)
+		{
+			if (vCardData == null)
+				throw new ArgumentNullException ("vCardData");
+
+			// TODO: SIGSEGV when source is not null
+			var res = ABPersonCreatePeopleInSourceWithVCardRepresentation (source == null ? IntPtr.Zero : source.Handle,
+				vCardData.Handle);
+
+			return NSArray.ArrayFromHandle (res, l => new ABPerson (l, null));
 		}
 	}
 }
-
