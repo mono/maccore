@@ -2422,6 +2422,12 @@ public class Generator {
 			var targ = da.Type != null ? string.Format (", Type = \"{0}\"", da.Type) : string.Empty;
 			print ("[DebuggerDisplay (\"{0}\"{1}{2})]", da.Value, narg, targ);
 		}
+		foreach (SinceAttribute sa in pi.GetCustomAttributes (typeof (SinceAttribute), false)) {
+			print ("[Since ({0},{1})]", sa.Major, sa.Minor);
+		}
+		foreach (ThreadSafeAttribute sa in pi.GetCustomAttributes (typeof (ThreadSafeAttribute), false)) {
+			print ("[ThreadSafe]");
+		}
 	}
 
 	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
