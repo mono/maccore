@@ -592,6 +592,18 @@ public class AppearanceAttribute : Attribute {
 }
 
 //
+// This is designed to be applied to setter methods in
+// a base class `Foo' when a `MutableFoo' exists.
+//
+// This allows the Foo.set_XXX to exists but throw an exception 
+// but derived classes would then override the property
+//
+[AttributeUsage (AttributeTargets.Method, AllowMultiple=false)]
+public class NotImplementedAttribute : Attribute {
+	public NotImplementedAttribute () {}
+}
+
+//
 // Used to encapsulate flags about types in either the parameter or the return value
 // For now, it only supports the [PlainString] attribute on strings.
 //
@@ -2552,7 +2564,9 @@ public class Generator {
 				print ("set {");
 				if (debug)
 					print ("Console.WriteLine (\"In {0}\");", pi.GetSetMethod ());
-				if (is_model)
+				if (HasAttribute (setter, typeof (NotImplementedAttribute)))
+					print ("throw new NotImplementedException ();");
+				else if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck);
