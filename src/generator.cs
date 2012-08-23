@@ -2114,7 +2114,7 @@ public class Generator {
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo = null)
+	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo = null, bool is_appearance = false)
 	{
 		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
 		
@@ -2317,10 +2317,14 @@ public class Generator {
 		}
 
 		PostGetAttribute [] postget = null;
-		if (has_postget)
-			postget = ((PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true));
-		else if (propInfo != null)
-			postget = ((PostGetAttribute []) propInfo.GetCustomAttributes (typeof (PostGetAttribute), true));
+		// [PostGet] are not needed (and might not be available) when generating methods inside Appearance types
+		// However we want them even if ImplementsAppearance is true (i.e. the original type needs them)
+		if (!is_appearance) {
+			if (has_postget)
+				postget = ((PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true));
+			else if (propInfo != null)
+				postget = ((PostGetAttribute []) propInfo.GetCustomAttributes (typeof (PostGetAttribute), true));
+		}
 		if ((postget != null) && (postget.Length > 0)) {
 			print ("#pragma warning disable 168");
 			for (int i = 0; i < postget.Length; i++)
@@ -2574,7 +2578,7 @@ public class Generator {
 		print ("}}\n", pi.Name);
 	}
 
-	void GenerateMethod (Type type, MethodInfo mi, bool is_model)
+	void GenerateMethod (Type type, MethodInfo mi, bool is_model, bool is_appearance = false)
 	{
 		foreach (ParameterInfo pi in mi.GetParameters ())
 			if (HasAttribute (pi, typeof (RetainAttribute))){
@@ -2644,7 +2648,7 @@ public class Generator {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
 				}
-				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck);
+				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck, null, is_appearance);
 				if (is_autorelease) {
 					print ("}");
 					indent--;
@@ -3176,7 +3180,7 @@ public class Generator {
 					
 					foreach (MemberInfo mi in appearance_selectors){
 						if (mi is MethodInfo)
-							GenerateMethod (type, mi as MethodInfo, false);
+							GenerateMethod (type, mi as MethodInfo, false, true);
 						else
 							GenerateProperty (type, mi as PropertyInfo, currently_ignored_fields, false);
 					}
