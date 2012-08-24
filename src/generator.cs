@@ -2545,6 +2545,7 @@ public class Generator {
 			var setter = pi.GetSetMethod ();
 			var ba = GetBindAttribute (setter);
 			bool null_allowed = HasAttribute (pi, typeof (NullAllowedAttribute)) || HasAttribute (setter, typeof (NullAllowedAttribute));
+			bool not_implemented = HasAttribute (setter, typeof (NotImplementedAttribute));
 			string sel;
 
 			if (ba == null){
@@ -2554,18 +2555,20 @@ public class Generator {
 				sel = ba.Selector;
 			}
 
-			if (export.ArgumentSemantic != ArgumentSemantic.None)
-				print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
-			else
-				print ("[Export (\"{0}\")]", sel);
+			if (!not_implemented){
+				if (export.ArgumentSemantic != ArgumentSemantic.None)
+					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
+				else
+					print ("[Export (\"{0}\")]", sel);
+			}
 			if (is_abstract){
 				print ("set; ");
 			} else {
 				print ("set {");
 				if (debug)
 					print ("Console.WriteLine (\"In {0}\");", pi.GetSetMethod ());
-				if (HasAttribute (setter, typeof (NotImplementedAttribute)))
-					print ("throw new NotImplementedException ();");
+				if (not_implemented)
+					print ("\tthrow new NotImplementedException ();");
 				else if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
