@@ -61,8 +61,8 @@ namespace MonoMac.Foundation {
 			if (count < 1 || objects.Length < count || keys.Length < count)
 				throw new ArgumentException ("count");
 			
-			var no = NSArray.FromNSObjects (objects);
-			var nk = NSArray.FromNSObjects (keys);
+			var no = NSArray.FromNSObjects ((IList<NSObject>) objects, count);
+			var nk = NSArray.FromNSObjects ((IList<NSObject>) keys, count);
 			var r = FromObjectsAndKeysInternal (no, nk);
 			no.Dispose ();
 			nk.Dispose ();

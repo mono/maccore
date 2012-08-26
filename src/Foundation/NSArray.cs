@@ -48,6 +48,15 @@ namespace MonoMac.Foundation {
 			return FromNSObjects (_items);
 		}
 
+		static public NSArray FromNSObjects (int count, params NSObject [] items)
+		{
+			if (items.Length < count)
+				throw new ArgumentException ("count is larger than the number of items", "count");
+			
+			IList<NSObject> _items = items;
+			return FromNSObjects (_items, count);
+		}
+
 		public static NSArray FromObjects (params object [] items)
 		{
 			if (items == null)
@@ -71,6 +80,19 @@ namespace MonoMac.Foundation {
 			for (int i = 0; i < items.Count; i++)
 				Marshal.WriteIntPtr (buf, i * IntPtr.Size, items [i].Handle);
 			NSArray arr = NSArray.FromObjects (buf, items.Count);
+			Marshal.FreeHGlobal (buf);
+			return arr;
+		}
+
+		internal static NSArray FromNSObjects (IList<NSObject> items, int count)
+		{
+			if (items == null)
+				return new NSArray (true);
+			
+			IntPtr buf = Marshal.AllocHGlobal (items.Count * IntPtr.Size);
+			for (int i = 0; i < count; i++)
+				Marshal.WriteIntPtr (buf, i * IntPtr.Size, items [i].Handle);
+			NSArray arr = NSArray.FromObjects (buf, count);
 			Marshal.FreeHGlobal (buf);
 			return arr;
 		}
