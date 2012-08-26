@@ -576,4 +576,9 @@ namespace MonoMac.Foundation  {
 		WithoutMounting = 1 << 9,
 		WithSecurityScope = 1 << 10,
 	}
+
+	public enum NSLigatureType {
+		None, Default, All 
+	}
+	
 }
