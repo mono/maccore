@@ -108,6 +108,26 @@ class DocumentGeneratedCode {
 		}
 	}
 
+	static XElement GetXmlNodeForMemberName (Type t, XDocument xdoc, string name)
+	{
+		var field = xdoc.XPathSelectElement ("Type/Members/Member[@MemberName='" + name + "']");
+		if (field == null){
+			if (!warnings_up_to_date.ContainsKey (t)){
+				Console.WriteLine ("Warning: {0} document is not up-to-date with the latest assembly (could not find Field <Member MemberName='{1}')", t, name);
+				warnings_up_to_date [t] = true;
+			}
+		}
+		return field;
+	}
+
+	static XElement GetXmlNodeFromExport (Type t, XDocument xdoc, string selector)
+	{
+		return (from m in xdoc.XPathSelectElements ("Type/Members/Member")
+			let a = m.XPathSelectElement ("Attributes/Attribute/AttributeName")
+			where a != null && a.Value.IndexOf ("MonoTouch.Foundation.Export(\"" + selector + "\"") != -1
+			select m).FirstOrDefault ();
+	}
+
 	//
 	// Handles fields, but perhaps this is better done in DocFixer to pull the definitions
 	// from the docs?
@@ -119,15 +139,11 @@ class DocumentGeneratedCode {
 			return;
 		
 		var export = ((FieldAttribute) fieldAttr [0]).SymbolName;
-		
-		var field = xdoc.XPathSelectElement ("Type/Members/Member[@MemberName='" + pi.Name + "']");
-		if (field == null){
-			if (!warnings_up_to_date.ContainsKey (t)){
-				Console.WriteLine ("Warning: {0} document is not up-to-date with the latest assembly (could not find Field <Member MemberName='{1}')", t, pi.Name);
-				warnings_up_to_date [t] = true;
-			}
+
+		var field = GetXmlNodeForMemberName (t, xdoc, pi.Name);
+		if (field == null)
 			return;
-		}
+		
 		var returnType = field.XPathSelectElement ("ReturnValue/ReturnType");
 		var summary = field.XPathSelectElement ("Docs/summary");
 		var remarks = field.XPathSelectElement ("Docs/remarks");
@@ -327,13 +343,50 @@ class DocumentGeneratedCode {
 			}
 		}
 	}
+
+	//
+	// This prepares a node that contains text, like this:
+	// <foo>To be added.</foo>
+	//
+	// to wrap the text in a para.
+	// <foo><para>To be added.</para></foo>
+	//
+	static void PrepareNakedNode (XElement element, bool addStub = true)
+	{
+		if (element.HasElements)
+			return;
+		var val = element.Value;
+		if (addStub && val == "To be added.")
+			val = "(More documentation for this node is coming)";
+		
+		element.Value = "";
+		element.Add (XElement.Parse ("<para>" + val + "</para>"));
+	}
+	
+	
+	public static void AnnotateNullAllowedPropertyValue (Type t, XDocument xdoc, PropertyInfo pi)
+	{
+		var field = GetXmlNodeForMemberName (t, xdoc, pi.Name);
+		if (field == null)
+			return;
+		var value = field.XPathSelectElement ("Docs/value");
+		var toolgen_null_annotations = value.XPathSelectElement ("para[@tool='nullallowed']");
+		if (toolgen_null_annotations == null)
+			PrepareNakedNode (value);
+		else
+			toolgen_null_annotations.Remove ();
+
+		value.Add (XElement.Parse ("<para tool='nullallowed'>This value can be <see langword=\"null\"/>.</para>"));
+	}
 	
 	public static void ProcessNSO (Type t, BaseTypeAttribute bta)
 	{
 		var xmldoc = GetDoc (t);
-		if (xmldoc == null)
+		if (xmldoc == null){
+			Console.WriteLine ("Can not find docs for {0}", t);
 			return;
-		
+		}
+
 		foreach (var pi in t.GatherProperties ()){
 			object [] attrs;
 			var kbd = false;
@@ -344,14 +397,100 @@ class DocumentGeneratedCode {
 					ProcessNotification (t, xmldoc, pi);
 				continue;
 			}
-			
-		}
+			if (pi.GetCustomAttributes (typeof (NullAllowedAttribute), true).Length > 0){
+				AnnotateNullAllowedPropertyValue (t, xmldoc, pi);
 
+				//
+				// Propagate the [NullAllowed] from the WeakXXX to XXX
+				//
+				if (pi.Name.StartsWith ("Weak")){
+					var npi = t.GetProperty (pi.Name.Substring (4));
+
+					// Validate that the other property is actually a wrapper around this one.
+					if (npi != null && npi.GetCustomAttributes (typeof (WrapAttribute), true).Length > 0){
+						if (npi != null)
+							AnnotateNullAllowedPropertyValue (t, xmldoc, npi);
+					} else
+						Console.WriteLine ("Did not find matching {0}", pi.Name);
+					
+				}
+			}
+			if (pi.GetCustomAttributes (typeof (ThreadSafeAttribute), true).Length > 0){
+				var field = GetXmlNodeForMemberName (t, xmldoc, pi.Name);
+				if (field == null)
+					return;
+				var remarks = field.XPathSelectElement ("Docs/remarks");
+				if (remarks != null)
+					AddThreadRemark (remarks, "This");
+			}
+		}
+		foreach (var mi in t.GatherMethods ()){
+			//
+			// Since it is a pain to go from a MethodInfo into an ECMA XML signature name
+			// we will lookup the method by the [Export] attribute
+			//
+			
+			var attrs = mi.GetCustomAttributes (typeof (ExportAttribute), true);
+			if (attrs.Length == 0)
+				continue;
+			var ea = attrs [0] as ExportAttribute;
+			var node = GetXmlNodeFromExport (t, xmldoc, ea.Selector);
+			if (node == null){
+				Console.WriteLine ("Did not find the selector {0}", ea.Selector);
+				continue;
+			}
+			
+			if (mi.GetCustomAttributes (typeof (ThreadSafeAttribute), true).Length > 0){
+				var remarks = node.XPathSelectElement ("Docs/remarks");
+				AddThreadRemark (remarks, "This");
+			}
+			foreach (var parameter in mi.GetParameters ()){
+				if (parameter.GetCustomAttributes (typeof (NullAllowedAttribute), true).Length > 0){
+					var par = node.XPathSelectElement ("Docs/param[@name='" + parameter.Name + "']");
+					if (par == null){
+						Console.WriteLine ("Did not find parameter {0} in {1}.{2}\n{3}", parameter.Name, t, mi, node);
+						continue;
+					}
+					var toolgen_null_annotations = par.XPathSelectElement ("para[@tool='nullallowed']");
+					if (toolgen_null_annotations == null)
+						PrepareNakedNode (par, addStub: false);
+					else
+						toolgen_null_annotations.Remove ();
+					par.Add (XElement.Parse ("<para tool='nullallowed'>This parameter can be <see langword=\"null\"/>.</para>"));
+				}
+			}
+		}
+		
 		if (bta != null && bta.Events != null){
 			PopulateEvents (xmldoc, bta, t);
 		}
 	}
-			
+
+	static void AddThreadRemark (XElement node, string msg)
+	{
+		var threadNode =  node.XPathSelectElement ("para[@tool='threads']");
+		if (threadNode == null)
+			PrepareNakedNode (node);
+		else
+			threadNode.Remove ();
+		node.Add (XElement.Parse ("<para tool='threads'>" + msg + " can be used from a background thread.</para>"));
+	}
+	
+	public static void AnnotateThreadSafeType (Type t)
+	{
+		var xmldoc = GetDoc (t);
+		if (xmldoc == null){
+			Console.WriteLine ("Can not find docs for {0}", t);
+			return;
+		}
+		var typeRemarks = xmldoc.XPathSelectElement ("Type/Docs/remarks");
+		AddThreadRemark (typeRemarks, "The members of this class");
+
+		var memberRemarks = xmldoc.XPathSelectElements ("Type/Members/Member/Docs/remarks");
+		foreach (var mr in memberRemarks)
+			AddThreadRemark (mr, "This");
+	}
+	
 	public static int Main (string [] args)
 	{
 		string dir = null;
@@ -404,6 +543,9 @@ class DocumentGeneratedCode {
 		}
 
 		foreach (Type t in assembly.GetTypes ()){
+			if (t.GetCustomAttributes (typeof (ThreadSafeAttribute), true).Length > 0)
+				AnnotateThreadSafeType (t);
+			
 			if (debugDoc && mergeAppledocs){
 				string str = docGenerator.GetAppleDocFor (ToCecilType (t));
 				if (str == null){
@@ -412,7 +554,7 @@ class DocumentGeneratedCode {
 				
 				continue;
 			}
-			
+
 			if (debug != null && t.FullName != debug)
 				continue;
 
