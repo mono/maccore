@@ -1912,6 +1912,9 @@ namespace MonoMac.Foundation
 
 		[Field ("NSEventTrackingRunLoopMode", "AppKit")]
 		NSString NSRunLoopEventTracking { get; }
+#else
+		[Field ("UITrackingRunLoopMode", "UIKit")]
+		NSString UITrackingRunLoopMode { get; }
 #endif
 	}
 
