@@ -1920,6 +1920,9 @@ namespace MonoMac.Foundation
 		[Export ("set")][Static]
 		NSSet CreateSet ();
 
+		[Export ("initWithSet:")]
+		IntPtr Constructor (NSSet other);
+		
 		[Export ("initWithArray:")]
 		IntPtr Constructor (NSArray other);
 		
@@ -1943,9 +1946,16 @@ namespace MonoMac.Foundation
 		
 		[Export ("isSubsetOfSet:")]
 		bool IsSubsetOf (NSSet other);
+		
 		[Export ("enumerateObjectsUsingBlock:")]
 		[Since (4,0)]
 		void Enumerate (NSSetEnumerator enumerator);
+
+		[Export ("setByAddingObjectsFromSet:"), Internal]
+		NSSet SetByAddingObjectsFromSet (NSSet other);
+
+		[Export ("intersectsSet:")]
+		bool IntersectsSet (NSSet other);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -3276,11 +3286,29 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSSet))]
 	public interface NSMutableSet {
+		[Export ("initWithArray:")]
+		IntPtr Constructor (NSArray other);
+
+		[Export ("initWithSet:")]
+		IntPtr Constructor (NSSet other);
+		
+		[Export ("initWithCapacity:")]
+		IntPtr Constructor (int capacity);
+
 		[Export ("addObject:")]
 		void Add (NSObject nso);
 
 		[Export ("removeObject:")]
 		void Remove (NSObject nso);
+
+		[Export ("removeAllObjects")]
+		void RemoveAll ();
+
+		[Export ("addObjectsFromArray:")]
+		void AddObjects (NSObject [] objects);
+
+		[Internal, Export ("minusSet:")]
+		void MinusSet (NSSet other);
 	}
 	
 	[BaseType (typeof (NSUrlRequest), Name="NSMutableURLRequest")]
