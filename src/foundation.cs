@@ -44,6 +44,7 @@ using MonoMac.UIKit;
 
 using System;
 using System.Drawing;
+using System.ComponentModel;
 
 namespace MonoMac.Foundation
 {
@@ -87,7 +88,6 @@ namespace MonoMac.Foundation
 		[Export ("string")]
 		string Value { get; }
 
-		// TODO: Return type is CTStringAttributes
 		[Export ("attributesAtIndex:effectiveRange:")]
 		NSDictionary GetAttributes (int location, out NSRange effectiveRange);
 
@@ -101,7 +101,6 @@ namespace MonoMac.Foundation
 		[Export ("attributedSubstringFromRange:"), Internal]
 		NSAttributedString Substring (NSRange range);
 
-		// TODO: Return type is CTStringAttributes
 		[Export ("attributesAtIndex:longestEffectiveRange:inRange:")]
 		NSDictionary GetAttributes (int location, out NSRange longestEffectiveRange, NSRange rangeLimit);
 
@@ -115,6 +114,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (string str);
 		
 		[Export ("initWithString:attributes:")]
+		[EditorBrowsable (EditorBrowsableState.Advanced)]
 		IntPtr Constructor (string str, NSDictionary attributes);
 
 		[Export ("initWithAttributedString:")]
@@ -221,42 +221,6 @@ namespace MonoMac.Foundation
 		void DrawString (RectangleF rect, NSStringDrawingOptions options);
 		
 #else
-		[Field ("NSFontAttributeName", "UIKit")]
-		NSString FontAttributeName { get; }
-		
-		[Field ("NSParagraphStyleAttributeName", "UIKit")]
-		NSString ParagraphStyleAttributeName { get; }
-		
-		[Field ("NSForegroundColorAttributeName", "UIKit")]
-		NSString ForegroundColorAttributeName { get; }
-		
-		[Field ("NSBackgroundColorAttributeName", "UIKit")]
-		NSString BackgroundColorAttributeName { get; }
-		
-		[Field ("NSLigatureAttributeName", "UIKit")]
-		NSString LigatureAttributeName { get; }
-		
-		[Field ("NSKernAttributeName", "UIKit")]
-		NSString KernAttributeName { get; }
-		
-		[Field ("NSStrikethroughStyleAttributeName", "UIKit")]
-		NSString StrikethroughStyleAttributeName { get; }
-		
-		[Field ("NSUnderlineStyleAttributeName", "UIKit")]
-		NSString UnderlineStyleAttributeName { get; }
-		
-		[Field ("NSStrokeColorAttributeName", "UIKit")]
-		NSString StrokeColorAttributeName { get; }
-		
-		[Field ("NSStrokeWidthAttributeName", "UIKit")]
-		NSString StrokeWidthAttributeName { get; }
-		
-		[Field ("NSShadowAttributeName", "UIKit")]
-		NSString ShadowAttributeName { get; }
-		
-		[Field ("NSVerticalGlyphFormAttributeName", "UIKit")]
-		NSString VerticalGlyphFormAttributeName { get; }
-
 		[Since (6,0)]
 		[Export ("size")]
 		SizeF Size { get; }

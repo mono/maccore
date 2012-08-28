@@ -1,3 +1,30 @@
+// 
+// NSAttributedString.cs: Implements the managed NSAttributedString
+//
+// Authors: Marek Safar (marek.safar@gmail.com)
+//     
+// Copyright 2012, Xamarin Inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+
 using System;
 using MonoMac.CoreText;
 #if !MONOMAC
@@ -11,74 +38,89 @@ namespace MonoMac.Foundation {
 		{
 		}
 
+		public CTStringAttributes GetCoreTextAttributes (int location, out NSRange effectiveRange)
+		{
+			var attr = GetAttributes (location, out effectiveRange);
+			return attr == null ? null : new CTStringAttributes (attr);
+		}
+
+		public CTStringAttributes GetCoreTextAttributes (int location, out NSRange longestEffectiveRange, NSRange rangeLimit)
+		{
+			var attr = GetAttributes (location, out longestEffectiveRange, rangeLimit);
+			return attr == null ? null : new CTStringAttributes (attr);			
+		}
+
 		public NSAttributedString Substring (int start, int len)
 		{
 			return Substring (new NSRange (start, len));
 		}
 
-		static NSDictionary ToDictionary (UIFont font = null,
-						  UIColor foregroundColor = null,
-						  UIColor backgroundColor = null,
-						  UIColor strokeColor = null,
-						  NSParagraphStyle paragraphStyle = null,
-						  NSLigatureType ligatures = NSLigatureType.Default,
-						  float kerning = 0,
-						  NSUnderlineStyle underlineStyle = NSUnderlineStyle.None,
-						  NSShadow shadow = null,
-						  float strokeWidth = 0,
-						  NSUnderlineStyle strikethroughStyle = NSUnderlineStyle.None)
+#if !MONOMAC
+		public NSAttributedString (string str, UIStringAttributes attributes)
+			: this (str, attributes != null ? attributes.Dictionary : null)
 		{
-			NSObject [] keys = new NSObject [11];
-			NSObject [] values = new NSObject [11];
-			int i = 0;
+		}
+
+		public UIStringAttributes GetUIKitAttributes (int location, out NSRange effectiveRange)
+		{
+			var attr = GetAttributes (location, out effectiveRange);
+			return attr == null ? null : new UIStringAttributes (attr);
+		}
+
+		public UIStringAttributes GetUIKitAttributes (int location, out NSRange longestEffectiveRange, NSRange rangeLimit)
+		{
+			var attr = GetAttributes (location, out longestEffectiveRange, rangeLimit);
+			return attr == null ? null : new UIStringAttributes (attr);			
+		}
+
+		static NSDictionary ToDictionary (UIFont font,
+						  UIColor foregroundColor,
+						  UIColor backgroundColor,
+						  UIColor strokeColor,
+						  NSParagraphStyle paragraphStyle,
+						  NSLigatureType ligature,
+						  float kerning,
+						  NSUnderlineStyle underlineStyle,
+						  NSShadow shadow,
+						  float strokeWidth,
+						  NSUnderlineStyle strikethroughStyle)
+		{
+			var attr = new UIStringAttributes ();
 			if (font != null){
-				keys [i] = NSAttributedString.FontAttributeName;
-				values [i++] = font;
+				attr.Font = font;
 			}
 			if (foregroundColor != null){
-				keys [i] = NSAttributedString.ForegroundColorAttributeName;
-				values [i++] = foregroundColor;
+				attr.ForegroundColor = foregroundColor;
 			}
 			if (backgroundColor != null){
-				keys [i] = NSAttributedString.BackgroundColorAttributeName;
-				values [i++] = backgroundColor;
+				attr.BackgroundColor = backgroundColor;
 			}
 			if (strokeColor != null){
-				keys [i] = NSAttributedString.StrokeColorAttributeName;
-				values [i++] = strokeColor;
+				attr.StrokeColor = strokeColor;
 			}
 			if (paragraphStyle != null){
-				keys [i] = NSAttributedString.ParagraphStyleAttributeName;
-				values [i++] = paragraphStyle;
+				attr.ParagraphStyle = paragraphStyle;
 			}
-			if (ligatures != NSLigatureType.Default){
-				keys [i] = NSAttributedString.LigatureAttributeName;
-				values [i++] = new NSNumber ((int) ligatures);
+			if (ligature != NSLigatureType.Default){
+				attr.Ligature = ligature;
 			}
 			if (kerning != 0){
-				keys [i] = NSAttributedString.KernAttributeName;
-				values [i++] = new NSNumber (kerning);
+				attr.KerningAdjustment = kerning;
 			}
 			if (underlineStyle != NSUnderlineStyle.None){
-				keys [i] = NSAttributedString.UnderlineStyleAttributeName;
-				values [i++] = new NSNumber ((int) underlineStyle);
+				attr.UnderlineStyle = underlineStyle;
 			}
 			if (shadow != null){
-				keys [i] = NSAttributedString.ShadowAttributeName;
-				values [i++] = shadow;
+				attr.Shadow = shadow;
 			}
 			if (strokeWidth != 0){
-				keys [i] = NSAttributedString.StrokeWidthAttributeName;
-				values [i++] = new NSNumber (strokeWidth);
+				attr.StrokeWidth = strokeWidth;
 			}
 			if (strikethroughStyle != NSUnderlineStyle.None){
-				keys [i] = NSAttributedString.UnderlineStyleAttributeName;
-				values [i++] = new NSNumber ((int) strikethroughStyle);
+				attr.StrikethroughStyle = strikethroughStyle;
 			}
-			if (i > 0)
-				return NSDictionary.FromObjectsAndKeys (values, keys, i);
-			else
-				return null;
+			var dict = attr.Dictionary;
+			return dict.Count == 0 ? null : dict;
 		}				
 
 		public NSAttributedString (string str,
@@ -96,7 +138,6 @@ namespace MonoMac.Foundation {
 		: this (str, ToDictionary (font, foregroundColor, backgroundColor, strokeColor, paragraphStyle, ligatures, kerning, underlineStyle, shadow, strokeWidth, strikethroughStyle))
 		{
 		}
-				
-							      
+#endif						      
 	}
 }
