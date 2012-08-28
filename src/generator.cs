@@ -47,6 +47,7 @@ using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Drawing;
+using System.ComponentModel;
 
 #if MONOMAC
 using MonoMac.ObjCRuntime;
@@ -1542,7 +1543,7 @@ public class Generator {
 						if (mi.DeclaringType == t)
 							need_abstract [t] = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute)
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute || attr is EditorBrowsableAttribute)
 						continue;
 					else 
 						throw new BindingException (1007, true, "Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -2624,6 +2625,14 @@ public class Generator {
 		foreach (ObsoleteAttribute oa in mi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
 			print ("[Obsolete (\"{0}\", {1})]",
 			       oa.Message, oa.IsError ? "true" : "false");
+		}
+
+		foreach (EditorBrowsableAttribute ea in mi.GetCustomAttributes (typeof (EditorBrowsableAttribute), false)) {
+			if (ea.State == EditorBrowsableState.Always) {
+				print ("[EditorBrowsable]");
+			} else {
+				print ("[EditorBrowsable (EditorBrowsableState.{0})]", ea.State);
+			}
 		}
 
 		bool is_static = HasAttribute (mi, typeof (StaticAttribute));
