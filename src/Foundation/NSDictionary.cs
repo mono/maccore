@@ -28,6 +28,57 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	public partial class NSDictionary : IDictionary, IDictionary<NSObject, NSObject> {
+		public NSDictionary (NSObject first, NSObject second, params NSObject [] args) : this (PickOdd (second, args), PickEven (first, args))
+		{
+		}
+
+		public NSDictionary (object first, object second, params object [] args) : this (PickOdd (second, args), PickEven (first, args))
+		{
+		}
+
+		
+		static NSArray PickEven (NSObject f, NSObject [] args)
+		{
+			int al = args.Length;
+			if ((al % 2) != 0)
+				throw new ArgumentException ("The arguments to NSDictionary should be a multiple of two", "args");
+			var ret = new NSObject [1+al/2];
+			ret [0] = f;
+			for (int i = 0, target = 1; i < al; i += 2)
+				ret [target++] = args [i];
+			return NSArray.FromNSObjects (ret);
+		}
+
+		static NSArray PickOdd (NSObject f, NSObject [] args)
+		{
+			var ret = new NSObject [1+args.Length/2];
+			ret [0] = f;
+			for (int i = 1, target = 1; i < args.Length; i += 2)
+				ret [target++] = args [i];
+			return NSArray.FromNSObjects (ret);
+		}
+
+		static NSArray PickEven (object f, object [] args)
+		{
+			int al = args.Length;
+			if ((al % 2) != 0)
+				throw new ArgumentException ("The arguments to NSDictionary should be a multiple of two", "args");
+			var ret = new object [1+al/2];
+			ret [0] = f;
+			for (int i = 0, target = 1; i < al; i += 2)
+				ret [target++] = args [i];
+			return NSArray.FromObjects (ret);
+		}
+
+		static NSArray PickOdd (object f, object [] args)
+		{
+			var ret = new object [1+args.Length/2];
+			ret [0] = f;
+			for (int i = 1, target = 1; i < args.Length; i += 2)
+				ret [target++] = args [i];
+			return NSArray.FromObjects (ret);
+		}
+		
 		public static NSDictionary FromObjectsAndKeys (NSObject [] objects, NSObject [] keys)
 		{
 			if (objects.Length != keys.Length)

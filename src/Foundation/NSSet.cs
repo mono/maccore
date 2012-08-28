@@ -40,7 +40,11 @@ namespace MonoMac.Foundation {
 	public partial class NSSet : IEnumerable<NSObject> {
 		internal static IntPtr selSetWithArray = Selector.sel_registerName ("setWithArray:");
 
-		public NSSet (NSObject [] objs) : this (NSArray.FromNSObjects (objs))
+		public NSSet (params NSObject [] objs) : this (NSArray.FromNSObjects (objs))
+		{
+		}
+
+		public NSSet (params object [] objs) : this (NSArray.FromObjects (objs))
 		{
 		}
 
@@ -96,6 +100,11 @@ namespace MonoMac.Foundation {
 			var copy = new NSMutableSet (first);
 			copy.MinusSet (second);
 			return copy;
+		}
+
+		public bool Contains (object obj)
+		{
+			return Contains (NSObject.FromObject (obj));
 		}
 	}
 		

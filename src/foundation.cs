@@ -1316,6 +1316,9 @@ namespace MonoMac.Foundation
 		[Export ("initWithContentsOfFile:")]
 		IntPtr Constructor (string fileName);
 
+		[Export ("initWithObjects:forKeys:"), Internal]
+		IntPtr Constructor (NSArray objects, NSArray keys);
+
 		[Export ("initWithContentsOfURL:")]
 		IntPtr Constructor (NSUrl url);
 		
