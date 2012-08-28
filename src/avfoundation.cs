@@ -1313,6 +1313,9 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVURLAssetPreferPreciseDurationAndTimingKey")]
 		NSString PreferPreciseDurationAndTimingKey { get; }
 
+		[Field ("AVURLAssetReferenceRestrictionsKey")]
+		NSString ReferenceRestrictionsKey { get; }
+
 		[Since (5,0)]
 		[Static, Export ("audiovisualMIMETypes")]
 		string [] AudiovisualMimeTypes { get; }
