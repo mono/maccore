@@ -1108,7 +1108,7 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary, EntryPoint="CTFontGetTypeID")]
 		extern static IntPtr CTFontCopyDefaultCascadeListForLanguages (IntPtr font, IntPtr languagePrefList);
 
-		public CTFontDescriptor [] DefaultCascadeList (string [] languages)
+		public CTFontDescriptor [] GetDefaultCascadeList (string [] languages)
 		{
 			if (languages == null)
 				throw new ArgumentNullException ("languages");

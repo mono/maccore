@@ -267,7 +267,7 @@ namespace MonoMac.CoreImage {
 		NSString Image  { get; }
 
 		[Field ("kCIInputVersionKey", "+CoreImage")]
-		NSString Versionkey { get; }
+		NSString Version { get; }
 
 #if MONOMAC
 		[Field ("kCIInputTimeKey", "+CoreImage")]
@@ -722,11 +722,11 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (NSData data, NSDictionary d);
 
 		[Export ("initWithBitmapData:bytesPerRow:size:format:colorSpace:")]
-		IntPtr Constructor (NSData d, int bpr, SizeF size, int f, CGColorSpace c);
+		IntPtr Constructor (NSData d, int bpr, SizeF size, int f, CGColorSpace colorSpace);
 
 		[Since (6,0)]
 		[Export ("initWithTexture:size:flipped:colorSpace:")]
-		IntPtr Constructor (int glTextureName, SizeF size, bool flipped, CGColorSpace cs);
+		IntPtr Constructor (int glTextureName, SizeF size, bool flipped, CGColorSpace colorSpace);
 
 		[Export ("initWithContentsOfURL:")]
 		IntPtr Constructor (NSUrl url);

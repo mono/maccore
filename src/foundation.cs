@@ -3537,15 +3537,15 @@ namespace MonoMac.Foundation
 
 		[Since (6,0)]
 		[Export ("capitalizedStringWithLocale:")]
-		string CapitalizeWithLocale (NSLocale locale);
+		string Capitalize (NSLocale locale);
 		
 		[Since (6,0)]
 		[Export ("lowercaseStringWithLocale:")]
-		string LowercaseWithLocale (NSLocale locale);
+		string ToLower (NSLocale locale);
 		
 		[Since (6,0)]
 		[Export ("uppercaseStringWithLocale:")]
-		string UppercaseWithLocale (NSLocale locale);
+		string ToUpper (NSLocale locale);
 	}
 
 	[Since (6,0)]

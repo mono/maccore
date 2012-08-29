@@ -39,7 +39,7 @@ namespace MonoMac.CoreText {
 	[Since (3,2)]
 	public static class CTTypesetterOptionKey {
 
-		[Obsolete]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		public static readonly NSString DisableBidiProcessing;
 		public static readonly NSString ForceEmbeddingLevel;
 
@@ -75,7 +75,7 @@ namespace MonoMac.CoreText {
 
 		public NSDictionary Dictionary {get; private set;}
 
-		[Obsolete]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		public bool DisableBidiProcessing {
 			get {
 				return CFDictionary.GetBooleanValue (Dictionary.Handle, 
