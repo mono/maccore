@@ -117,7 +117,6 @@ namespace MonoMac.AddressBook {
 		{
 			IntPtr e;
 			
-			InitConstants.Init ();
 			var handle = ABAddressBookCreateWithOptions (IntPtr.Zero, out e);
 			if (handle == IntPtr.Zero){
 				error = new NSError (e);
