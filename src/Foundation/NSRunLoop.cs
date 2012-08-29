@@ -25,8 +25,10 @@ namespace MonoMac.Foundation {
 				return NSDefaultRunLoopMode;
 			else if (mode == NSRunLoopCommonModes)
 				return NSRunLoopCommonModes;
+#if !MONOMAC
 			else if (mode == UITrackingRunLoopMode)
 				return UITrackingRunLoopMode;
+#endif
 			else
 				return new NSString (mode);
 		}
@@ -36,8 +38,6 @@ namespace MonoMac.Foundation {
 			switch (mode){
 			case NSRunLoopMode.Common:
 				return NSRunLoopCommonModes;
-			case NSRunLoopMode.UITracking:
-				return UITrackingRunLoopMode;
 #if MONOMAC
 			case NSRunLoopMode.ConnectionReply:
 				return NSRunLoopConnectionReplyMode;
@@ -45,6 +45,9 @@ namespace MonoMac.Foundation {
 				return NSRunLoopModalPanelMode;
 			case NSRunLoopMode.EventTracking:
 				return NSRunLoopEventTracking;
+#else
+			case NSRunLoopMode.UITracking:
+				return UITrackingRunLoopMode;
 #endif
 	
 			default:
@@ -112,7 +115,7 @@ namespace MonoMac.Foundation {
 					return NSRunLoopMode.Common;
 #if MONOMAC
 				if (mode == NSRunLoopConnectionReplyMode)
-					return NSRunLoopMode.Connection;
+					return NSRunLoopMode.ConnectionReply;
 				if (mode == NSRunLoopModalPanelMode)
 					return NSRunLoopMode.ModalPanel;
 				if (mode == NSRunLoopEventTracking)
