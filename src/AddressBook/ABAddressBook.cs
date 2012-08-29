@@ -301,6 +301,32 @@ namespace MonoMac.AddressBook {
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABAddressBookCopyArrayOfAllPeopleInSource (IntPtr addressBook, IntPtr source);
+
+		[Since (4,0)]
+		public ABPerson [] GetPeople (ABRecord source)
+		{
+			if (source == null)
+				throw new ArgumentNullException ("source");
+			AssertValid ();
+			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllPeopleInSource (Handle, source.Handle);
+			return NSArray.ArrayFromHandle (cfArrayRef, l => new ABPerson (l, this));
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABAddressBookCopyArrayOfAllPeopleInSourceWithSortOrdering (IntPtr addressBook, IntPtr source, ABPersonSortBy sortOrdering);
+
+		[Since (4,0)]
+		public ABPerson [] GetPeople (ABRecord source, ABPersonSortBy sortOrdering)
+		{
+			if (source == null)
+				throw new ArgumentNullException ("source");
+			AssertValid ();
+			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllPeopleInSourceWithSortOrdering (Handle, source.Handle, sortOrdering);
+			return NSArray.ArrayFromHandle (cfArrayRef, l => new ABPerson (l, this));
+		}		
+
+		[DllImport (Constants.AddressBookLibrary)]
 		extern static int ABAddressBookGetGroupCount (IntPtr addressBook);
 		public int GroupCount {
 			get {
@@ -316,6 +342,20 @@ namespace MonoMac.AddressBook {
 			AssertValid ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllGroups (Handle);
 			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABGroup (h, this));
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
+		extern static IntPtr ABAddressBookCopyArrayOfAllGroupsInSource (IntPtr addressBook, IntPtr source);
+
+		[Since (4,0)]
+		public ABGroup[] GetGroups (ABRecord source)
+		{
+			if (source == null)
+				throw new ArgumentNullException ("source");
+
+			AssertValid ();
+			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllGroupsInSource (Handle, source.Handle);
+			return NSArray.ArrayFromHandle (cfArrayRef, l => new ABGroup (l, this));
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]

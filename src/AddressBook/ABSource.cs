@@ -39,20 +39,28 @@ namespace MonoMac.AddressBook {
 	public enum ABSourceType {	
 		Local		= 0x0,
 		Exchange	= 0x1,
-		ExchangeGAL	= Exchange | ABSource.SearchableMask,
+		ExchangeGAL	= Exchange | SearchableMask,
 		MobileMe	= 0x2,
-		LDAP		= 0x3 | ABSource.SearchableMask,
+		LDAP		= 0x3 | SearchableMask,
 		CardDAV		= 0x4,
-		DAVSearch	= CardDAV | ABSource.SearchableMask,
+		DAVSearch	= CardDAV | SearchableMask,
+
+		SearchableMask = 0x01000000
 	};	
 	
 	public class ABSource : ABRecord {
-		
+		[Obsolete ("Use ABSourceType.SearchableMask")]
 		public const int SearchableMask = 0x01000000;
+
+		internal ABSource (IntPtr handle, bool owns)
+			: base (handle, owns)
+		{
+		}
 		
 		internal ABSource (IntPtr handle, ABAddressBook addressbook)
-			: base (CFObject.CFRetain (handle), addressbook)
+			: base (handle, false)
 		{
+			AddressBook = addressbook;
 		}
 		
 		public string Name {

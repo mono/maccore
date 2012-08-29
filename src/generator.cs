@@ -42,6 +42,7 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -501,6 +502,9 @@ public class DefaultValueFromArgumentAttribute : Attribute {
 		Argument = s;
 	}
 	public string Argument { get; set; }
+}
+
+public class NoDefaultValueAttribute : Attribute {
 }
 
 // Apply to strings parameters that are merely retained or assigned,
@@ -1521,6 +1525,10 @@ public class Generator {
 
 				if (HasAttribute (mi, typeof (AlphaAttribute)) && Alpha == false)
 					continue;
+
+				bool seenAbstract = false;
+				bool seenDefaultValue = false;
+				bool seenNoDefaultValue = false;
 				
 				foreach (Attribute attr in mi.GetCustomAttributes (typeof (Attribute), true)){
 					string selector = null;
@@ -1542,8 +1550,15 @@ public class Generator {
 					} else  if (attr is AbstractAttribute){
 						if (mi.DeclaringType == t)
 							need_abstract [t] = true;
+						seenAbstract = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is DefaultValueAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is DefaultValueFromArgumentAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute || attr is EditorBrowsableAttribute)
+					} else if (attr is DefaultValueAttribute || attr is DefaultValueFromArgumentAttribute) {
+						seenDefaultValue = true;
+						continue;
+					} else if (attr is NoDefaultValueAttribute) {
+						seenNoDefaultValue = true;
+						continue;
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute || attr is EditorBrowsableAttribute)
 						continue;
 					else 
 						throw new BindingException (1007, true, "Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -1557,6 +1572,11 @@ public class Generator {
 					} else
 						selector_use [selector] = 1;
 				}
+
+				if (seenNoDefaultValue && seenAbstract)
+					throw new BindingException (1019, true, "Cannot use [NoDefaultValue] on abstract method `{0}.{1}'", mi.DeclaringType, mi.Name);
+				else if (seenNoDefaultValue && seenDefaultValue)
+					throw new BindingException (1019, true, "Cannot use both [NoDefaultValue] and [DefaultValue] on method `{0}.{1}'", mi.DeclaringType, mi.Name);
 
 				DeclareInvoker (mi);
 			}
@@ -2154,7 +2174,7 @@ public class Generator {
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck)
+	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo = null, bool is_appearance = false)
 	{
 		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
 		
@@ -2356,15 +2376,22 @@ public class Generator {
 			print ("{0} = ret;", var_name);
 		}
 
-
-		if (has_postget) {
-			PostGetAttribute [] attr = (PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true);
-			for (int i = 0; i < attr.Length; i++) {
-				print ("#pragma warning disable 168");
-				print ("var postget{0} = {1};", i, attr [i].MethodName);
-				print ("#pragma warning restore 168");
-			}
+		PostGetAttribute [] postget = null;
+		// [PostGet] are not needed (and might not be available) when generating methods inside Appearance types
+		// However we want them even if ImplementsAppearance is true (i.e. the original type needs them)
+		if (!is_appearance) {
+			if (has_postget)
+				postget = ((PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true));
+			else if (propInfo != null)
+				postget = ((PostGetAttribute []) propInfo.GetCustomAttributes (typeof (PostGetAttribute), true));
 		}
+		if ((postget != null) && (postget.Length > 0)) {
+			print ("#pragma warning disable 168");
+			for (int i = 0; i < postget.Length; i++)
+				print ("var postget{0} = {1};", i, postget [i].MethodName);
+			print ("#pragma warning restore 168");
+		}
+		
 		if (HasAttribute (mi, typeof (FactoryAttribute)))
 			print ("ret.Release (); // Release implicit ref taken by GetNSObject");
 		if (byRefPostProcessing.Length > 0)
@@ -2445,6 +2472,27 @@ public class Generator {
 		return DoesPropertyNeedBackingField (pi) && needs_ref;		
 	}
 
+	void PrintPropertyAttributes (PropertyInfo pi)
+	{
+		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) 
+			print ("[Obsolete (\"{0}\", {1})]", oa.Message, oa.IsError ? "true" : "false");
+
+		foreach (DebuggerBrowsableAttribute ba in pi.GetCustomAttributes (typeof (DebuggerBrowsableAttribute), false)) 
+			print ("[DebuggerBrowsable (DebuggerBrowsableState.{0})]", ba.State);
+
+		foreach (DebuggerDisplayAttribute da in pi.GetCustomAttributes (typeof (DebuggerDisplayAttribute), false)) {
+			var narg = da.Name != null ? string.Format (", Name = \"{0}\"", da.Name) : string.Empty;
+			var targ = da.Type != null ? string.Format (", Type = \"{0}\"", da.Type) : string.Empty;
+			print ("[DebuggerDisplay (\"{0}\"{1}{2})]", da.Value, narg, targ);
+		}
+		foreach (SinceAttribute sa in pi.GetCustomAttributes (typeof (SinceAttribute), false)) 
+			print ("[Since ({0},{1})]", sa.Major, sa.Minor);
+
+		foreach (ThreadSafeAttribute sa in pi.GetCustomAttributes (typeof (ThreadSafeAttribute), false)) 
+			print ("[ThreadSafe]");
+
+	}
+
 	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
 	{
 		string wrap;
@@ -2457,9 +2505,29 @@ public class Generator {
 		bool is_new = HasAttribute (pi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
 		bool is_unsafe = false;
-
+		
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
 			is_unsafe = true;
+
+		if (wrap != null){
+			print_generated_code ();
+			PrintPropertyAttributes (pi);
+			print ("{0} {1}{2}{3}{4} {5} {{",
+			       is_public ? "public" : "internal",
+			       is_unsafe ? "unsafe " : "",
+			       is_new ? "new " : "",
+			       (is_static ? "static " : ""),
+			       FormatType (pi.DeclaringType,  pi.PropertyType),
+			       pi.Name);
+			indent++;
+			if (pi.CanRead)
+				print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+			if (pi.CanWrite)
+				print ("set {{ {0} = value; }}", wrap);
+			indent--;
+			print ("}\n");
+			return;
+		}
 
 		string var_name = null;
 		string override_mod;
@@ -2484,12 +2552,9 @@ public class Generator {
 			override_mod = is_static ? "static " : "";
 		}
 
-		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
-			print ("[Obsolete (\"{0}\", {1})]",
-			       oa.Message, oa.IsError ? "true" : "false");
-		}
-
 		print_generated_code ();
+		PrintPropertyAttributes (pi);
+
 		print ("{0} {1}{2}{3}{4} {5} {{",
 		       is_public ? "public" : "internal",
 		       is_unsafe ? "unsafe " : "",
@@ -2529,14 +2594,14 @@ public class Generator {
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					if (!DoesPropertyNeedBackingField (pi)) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck, pi);
 					} else if (is_static) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck, pi);
 					} else {
 						if (DoesPropertyNeedDirtyCheck (pi, export))
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck, pi);
 						else
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck, pi);
 					}
 				}
 				print ("}\n");
@@ -2573,7 +2638,7 @@ public class Generator {
 				else if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck);
+					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck, pi);
 					if (!is_static && DoesPropertyNeedBackingField (pi)) {
 						if (DoesPropertyNeedDirtyCheck (pi, export)) {
 #if !MONOMAC
@@ -2595,7 +2660,7 @@ public class Generator {
 		print ("}}\n", pi.Name);
 	}
 
-	void GenerateMethod (Type type, MethodInfo mi, bool is_model)
+	void GenerateMethod (Type type, MethodInfo mi, bool is_model, bool is_appearance = false)
 	{
 		foreach (ParameterInfo pi in mi.GetParameters ())
 			if (HasAttribute (pi, typeof (RetainAttribute))){
@@ -2673,7 +2738,7 @@ public class Generator {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
 				}
-				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck);
+				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck, null, is_appearance);
 				if (is_autorelease) {
 					print ("}");
 					indent--;
@@ -2783,7 +2848,7 @@ public class Generator {
 
 			if (!is_static_class){
 				print ("[CompilerGenerated]");
-				print ("static IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
+				print ("static readonly IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
 				if (!is_model && !external) {
 					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
 				}
@@ -2977,6 +3042,8 @@ public class Generator {
 					print ("}");
 					print ("return (_{0}) del;", dtype.Name);
 					indent--; print ("}\n");
+
+					var noDefaultValue = new List<MethodInfo> ();
 					
 					print ("[Register]");
 					print ("class _{0} : {1} {{ ", dtype.Name, RenderType (dtype));
@@ -2998,6 +3065,9 @@ public class Generator {
 						
 						var pars = mi.GetParameters ();
 						int minPars = bta.Singleton ? 0 : 1;
+
+						if (mi.GetCustomAttributes (typeof (NoDefaultValueAttribute), false).Length > 0)
+							noDefaultValue.Add (mi);
 
 						if (pars.Length < minPars)
 							throw new BindingException (1003, true, "The delegate method {0}.{1} needs to take at least one parameter", dtype.FullName, mi.Name);
@@ -3033,7 +3103,12 @@ public class Generator {
 							} else
 								eaname = "<NOTREACHED>";
 							
-							print ("if ({0} != null){{", PascalCase (mi.Name));
+							if (bta.Singleton || mi.GetParameters ().Length == 1)
+								print ("EventHandler handler = {0};", PascalCase (mi.Name));
+							else
+								print ("EventHandler<{0}> handler = {1};", GetEventArgName (mi), PascalCase (mi.Name));
+
+							print ("if (handler != null){");
 							indent++;
 							string eventArgs;
 							if (pars.Length == minPars)
@@ -3042,8 +3117,8 @@ public class Generator {
 								print ("var args = new {0} ({1});", eaname, RenderArgs (pars.Skip (minPars), true));
 								eventArgs = "args";
 							}
-							
-							print ("{0} ({1}, {2});", PascalCase (mi.Name), sender, eventArgs);
+
+							print ("handler ({0}, {1});", sender, eventArgs);
 							if (pars.Length != minPars && MustPullValuesBack (pars.Skip (minPars))){
 								foreach (var par in pars.Skip (minPars)){
 									if (!par.ParameterType.IsByRef)
@@ -3068,29 +3143,60 @@ public class Generator {
 							}
 							if (debug)
 								print ("Console.WriteLine (\"Method {0}.{1} invoked\");", dtype.Name, mi.Name);
-							
-							print ("if ({0} != null)", PascalCase (mi.Name));
-							print ("	return {0} ({1}{2});",
-							       PascalCase (mi.Name), sender,
+
+							print ("{0} handler = {1};", delname, PascalCase (mi.Name));
+							print ("if (handler != null)");
+							print ("	return handler ({0}{1});",
+							       sender,
 							       pars.Length == minPars ? "" : String.Format (", {0}", RenderArgs (pars.Skip (1))));
 
-							var def = GetDefaultValue (mi);
-							if ((def is string) && ((def as string) == "null") && mi.ReturnType.IsValueType)
-								print ("throw new Exception (\"No event handler has been added to the {0} event.\");", mi.Name);
+							if (mi.GetCustomAttributes (typeof (NoDefaultValueAttribute), false).Length > 0)
+								print ("throw new You_Should_Not_Call_base_In_This_Method ();");
 							else {
-								foreach (var j in pars){
-									if (j.ParameterType.IsByRef && j.IsOut){
-										print ("{0} = null;", j.Name);
+								var def = GetDefaultValue (mi);
+								if ((def is string) && ((def as string) == "null") && mi.ReturnType.IsValueType)
+									print ("throw new Exception (\"No event handler has been added to the {0} event.\");", mi.Name);
+								else {
+									foreach (var j in pars){
+										if (j.ParameterType.IsByRef && j.IsOut){
+											print ("{0} = null;", j.Name);
+										}
 									}
-								}
 										
-								print ("return {0};", def);
+									print ("return {0};", def);
+								}
 							}
 						}
 						
 						indent--;
 						print ("}\n");
 					}
+
+					if (noDefaultValue.Count > 0) {
+						foreach (var mi in noDefaultValue) {
+							var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
+							var export = (ExportAttribute)eattrs[0];
+							print ("static IntPtr sel{0} = Selector.GetHandle (\"{1}\");", mi.Name, export.Selector);
+						}
+						print ("static IntPtr selRespondsToSelector = Selector.GetHandle (\"respondsToSelector:\");");
+
+						print ("[Export (\"respondsToSelector:\")]");
+						print ("bool _RespondsToSelector (IntPtr selHandle)");
+						print ("{");
+						++indent;
+						foreach (var mi in noDefaultValue) {
+							var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
+							var export = (ExportAttribute)eattrs[0];
+							print ("if (selHandle.Equals (sel{0}))", mi.Name);
+							++indent;
+							print ("return {0} != null;", PascalCase (mi.Name));
+							--indent;
+						}
+						print ("return Messaging.bool_objc_msgSendSuper_intptr (SuperHandle, selRespondsToSelector, selHandle);");
+						--indent;
+						print ("}");
+					}
+
 					indent--;
 					print ("}");
 				}
@@ -3211,7 +3317,7 @@ public class Generator {
 					
 					foreach (MemberInfo mi in appearance_selectors){
 						if (mi is MethodInfo)
-							GenerateMethod (type, mi as MethodInfo, false);
+							GenerateMethod (type, mi as MethodInfo, false, true);
 						else
 							GenerateProperty (type, mi as PropertyInfo, currently_ignored_fields, false);
 					}

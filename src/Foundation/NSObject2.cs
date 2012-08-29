@@ -15,6 +15,7 @@ namespace MonoMac.Foundation {
 
 	public partial class NSObject {
 		static IntPtr selConformsToProtocol = Selector.GetHandle ("conformsToProtocol:");
+		static IntPtr selEncodeWithCoder = Selector.GetHandle ("encodeWithCoder:");
 		
 		[Export ("encodeWithCoder:")]
 		public virtual void EncodeTo (NSCoder coder)
@@ -23,9 +24,9 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("coder");
 			
 			if (IsDirectBinding) {
-				Messaging.void_objc_msgSend_intptr (this.Handle, selAwakeFromNib, coder.Handle);
+				Messaging.void_objc_msgSend_intptr (this.Handle, selEncodeWithCoder, coder.Handle);
 			} else {
-				Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, selAwakeFromNib, coder.Handle);
+				Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, selEncodeWithCoder, coder.Handle);
 			}
 		}
 
