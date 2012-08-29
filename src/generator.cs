@@ -2753,17 +2753,21 @@ public class Generator {
 			print ("namespace {0} {{", type.Namespace);
 			indent++;
 
+			string class_mod = null;
 			if (is_static_class){
 				base_type = typeof (object);
+				class_mod = "static ";
 			} else {
 				print ("[Register(\"{0}\", true)]", objc_type_name);
+				if (need_abstract.ContainsKey (type))
+					class_mod = "abstract ";
 			} 
 			
 			if (is_model)
 				print ("[Model]");
 
 			print ("public unsafe {0}partial class {1} {2} {{",
-			       need_abstract.ContainsKey (type) ? "abstract " : "",
+			       class_mod,
 			       TypeName,
 			       base_type != typeof (object) && TypeName != "NSObject" ? ": " + FormatType (type, base_type) : "");
 
