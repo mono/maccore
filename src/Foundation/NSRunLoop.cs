@@ -5,12 +5,17 @@ namespace MonoMac.Foundation {
 	public enum NSRunLoopMode {
 		Default,
 		Common,
-
 #if MONOMAC
-		ConnectionReply,
+		ConnectionReply = 2,
 		ModalPanel,
-		EventTracking
+		EventTracking,
+#else
+		// iOS-specific Enums start in 100 to avoid conflicting with future extensions to MonoMac
+		UITracking = 100,
 #endif
+
+		// If it is not part of these enumerations
+		Other = 1000
 	}
 	
 	public partial class NSRunLoop {
@@ -20,6 +25,8 @@ namespace MonoMac.Foundation {
 				return NSDefaultRunLoopMode;
 			else if (mode == NSRunLoopCommonModes)
 				return NSRunLoopCommonModes;
+			else if (mode == UITrackingRunLoopMode)
+				return UITrackingRunLoopMode;
 			else
 				return new NSString (mode);
 		}
@@ -29,6 +36,8 @@ namespace MonoMac.Foundation {
 			switch (mode){
 			case NSRunLoopMode.Common:
 				return NSRunLoopCommonModes;
+			case NSRunLoopMode.UITracking:
+				return UITrackingRunLoopMode;
 #if MONOMAC
 			case NSRunLoopMode.ConnectionReply:
 				return NSRunLoopConnectionReplyMode;
@@ -37,13 +46,14 @@ namespace MonoMac.Foundation {
 			case NSRunLoopMode.EventTracking:
 				return NSRunLoopEventTracking;
 #endif
+	
 			default:
 			case NSRunLoopMode.Default:
 				return NSDefaultRunLoopMode;
 			}
 		}
 		
-		[Obsolete ("Use AddTimer (NSTimer, NSString)")]
+		[Obsolete ("Use AddTimer (NSTimer, NSRunLoopMode)")]
 		public void AddTimer (NSTimer timer, string forMode)
 		{
 			AddTimer (timer, GetRealMode (forMode));
@@ -55,7 +65,7 @@ namespace MonoMac.Foundation {
 		}
 
 
-		[Obsolete ("Use LimitDateForMode (NSString) instead")]
+		[Obsolete ("Use LimitDateForMode (NSRunLoopMode) instead")]
 		public NSDate LimitDateForMode (string mode)
 		{
 			return LimitDateForMode (GetRealMode (mode));
@@ -66,7 +76,7 @@ namespace MonoMac.Foundation {
 			return LimitDateForMode (FromEnum (mode));
 		}
 		
-		[Obsolete ("Use AcceptInputForMode (NSString, NSDate)")]
+		[Obsolete ("Use AcceptInputForMode (NSRunLoopMode, NSDate)")]
 		public void AcceptInputForMode (string mode, NSDate limitDate)
 		{
 			AcceptInputForMode (GetRealMode (mode), limitDate);
@@ -85,6 +95,34 @@ namespace MonoMac.Foundation {
 		public void WakeUp ()
 		{
 			GetCFRunLoop ().WakeUp ();
+		}
+
+		public bool RunUntil (NSRunLoopMode mode, NSDate limitDate)
+		{
+			return RunUntil (FromEnum (mode), limitDate);
+		}
+
+		public NSRunLoopMode CurrentRunLoopMode {
+			get {
+				var mode = CurrentMode;
+
+				if (mode == NSDefaultRunLoopMode)
+					return NSRunLoopMode.Default;
+				if (mode == NSRunLoopCommonModes)
+					return NSRunLoopMode.Common;
+#if MONOMAC
+				if (mode == NSRunLoopConnectionReplyMode)
+					return NSRunLoopMode.Connection;
+				if (mode == NSRunLoopModalPanelMode)
+					return NSRunLoopMode.ModalPanel;
+				if (mode == NSRunLoopEventTracking)
+					return NSRunLoopMode.EventTracking;
+#else
+				if (mode == UITrackingRunLoopMode)
+					return NSRunLoopMode.UITracking;
+#endif
+				return NSRunLoopMode.Other;
+			}
 		}
 	}
 }
