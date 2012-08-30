@@ -5,6 +5,9 @@
 //     
 // Copyright 2010 Novell, Inc
 //
+#if !MONOMAC
+using MonoMac.UIKit;
+#endif
 
 using MonoMac.CoreText;
 
@@ -40,5 +43,27 @@ namespace MonoMac.Foundation {
 
 			}
 		}
+#if !MONOMAC
+		public NSMutableAttributedString (string str, UIStringAttributes attributes)
+		: this (str, attributes != null ? attributes.Dictionary : null)
+		{
+		}
+
+		public NSMutableAttributedString (string str,
+						  UIFont font = null,
+						  UIColor foregroundColor = null,
+						  UIColor backgroundColor = null,
+						  UIColor strokeColor = null,
+						  NSParagraphStyle paragraphStyle = null,
+						  NSLigatureType ligatures = NSLigatureType.Default,
+						  float kerning = 0,
+						  NSUnderlineStyle underlineStyle = NSUnderlineStyle.None,
+						  NSShadow shadow = null,
+						  float strokeWidth = 0,
+						  NSUnderlineStyle strikethroughStyle = NSUnderlineStyle.None)
+		: this (str, ToDictionary (font, foregroundColor, backgroundColor, strokeColor, paragraphStyle, ligatures, kerning, underlineStyle, shadow, strokeWidth, strikethroughStyle))
+		{
+		}
+#endif
 	}
 }

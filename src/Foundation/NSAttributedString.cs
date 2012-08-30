@@ -73,7 +73,8 @@ namespace MonoMac.Foundation {
 			return attr == null ? null : new UIStringAttributes (attr);			
 		}
 
-		static NSDictionary ToDictionary (UIFont font,
+		static internal NSDictionary ToDictionary (
+						  UIFont font,
 						  UIColor foregroundColor,
 						  UIColor backgroundColor,
 						  UIColor strokeColor,
