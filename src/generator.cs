@@ -3103,8 +3103,6 @@ public class Generator {
 						print ("{");
 						++indent;
 						foreach (var mi in noDefaultValue) {
-							var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
-							var export = (ExportAttribute)eattrs[0];
 							print ("if (selHandle.Equals (sel{0}))", mi.Name);
 							++indent;
 							print ("return {0} != null;", PascalCase (mi.Name));
