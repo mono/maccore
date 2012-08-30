@@ -390,6 +390,9 @@ class DocumentGeneratedCode {
 		foreach (var pi in t.GatherProperties ()){
 			object [] attrs;
 			var kbd = false;
+			if (pi.GetCustomAttributes (typeof (InternalAttribute), true).Length > 0)
+				continue;
+			
 			if (pi.GetCustomAttributes (typeof (FieldAttribute), true).Length > 0){
 				ProcessField (t, xmldoc, pi);
 
@@ -429,6 +432,9 @@ class DocumentGeneratedCode {
 			// Since it is a pain to go from a MethodInfo into an ECMA XML signature name
 			// we will lookup the method by the [Export] attribute
 			//
+
+			if (mi.GetCustomAttributes (typeof (InternalAttribute), true).Length > 0)
+				continue;
 			
 			var attrs = mi.GetCustomAttributes (typeof (ExportAttribute), true);
 			if (attrs.Length == 0)
@@ -436,7 +442,7 @@ class DocumentGeneratedCode {
 			var ea = attrs [0] as ExportAttribute;
 			var node = GetXmlNodeFromExport (t, xmldoc, ea.Selector);
 			if (node == null){
-				Console.WriteLine ("Did not find the selector {0}", ea.Selector);
+				Console.WriteLine ("Did not find the selector {0} on type {1}", ea.Selector, t);
 				continue;
 			}
 			

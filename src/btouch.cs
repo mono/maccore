@@ -117,6 +117,7 @@ class BindingTouch {
 #endif
 			{ "r=", "Adds a reference", v => references.Add (v) },
 			{ "lib=", "Adds the directory to the search path for the compiler", v => libs.Add (v) },
+			{ "compiler=", "Sets the compiler to use", v => compiler = v },
 			{ "d=", "Defines a symbol", v => defines.Add (v) },
 			{ "s=", "Adds a source file required to build the API", v => core_sources.Add (v) },
 			{ "v", "Sets verbose mode", v => verbose = true },
