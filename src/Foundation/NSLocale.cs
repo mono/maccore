@@ -131,6 +131,11 @@ namespace MonoMac.Foundation {
 				return  (string) (NSString) ObjectForKey (_CurrencyCode);
 			}
 		}
+
+		public string GetCurrencyCodeDisplayName (string value)
+		{
+			return DisplayNameForKey (_CurrencyCode, value);
+		}
 		
 		public string CollatorIdentifier {
 			get {
