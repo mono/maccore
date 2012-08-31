@@ -104,7 +104,7 @@ namespace MonoMac.QuickLook {
 		
 		[Since (4,2)]
 		[Export ("previewController:frameForPreviewItem:inSourceView:"), DelegateName ("QLFrame"), DefaultValue (typeof (System.Drawing.RectangleF))]
-		RectangleF FrameForPreviewItem (QLPreviewController controller, QLPreviewItem item, [NullAllowed] UIView view);
+		RectangleF FrameForPreviewItem (QLPreviewController controller, QLPreviewItem item, ref UIView view);
 		
 		[Since (4,2)]
 		[Export ("previewController:transitionImageForPreviewItem:contentRect:"), DelegateName ("QLTransition"), DefaultValue (null)]
