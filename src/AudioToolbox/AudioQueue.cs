@@ -414,9 +414,9 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static AudioQueueStatus AudioQueueEnqueueBufferWithParameters (
+		extern unsafe static AudioQueueStatus AudioQueueEnqueueBufferWithParameters (
 			IntPtr AQ,
-			IntPtr audioQueueBuffer,
+			AudioQueueBuffer *audioQueueBuffer,
 			int nPackets,
 			AudioStreamPacketDescription [] desc,
 			int trimFramesAtStart,
@@ -425,11 +425,32 @@ namespace MonoMac.AudioToolbox {
 			AudioQueueParameterEvent      [] parameterEvents,
 			ref AudioTimeStamp  startTime,
 			out AudioTimeStamp actualStartTime);
-		AudioQueueStatus EnqueueBuffer (IntPtr audioQueueBuffer, AudioStreamPacketDescription [] desc,
-						int trimFramesAtStart, int trimFramesAtEnd, AudioQueueParameterEvent [] parameterEvents,
-						ref AudioTimeStamp startTime, out AudioTimeStamp actualStartTime)
+
+		public AudioQueueStatus EnqueueBuffer (IntPtr audioQueueBuffer, int bytes, AudioStreamPacketDescription [] desc,
+						       int trimFramesAtStart, int trimFramesAtEnd, AudioQueueParameterEvent [] parameterEvents,
+						       ref AudioTimeStamp startTime, out AudioTimeStamp actualStartTime)
 		{
 			if (audioQueueBuffer == IntPtr.Zero)
+				throw new ArgumentNullException ("audioQueueBuffer");
+
+			unsafe {
+				AudioQueueBuffer *buffer = (AudioQueueBuffer *) audioQueueBuffer;
+				buffer->AudioDataByteSize = (uint) bytes;
+
+				return AudioQueueEnqueueBufferWithParameters (
+					handle, buffer, desc == null ? 0 : desc.Length, desc,
+					trimFramesAtStart, trimFramesAtEnd, parameterEvents == null ? 0 : parameterEvents.Length,
+					parameterEvents,
+					ref startTime,
+					out actualStartTime);
+			}
+		}
+
+		public unsafe AudioQueueStatus EnqueueBuffer (AudioQueueBuffer *audioQueueBuffer, int bytes, AudioStreamPacketDescription [] desc,
+						       int trimFramesAtStart, int trimFramesAtEnd, AudioQueueParameterEvent [] parameterEvents,
+						       ref AudioTimeStamp startTime, out AudioTimeStamp actualStartTime)
+		{
+			if (audioQueueBuffer == null)
 				throw new ArgumentNullException ("audioQueueBuffer");
 
 			return AudioQueueEnqueueBufferWithParameters (
@@ -439,6 +460,7 @@ namespace MonoMac.AudioToolbox {
 				ref startTime,
 				out actualStartTime);
 		}
+		
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static AudioQueueStatus AudioQueueCreateTimeline (IntPtr AQ, out IntPtr timeline);
