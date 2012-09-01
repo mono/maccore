@@ -1,3 +1,4 @@
+// Copyright 2011, 2012 Xamarin Inc
 using System;
 using System.Text;
 using System.Reflection;

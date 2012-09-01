@@ -8,7 +8,8 @@
 // erased in the compilation process (like the link between events
 // and their ObjC delegate classes).
 //
-
+// Copyright 2012 Xamarin Inc
+//
 using System;
 using System.Collections.Generic;
 using System.Reflection;

@@ -2,6 +2,7 @@
 // NSUrlConnection.cs:
 // Author:
 //   Miguel de Icaza
+// Copyright 2011, 2012 Xamarin Inc
 //
 
 using System;
