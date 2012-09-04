@@ -54,6 +54,13 @@ class DocumentGeneratedCode {
 	{
 		var ns = t.Namespace;
 		var typeName = t.FullName.Substring (ns.Length+1);
+		if (ns == "MonoTouch.Foundation"){
+			if (typeName == "NSString2")
+				typeName = "NSString";
+			if (typeName == "NSObject2")
+				typeName = "NSObject";
+		}
+		
 		return String.Format ("{0}/{1}/{2}{3}.xml", assembly_dir, ns, typeName, notification ? "+Notifications" : "");
 	}
 	
