@@ -3045,8 +3045,9 @@ public class Generator {
 
 					var noDefaultValue = new List<MethodInfo> ();
 					
+					print ("#pragma warning disable 672");
 					print ("[Register]");
-					print ("class _{0} : {1} {{ ", dtype.Name, RenderType (dtype));
+					print ("sealed class _{0} : {1} {{ ", dtype.Name, RenderType (dtype));
 					indent++;
 					if (bta.KeepRefUntil != null){
 						print ("object reference;");
@@ -3197,6 +3198,8 @@ public class Generator {
 
 					indent--;
 					print ("}");
+
+					print ("#pragma warning restore 672");
 				}
 				print ("");
 

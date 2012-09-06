@@ -52,7 +52,8 @@ namespace MonoMac.AVFoundation {
 		public bool Status { get; private set; }
 	}
 
-	internal class InternalAVAudioPlayerDelegate : AVAudioPlayerDelegate {
+	#pragma warning disable 672
+	sealed class InternalAVAudioPlayerDelegate : AVAudioPlayerDelegate {
 		internal EventHandler cbEndInterruption, cbBeginInterruption;
 		internal EventHandler<AVStatusEventArgs> cbFinishedPlaying;
 		internal EventHandler<AVErrorEventArgs> cbDecoderError;
@@ -88,6 +89,7 @@ namespace MonoMac.AVFoundation {
 		}
 
 	}
+	#pragma warning restore 672
 	
 	public partial class AVAudioPlayer {
 		InternalAVAudioPlayerDelegate EnsureEventDelegate ()
