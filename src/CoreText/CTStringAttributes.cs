@@ -338,7 +338,7 @@ namespace MonoMac.CoreText {
 			Adapter.SetValue (dict, key, new NSNumber (offset));
 
 			if (ptr == IntPtr.Zero)
-				Adapter.SetNativeValue (Dictionary, infoKey, dict);
+				Adapter.SetNativeValue (Dictionary, infoKey, (INativeObject)dict);
 		}
 
 		[Since (6, 0)]
