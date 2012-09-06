@@ -160,7 +160,21 @@ namespace MonoMac.CoreText {
 				error = new NSError (h);
 			return ret;
 		}
-		
+
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern bool CTFontManagerUnregisterGraphicsFont (IntPtr cgfont, out IntPtr error);
+		public static bool UnregisterGraphicsFont (CGFont font, out NSError error)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			IntPtr h;
+			var ret = CTFontManagerUnregisterGraphicsFont (font.Handle, out h);
+			if (ret)
+				error = null;
+			else 
+				error = new NSError (h);
+			return ret;
+		}
 		
 		static CTFontManager ()
 		{
