@@ -380,9 +380,11 @@ namespace MonoMac.Foundation  {
 		PrinterDescriptionDirectory = 20,
 		SharedPublicDirectory = 21,
 		PreferencePanesDirectory = 22,
+		ApplicationScriptsDirectory = 23,
 		ItemReplacementDirectory = 99,
 		AllApplicationsDirectory = 100,
-		AllLibrariesDirectory = 101
+		AllLibrariesDirectory = 101,
+		TrashDirectory = 102,
 	}
 
 	[Flags]

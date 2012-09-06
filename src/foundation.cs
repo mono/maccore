@@ -698,6 +698,9 @@ namespace MonoMac.Foundation
 
 		[Export ("allowedUnits")]
 		NSByteCountFormatterUnits AllowedUnits { get; set; }
+
+		[Export ("countStyle")]
+		NSByteCountFormatterCountStyle CountStyle { get; set; }
 	}
 
 	[BaseType (typeof (NSFormatter))]
