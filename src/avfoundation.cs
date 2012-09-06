@@ -348,10 +348,12 @@ namespace MonoMac.AVFoundation {
 		void BeginInterruption (AVAudioPlayer  player);
 	
 		[Export ("audioPlayerEndInterruption:")]
+		[Obsolete ("Deprecated in iOS6")]
 		void EndInterruption (AVAudioPlayer player);
 
 		[Since (4,0)]
 		[Export ("audioPlayerEndInterruption:withFlags:")]
+		[Obsolete ("Deprecated in iOS6")]
 		void EndInterruption (AVAudioPlayer player, AVAudioSessionInterruptionFlags flags);
 	}
 
@@ -933,6 +935,10 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("chapterMetadataGroupsBestMatchingPreferredLanguages:")]
 		AVTimedMetadataGroup [] GetChapterMetadataGroupsBestMatchingPreferredLanguages (string [] preferredLanguages);
+
+		[Since (6,0)]
+		[Export ("resourceLoader")]
+		AVAssetResourceLoader ResourceLoader { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1138,13 +1144,13 @@ namespace MonoMac.AVFoundation {
 		bool Finished { get;  }
 
 		[Export ("finishLoadingWithResponse:data:redirect:")]
-		void FinishLoading (NSUrlResponse usingResponse, NSData data, NSUrlRequest redirect);
+		void FinishLoading (NSUrlResponse usingResponse, [NullAllowed] NSData data, [NullAllowed] NSUrlRequest redirect);
 
 		[Export ("finishLoadingWithError:")]
 		void FinishLoadingWithError (NSError error);
 
 		[Export ("streamingContentKeyRequestDataForApp:contentIdentifier:options:error:")]
-		NSData GetStreamingContentKey (NSData appIdentifier, NSData contentIdentifier, NSDictionary options, NSError outError);
+		NSData GetStreamingContentKey (NSData appIdentifier, NSData contentIdentifier, [NullAllowed] NSDictionary options, NSError outError);
 	}
 	
 	[Since (4,1)]
@@ -1224,6 +1230,11 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("initWithMediaType:outputSettings:sourceFormatHint:")]
 		IntPtr Constructor (string mediaType, [NullAllowed] NSDictionary outputSettings, CMFormatDescription sourceFormatHint);
+
+		[Since (6,0)]
+		[Static]
+		[Export ("assetWriterInputWithMediaType:outputSettings:sourceFormatHint:")]
+		AVAssetWriterInput Create (string mediaType, [NullAllowed] NSDictionary outputSettings, CMFormatDescription sourceFormatHint);
 #endif
 
 		[Export ("mediaType")]
@@ -3579,13 +3590,13 @@ namespace MonoMac.AVFoundation {
 
 		[Static]
 		[Export ("textStyleRuleWithTextMarkupAttributes:textSelector:")]
-		AVTextStyleRule FromTextMarkupAttributes (NSDictionary textMarkupAttributes, string textSelector);
+		AVTextStyleRule FromTextMarkupAttributes (NSDictionary textMarkupAttributes, [NullAllowed] string textSelector);
 
 		[Export ("initWithTextMarkupAttributes:")]
 		IntPtr Constructor (NSDictionary textMarkupAttributes);
 
 		[Export ("initWithTextMarkupAttributes:textSelector:")]
-		IntPtr Constructor (NSDictionary textMarkupAttributes, string textSelector);
+		IntPtr Constructor (NSDictionary textMarkupAttributes, [NullAllowed] string textSelector);
 	}
 
 	[BaseType (typeof (NSObject))]
