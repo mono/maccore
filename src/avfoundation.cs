@@ -179,6 +179,7 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVVideoProfileLevelKey")]
 		NSString ProfileLevelKey { get; }
 
+		[Since (5,0)]
 		[Field ("AVVideoQualityKey")]
 		NSString QualityKey { get; }
 		
@@ -188,26 +189,29 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVVideoProfileLevelH264Baseline31")]
 		NSString ProfileLevelH264Baseline31 { get; }
 
-		[Since (6,0)]
 		[Field ("AVVideoProfileLevelH264Main30")]
 		NSString ProfileLevelH264Main30 { get; }
 		
-		[Since (6,0)]
 		[Field ("AVVideoProfileLevelH264Main31")]
 		NSString ProfileLevelH264Main31 { get; }
 
+		[Since (5,0)]
 		[Field ("AVVideoProfileLevelH264Baseline41")]
 		NSString ProfileLevelH264Baseline41 { get; }
 
+		[Since (5,0)]
 		[Field ("AVVideoProfileLevelH264Main32")]
 		NSString ProfileLevelH264Main32 { get; }
 
+		[Since (5,0)]
 		[Field ("AVVideoProfileLevelH264Main41")]
 		NSString ProfileLevelH264Main41 { get; }
 
+		[Since (6,0)]
 		[Field ("AVVideoProfileLevelH264High40")]
 		NSString ProfileLevelH264High40 { get; }
-		
+
+		[Since (6,0)]
 		[Field ("AVVideoProfileLevelH264High41")]
 		NSString ProfileLevelH264High41 { get; }
 		
@@ -1189,7 +1193,7 @@ namespace MonoMac.AVFoundation {
 		IntPtr Constructor (NSUrl outputUrl, string outputFileType, out NSError error);
 
 		[Export ("canApplyOutputSettings:forMediaType:")]
-		bool CanApplyOutputSettings (NSDictionary outputSettings, string toMediaType);
+		bool CanApplyOutputSettings (NSDictionary outputSettings, string mediaType);
 
 		[Export ("canAddInput:")]
 		bool CanAddInput (AVAssetWriterInput input);
@@ -1291,8 +1295,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("sourcePixelBufferAttributes")]
 		NSDictionary SourcePixelBufferAttributes { get;  }
 
-		//[Export ("pixelBufferPool")]
-		//CVPixelBufferPoolRef pixelBufferPool { get;  }
+		[Export ("pixelBufferPool")]
+		CVPixelBufferPool PixelBufferPool { get;  }
 
 		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
@@ -3045,9 +3049,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("mediaType")]
 		string MediaType { get;  }
 
-		// TODO: bind CMFormatDescriptionRef
-		//[Export ("formatDescription")]
-		//CMFormatDescriptionRef FormatDescription { get;  }
+		[Export ("formatDescription")]
+		CMFormatDescription FormatDescription { get;  }
 
 		[Export ("enabled")]
 		bool Enabled { [Bind ("isEnabled")] get; set;  }
@@ -3837,8 +3840,8 @@ namespace MonoMac.AVFoundation {
 		[Export ("itemTimeForMachAbsoluteTime:")]
 		CMTime GetItemTime (long machAbsoluteTime);
 
-		//[Export ("itemTimeForCVTimeStamp:")]
-		//CMTime GetItemTime (CVTimeStamp timestamp);
+		[Export ("itemTimeForCVTimeStamp:")]
+		CMTime GetItemTime (CVTimeStamp timestamp);
 
 		[Export ("suppressesPlayerRendering")]
 		bool SuppressesPlayerRendering { get; set; }
