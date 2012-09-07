@@ -3572,7 +3572,7 @@ namespace MonoMac.AVFoundation {
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVTextStyleRule {
-		[Export ("textMarkupAttributes")][Internal]
+		[Export ("textMarkupAttributes")]
 		NSDictionary WeakTextMarkupAttributes { get;  }
 
 		[Wrap ("WeakTextMarkupAttributes")]
