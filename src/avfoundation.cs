@@ -3572,9 +3572,11 @@ namespace MonoMac.AVFoundation {
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVTextStyleRule {
-		// Keys from CMTextMarkup
-		[Export ("textMarkupAttributes")]
-		NSDictionary TextMarkupAttributes { get;  }
+		[Export ("textMarkupAttributes")][Internal]
+		NSDictionary WeakTextMarkupAttributes { get;  }
+
+		[Wrap ("WeakTextMarkupAttributes")]
+		CMTextMarkupAttributes TextMarkupAttributes { get;  }
 
 		[Export ("textSelector")]
 		string TextSelector { get;  }
@@ -3589,17 +3591,17 @@ namespace MonoMac.AVFoundation {
 
 		[Static]
 		[Export ("textStyleRuleWithTextMarkupAttributes:")]
-		AVTextStyleRule FromTextMarkupAttributes (NSDictionary textMarkupAttributes);
+		AVTextStyleRule FromTextMarkupAttributes (CMTextMarkupAttributes textMarkupAttributes);
 
 		[Static]
 		[Export ("textStyleRuleWithTextMarkupAttributes:textSelector:")]
-		AVTextStyleRule FromTextMarkupAttributes (NSDictionary textMarkupAttributes, [NullAllowed] string textSelector);
+		AVTextStyleRule FromTextMarkupAttributes (CMTextMarkupAttributes textMarkupAttributes, [NullAllowed] string textSelector);
 
 		[Export ("initWithTextMarkupAttributes:")]
-		IntPtr Constructor (NSDictionary textMarkupAttributes);
+		IntPtr Constructor (CMTextMarkupAttributes textMarkupAttributes);
 
 		[Export ("initWithTextMarkupAttributes:textSelector:")]
-		IntPtr Constructor (NSDictionary textMarkupAttributes, [NullAllowed] string textSelector);
+		IntPtr Constructor (CMTextMarkupAttributes textMarkupAttributes, [NullAllowed] string textSelector);
 	}
 
 	[BaseType (typeof (NSObject))]

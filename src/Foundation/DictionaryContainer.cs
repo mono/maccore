@@ -156,7 +156,7 @@ namespace MonoMac.Foundation {
 			}			
 		}
 
-		#region
+		#endregion
 
 		protected void RemoveValue (NSString key)
 		{
