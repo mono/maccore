@@ -7,7 +7,7 @@
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
-// Copyright 2011, Xamarin Inc.
+// Copyright 2011-2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -318,7 +318,7 @@ namespace MonoMac.Foundation
 	[DisableDefaultCtor]
 	public interface NSCalendar {
 		[Export ("initWithCalendarIdentifier:")]
-		IntPtr Constructor (string identifier);
+		IntPtr Constructor (NSString identifier);
 
 		[Export ("calendarIdentifier")]
 		string Identifier { get; }
@@ -347,6 +347,39 @@ namespace MonoMac.Foundation
 		//- (NSDateComponents *)components:(NSUInteger)unitFlags fromDate:(NSDate *)date;
 		//- (NSDate *)dateByAddingComponents:(NSDateComponents *)comps toDate:(NSDate *)date options:(NSUInteger)opts;
 		//- (NSDateComponents *)components:(NSUInteger)unitFlags fromDate:(NSDate *)startingDate toDate:(NSDate *)resultDate options:(NSUInteger)opts;
+
+		[Field ("NSGregorianCalendar"), Internal]
+		NSString NSGregorianCalendar { get; }
+		
+		[Field ("NSBuddhistCalendar"), Internal]
+		NSString NSBuddhistCalendar { get; }
+		
+		[Field ("NSChineseCalendar"), Internal]
+		NSString NSChineseCalendar { get; }
+		
+		[Field ("NSHebrewCalendar"), Internal]
+		NSString NSHebrewCalendar { get; }
+		
+		[Field ("NSIslamicCalendar"), Internal]
+		NSString NSIslamicCalendar { get; }
+		
+		[Field ("NSIslamicCivilCalendar"), Internal]
+		NSString NSIslamicCivilCalendar { get; }
+		
+		[Field ("NSJapaneseCalendar"), Internal]
+		NSString NSJapaneseCalendar { get; }
+		
+		[Field ("NSRepublicOfChinaCalendar"), Internal]
+		NSString NSRepublicOfChinaCalendar { get; }
+		
+		[Field ("NSPersianCalendar"), Internal]
+		NSString NSPersianCalendar { get; }
+		
+		[Field ("NSIndianCalendar"), Internal]
+		NSString NSIndianCalendar { get; }
+		
+		[Field ("NSISO8601Calendar"), Internal]
+		NSString NSISO8601Calendar { get; }
 	}
 
 	[Since (3,2)]
