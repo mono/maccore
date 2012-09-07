@@ -228,7 +228,7 @@ namespace MonoMac.Sys {
 
 		protected virtual void Dispose (bool disposing)
 		{
-			if (Handle == IntPtr.Zero){
+			if (Handle != IntPtr.Zero){
 				asl_free (Handle);
 				Handle = IntPtr.Zero;
 			}
