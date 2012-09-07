@@ -962,6 +962,10 @@ public class Generator {
 		if (mai.Type.IsSubclassOf (typeof (Delegate))){
 			return "IntPtr";
 		}
+
+		if (mai.Type.IsSubclassOf (typeof (DictionaryContainer))){
+			return "IntPtr";
+		}
 		
 		//
 		// Edit the table in the "void Go ()" routine
@@ -1176,6 +1180,12 @@ public class Generator {
 
 		if (pi.ParameterType.IsSubclassOf (typeof (Delegate))){
 			return String.Format ("(IntPtr) block_ptr_{0}", pi.Name);
+		}
+
+		if (pi.ParameterType.IsSubclassOf (typeof (DictionaryContainer))){
+			if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
+				return String.Format ("{0} == null ? IntPtr.Zero : {0}.Dictionary.Handle", pi.Name);
+			return pi.Name + ".Dictionary.Handle";
 		}
 		
 		throw new BindingException (1002, true, "Unknown kind {0} in method '{1}.{2}'", pi, mi.DeclaringType.FullName, mi	.Name);
@@ -2521,8 +2531,18 @@ public class Generator {
 			       FormatType (pi.DeclaringType,  pi.PropertyType),
 			       pi.Name);
 			indent++;
-			if (pi.CanRead)
-				print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+			if (pi.CanRead) {
+				print ("get {");
+				indent++;
+
+				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainer)))
+					print ("return new {1}({0});", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+				else
+					print ("return {0} as {1};", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+
+				indent--;
+				print ("}");
+			}
 			if (pi.CanWrite)
 				print ("set {{ {0} = value; }}", wrap);
 			indent--;
