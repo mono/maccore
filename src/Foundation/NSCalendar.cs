@@ -26,6 +26,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 //
+using System;
 using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
@@ -41,27 +42,27 @@ namespace MonoTouch.Foundation {
 		static NSString GetCalendarIdentifier (NSCalendarType type)
 		{
 			switch (type){
-			case Gregorian:
+			case NSCalendarType.Gregorian:
 				return NSGregorianCalendar;
-			case Buddhist:
+			case NSCalendarType.Buddhist:
 				return NSBuddhistCalendar;
-			case Chinese:
+			case NSCalendarType.Chinese:
 				return NSChineseCalendar;
-			case Hebrew:
+			case NSCalendarType.Hebrew:
 				return NSHebrewCalendar;
-			case Islamic:
+			case NSCalendarType.Islamic:
 				return NSIslamicCalendar; 
-			case IslamicCivil:
+			case NSCalendarType.IslamicCivil:
 				return NSIslamicCivilCalendar;
-			case Japanese:
+			case NSCalendarType.Japanese:
 				return NSJapaneseCalendar;
-			case RepublicOfChina:
+			case NSCalendarType.RepublicOfChina:
 				return NSRepublicOfChinaCalendar;
-			case Persian:
+			case NSCalendarType.Persian:
 				return NSPersianCalendar;
-			case Indian:
+			case NSCalendarType.Indian:
 				return NSIndianCalendar;
-			case ISO8601:
+			case NSCalendarType.ISO8601:
 				return NSISO8601Calendar;
 			default:
 				throw new ArgumentException ("Unknown NSCalendarType value");
