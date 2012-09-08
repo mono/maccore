@@ -349,6 +349,10 @@ public class InternalAttribute : Attribute {
 	public InternalAttribute () {}
 }
 
+// When applied to a method or property, flags the resulting generated code as internal
+public sealed class ProtectedAttribute : Attribute {
+}
+
 // When this attribute is applied to the interface definition it will
 // flag the default constructor as private.  This means that you can
 // still instantiate object of this class internally from your
@@ -1552,7 +1556,7 @@ public class Generator {
 					} else if (attr is StaticAttribute){
 						need_static [t] = true;
 						continue;
-					} else if (attr is InternalAttribute){
+					} else if (attr is InternalAttribute || attr is ProtectedAttribute){
 						continue;
 					} else if (attr is NeedsAuditAttribute) {
 						continue;
@@ -2511,7 +2515,8 @@ public class Generator {
 		bool is_static = HasAttribute (pi, typeof (StaticAttribute));
 		bool is_thread_static = HasAttribute (pi, typeof (IsThreadStaticAttribute));
 		bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
-		bool is_public = !HasAttribute (pi, typeof (InternalAttribute));
+		bool is_protected = HasAttribute (pi, typeof (ProtectedAttribute));
+		bool is_internal = HasAttribute (pi, typeof (InternalAttribute));
 		bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType,  type);
 		bool is_new = HasAttribute (pi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
@@ -2520,11 +2525,16 @@ public class Generator {
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
 			is_unsafe = true;
 
+		var mod = is_protected ? "protected" : null;
+		mod += is_internal ? "internal" : null;
+		if (string.IsNullOrEmpty (mod))
+			mod = "public";
+
 		if (wrap != null){
 			print_generated_code ();
 			PrintPropertyAttributes (pi);
 			print ("{0} {1}{2}{3}{4} {5} {{",
-			       is_public ? "public" : "internal",
+			       mod,
 			       is_unsafe ? "unsafe " : "",
 			       is_new ? "new " : "",
 			       (is_static ? "static " : ""),
@@ -2577,7 +2587,7 @@ public class Generator {
 		PrintPropertyAttributes (pi);
 
 		print ("{0} {1}{2}{3}{4} {5} {{",
-		       is_public ? "public" : "internal",
+		       mod,
 		       is_unsafe ? "unsafe " : "",
 		       is_new ? "new " : "",
 		       override_mod,
