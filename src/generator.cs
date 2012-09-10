@@ -1454,6 +1454,8 @@ public class Generator {
 #if MONOMAC
 		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoMac.CoreMedia.CMSampleBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreVideo.CVImageBuffer), "IntPtr", "{0}.Handle", "new MonoMac.CoreVideo.CMImageBuffer ("));
+		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreVideo.CVPixelBufferPool), "IntPtr", "{0}.Handle", "new MonoMac.CoreVideo.CVPixelBufferPool ("));
+		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreMedia.CMFormatDescription), "IntPtr", "{0}.Handle", "new MonoMac.CoreMedia.CMFormatDescription ("));				
 #else
 		marshal_types.Add (new MarshalType (typeof (MTAudioProcessingTap), "IntPtr", "{0}.Handle", "new MonoTouch.MediaToolbox.MTAudioProcessingTap ("));
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));
