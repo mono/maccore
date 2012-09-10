@@ -137,6 +137,19 @@ namespace MonoMac.Foundation {
 			Dictionary [key] = NSArray.FromStrings (values);
 		}
 
+		protected void SetArrayValue (NSString key, INativeObject[] values)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			if (values == null) {
+				RemoveValue (key);
+				return;			
+			}
+
+			CFMutableDictionary.SetValue (Dictionary.Handle, key.Handle, CFArray.FromNativeObjects (values).Handle);
+		}
+
 		#region Sets CFBoolean value
 
 		protected void SetBooleanValue (NSString key, bool? value)
