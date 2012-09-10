@@ -549,7 +549,7 @@ namespace MonoMac.CoreMedia {
 	}
 
 #if !COREBUILD
-	public class CMSampleBufferAttachmentSettings
+	public class CMSampleBufferAttachmentSettings : DictionaryContainer
 	{
 		static class Selectors
 		{
@@ -626,18 +626,16 @@ namespace MonoMac.CoreMedia {
 		}
 
 		internal CMSampleBufferAttachmentSettings (NSMutableDictionary dictionary)
+			: base (dictionary)
 		{
-			Dictionary = dictionary;
 		}
-
-		public NSDictionary Dictionary { get; private set; }
 
 		public bool? NotSync {
 			get {
 				return GetBoolValue (Selectors.NotSync);
 			}
 			set {
-				SetValue (Selectors.NotSync, value);
+				SetBooleanValue (Selectors.NotSync, value);
 			}
 		}
 
@@ -646,7 +644,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.PartialSync);
 			}
 			set {
-				SetValue (Selectors.PartialSync, value);
+				SetBooleanValue (Selectors.PartialSync, value);
 			}
 		}
 
@@ -655,7 +653,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.HasRedundantCoding);
 			}
 			set {
-				SetValue (Selectors.HasRedundantCoding, value);
+				SetBooleanValue (Selectors.HasRedundantCoding, value);
 			}
 		}
 
@@ -664,7 +662,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.IsDependedOnByOthers);
 			}
 			set {
-				SetValue (Selectors.IsDependedOnByOthers, value);
+				SetBooleanValue (Selectors.IsDependedOnByOthers, value);
 			}
 		}
 
@@ -673,7 +671,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.DependsOnOthers);
 			}
 			set {
-				SetValue (Selectors.DependsOnOthers, value);
+				SetBooleanValue (Selectors.DependsOnOthers, value);
 			}
 		}
 
@@ -682,7 +680,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.EarlierDisplayTimesAllowed);
 			}
 			set {
-				SetValue (Selectors.EarlierDisplayTimesAllowed, value);
+				SetBooleanValue (Selectors.EarlierDisplayTimesAllowed, value);
 			}
 		}
 
@@ -691,7 +689,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.DisplayImmediately);
 			}
 			set {
-				SetValue (Selectors.DisplayImmediately, value);
+				SetBooleanValue (Selectors.DisplayImmediately, value);
 			}
 		}
 
@@ -700,7 +698,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.DoNotDisplay);
 			}
 			set {
-				SetValue (Selectors.DoNotDisplay, value);
+				SetBooleanValue (Selectors.DoNotDisplay, value);
 			}
 		}
 
@@ -709,7 +707,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.ResetDecoderBeforeDecoding);
 			}
 			set {
-				SetValue (Selectors.ResetDecoderBeforeDecoding, value);
+				SetBooleanValue (Selectors.ResetDecoderBeforeDecoding, value);
 			}
 		}
 
@@ -718,7 +716,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.DrainAfterDecoding);
 			}
 			set {
-				SetValue (Selectors.DrainAfterDecoding, value);
+				SetBooleanValue (Selectors.DrainAfterDecoding, value);
 			}
 		}
 
@@ -727,7 +725,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.Reverse);
 			}
 			set {
-				SetValue (Selectors.Reverse, value);
+				SetBooleanValue (Selectors.Reverse, value);
 			}
 		}
 
@@ -736,7 +734,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.FillDiscontinuitiesWithSilence);
 			}
 			set {
-				SetValue (Selectors.FillDiscontinuitiesWithSilence, value);
+				SetBooleanValue (Selectors.FillDiscontinuitiesWithSilence, value);
 			}
 		}
 
@@ -745,7 +743,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.EmptyMedia);
 			}
 			set {
-				SetValue (Selectors.EmptyMedia, value);
+				SetBooleanValue (Selectors.EmptyMedia, value);
 			}
 		}
 
@@ -754,7 +752,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.PermanentEmptyMedia);
 			}
 			set {
-				SetValue (Selectors.PermanentEmptyMedia, value);
+				SetBooleanValue (Selectors.PermanentEmptyMedia, value);
 			}
 		}
 
@@ -763,7 +761,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.DisplayEmptyMediaImmediately);
 			}
 			set {
-				SetValue (Selectors.DisplayEmptyMediaImmediately, value);
+				SetBooleanValue (Selectors.DisplayEmptyMediaImmediately, value);
 			}
 		}
 
@@ -772,7 +770,7 @@ namespace MonoMac.CoreMedia {
 				return GetBoolValue (Selectors.EndsPreviousSampleDuration);
 			}
 			set {
-				SetValue (Selectors.EndsPreviousSampleDuration, value);
+				SetBooleanValue (Selectors.EndsPreviousSampleDuration, value);
 			}
 		}
 
@@ -793,32 +791,6 @@ namespace MonoMac.CoreMedia {
 		// SampleReferenceURL
 		// SampleReferenceByteOffset
 		// GradualDecoderRefresh
-
-		void SetValue (NSObject key, bool? value)
-		{
-			if (value != null) {
-				var cf = (CFBoolean) value.Value;
-				CFMutableDictionary.SetValue (Dictionary.Handle, key.Handle, cf.Handle);
-			} else {
-				IDictionary<NSObject, NSObject> d = Dictionary;
-				d.Remove (key);
-			}
-		}
-
-		bool? GetBoolValue (NSObject key)
-		{
-			var value = CFDictionary.GetValue (Dictionary.Handle, key.Handle);
-			return value == IntPtr.Zero ? null : (bool?)CFBoolean.GetValue (value);
-		}
-
-		string GetStringValue (NSString key)
-		{
-			NSObject value;
-			if (!Dictionary.TryGetValue (key, out value))
-				return null;
-
-			return CFString.FetchString (value.Handle);
-		}
 	}
 #endif
 }

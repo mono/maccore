@@ -30,6 +30,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using MonoMac.CoreFoundation;
+using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 
@@ -62,7 +63,7 @@ namespace MonoMac.Foundation {
 			return NSArray.ArrayFromHandle<T> (value);
 		}
 
-		public int? GetInt32Value (NSString key)
+		protected int? GetInt32Value (NSString key)
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
@@ -72,6 +73,18 @@ namespace MonoMac.Foundation {
 				return null;
 
 			return ((NSNumber) value).Int32Value;
+		}
+
+		protected float? GetFloatValue (NSString key)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			NSObject value;
+			if (!Dictionary.TryGetValue (key, out value))
+				return null;
+
+			return ((NSNumber) value).FloatValue;
 		}
 
 		protected bool? GetBoolValue (NSString key)
@@ -138,6 +151,19 @@ namespace MonoMac.Foundation {
 			Dictionary [key] = new NSNumber (value.Value);				
 		}
 
+		protected void SetNumberValue (NSString key, float? value)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			if (value == null) {
+				RemoveValue (key);
+				return;
+			}
+
+			Dictionary [key] = new NSNumber (value.Value);				
+		}
+
 		#endregion
 
 		#region Sets NSString value
@@ -149,10 +175,29 @@ namespace MonoMac.Foundation {
 
 		protected void SetStringValue (NSString key, NSString value)
 		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
 			if (value == null) {
 				RemoveValue (key);
 			} else {
 				Dictionary [key] = new NSString (value);
+			}			
+		}
+
+		#endregion
+
+		#region Sets Native value
+
+		protected void SetNativeValue (NSString key, INativeObject value)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			if (value == null) {
+				RemoveValue (key);
+			} else {
+				CFMutableDictionary.SetValue (Dictionary.Handle, key.Handle, value.Handle);
 			}			
 		}
 

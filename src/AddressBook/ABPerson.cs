@@ -1182,48 +1182,4 @@ namespace MonoMac.AddressBook {
 			}
 		}
 	}
-
-	// TODO: Merge with common container once we have one
-	public abstract class DictionaryContainer
-	{
-		protected DictionaryContainer ()
-		{
-			Dictionary = new NSMutableDictionary ();
-		}
-
-		protected DictionaryContainer (NSDictionary dictionary)
-		{
-			if (dictionary == null)
-				throw new ArgumentNullException ("dictionary");
-			Dictionary = dictionary;
-		}
-		
-		public NSDictionary Dictionary { get; private set; }
-
-		protected string GetStringValue (NSString key)
-		{
-			if (key == null)
-				throw new ArgumentNullException ("key");
-
-			NSObject value;
-			if (!Dictionary.TryGetValue (key, out value))
-				return null;
-			
-			return CFString.FetchString (value.Handle);
-		}
-
-		protected void SetStringValue (NSString key, string value)
-		{
-			SetStringValue (key, value == null ? (NSString) null : new NSString (value));
-		}
-
-		protected void SetStringValue (NSString key, NSString value)
-		{
-			if (value == null) {
-				((NSMutableDictionary) Dictionary).Remove (key);
-			} else {
-				Dictionary [key] = new NSString (value);
-			}			
-		}
-	}
 }
