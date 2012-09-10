@@ -3842,9 +3842,6 @@ namespace MonoMac.AVFoundation {
 		[Export ("itemTimeForMachAbsoluteTime:")]
 		CMTime GetItemTime (long machAbsoluteTime);
 
-		[Export ("itemTimeForCVTimeStamp:")]
-		CMTime GetItemTime (CVTimeStamp timestamp);
-
 		[Export ("suppressesPlayerRendering")]
 		bool SuppressesPlayerRendering { get; set; }
 	}
