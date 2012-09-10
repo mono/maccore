@@ -30,7 +30,7 @@ using MonoMac.ObjCRuntime;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 
-namespace MonoMac.Sys {
+namespace MonoMac.Darwin {
 
 	[StructLayout (LayoutKind.Sequential)]
 	public struct TimeSpec {
