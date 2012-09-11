@@ -75,6 +75,30 @@ namespace MonoMac.Foundation {
 			return ((NSNumber) value).Int32Value;
 		}
 
+		protected long? GetLongValue (NSString key)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			NSObject value;
+			if (!Dictionary.TryGetValue (key, out value))
+				return null;
+
+			return ((NSNumber) value).Int64Value;
+		}
+
+		protected uint? GetUIntValue (NSString key)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			NSObject value;
+			if (!Dictionary.TryGetValue (key, out value))
+				return null;
+
+			return ((NSNumber) value).UInt32Value;
+		}
+
 		protected float? GetFloatValue (NSString key)
 		{
 			if (key == null)
@@ -178,6 +202,27 @@ namespace MonoMac.Foundation {
 				RemoveValue (key);
 				return;
 			}
+
+			Dictionary [key] = new NSNumber (value.Value);				
+		}
+
+		protected void SetNumberValue (NSString key, uint? value)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			if (value == null) {
+				RemoveValue (key);
+				return;
+			}
+
+			Dictionary [key] = new NSNumber (value.Value);				
+		}
+
+		protected void SetNumberValue (NSString key, long? value)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
 
 			Dictionary [key] = new NSNumber (value.Value);				
 		}
