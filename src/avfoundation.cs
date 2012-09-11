@@ -3566,10 +3566,10 @@ namespace MonoMac.AVFoundation {
 		AVTextStyleRule FromTextMarkupAttributes (CMTextMarkupAttributes textMarkupAttributes, [NullAllowed] string textSelector);
 
 		[Export ("initWithTextMarkupAttributes:")]
-		IntPtr Constructor (CMTextMarkupAttributes textMarkupAttributes);
+		IntPtr Constructor (NSDictionary textMarkupAttributes);
 
 		[Export ("initWithTextMarkupAttributes:textSelector:")]
-		IntPtr Constructor (CMTextMarkupAttributes textMarkupAttributes, [NullAllowed] string textSelector);
+		IntPtr Constructor (NSDictionary textMarkupAttributes, [NullAllowed] string textSelector);
 	}
 
 	[BaseType (typeof (NSObject))]
