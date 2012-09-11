@@ -40,7 +40,7 @@ namespace MonoMac.AddressBook {
 
 	public enum ABAddressBookError {
 		OperationNotPermittedByStore = 0,
-		NotPermittedByUserError
+		OperationNotPermittedByUserError
 	}
 
 	public enum ABAuthorizationStatus {
