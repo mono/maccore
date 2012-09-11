@@ -1577,6 +1577,8 @@ public class Generator {
 						continue;
 					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute || attr is EditorBrowsableAttribute)
 						continue;
+					else if (attr is WrapAttribute)
+						continue;
 					else 
 						throw new BindingException (1007, true, "Unknown attribute {0} on {1}", attr.GetType (), t);
 
@@ -2555,8 +2557,19 @@ public class Generator {
 				indent--;
 				print ("}");
 			}
-			if (pi.CanWrite)
-				print ("set {{ {0} = value; }}", wrap);
+			if (pi.CanWrite) {
+				print ("set {");
+				indent++;
+
+				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainer)))
+					print ("{0} = value == null ? null : value.Dictionary;", wrap);
+				else
+					print ("{0} = value;", wrap);
+
+				indent--;
+				print ("}");
+			}
+
 			indent--;
 			print ("}\n");
 			return;
@@ -2704,14 +2717,21 @@ public class Generator {
 
 		string selector = null;
 		bool virtual_method = false;
+		string wrap_method = null;
 		object [] attr = mi.GetCustomAttributes (typeof (ExportAttribute), true);
 		if (attr.Length != 1){
 			attr = mi.GetCustomAttributes (typeof (BindAttribute), true);
-			if (attr.Length != 1)
-				throw new BindingException (1012, true, "No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
-			BindAttribute ba = (BindAttribute) attr [0];
-			selector = ba.Selector;
-			virtual_method = ba.Virtual;
+			if (attr.Length != 1) {
+				attr = mi.GetCustomAttributes (typeof (WrapAttribute), true);
+				if (attr.Length != 1)
+					throw new BindingException (1012, true, "No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
+
+				wrap_method = ((WrapAttribute) attr [0]).MethodName;
+			} else {
+				BindAttribute ba = (BindAttribute) attr [0];
+				selector = ba.Selector;
+				virtual_method = ba.Virtual;
+			}
 		} else {
 			ExportAttribute ea = (ExportAttribute) attr [0];
 			selector = ea.Selector;
@@ -2766,7 +2786,13 @@ public class Generator {
 					
 			if (is_model)
 				print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
-			else {
+			else if (wrap_method != null) {
+				indent++;
+
+				string ret = mi.ReturnType == typeof (void) ? null : "return ";
+				print ("{0}{1};", ret, wrap_method);
+				indent--;
+			} else {
 				if (is_autorelease) {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
