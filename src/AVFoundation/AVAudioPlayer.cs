@@ -38,7 +38,7 @@ namespace MonoMac.AVFoundation {
 
 		public AudioChannelLayout AudioChannelLayout {
 			get {
-				var data = dict.ObjectForKey (AVAudioPlayer.AVChannelLayoutKey) as NSData;
+				var data = dict.ObjectForKey (AVAudioSettings.AVChannelLayoutKey) as NSData;
 				if (data == null)
 					return new AudioChannelLayout ();
 				return AudioChannelLayout.FromHandle (data.Bytes);
@@ -47,28 +47,28 @@ namespace MonoMac.AVFoundation {
 
 		public int EncoderBitRateKey {
 			get {
-				var rate = dict.ObjectForKey (AVAudioPlayer.AVEncoderBitRateKey) as NSNumber;
+				var rate = dict.ObjectForKey (AVAudioSettings.AVEncoderBitRateKey) as NSNumber;
 				return rate == null ? 0 : rate.Int32Value;
 			}
 		}
 
 		public AudioFormatType AudioFormat {
 			get {
-				var ft = dict.ObjectForKey (AVAudioPlayer.AVFormatIDKey) as NSNumber;
+				var ft = dict.ObjectForKey (AVAudioSettings.AVFormatIDKey) as NSNumber;
 				return (AudioFormatType) (ft == null ? -1 : ft.Int32Value);
 			}
 		}
 
 		public int NumberChannels {
 			get {
-				var n =  dict.ObjectForKey (AVAudioPlayer.AVNumberOfChannelsKey) as NSNumber;
+				var n =  dict.ObjectForKey (AVAudioSettings.AVNumberOfChannelsKey) as NSNumber;
 				return n == null ? 1 : n.Int32Value;
 			}
 		}
 
 		public float SampleRate {
 			get {
-				var r = dict.ObjectForKey (AVAudioPlayer.AVSampleRateKey) as NSNumber;
+				var r = dict.ObjectForKey (AVAudioSettings.AVSampleRateKey) as NSNumber;
 				return r == null ? 0 : r.FloatValue;
 			}
 		}
@@ -146,6 +146,9 @@ namespace MonoMac.AVFoundation {
 		{
 			
 		}
+
+		// TODO: Could add proper sound settings like
+		// AudioSettings SoundSettings { get { } }
 
 		public AVAudioPlayerSettings Settings {
 			get {

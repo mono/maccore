@@ -319,21 +319,6 @@ namespace MonoMac.AVFoundation {
 		[Export ("settings"), Internal]
 		NSDictionary _Settings { get;  }
 
-		[Field ("AVChannelLayoutKey"), Internal]
-		NSString AVChannelLayoutKey { get; }
-
-		[Field ("AVEncoderBitRateKey"), Internal]
-		NSString AVEncoderBitRateKey { get; }
-
-		[Field ("AVFormatIDKey"), Internal]
-		NSString AVFormatIDKey { get; }
-
-		[Field ("AVNumberOfChannelsKey"), Internal]
-		NSString AVNumberOfChannelsKey { get; }
-
-		[Field ("AVSampleRateKey"), Internal]
-		NSString AVSampleRateKey { get; }
-
 		[Since (6,0)]
 		[Export ("channelAssignments")]
 		AVAudioSessionChannelDescription [] ChannelAssignments { get; set; }
@@ -352,13 +337,17 @@ namespace MonoMac.AVFoundation {
 		void BeginInterruption (AVAudioPlayer  player);
 	
 		[Export ("audioPlayerEndInterruption:")]
-		[Obsolete ("Deprecated in iOS6")]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		void EndInterruption (AVAudioPlayer player);
 
+		// Obsolete in 6,0
 		[Since (4,0)]
 		[Export ("audioPlayerEndInterruption:withFlags:")]
-		[Obsolete ("Deprecated in iOS6")]
 		void EndInterruption (AVAudioPlayer player, AVAudioSessionInterruptionFlags flags);
+
+		//[Since (6,0)]
+		//[Export ("audioPlayerEndInterruption:withOptions:")]
+		//void EndInterruption (AVAudioPlayer player, AVAudioSessionInterruptionFlags flags);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -392,7 +381,7 @@ namespace MonoMac.AVFoundation {
 	
 		[Export ("settings")]
 		NSDictionary Settings { get;  }
-	
+
 		[Export ("delegate")]
 		NSObject WeakDelegate { get; set;  }
 
@@ -413,33 +402,6 @@ namespace MonoMac.AVFoundation {
 	
 		[Export ("averagePowerForChannel:")]
 		float AveragePower (uint channelNumber);
-
-		[Field ("AVLinearPCMBitDepthKey"), Internal]
-		NSString AVLinearPCMBitDepthKey { get; }
-
-		[Field ("AVLinearPCMIsBigEndianKey"), Internal]
-		NSString AVLinearPCMIsBigEndianKey { get; }
-
-		[Field ("AVLinearPCMIsFloatKey"), Internal]
-		NSString AVLinearPCMIsFloatKey { get; }
-
-		[Field ("AVLinearPCMIsNonInterleaved"), Internal]
-		NSString AVLinearPCMIsNonInterleaved { get; }
-
-		[Field ("AVEncoderAudioQualityKey"), Internal]
-		NSString AVEncoderAudioQualityKey { get; }
-		
-		[Field ("AVEncoderBitRateKey"), Internal]
-		NSString AVEncoderBitRateKey { get; }
-		
-		[Field ("AVEncoderBitRatePerChannelKey"), Internal]
-		NSString AVEncoderBitRatePerChannelKey { get; }
-		
-		[Field ("AVEncoderBitDepthHintKey"), Internal]
-		NSString AVEncoderBitDepthHintKey { get; }
-
-		[Field ("AVSampleRateConverterAudioQualityKey"), Internal]
-		NSString AVSampleRateConverterAudioQualityKey { get; }
 
 		[Since (6,0)]
 		[Export ("channelAssignments")]
@@ -470,12 +432,18 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioRecorderBeginInterruption:")]
 		void BeginInterruption (AVAudioRecorder  recorder);
 	
+		[Obsolete ("Deprecated in iOS 6.0")]
 		[Export ("audioRecorderEndInterruption:")]
 		void EndInterruption (AVAudioRecorder  recorder);
 
+		// Obsolete in 6,0
 		[Since (4,0)]
 		[Export ("audioRecorderEndInterruption:withFlags:")]
 		void EndInterruption (AVAudioRecorder recorder, AVAudioSessionInterruptionFlags flags);
+
+		//[Since (6,0)]
+		//[Export ("audioRecorderEndInterruption:withOptions:")]
+		//void EndInterruption (AVAudioRecorder recorder, AVAudioSessionInterruptionFlags flags);
 	}
 	
 	[BaseType (typeof (NSObject))]
