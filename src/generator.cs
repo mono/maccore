@@ -1881,10 +1881,10 @@ public class Generator {
 	//
 	// Makes the public signature for an exposed method
 	//
-	public string MakeSignature (MethodInfo mi)
+	public string MakeSignature (MethodInfo mi, out bool ctor)
 	{
 		StringBuilder sb = new StringBuilder ();
-		bool ctor = mi.Name == "Constructor";
+		ctor = mi.Name == "Constructor";
 		string name =  ctor ? mi.DeclaringType.Name : mi.Name;
 
 		if (mi.Name == "AutocapitalizationType"){
@@ -1914,8 +1914,6 @@ public class Generator {
 			sb.Append (pi.Name);
 		}
 		sb.Append (")");
-		if (ctor)
-			sb.Append (" : base (NSObjectFlag.Empty)");
 		return sb.ToString ();
 	}
 
@@ -2759,7 +2757,8 @@ public class Generator {
 
 		ThreadCheck threadCheck = HasAttribute (mi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		bool is_abstract = HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
-		bool is_public = !HasAttribute (mi, typeof (InternalAttribute));
+		bool is_protected = HasAttribute (mi, typeof (ProtectedAttribute));
+		bool is_internal = HasAttribute (mi, typeof (InternalAttribute));
 		bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
 		bool is_new = HasAttribute (mi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
@@ -2770,16 +2769,28 @@ public class Generator {
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
 				is_unsafe = true;
 
+		var mod = is_protected ? "protected" : null;
+		mod += is_internal ? "internal" : null;
+		if (string.IsNullOrEmpty (mod))
+			mod = "public";
+
+		bool ctor;
 		print_generated_code ();
 		print ("{0} {1}{2}{3}{4}{5}",
-		       is_public ? "public" : "internal",
+		       mod,
 		       is_unsafe ? "unsafe " : "",
 		       is_new ? "new " : "",
 		       is_sealed ? "" : (is_abstract ? "abstract " : (virtual_method ? (is_override ? "override " : "virtual ") : (is_static ? "static " : ""))),
-		       MakeSignature (mi),
+		       MakeSignature (mi, out ctor),
 		       is_abstract ? ";" : "");
 
 		if (!is_abstract){
+			if (ctor) {
+				indent++;
+				print (": {0}", wrap_method == null ? "base (NSObjectFlag.Empty)" : wrap_method);
+				indent--;
+			}
+
 			print ("{");
 			if (debug)
 				print ("\tConsole.WriteLine (\"In {0}\");", mi);
@@ -2787,11 +2798,13 @@ public class Generator {
 			if (is_model)
 				print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
 			else if (wrap_method != null) {
-				indent++;
+				if (!ctor) {
+					indent++;
 
-				string ret = mi.ReturnType == typeof (void) ? null : "return ";
-				print ("{0}{1};", ret, wrap_method);
-				indent--;
+					string ret = mi.ReturnType == typeof (void) ? null : "return ";
+					print ("{0}{1};", ret, wrap_method);
+					indent--;
+				}
 			} else {
 				if (is_autorelease) {
 					indent++;
