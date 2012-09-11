@@ -915,6 +915,10 @@ namespace MonoMac.AVFoundation {
 		AVMetadataItem CreationDate { get; }
 
 		[Since (5,0)]
+		[Export ("referenceRestrictions")]
+		AVAssetReferenceRestrictions ReferenceRestrictions { get; }
+
+		[Since (5,0)]
 		[Export ("mediaSelectionGroupForMediaCharacteristic:")]
 		AVMediaSelectionGroup MediaSelectionGroupForMediaCharacteristic (string avMediaCharacteristic);
 
@@ -926,7 +930,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (6,0)]
 		[Export ("chapterMetadataGroupsBestMatchingPreferredLanguages:")]
-		AVTimedMetadataGroup [] GetChapterMetadataGroupsBestMatchingPreferredLanguages (string [] preferredLanguages);
+		AVTimedMetadataGroup [] GetChapterMetadataGroupsBestMatchingPreferredLanguages (string [] languages);
 
 		[Since (6,0)]
 		[Export ("resourceLoader")]
@@ -1380,11 +1384,19 @@ namespace MonoMac.AVFoundation {
 		[Export ("URL", ArgumentSemantic.Copy)]
 		NSUrl Url { get;  }
 
+		[Obsolete ("Use Create or constructor")]
 		[Static, Export ("URLAssetWithURL:options:")]
 		AVUrlAsset FromUrl (NSUrl URL, [NullAllowed] NSDictionary options);
 
+		[Static]
+		[Wrap ("FromUrl (url, options == null ? null : options.Dictionary)")]
+		AVUrlAsset Create (NSUrl url, [NullAllowed] AVUrlAssetOptions options);
+
 		[Export ("initWithURL:options:")]
 		IntPtr Constructor (NSUrl URL, [NullAllowed] NSDictionary options);
+
+		[Wrap ("this (url, options == null ? null : options.Dictionary)")]
+		IntPtr Constructor (NSUrl url, [NullAllowed] AVUrlAssetOptions options);
 
 		[Export ("compatibleTrackForCompositionTrack:")]
 		AVAssetTrack CompatibleTrack (AVCompositionTrack forCompositionTrack);
