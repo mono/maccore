@@ -82,8 +82,14 @@ namespace MonoMac.CoreVideo {
 		public CVPixelBuffer (Size size, CVPixelFormatType pixelFormat)
 			: this (size.Width, size.Height, pixelFormat, null)
 		{
-		}	
-			
+		}
+
+		public CVPixelBuffer (Size size, CVPixelFormatType pixelFormatType, PixelBufferAttributes attributes)
+			: this (size.Width, size.Height, pixelFormatType, attributes == null ? null : attributes.Dictionary)
+		{
+		}
+
+		[Obsolete ("Use constructor with PixelBufferAttributes")]
 		public CVPixelBuffer (int width, int height, CVPixelFormatType pixelFormatType, NSDictionary pixelBufferAttributes)
 		{
 			if (width <= 0)
