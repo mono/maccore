@@ -166,6 +166,10 @@ namespace MonoMac.AVFoundation {
 		
 		[Field ("AVVideoHeightKey")]
 		NSString HeightKey { get; }
+
+		[Since (5,0)]
+		[Field ("AVVideoScalingModeKey")]
+		NSString ScalingModeKey { get; }
 		
 		[Field ("AVVideoCompressionPropertiesKey")]
 		NSString CompressionPropertiesKey { get; }
@@ -238,8 +242,24 @@ namespace MonoMac.AVFoundation {
 		
 		[Field ("AVVideoCleanApertureVerticalOffsetKey")]
 		NSString CleanApertureVerticalOffsetKey { get; }
+	}
 
-	}	
+	[Since (5,0)]
+	[Static, Internal]
+	interface AVVideoScalingModeKey
+	{
+		[Field ("AVVideoScalingModeFit")]
+		NSString Fit { get; }
+
+		[Field ("AVVideoScalingModeResize")]
+		NSString Resize { get; }
+
+		[Field ("AVVideoScalingModeResizeAspect")]
+		NSString ResizeAspect { get; }
+
+		[Field ("AVVideoScalingModeResizeAspectFill")]
+		NSString ResizeAspectFill { get; }
+	}
 	
 	[BaseType (typeof (NSObject))]
 	[DisableDefaultCtor]
@@ -1031,11 +1051,18 @@ namespace MonoMac.AVFoundation {
 		[Export ("track")]
 		AVAssetTrack Track { get;  }
 
+		[Obsolete ("Use Create method")]
 		[Static, Export ("assetReaderTrackOutputWithTrack:outputSettings:")]
 		AVAssetReaderTrackOutput FromTrack (AVAssetTrack track, [NullAllowed] NSDictionary outputSettings);
 
+		[Static, Export ("assetReaderTrackOutputWithTrack:outputSettings:")]
+		AVAssetReaderTrackOutput Create (AVAssetTrack track, [NullAllowed] AudioSettings outputSettings);
+
 		[Export ("initWithTrack:outputSettings:")]
 		IntPtr Constructor (AVAssetTrack track, [NullAllowed] NSDictionary outputSettings);
+
+		[Wrap ("this (track, outputSettings == null ? null : outputSettings.Dictionary)")]		
+		IntPtr Constructor (AVAssetTrack track, [NullAllowed] AudioSettings outputSettings);
 
 		[Export ("outputSettings")]
 		NSDictionary OutputSettings { get; }
@@ -1053,14 +1080,24 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioMix", ArgumentSemantic.Copy)]
 		AVAudioMix AudioMix { get; set;  }
 
+		[Obsolete ("Use Create method")]
 		[Static, Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
 		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
+
+		[Static, Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
+		AVAssetReaderAudioMixOutput Create (AVAssetTrack [] audioTracks, [NullAllowed] AudioSettings settings);
 
 		[Export ("initWithAudioTracks:audioSettings:")]
 		IntPtr Constructor (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
+		[Wrap ("this (audioTracks, settings == null ? null : settings.Dictionary)")]
+		IntPtr Constructor (AVAssetTrack [] audioTracks, [NullAllowed] AudioSettings settings);
+
 		[Export ("audioSettings")]
 		NSDictionary AudioSettings { get; }
+
+		[Wrap ("AudioSettings")]
+		AudioSettings Settings { get; }
 	}
 
 	[Since (4,1)]
@@ -1074,14 +1111,24 @@ namespace MonoMac.AVFoundation {
 		[Export ("videoComposition", ArgumentSemantic.Copy)]
 		AVVideoComposition VideoComposition { get; set;  }
 
+		[Obsolete ("Use Create method")]
 		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
 		AVAssetReaderVideoCompositionOutput WeakFromTracks (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
+
+		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
+		AVAssetReaderVideoCompositionOutput Create (AVAssetTrack [] videoTracks, [NullAllowed] PixelBufferAttributes settings);
 
 		[Export ("initWithVideoTracks:videoSettings:")]
 		IntPtr Constructor (AVAssetTrack [] videoTracks, NSDictionary videoSettings);
 
+		[Wrap ("this (videoTracks, settings == null ? null : settings.Dictionary)")]
+		IntPtr Constructor (AVAssetTrack [] videoTracks, PixelBufferAttributes settings);		
+
 		[Export ("videoSettings")]
 		NSDictionary WeakVideoSettings { get; }
+
+		[Wrap ("WeakVideoSettings")]
+		PixelBufferAttributes UncompressedVideoSettings { get; }
 	}
 
 	[Since (6,0)]
@@ -1163,6 +1210,12 @@ namespace MonoMac.AVFoundation {
 		[Export ("canApplyOutputSettings:forMediaType:")]
 		bool CanApplyOutputSettings (NSDictionary outputSettings, string mediaType);
 
+		[Wrap ("CanApplyOutputSettings (outputSettings == null ? null : outputSettings.Dictionary, mediaType)")]
+		bool CanApplyOutputSettings (AudioSettings outputSettings, string mediaType);
+
+		[Wrap ("CanApplyOutputSettings (outputSettings == null ? null : outputSettings.Dictionary, mediaType)")]
+		bool CanApplyOutputSettings (AVVideoSettingsCompressed outputSettings, string mediaType);
+
 		[Export ("canAddInput:")]
 		bool CanAddInput (AVAssetWriterInput input);
 
@@ -1200,13 +1253,32 @@ namespace MonoMac.AVFoundation {
 	interface AVAssetWriterInput {
 #if !MONOMAC
 		[Since (6,0)]
+		[Protected]
 		[Export ("initWithMediaType:outputSettings:sourceFormatHint:")]
 		IntPtr Constructor (string mediaType, [NullAllowed] NSDictionary outputSettings, CMFormatDescription sourceFormatHint);
 
 		[Since (6,0)]
-		[Static]
+		[Wrap ("this (mediaType, outputSettings == null ? null : outputSettings.Dictionary, sourceFormatHint)")]
+		IntPtr Constructor (string mediaType, [NullAllowed] AudioSettings outputSettings, CMFormatDescription sourceFormatHint);
+
+		[Since (6,0)]
+		[Wrap ("this (mediaType, outputSettings == null ? null : outputSettings.Dictionary, sourceFormatHint)")]
+		IntPtr Constructor (string mediaType, [NullAllowed] AVVideoSettingsCompressed outputSettings, CMFormatDescription sourceFormatHint);
+
+		[Since (6,0)]
+		[Static, Internal]
 		[Export ("assetWriterInputWithMediaType:outputSettings:sourceFormatHint:")]
 		AVAssetWriterInput Create (string mediaType, [NullAllowed] NSDictionary outputSettings, CMFormatDescription sourceFormatHint);
+
+		[Since (6,0)]
+		[Static]
+		[Wrap ("Create(mediaType, outputSettings == null ? null : outputSettings.Dictionary, sourceFormatHint)")]
+		AVAssetWriterInput Create (string mediaType, [NullAllowed] AudioSettings outputSettings, CMFormatDescription sourceFormatHint);
+
+		[Since (6,0)]
+		[Static]
+		[Wrap ("Create(mediaType, outputSettings == null ? null : outputSettings.Dictionary, sourceFormatHint)")]
+		AVAssetWriterInput Create (string mediaType, [NullAllowed] AVVideoSettingsCompressed outputSettings, CMFormatDescription sourceFormatHint);
 #endif
 
 		[Export ("mediaType")]
@@ -1227,11 +1299,25 @@ namespace MonoMac.AVFoundation {
 		[Export ("expectsMediaDataInRealTime")]
 		bool ExpectsMediaDataInRealTime { get; set;  }
 
+		[Obsolete ("Use constructor or Create method")]
 		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
 		AVAssetWriterInput FromType (string mediaType, [NullAllowed] NSDictionary outputSettings);
 
+		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
+		AVAssetWriterInput Create (string mediaType, [NullAllowed] AudioSettings outputSettings);
+
+		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
+		AVAssetWriterInput Create (string mediaType, [NullAllowed] AVVideoSettingsCompressed outputSettings);
+
+		// Should be protected
 		[Export ("initWithMediaType:outputSettings:")]
 		IntPtr Constructor (string mediaType, [NullAllowed] NSDictionary outputSettings);
+
+		[Wrap ("this (mediaType, outputSettings == null ? null : outputSettings.Dictionary)")]		
+		IntPtr Constructor (string mediaType, [NullAllowed] AudioSettings outputSettings);
+
+		[Wrap ("this (mediaType, outputSettings == null ? null : outputSettings.Dictionary)")]		
+		IntPtr Constructor (string mediaType, [NullAllowed] AVVideoSettingsCompressed outputSettings);
 
 		[Export ("requestMediaDataWhenReadyOnQueue:usingBlock:")]
 		void RequestMediaData (DispatchQueue queue, NSAction action);
@@ -1263,14 +1349,24 @@ namespace MonoMac.AVFoundation {
 		[Export ("sourcePixelBufferAttributes")]
 		NSDictionary SourcePixelBufferAttributes { get;  }
 
+		[Wrap ("SourcePixelBufferAttributes")]
+		PixelBufferAttributes Attributes { get; }
+
 		[Export ("pixelBufferPool")]
 		CVPixelBufferPool PixelBufferPool { get;  }
 
+		[Obsolete ("Use Create method")]
 		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
+		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
+		AVAssetWriterInputPixelBufferAdaptor Create (AVAssetWriterInput input, [NullAllowed] PixelBufferAttributes attributes);
+
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		IntPtr Constructor (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
+
+		[Wrap ("this (input, attributes == null ? null : attributes.Dictionary)")]
+		IntPtr Constructor (AVAssetWriterInput input, [NullAllowed] PixelBufferAttributes attributes);		
 
 		[Export ("appendPixelBuffer:withPresentationTime:")]
 		bool AppendPixelBufferWithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
@@ -3122,6 +3218,12 @@ namespace MonoMac.AVFoundation {
 		[Export ("videoSettings", ArgumentSemantic.Copy), NullAllowed]
 		NSDictionary WeakVideoSettings { get; set;  }
 
+		[Wrap ("WeakVideoSettings")]
+		AVVideoSettingsUncompressed UncompressedVideoSetting { get; set; }
+
+		[Wrap ("WeakVideoSettings")]
+		AVVideoSettingsCompressed CompressedVideoSetting { get; set; }
+
 		[Export ("minFrameDuration")]
 		[Obsolete ("On iOS 5.0 and later, you can use AVCaptureConnection's MinVideoFrameDuration")]
 		CMTime MinFrameDuration { get; set;  }
@@ -3271,6 +3373,12 @@ namespace MonoMac.AVFoundation {
 		
 		[Export ("outputSettings", ArgumentSemantic.Copy)]
 		NSDictionary OutputSettings { get; set; }
+
+		[Wrap ("OutputSettings")]
+		AVVideoSettingsUncompressed UncompressedVideoSetting { get; set; }
+
+		[Wrap ("OutputSettings")]
+		AVVideoSettingsCompressed CompressedVideoSetting { get; set; }
 
 		[Export ("captureStillImageAsynchronouslyFromConnection:completionHandler:")]
 		void CaptureStillImageAsynchronously (AVCaptureConnection connection, AVCaptureCompletionHandler completionHandler);
@@ -3566,10 +3674,18 @@ namespace MonoMac.AVFoundation {
 		AVTextStyleRule FromTextMarkupAttributes (CMTextMarkupAttributes textMarkupAttributes, [NullAllowed] string textSelector);
 
 		[Export ("initWithTextMarkupAttributes:")]
+		[Protected]
 		IntPtr Constructor (NSDictionary textMarkupAttributes);
 
+		[Wrap ("this (attributes == null ? null : attributes.Dictionary)")]
+		IntPtr Constructor (CMTextMarkupAttributes attributes);
+
 		[Export ("initWithTextMarkupAttributes:textSelector:")]
+		[Protected]
 		IntPtr Constructor (NSDictionary textMarkupAttributes, [NullAllowed] string textSelector);
+	
+		[Wrap ("this (attributes == null ? null : attributes.Dictionary, textSelector)")]
+		IntPtr Constructor (CMTextMarkupAttributes attributes, string textSelector);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -3827,7 +3943,11 @@ namespace MonoMac.AVFoundation {
 		DispatchQueue DelegateQueue { get;  }
 
 		[Export ("initWithPixelBufferAttributes:")]
+		[Protected]
 		IntPtr Constructor (NSDictionary pixelBufferAttributes);
+
+		[Wrap ("this (attributes == null ? null : attributes.Dictionary)")]
+		IntPtr Constructor (PixelBufferAttributes attributes);
 
 		[Export ("hasNewPixelBufferForItemTime:")]
 		bool HasNewPixelBufferForItemTime (CMTime itemTime);

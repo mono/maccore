@@ -29,6 +29,7 @@ using System;
 
 namespace MonoMac.AVFoundation {
 
+	// Obsolete, use AudioSettings
 	public class AVAudioRecorderSettings {
 		public AVAudioRecorderSettings ()
 		{
@@ -88,12 +89,21 @@ namespace MonoMac.AVFoundation {
 	}
 
 	public partial class AVAudioRecorder {
-		[Obsolete ("Use the factory AVAudioRecorder.ToUrl as this method had an invalid signature up to MonoMac 1.4.4")]
+		[Obsolete ("Use static Create method as this method had an invalid signature up to MonoMac 1.4.4")]
 		public AVAudioRecorder (NSUrl url, NSDictionary settings, NSError outError)
 		{
 			throw new Exception ("This constructor is no longer supported, use the AVAudioRecorder.ToUrl factory method instead");
 		}
 
+		public static AVAudioRecorder Create (NSUrl url, AudioSettings settings, out NSError error)
+		{
+			if (settings == null)
+				throw new ArgumentNullException ("settings");
+			
+			return ToUrl (url, settings.Dictionary, out error);
+		}
+
+		[Obsolete ("Use Create method")]
 		public static AVAudioRecorder ToUrl (NSUrl url, AVAudioRecorderSettings settings, out NSError error)
 		{
 			if (settings == null)
@@ -102,6 +112,7 @@ namespace MonoMac.AVFoundation {
 			return ToUrl (url, settings.ToDictionary (), out error);
 		}
 
+		[Obsolete ("Use Create method")]		
 		public static AVAudioRecorder ToUrl (NSUrl url, NSDictionary settings, out NSError error)
 		{
 			unsafe {

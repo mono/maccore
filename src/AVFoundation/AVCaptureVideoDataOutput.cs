@@ -34,18 +34,23 @@ using MonoMac.CoreVideo;
 
 namespace MonoMac.AVFoundation {
 
+	// Wrong binding (PixelFormat is CoreVideo), keeping just to be compatible
 	public partial class AVVideoSettings {
+
 		public AVVideoSettings ()
 		{
 		}
 
+		[Obsolete ("Use PixelBufferAttributes")]
 		public AVVideoSettings (CVPixelFormatType formatType)
 		{
 			PixelFormat = formatType;
 		}
-		
+
+		[Obsolete ("Use PixelBufferAttributes")]		
 		public CVPixelFormatType? PixelFormat { get; set; }
 		
+		[Obsolete ("Use PixelBufferAttributes")]		
 		public NSDictionary ToDictionary ()
 		{
 			if (!PixelFormat.HasValue)
@@ -61,6 +66,7 @@ namespace MonoMac.AVFoundation {
 			SetSampleBufferDelegate (sampleBufferDelegate, queue == null ? IntPtr.Zero : queue.Handle);
 		}
 
+		[Obsolete ("Use Compressed or Uncompressed property")]
 		public AVVideoSettings VideoSettings {
 			set {
 				WeakVideoSettings = value == null ? null : value.ToDictionary ();
