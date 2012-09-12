@@ -26,6 +26,7 @@
 //
 
 using System;
+using System.Drawing;
 
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
@@ -47,10 +48,12 @@ namespace MonoMac.CoreVideo {
 		{
 		}
 
-		public CVPixelBufferAttributes (CVPixelFormatType pixelFormatType)
+		public CVPixelBufferAttributes (CVPixelFormatType pixelFormatType, Size size)
 			 : this ()
 		{
 			PixelFormatType = pixelFormatType;
+			Width = size.Width;
+			Height = size.Height;
 		}
 
 		public CVPixelFormatType? PixelFormatType {
