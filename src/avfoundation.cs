@@ -1134,19 +1134,19 @@ namespace MonoMac.AVFoundation {
 		AVAssetReaderVideoCompositionOutput WeakFromTracks (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
 
 		[Wrap ("WeakFromTracks (videoTracks, settings == null ? null : settings.Dictionary)")]
-		AVAssetReaderVideoCompositionOutput Create (AVAssetTrack [] videoTracks, [NullAllowed] PixelBufferAttributes settings);
+		AVAssetReaderVideoCompositionOutput Create (AVAssetTrack [] videoTracks, [NullAllowed] CVPixelBufferAttributes settings);
 
 		[Export ("initWithVideoTracks:videoSettings:")]
 		IntPtr Constructor (AVAssetTrack [] videoTracks, NSDictionary videoSettings);
 
 		[Wrap ("this (videoTracks, settings == null ? null : settings.Dictionary)")]
-		IntPtr Constructor (AVAssetTrack [] videoTracks, PixelBufferAttributes settings);		
+		IntPtr Constructor (AVAssetTrack [] videoTracks, CVPixelBufferAttributes settings);		
 
 		[Export ("videoSettings")]
 		NSDictionary WeakVideoSettings { get; }
 
 		[Wrap ("WeakVideoSettings")]
-		PixelBufferAttributes UncompressedVideoSettings { get; }
+		CVPixelBufferAttributes UncompressedVideoSettings { get; }
 	}
 
 	[Since (6,0)]
@@ -1368,7 +1368,7 @@ namespace MonoMac.AVFoundation {
 		NSDictionary SourcePixelBufferAttributes { get;  }
 
 		[Wrap ("SourcePixelBufferAttributes")]
-		PixelBufferAttributes Attributes { get; }
+		CVPixelBufferAttributes Attributes { get; }
 
 		[Export ("pixelBufferPool")]
 		CVPixelBufferPool PixelBufferPool { get;  }
@@ -1378,13 +1378,13 @@ namespace MonoMac.AVFoundation {
 		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
 		[Static, Wrap ("FromInput (input, attributes == null ? null : attributes.Dictionary)")]
-		AVAssetWriterInputPixelBufferAdaptor Create (AVAssetWriterInput input, [NullAllowed] PixelBufferAttributes attributes);
+		AVAssetWriterInputPixelBufferAdaptor Create (AVAssetWriterInput input, [NullAllowed] CVPixelBufferAttributes attributes);
 
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		IntPtr Constructor (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
 		[Wrap ("this (input, attributes == null ? null : attributes.Dictionary)")]
-		IntPtr Constructor (AVAssetWriterInput input, [NullAllowed] PixelBufferAttributes attributes);		
+		IntPtr Constructor (AVAssetWriterInput input, [NullAllowed] CVPixelBufferAttributes attributes);		
 
 		[Export ("appendPixelBuffer:withPresentationTime:")]
 		bool AppendPixelBufferWithPresentationTime (CVPixelBuffer pixelBuffer, CMTime presentationTime);
@@ -3973,7 +3973,7 @@ namespace MonoMac.AVFoundation {
 		IntPtr Constructor (NSDictionary pixelBufferAttributes);
 
 		[Wrap ("this (attributes == null ? null : attributes.Dictionary)")]
-		IntPtr Constructor (PixelBufferAttributes attributes);
+		IntPtr Constructor (CVPixelBufferAttributes attributes);
 
 		[Export ("hasNewPixelBufferForItemTime:")]
 		bool HasNewPixelBufferForItemTime (CMTime itemTime);

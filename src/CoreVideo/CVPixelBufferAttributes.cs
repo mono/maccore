@@ -1,5 +1,5 @@
 // 
-// PixelBufferAttributes.cs: Implements strongly typed access for Pixel Buffer attributes
+// CVPixelBufferAttributes.cs: Implements strongly typed access for Pixel Buffer attributes
 //
 // Authors: Marek Safar (marek.safar@gmail.com)
 //     
@@ -34,20 +34,20 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreVideo {
 
 	[Since (6,0)]
-	public class PixelBufferAttributes : DictionaryContainer
+	public class CVPixelBufferAttributes : DictionaryContainer
 	{
 #if !COREBUILD
-		public PixelBufferAttributes ()
+		public CVPixelBufferAttributes ()
 			: base (new NSMutableDictionary ())
 		{
 		}
 
-		public PixelBufferAttributes (NSDictionary dictionary)
+		public CVPixelBufferAttributes (NSDictionary dictionary)
 			: base (dictionary)
 		{
 		}
 
-		public PixelBufferAttributes (CVPixelFormatType pixelFormatType)
+		public CVPixelBufferAttributes (CVPixelFormatType pixelFormatType)
 			 : this ()
 		{
 			PixelFormatType = pixelFormatType;

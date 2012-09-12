@@ -61,7 +61,7 @@ namespace MonoMac.AVFoundation {
 		High41
 	}
 
-	public class AVVideoSettingsUncompressed : PixelBufferAttributes
+	public class AVVideoSettingsUncompressed : CVPixelBufferAttributes
 	{
 #if !COREBUILD
 		public AVVideoSettingsUncompressed ()
