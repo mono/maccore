@@ -3854,6 +3854,10 @@ namespace MonoMac.AVFoundation {
 		[Export ("currentDate")]
 		NSDate CurrentDate { get; }
 
+		[Since (4,3)]
+		[Export ("duration")]
+		CMTime Duration { get; }
+
 		[Since (5,0)]
 		[Export ("canPlayFastReverse")]
 		bool CanPlayFastReverse { get;  }
