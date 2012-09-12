@@ -28,4 +28,6 @@ using System;
 namespace MonoMac.ObjCRuntime {
 	public class LionAttribute : Attribute {
 	}
+	public class MountainLionAttribute : Attribute {
+	}
 }
