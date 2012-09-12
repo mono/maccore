@@ -59,6 +59,9 @@ using MonoMac.CoreVideo;
 using MonoMac.OpenGL;
 using MonoMac.CoreMidi;
 using MonoMac.CoreMedia;
+
+using DictionaryContainerType = MonoMac.Foundation.DictionaryContainer;
+
 #else
 using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
@@ -68,6 +71,9 @@ using MonoTouch.CoreMedia;
 using MonoTouch.CoreVideo;
 using MonoTouch.CoreMidi;
 using MonoTouch.MediaToolbox;
+
+using DictionaryContainerType = MonoTouch.Foundation.DictionaryContainer;
+
 #endif
 
 public static class ReflectionExtensions {
@@ -967,7 +973,7 @@ public class Generator {
 			return "IntPtr";
 		}
 
-		if (mai.Type.IsSubclassOf (typeof (DictionaryContainer))){
+		if (mai.Type.IsSubclassOf (typeof (DictionaryContainerType))){
 			return "IntPtr";
 		}
 		
@@ -1186,7 +1192,7 @@ public class Generator {
 			return String.Format ("(IntPtr) block_ptr_{0}", pi.Name);
 		}
 
-		if (pi.ParameterType.IsSubclassOf (typeof (DictionaryContainer))){
+		if (pi.ParameterType.IsSubclassOf (typeof (DictionaryContainerType))){
 			if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
 				return String.Format ("{0} == null ? IntPtr.Zero : {0}.Dictionary.Handle", pi.Name);
 			return pi.Name + ".Dictionary.Handle";
@@ -1455,7 +1461,7 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoMac.CoreMedia.CMSampleBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreVideo.CVImageBuffer), "IntPtr", "{0}.Handle", "new MonoMac.CoreVideo.CMImageBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreVideo.CVPixelBufferPool), "IntPtr", "{0}.Handle", "new MonoMac.CoreVideo.CVPixelBufferPool ("));
-		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreMedia.CMFormatDescription), "IntPtr", "{0}.Handle", "new MonoMac.CoreMedia.CMFormatDescription ("));				
+		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreMedia.CMFormatDescription), "IntPtr", "{0}.Handle", "new MonoMac.CoreMedia.CMFormatDescription ("));
 #else
 		marshal_types.Add (new MarshalType (typeof (MTAudioProcessingTap), "IntPtr", "{0}.Handle", "new MonoTouch.MediaToolbox.MTAudioProcessingTap ("));
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));
@@ -2547,7 +2553,7 @@ public class Generator {
 				print ("get {");
 				indent++;
 
-				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainer)))
+				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainerType)))
 					print ("return new {1}({0});", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
 				else
 					print ("return {0} as {1};", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
@@ -2559,7 +2565,7 @@ public class Generator {
 				print ("set {");
 				indent++;
 
-				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainer)))
+				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainerType)))
 					print ("{0} = value == null ? null : value.Dictionary;", wrap);
 				else
 					print ("{0} = value;", wrap);
