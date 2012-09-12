@@ -3691,12 +3691,20 @@ namespace MonoMac.AVFoundation {
 		[Export ("textStyleRulesFromPropertyList:")]
 		AVTextStyleRule [] FromPropertyList (NSObject plist);
 
-		[Static]
+		[Static][Internal]
 		[Export ("textStyleRuleWithTextMarkupAttributes:")]
-		AVTextStyleRule FromTextMarkupAttributes (CMTextMarkupAttributes textMarkupAttributes);
+		AVTextStyleRule FromTextMarkupAttributes (NSDictionary textMarkupAttributes);
 
 		[Static]
+		[Wrap ("FromTextMarkupAttributes (textMarkupAttributes == null ? null : textMarkupAttributes.Dictionary)")]
+		AVTextStyleRule FromTextMarkupAttributes (CMTextMarkupAttributes textMarkupAttributes);
+
+		[Static][Internal]
 		[Export ("textStyleRuleWithTextMarkupAttributes:textSelector:")]
+		AVTextStyleRule FromTextMarkupAttributes (NSDictionary textMarkupAttributes, [NullAllowed] string textSelector);
+
+		[Static]
+		[Wrap ("FromTextMarkupAttributes (textMarkupAttributes == null ? null : textMarkupAttributes.Dictionary, textSelector)")]
 		AVTextStyleRule FromTextMarkupAttributes (CMTextMarkupAttributes textMarkupAttributes, [NullAllowed] string textSelector);
 
 		[Export ("initWithTextMarkupAttributes:")]
