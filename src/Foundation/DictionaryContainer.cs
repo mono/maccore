@@ -111,6 +111,18 @@ namespace MonoMac.Foundation {
 			return ((NSNumber) value).FloatValue;
 		}
 
+		protected double? GetDoubleValue (NSString key)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			NSObject value;
+			if (!Dictionary.TryGetValue (key, out value))
+				return null;
+
+			return ((NSNumber) value).DoubleValue;
+		}
+
 		protected bool? GetBoolValue (NSString key)
 		{
 			if (key == null)
@@ -228,6 +240,19 @@ namespace MonoMac.Foundation {
 		}
 
 		protected void SetNumberValue (NSString key, float? value)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			if (value == null) {
+				RemoveValue (key);
+				return;
+			}
+
+			Dictionary [key] = new NSNumber (value.Value);				
+		}
+
+		protected void SetNumberValue (NSString key, double? value)
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
