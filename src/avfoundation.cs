@@ -3,10 +3,11 @@
 //
 // Authors:
 //   Miguel de Icaza
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
-// Copyright 2011-2012, Xamarin, INc.
+// Copyright 2011-2012, Xamarin, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -336,8 +337,11 @@ namespace MonoMac.AVFoundation {
 		bool PlayAtTime (double time);
 
 		[Since (4,0)]
-		[Export ("settings"), Internal]
-		NSDictionary _Settings { get;  }
+		[Export ("settings")][Protected]
+		NSDictionary WeakSettings { get;  }
+
+		[Wrap ("WeakSettings")]
+		AudioSettings SoundSetting { get; }
 
 		[Since (6,0)]
 		[Export ("channelAssignments")]
@@ -399,8 +403,12 @@ namespace MonoMac.AVFoundation {
 		[Export ("url")]
 		NSUrl Url { get;  }
 	
+		[Obsolete ("Use AudioSettings")]
 		[Export ("settings")]
 		NSDictionary Settings { get;  }
+
+		[Wrap ("Settings")]
+		AudioSettings AudioSettings { get; }
 
 		[Export ("delegate")]
 		NSObject WeakDelegate { get; set;  }
@@ -1059,18 +1067,23 @@ namespace MonoMac.AVFoundation {
 		[Static, Export ("assetReaderTrackOutputWithTrack:outputSettings:")]
 		AVAssetReaderTrackOutput FromTrack (AVAssetTrack track, [NullAllowed] NSDictionary outputSettings);
 
-		[Static, Export ("assetReaderTrackOutputWithTrack:outputSettings:")]
-		AVAssetReaderTrackOutput Create (AVAssetTrack track, [NullAllowed] AudioSettings outputSettings);
+		[Static, Wrap ("FromTrack (track, settings == null ? null : settings.Dictionary)")]
+		AVAssetReaderTrackOutput Create (AVAssetTrack track, [NullAllowed] AudioSettings settings);
+
+		[Static, Wrap ("FromTrack (track, settings == null ? null : settings.Dictionary)")]
+		AVAssetReaderTrackOutput Create (AVAssetTrack track, [NullAllowed] AVVideoSettingsUncompressed settings);		
 
 		[Export ("initWithTrack:outputSettings:")]
 		IntPtr Constructor (AVAssetTrack track, [NullAllowed] NSDictionary outputSettings);
 
-		[Wrap ("this (track, outputSettings == null ? null : outputSettings.Dictionary)")]		
-		IntPtr Constructor (AVAssetTrack track, [NullAllowed] AudioSettings outputSettings);
+		[Wrap ("this (track, settings == null ? null : settings.Dictionary)")]		
+		IntPtr Constructor (AVAssetTrack track, [NullAllowed] AudioSettings settings);
+
+		[Wrap ("this (track, settings == null ? null : settings.Dictionary)")]		
+		IntPtr Constructor (AVAssetTrack track, [NullAllowed] AVVideoSettingsUncompressed settings);
 
 		[Export ("outputSettings")]
 		NSDictionary OutputSettings { get; }
-
 	}
 
 	[Since (4,1)]
@@ -1088,7 +1101,7 @@ namespace MonoMac.AVFoundation {
 		[Static, Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
 		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
-		[Static, Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
+		[Wrap ("FromTracks (audioTracks, settings == null ? null : settings.Dictionary)")]
 		AVAssetReaderAudioMixOutput Create (AVAssetTrack [] audioTracks, [NullAllowed] AudioSettings settings);
 
 		[Export ("initWithAudioTracks:audioSettings:")]
@@ -1097,6 +1110,7 @@ namespace MonoMac.AVFoundation {
 		[Wrap ("this (audioTracks, settings == null ? null : settings.Dictionary)")]
 		IntPtr Constructor (AVAssetTrack [] audioTracks, [NullAllowed] AudioSettings settings);
 
+		[Obsolete ("Use Settings property")]
 		[Export ("audioSettings")]
 		NSDictionary AudioSettings { get; }
 
@@ -1119,7 +1133,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
 		AVAssetReaderVideoCompositionOutput WeakFromTracks (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
 
-		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
+		[Wrap ("WeakFromTracks (videoTracks, settings == null ? null : settings.Dictionary)")]
 		AVAssetReaderVideoCompositionOutput Create (AVAssetTrack [] videoTracks, [NullAllowed] PixelBufferAttributes settings);
 
 		[Export ("initWithVideoTracks:videoSettings:")]
@@ -1173,7 +1187,7 @@ namespace MonoMac.AVFoundation {
 		void FinishLoadingWithError (NSError error);
 
 		[Export ("streamingContentKeyRequestDataForApp:contentIdentifier:options:error:")]
-		NSData GetStreamingContentKey (NSData appIdentifier, NSData contentIdentifier, [NullAllowed] NSDictionary options, NSError outError);
+		NSData GetStreamingContentKey (NSData appIdentifier, NSData contentIdentifier, [NullAllowed] NSDictionary options, out NSError error);
 	}
 	
 	[Since (4,1)]
@@ -1307,10 +1321,10 @@ namespace MonoMac.AVFoundation {
 		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
 		AVAssetWriterInput FromType (string mediaType, [NullAllowed] NSDictionary outputSettings);
 
-		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
+		[Static, Wrap ("FromType (mediaType, outputSettings == null ? null : outputSettings.Dictionary)")]
 		AVAssetWriterInput Create (string mediaType, [NullAllowed] AudioSettings outputSettings);
 
-		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
+		[Static, Wrap ("FromType (mediaType, outputSettings == null ? null : outputSettings.Dictionary)")]
 		AVAssetWriterInput Create (string mediaType, [NullAllowed] AVVideoSettingsCompressed outputSettings);
 
 		// Should be protected
@@ -1363,7 +1377,7 @@ namespace MonoMac.AVFoundation {
 		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
-		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
+		[Static, Wrap ("FromInput (input, attributes == null ? null : attributes.Dictionary)")]
 		AVAssetWriterInputPixelBufferAdaptor Create (AVAssetWriterInput input, [NullAllowed] PixelBufferAttributes attributes);
 
 		[Export ("initWithAssetWriterInput:sourcePixelBufferAttributes:")]

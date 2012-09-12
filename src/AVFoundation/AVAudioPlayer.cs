@@ -28,6 +28,7 @@ using System;
 
 namespace MonoMac.AVFoundation {
 
+	// Obsoleted by AudioPlayerSettings
 	public class AVAudioPlayerSettings {
 		NSDictionary dict;
 		
@@ -147,12 +148,10 @@ namespace MonoMac.AVFoundation {
 			
 		}
 
-		// TODO: Could add proper sound settings like
-		// AudioSettings SoundSettings { get { } }
-
+		[Obsolete ("Use SoundSettings")]
 		public AVAudioPlayerSettings Settings {
 			get {
-				return new AVAudioPlayerSettings (_Settings);
+				return new AVAudioPlayerSettings (WeakSettings);
 			}
 		}
 
