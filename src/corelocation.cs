@@ -290,7 +290,7 @@ namespace MonoMac.CoreLocation {
 
 		[Since (6,0)]
 		[Export ("locationManager:didFinishDeferredUpdatesWithError:"), EventArgs ("NSError")]
-		void FinishedDeferredUpdates (CLLocationManager manager, NSError error);
+		void DeferredUpdatesFinished (CLLocationManager manager, NSError error);
 	}
 
 #if !MONOMAC
