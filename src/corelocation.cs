@@ -227,7 +227,7 @@ namespace MonoMac.CoreLocation {
 		[Since (6,0)]
 		[Static]
 		[Export ("deferredLocationUpdatesAvailable")]
-		bool AreDeferredLocationUpdatesAvailable { get; }
+		bool DeferredLocationUpdatesAvailable { get; }
 
 		[Since (6,0)]
 		[Field ("CLTimeInternalMax")]

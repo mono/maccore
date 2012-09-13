@@ -3639,7 +3639,7 @@ namespace MonoMac.AVFoundation {
 		bool AllowsAirPlayVideo { get; set;  }
 
 		[Since (5,0)]
-		[Obsolete ("Obsoleted in iOS6, use IsExternalPlaybackActive")]
+		[Obsolete ("Obsoleted in iOS6, use ExternalPlaybackActive")]
 		[Export ("airPlayVideoActive")]
 		bool AirPlayVideoActive { [Bind ("isAirPlayVideoActive")] get;  }
 
@@ -3690,7 +3690,7 @@ namespace MonoMac.AVFoundation {
 
 		[Since (6,0)]
 		[Export ("externalPlaybackActive")]
-		bool IsExternalPlaybackActive { [Bind ("isExternalPlaybackActive")] get; }
+		bool ExternalPlaybackActive { [Bind ("isExternalPlaybackActive")] get; }
 
 		[Since (6,0)]
 		[Export ("usesExternalPlaybackWhileExternalScreenIsActive")]
