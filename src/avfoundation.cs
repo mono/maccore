@@ -3696,9 +3696,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("usesExternalPlaybackWhileExternalScreenIsActive")]
 		bool UsesExternalPlaybackWhileExternalScreenIsActive { get; set;  }
 
-		[Since (6,0)]
+		[Since (6,0)][Protected]
 		[Export ("externalPlaybackVideoGravity")]
-		NSString ExternalPlaybackVideoGravity { get; set; }
+		NSString WeakExternalPlaybackVideoGravity { get; set; }
 	}
 
 	[Since (6,0)]
