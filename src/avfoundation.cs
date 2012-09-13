@@ -3206,8 +3206,12 @@ namespace MonoMac.AVFoundation {
 		[Obsolete ("Deprecated in iOS 6.0")]
 		bool OrientationSupported { get; }
 
+		[Obsolete ("Use LayerVideoGravity")]
 		[Export ("videoGravity")]
 		string VideoGravity { get; set; }
+
+		[Export ("videoGravity")][Protected]
+		NSString WeakVideoGravity { get; set; }
 
                 [Static, Export ("layerWithSession:")]
                 AVCaptureVideoPreviewLayer FromSession (AVCaptureSession session);
@@ -4151,8 +4155,12 @@ namespace MonoMac.AVFoundation {
 		[Static, Export ("playerLayerWithPlayer:")]
 		AVPlayerLayer FromPlayer (AVPlayer player);
 
+		[Obsolete ("Use LayerVideoGravity")]
 		[Export ("videoGravity")]
 		string VideoGravity { get; set; }
+
+		[Export ("videoGravity")][Protected]
+		NSString WeakVideoGravity { get; set; }
 
 		[Field ("AVLayerVideoGravityResizeAspect")]
 		NSString GravityResizeAspect { get; }

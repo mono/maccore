@@ -39,6 +39,74 @@ namespace MonoMac.AVFoundation {
 		Resize
 	}
 
+	partial class AVPlayerLayer
+	{
+		// Should be VideoGravity only but previous binding was wrong
+		public AVLayerVideoGravity LayerVideoGravity {
+			set {
+				NSString v;
+				switch (value) {
+				case AVLayerVideoGravity.ResizeAspect:
+					v = AVPlayerLayer.GravityResizeAspect;
+					break;
+				case AVLayerVideoGravity.ResizeAspectFill:
+					v = AVPlayerLayer.GravityResizeAspectFill;
+					break;
+				case AVLayerVideoGravity.Resize:
+					v = AVPlayerLayer.GravityResize;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException ("value");
+				}
+
+				WeakVideoGravity = v;
+			}
+			get {
+				var weak = WeakVideoGravity;
+				if (weak == AVPlayerLayer.GravityResize)
+					return AVLayerVideoGravity.Resize;
+				if (weak == AVPlayerLayer.GravityResizeAspectFill)
+					return AVLayerVideoGravity.ResizeAspectFill;
+
+				return AVLayerVideoGravity.ResizeAspect;
+			}
+		}
+	}
+
+	partial class AVCaptureVideoPreviewLayer
+	{
+		// Should be VideoGravity only but previous binding was wrong
+		public AVLayerVideoGravity LayerVideoGravity {
+			set {
+				NSString v;
+				switch (value) {
+				case AVLayerVideoGravity.ResizeAspect:
+					v = AVPlayerLayer.GravityResizeAspect;
+					break;
+				case AVLayerVideoGravity.ResizeAspectFill:
+					v = AVPlayerLayer.GravityResizeAspectFill;
+					break;
+				case AVLayerVideoGravity.Resize:
+					v = AVPlayerLayer.GravityResize;
+					break;
+				default:
+					throw new ArgumentOutOfRangeException ("value");
+				}
+
+				WeakVideoGravity = v;
+			}
+			get {
+				var weak = WeakVideoGravity;
+				if (weak == AVPlayerLayer.GravityResize)
+					return AVLayerVideoGravity.Resize;
+				if (weak == AVPlayerLayer.GravityResizeAspectFill)
+					return AVLayerVideoGravity.ResizeAspectFill;
+
+				return AVLayerVideoGravity.ResizeAspect;
+			}
+		}
+	}
+
 	partial class AVPlayer
 	{
 		public AVLayerVideoGravity? ExternalPlaybackVideoGravity {
