@@ -3560,11 +3560,11 @@ namespace MonoMac.AVFoundation {
 
 		[Since (6,0)]
 		[Export ("lowLightBoostSupported")]
-		bool IsLowLightBoostSupported { [Bind ("isLowLightBoostSupported")] get; }
+		bool LowLightBoostSupported { [Bind ("isLowLightBoostSupported")] get; }
 
 		[Since (6,0)]
 		[Export ("lowLightBoostEnabled")]
-		bool IsLowLightBoostEnabled { [Bind ("isLowLightBoostEnabled")] get; }
+		bool LowLightBoostEnabled { [Bind ("isLowLightBoostEnabled")] get; }
 
 		[Since (6,0)]
 		[Export ("automaticallyEnablesLowLightBoostWhenAvailable")]
