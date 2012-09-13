@@ -3554,6 +3554,17 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVCaptureMaxAvailableTorchLevel")]
 		float MaxAvailableTorchLevel { get; }
 
+		[Since (6,0)]
+		[Export ("lowLightBoostSupported")]
+		bool IsLowLightBoostSupported { [Bind ("isLowLightBoostSupported")] get; }
+
+		[Since (6,0)]
+		[Export ("lowLightBoostEnabled")]
+		bool IsLowLightBoostEnabled { [Bind ("isLowLightBoostEnabled")] get; }
+
+		[Since (6,0)]
+		[Export ("automaticallyEnablesLowLightBoostWhenAvailable")]
+		bool AutomaticallyEnablesLowLightBoostWhenAvailable { get; set; }
 	}
 
 	public delegate void AVCompletionHandler ();
@@ -3623,14 +3634,17 @@ namespace MonoMac.AVFoundation {
 
 		// 5.0
 		[Since (5,0)]
+		[Obsolete ("Obsoleted in iOS6, use AllowsExternalPlayback")]
 		[Export ("allowsAirPlayVideo")]
 		bool AllowsAirPlayVideo { get; set;  }
 
 		[Since (5,0)]
+		[Obsolete ("Obsoleted in iOS6, use IsExternalPlaybackActive")]
 		[Export ("airPlayVideoActive")]
 		bool AirPlayVideoActive { [Bind ("isAirPlayVideoActive")] get;  }
 
 		[Since (5,0)]
+		[Obsolete ("Obsoleted in iOS6, use UsesExternalPlaybackWhileExternalScreenIsActive")]
 		[Export ("usesAirPlayVideoWhileAirPlayScreenIsActive")]
 		bool UsesAirPlayVideoWhileAirPlayScreenIsActive { get; set;  }
 
@@ -3669,6 +3683,22 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("masterClock")]
 		CMClock MasterClock { get; }
+
+		[Since (6,0)]
+		[Export ("allowsExternalPlayback")]
+		bool AllowsExternalPlayback { get; set;  }
+
+		[Since (6,0)]
+		[Export ("externalPlaybackActive")]
+		bool IsExternalPlaybackActive { [Bind ("isExternalPlaybackActive")] get; }
+
+		[Since (6,0)]
+		[Export ("usesExternalPlaybackWhileExternalScreenIsActive")]
+		bool UsesExternalPlaybackWhileExternalScreenIsActive { get; set;  }
+
+		[Since (6,0)]
+		[Export ("externalPlaybackVideoGravity")]
+		NSString ExternalPlaybackVideoGravity { get; set; }
 	}
 
 	[Since (6,0)]

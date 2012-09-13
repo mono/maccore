@@ -215,6 +215,23 @@ namespace MonoMac.CoreLocation {
 		[Since (6,0)]
 		[Export ("pausesLocationUpdatesAutomatically", ArgumentSemantic.Assign)]
 		bool PausesLocationUpdatesAutomatically { get; set; }
+
+		[Since (6,0)]
+		[Export ("allowDeferredLocationUpdatesUntilTraveled:timeout:")]
+		void AllowDeferredLocationUpdatesUntil (double distance, double timeout);
+
+		[Since (6,0)]
+		[Export ("disallowDeferredLocationUpdates")]
+		void DisallowDeferredLocationUpdates ();
+
+		[Since (6,0)]
+		[Static]
+		[Export ("deferredLocationUpdatesAvailable")]
+		bool AreDeferredLocationUpdatesAvailable { get; }
+
+		[Since (6,0)]
+		[Field ("CLTimeInternalMax")]
+		double MaxTimeInterval { get; }
 #endif
 	}
 	
@@ -270,6 +287,10 @@ namespace MonoMac.CoreLocation {
 		[Since (6,0)]
 		[Export ("locationManagerDidResumeLocationUpdates:"), EventArgs ("")]
 		void LocationUpdatesResumed (CLLocationManager manager);
+
+		[Since (6,0)]
+		[Export ("locationManager:didFinishDeferredUpdatesWithError:"), EventArgs ("NSError")]
+		void FinishedDeferredUpdates (CLLocationManager manager, NSError error);
 	}
 
 #if !MONOMAC

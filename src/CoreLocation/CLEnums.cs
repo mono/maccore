@@ -52,7 +52,14 @@ namespace MonoMac.CoreLocation {
 		// ios5 osx10.8
 		GeocodeFoundPartialResult,
 		// ios5 osx10.7
-		GeocodeCanceled
+		GeocodeCanceled,
+
+		// ios6
+		DeferredFailed,
+		DeferredNotUpdatingLocation,
+		DeferredAccuracyTooLow,
+		DeferredDistanceFiltered,
+		DeferredCanceled
 	}
 
 	public enum CLDeviceOrientation {
