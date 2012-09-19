@@ -890,7 +890,7 @@ namespace MonoMac.AddressBook {
 
 		public void SetInstantMessages (ABMultiValue<InstantMessageService> services)
 		{
-			SetValue (ABPersonPropertyId.SocialProfile, services == null ? IntPtr.Zero : services.Handle);
+			SetValue (ABPersonPropertyId.InstantMessage, services == null ? IntPtr.Zero : services.Handle);
 		}
 
 		[Obsolete ("Use GetSocialProfiles")]
