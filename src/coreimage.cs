@@ -61,11 +61,11 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("colorWithRed:green:blue:alpha:")]
-		CIColor FromRgba (float r, float g, float b, float a);
+		CIColor FromRgba (float red, float green, float blue, float alpha);
 
 		[Static]
 		[Export ("colorWithRed:green:blue:")]
-		CIColor FromRgb (float r, float g, float b);
+		CIColor FromRgb (float red, float green, float blue);
 
 		[Static]
 		[Export ("colorWithString:")]
