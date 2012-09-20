@@ -5200,6 +5200,11 @@ namespace MonoMac.Foundation
 		[Export ("isMainThread")]
 		bool IsMainThread { get; }
 
+		// MainThread is already used for the instance selector and we can't reuse the same name
+		[Static]
+		[Export ("isMainThread")]
+		bool IsMain { get; }
+
 		[Static]
 		[Export ("mainThread")]
 		NSThread MainThread { get; }
