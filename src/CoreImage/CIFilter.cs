@@ -327,6 +327,8 @@ namespace MonoMac.CoreImage {
 				return new CIStarShineGenerator (handle);
 			case "CIUnsharpMask":
 				return new CIUnsharpMask (handle);
+			case "CICircleSplashDistortion":
+				return new CICircleSplashDistortion (handle);
 #if MONOMAC
 			case "CIPageCurlTransition":
 				return new CIPageCurlTransition (handle);
@@ -2260,6 +2262,11 @@ namespace MonoMac.CoreImage {
 	}
 
 #region Distortion filters
+	[Since (6,0)]
+	public class CICircleSplashDistortion : CIDistortionFilter {
+		public CICircleSplashDistortion () : base ("CICircleSplashDistortion") {}
+		public CICircleSplashDistortion (IntPtr handle) : base (handle) {}
+	}
 
 	[Since (6,0)]
 	public class CIHoleDistortion : CIDistortionFilter {
@@ -2303,9 +2310,9 @@ namespace MonoMac.CoreImage {
 		}		
 	}
 
-	public class CIDistortionFilter : CIFilter {
-		public CIDistortionFilter (string name) : base (name) {}
-		public CIDistortionFilter (IntPtr handle) : base (handle) {}
+	public abstract class CIDistortionFilter : CIFilter {
+		protected CIDistortionFilter (string name) : base (name) {}
+		protected CIDistortionFilter (IntPtr handle) : base (handle) {}
 	
 		public CIImage Image {
 			get {
