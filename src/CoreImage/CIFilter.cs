@@ -275,8 +275,6 @@ namespace MonoMac.CoreImage {
 				return new CIColorMap (handle);
 			case "CIColorPosterize":
 				return new CIColorPosterize (handle);
-			case "CIDepthOfField":
-				return new CIDepthOfField (handle);
 			case "CIEightfoldReflectedTile":
 				return new CIEightfoldReflectedTile (handle);
 			case "CIFourfoldReflectedTile":
@@ -328,6 +326,8 @@ namespace MonoMac.CoreImage {
 			case "CICircleSplashDistortion":
 				return new CICircleSplashDistortion (handle);
 #if MONOMAC
+			case "CIDepthOfField":
+				return new CIDepthOfField (handle);
 			case "CIPageCurlTransition":
 				return new CIPageCurlTransition (handle);
 			case "CIRippleTransition":
@@ -2024,6 +2024,7 @@ namespace MonoMac.CoreImage {
 		}
 	}
 
+#if MONOMAC
 	[Since (6,0)]
 	public class CIDepthOfField : CIFilter {
 		public CIDepthOfField () : base ("CIDepthOfField") {}
@@ -2092,6 +2093,8 @@ namespace MonoMac.CoreImage {
 			}
 		}
 	}
+
+#endif
 
 #region Tile filters
 
