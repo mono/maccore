@@ -522,8 +522,8 @@ namespace MonoMac.AddressBook {
 				Child     = Dlfcn.GetStringConstant (handle, "kABPersonChildLabel");
 				Father    = Dlfcn.GetStringConstant (handle, "kABPersonFatherLabel");
 				Friend    = Dlfcn.GetStringConstant (handle, "kABPersonFriendLabel");
-				Manager   = Dlfcn.GetStringConstant (handle, "kABPersonMotherLabel");
-				Mother    = Dlfcn.GetStringConstant (handle, "kABPersonManagerLabel");
+				Manager   = Dlfcn.GetStringConstant (handle, "kABPersonManagerLabel");
+				Mother    = Dlfcn.GetStringConstant (handle, "kABPersonMotherLabel");
 				Parent    = Dlfcn.GetStringConstant (handle, "kABPersonParentLabel");
 				Partner   = Dlfcn.GetStringConstant (handle, "kABPersonPartnerLabel");
 				Sister    = Dlfcn.GetStringConstant (handle, "kABPersonSisterLabel");
