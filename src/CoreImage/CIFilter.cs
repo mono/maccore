@@ -259,8 +259,6 @@ namespace MonoMac.CoreImage {
 				return new CIFlashTransition (handle);
 			case "CIModTransition":
 				return new CIModTransition (handle);
-			case "CIPageCurlTransition":
-				return new CIPageCurlTransition (handle);
 			case "CIRippleTransition":
 				return new CIRippleTransition (handle);
 			case "CISwipeTransition":
@@ -329,7 +327,10 @@ namespace MonoMac.CoreImage {
 				return new CIStarShineGenerator (handle);
 			case "CIUnsharpMask":
 				return new CIUnsharpMask (handle);
-#if !MONOMAC
+#if MONOMAC
+			case "CIPageCurlTransition":
+				return new CIPageCurlTransition (handle);
+#else
 			case "CILightTunnel":
 				return new CILightTunnel (handle);
 			case "CITriangleKaleidoscope":
@@ -1330,7 +1331,7 @@ namespace MonoMac.CoreImage {
 		}
 	}
 
-	[Since (6,0)]
+#if MONOMAC
 	public class CIPageCurlTransition : CITransitionFilter
 	{
 		public CIPageCurlTransition () : base ("CIPageCurlTransition") {}
@@ -1381,6 +1382,7 @@ namespace MonoMac.CoreImage {
 			}
 		}
 	}
+#endif
 
 	[Since (6,0)]
 	public class CIRippleTransition : CITransitionFilter
