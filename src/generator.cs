@@ -217,6 +217,9 @@ public class RetainAttribute : Attribute {
 	public string WrapName { get; set; }
 }
 
+public class ReleaseAttribute : Attribute {
+}
+
 [AttributeUsage(AttributeTargets.All, AllowMultiple=true)]
 public class PostGetAttribute : Attribute {
 	public PostGetAttribute (string name)
@@ -2274,7 +2277,9 @@ public class Generator {
 		Inject (mi, typeof (PreSnippetAttribute));
 		AlignAttribute align = GetAttribute (mi, typeof (AlignAttribute)) as AlignAttribute;
 		bool has_postget = HasAttribute (mi, typeof (PostGetAttribute));
+		bool release_return = HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ReleaseAttribute));
 		bool use_temp_return  =
+			release_return ||
 			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
 			(HasAttribute (mi, typeof (FactoryAttribute))) ||
 			((body_options & BodyOption.NeedsTempReturn) == BodyOption.NeedsTempReturn) ||
@@ -2316,6 +2321,9 @@ public class Generator {
 		} else {
 			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
 		}
+		
+		if (release_return)
+			print ("Messaging.void_objc_msgSend (ret.Handle, Selector.Release);");
 		
 		Inject (mi, typeof (PostSnippetAttribute));
 
