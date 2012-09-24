@@ -2233,9 +2233,7 @@ public class Generator {
 
 				convs.AppendFormat (GenerateMarshalString (probe_null, !mai.ZeroCopyStringMarshal), pi.Name);
 				disposes.AppendFormat (GenerateDisposeString (probe_null, !mai.ZeroCopyStringMarshal), pi.Name);
-			}
-
-			if (mai.Type.IsArray){
+			} else if (mai.Type.IsArray){
 				Type etype = mai.Type.GetElementType ();
 				if (etype == typeof (string)){
 					if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
@@ -2254,10 +2252,7 @@ public class Generator {
 						disposes.AppendFormat ("nsa_{0}.Dispose ();\n", pi.Name);
 					}
 				}
-			}
-
-			
-			if (mai.Type.IsSubclassOf (typeof (Delegate))){
+			} else if (mai.Type.IsSubclassOf (typeof (Delegate))){
 				string trampoline_name = MakeTrampoline (pi.ParameterType);
 				string extra = "";
 				bool null_allowed = HasAttribute (pi, typeof (NullAllowedAttribute));
@@ -2280,6 +2275,10 @@ public class Generator {
 					disposes.AppendFormat ("if (block_ptr_{0} != null)\n", pi.Name);
 				}
 				disposes.AppendFormat (extra + "block_ptr_{0}->CleanupBlock ();\n", pi.Name);
+			} else {
+				if (mai.Type.IsClass && !mai.Type.IsByRef && 
+					(mai.Type != typeof (Selector) && mai.Type != typeof (Class) && mai.Type != typeof (string) && !typeof(INativeObject).IsAssignableFrom (mai.Type)))
+					throw new BindingException (1020, true, "Unsupported type {0} used on exported method {1}.{2}'", mai.Type, mi.DeclaringType, mi.Name);
 			}
 
 			// Handle ByRef
