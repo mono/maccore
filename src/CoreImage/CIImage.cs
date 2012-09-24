@@ -133,5 +133,24 @@ namespace MonoMac.CoreImage {
 		{
 			return FromCGImage (image);
 		}
+		
+		internal static int CIFormatToInt (CIFormat format)
+		{
+			switch (format) {
+			case CIFormat.ARGB8: return FormatARGB8;
+			case CIFormat.RGBAh: return FormatRGBAh;
+			case CIFormat.BGRA8: return FormatBGRA8;
+			case CIFormat.RGBA8: return FormatRGBA8;
+			default:
+				throw new ArgumentOutOfRangeException ("format");
+			}
+		}
+	}
+	
+	public enum CIFormat {
+		ARGB8,
+		RGBAh,
+		BGRA8,
+		RGBA8,
 	}
 }
