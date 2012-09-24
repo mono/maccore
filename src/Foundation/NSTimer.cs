@@ -77,7 +77,7 @@ namespace MonoMac.Foundation {
 		}
 		
 		[Obsolete ("This instance of NSTimer would be unusable. Symbol kept for binary compatibility", true)]
-		public NSTimer ()
+		public NSTimer () : base (IntPtr.Zero)
 		{
 		}
 	}
