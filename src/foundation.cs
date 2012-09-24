@@ -2307,7 +2307,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (string path);
 
 		[Export ("initWithString:relativeToURL:")]
-		IntPtr Constructor (string path, string relativeToUrl);		
+		IntPtr Constructor (string path, NSUrl relativeToUrl);		
 
 		[Export ("URLWithString:")][Static]
 		NSUrl FromString (string s);
