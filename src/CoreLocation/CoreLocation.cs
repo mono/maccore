@@ -1,6 +1,9 @@
 //
 // Authors:
 //   Miguel de Icaza (miguel@gnome.org)
+//   Sebastien Pouliot  <sebastien@xamarin.com>
+//
+// Copyright 2012 Xamarin Inc
 //
 // The class can be either constructed from a string (from user code)
 // or from a handle (from iphone-sharp.dll internal calls).  This
@@ -51,4 +54,32 @@ namespace MonoMac.CoreLocation {
 		}
 	}
 	
+#if !MONOMAC && !COREBUILD
+	public partial class CLHeading {
+
+		[Obsolete ("This type is not meant to be created by application code")]
+		public CLHeading () : base (IntPtr.Zero)
+		{
+			// calling ToString, 'description' selector, would crash the application
+		}
+	}
+
+	public partial class CLRegion {
+
+		[Obsolete ("This type is not meant to be created by application code")]
+		public CLRegion () : base (IntPtr.Zero)
+		{
+			// calling ToString, 'description' selector, would crash the application
+		}
+	}
+
+	public partial class CLPlacemark {
+
+		[Obsolete ("This type is not meant to be created by application code")]
+		public CLPlacemark () : base (IntPtr.Zero)
+		{
+			// calling ToString, 'description' selector, or disposing the instance would crash the application
+		}
+	}
+#endif
 }

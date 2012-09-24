@@ -22,6 +22,7 @@ namespace MonoMac.CoreLocation {
 
 #if !MONOMAC
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // will crash, see CoreLocation.cs for compatibility stubs
 	partial interface CLHeading {
 		[Export ("magneticHeading")]
 		double MagneticHeading { get;  }
@@ -296,6 +297,7 @@ namespace MonoMac.CoreLocation {
 #if !MONOMAC
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // will crash, see CoreLocation.cs for compatibility stubs
 	partial interface CLRegion {
 		[Export ("center")]
 		CLLocationCoordinate2D Center { get;  }
@@ -315,8 +317,7 @@ namespace MonoMac.CoreLocation {
 
 	[Since (5,0)]
 	[BaseType (typeof (NSObject))]
-	// instances created with 'init' crash when Dispose is called
-	[DisableDefaultCtor]
+	[DisableDefaultCtor] // will crash, see CoreLocation.cs for compatibility stubs
 	interface CLPlacemark {
 		[Export("addressDictionary")]
 		NSDictionary AddressDictionary { get; }
