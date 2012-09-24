@@ -24,6 +24,12 @@ using System;
 namespace MonoMac.Foundation {
 
 	public partial class NSUrl {
+
+		public NSUrl (string path, string relativeToUrl)
+			: this (path, new NSUrl (relativeToUrl))
+		{
+		}
+
 		public override bool Equals (object t)
 		{
 			if (t == null)
