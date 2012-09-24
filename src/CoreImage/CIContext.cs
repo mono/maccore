@@ -73,6 +73,11 @@ namespace MonoMac.CoreImage {
 		{
 			return FromOptions (options == null ? null : options.ToDictionary ());
 		}
+		
+		public CGImage CreateCGImage (CIImage image, System.Drawing.RectangleF fromRect, CIFormat ciImageFormat, CGColorSpace colorSpace)
+		{
+			return CreateCGImage (image, fromRect, CIImage.CIFormatToInt (ciImageFormat), colorSpace);
+		}
 #endif
 	}
 }

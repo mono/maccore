@@ -150,7 +150,7 @@ namespace MonoMac.CoreImage {
 
 		[Export ("createCGImage:fromRect:format:colorSpace:")]
 		[return: Release ()]
-		CGImage CreateCGImage (CIImage image, RectangleF fromRect, int ciImageFormat, CGColorSpace colorSpace);
+		CGImage CreateCGImage (CIImage image, RectangleF fromRect, int ciImageFormat, [NullAllowed] CGColorSpace colorSpace);
 
 		[Internal, Export ("createCGLayerWithSize:info:")]
 		CGLayer CreateCGLayer (SizeF size, [NullAllowed] NSDictionary info);
@@ -781,10 +781,21 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIFormatRGBAh")]
 		int FormatRGBAh { get; }
 #else
+
+		[Field ("kCIFormatARGB8")]
+		[Since (6,0)]
+		int FormatARGB8 { get; }
+		
+		[Field ("kCIFormatRGBAh")]
+		[Since (6,0)]
+		int FormatRGBAh { get; }
+
 		[Field ("kCIFormatBGRA8")]
+		[Since (5,0)]
 		int FormatBGRA8 { get; }
 
 		[Field ("kCIFormatRGBA8")]
+		[Since (5,0)]
 		int FormatRGBA8 { get; }
 
 		[Internal, Field ("kCIImageColorSpace")]
