@@ -289,7 +289,8 @@ class DocumentGeneratedCode {
 		var class_summary = class_doc.XPathSelectElement ("Type/Docs/summary");
 		var class_remarks = class_doc.XPathSelectElement ("Type/Docs/remarks");
 
-		class_summary.Value = "Notification posted by the <see cref =\"T:" + t.FullName + "\"/> class.";
+		class_summary.RemoveAll ();
+		class_summary.Add (XElement.Parse ("<para>Notification posted by the <see cref =\"T:" + t.FullName + "\"/> class.</para>"));
 		class_remarks.RemoveAll ();
 		class_remarks.Add (XElement.Parse ("<para>This is a static class which contains various helper methods that allow developers to observe events posted " +
 						   "in the iOS notification hub (<see cref=\"T:MonoTouch.Foundation.NSNotificationCenter\"/>).</para>"));
@@ -317,7 +318,8 @@ class DocumentGeneratedCode {
 				Console.WriteLine ("Looking for {0}, and this is the class\n{1}", notification.Item1, class_doc);
 			handler.Value = "Method to invoke when the notification is posted.";
 			summary.Value = "Registers a method to be notified when the " + notification.Item2 + " notification is posted.";
-			returns.Value = "The returned NSObject represents the registered notification.   Either call Dispose on the object to stop receiving notifications, or pass it to <see cref=\"M:MonoTouch.Foundation.NSNotification.RemoveObserver\"/>";
+			returns.RemoveAll ();
+			returns.Add (XElement.Parse ("<para>The returned NSObject represents the registered notification.   Either call Dispose on the object to stop receiving notifications, or pass it to <see cref=\"M:MonoTouch.Foundation.NSNotification.RemoveObserver\"/></para>"));
 			remarks.RemoveAll ();
 			remarks.Add (XElement.Parse ("<para>The following example shows how you can use this method in your code</para>"));
 
