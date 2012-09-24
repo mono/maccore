@@ -147,9 +147,11 @@ namespace MonoMac.CoreImage {
 		void DrawImage (CIImage image, RectangleF inRectangle, RectangleF fromRectangle);
 
 		[Export ("createCGImage:fromRect:")]
+		[return: Release ()]
 		CGImage CreateCGImage (CIImage image, RectangleF fromRectangle);
 
 		[Export ("createCGImage:fromRect:format:colorSpace:")]
+		[return: Release ()]
 		CGImage CreateCGImage (CIImage image, RectangleF fromRect, int ciImageFormat, CGColorSpace colorSpace);
 
 		[Internal, Export ("createCGLayerWithSize:info:")]
