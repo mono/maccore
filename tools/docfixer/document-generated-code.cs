@@ -140,7 +140,7 @@ class DocumentGeneratedCode {
 	// Handles fields, but perhaps this is better done in DocFixer to pull the definitions
 	// from the docs?
 	//
-	public static void ProcessField (Type t, XDocument xdoc, PropertyInfo pi)
+	public static void ProcessField (Type t, XDocument xdoc, PropertyInfo pi, bool isNotification)
 	{
 		var fieldAttr = pi.GetCustomAttributes (typeof (FieldAttribute), true);
 		if (fieldAttr.Length == 0)
@@ -156,8 +156,8 @@ class DocumentGeneratedCode {
 		var summary = field.XPathSelectElement ("Docs/summary");
 		var remarks = field.XPathSelectElement ("Docs/remarks");
 		var example = field.XPathSelectElement ("Docs/remarks/example");
-		if (mergeAppledocs){
-			if (returnType.Value == "MonoMac.Foundation.NSString" && export.EndsWith ("Notification")){
+		if (isNotification || (returnType.Value.EndsWith (".Foundation.NSString") && export.EndsWith ("Notification"))){
+			if (mergeAppledocs){
 				var mdoc = docGenerator.GetAppleMemberDocs (ToCecilType (t), export);
 				if (mdoc == null){
 					Console.WriteLine ("Failed to load docs for {0} - {1}", t.Name, export);
@@ -181,6 +181,19 @@ class DocumentGeneratedCode {
 				if (example != null)
 					remarks.Add (example);
 			}
+		} else {
+			var value = field.XPathSelectElement ("Docs/value");
+			if (value != null && value.Value == "To be added.")
+				value.RemoveAll ();
+
+			//var since = pi.GetCustomAttributes (typeof (SinceAttribute), true);
+			//if (since.Length != 0 && pi.PropertyType.IsClass) {
+				// TODO: Could format the since value into the text
+			//	value.Value = "Value will be null when the constant is not available";
+			//}
+
+			summary.RemoveAll ();
+			summary.Value = "Represents the value associated with the constant " + export;
 		}
 	}
 
@@ -402,9 +415,10 @@ class DocumentGeneratedCode {
 				continue;
 			
 			if (pi.GetCustomAttributes (typeof (FieldAttribute), true).Length > 0){
-				ProcessField (t, xmldoc, pi);
+				bool is_notification = pi.GetCustomAttributes (typeof (NotificationAttribute), true).Length != 0;
+				ProcessField (t, xmldoc, pi, is_notification);
 
-				if ((attrs = pi.GetCustomAttributes (typeof (NotificationAttribute), true)).Length > 0)
+				if (is_notification)
 					ProcessNotification (t, xmldoc, pi);
 				continue;
 			}
