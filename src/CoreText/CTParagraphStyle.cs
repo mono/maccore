@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -57,10 +58,14 @@ namespace MonoMac.CoreText {
 	}
 
 	[Since (3,2)]
+	[Flags]
 	public enum CTWritingDirection : sbyte {
 		Natural     = -1,
 		LeftToRight = 0,
 		RightToLeft = 1,
+
+		Embedding = (0 << 1),
+		Override = (1 << 1)
 	}
 
 	internal enum CTParagraphStyleSpecifier : uint {
@@ -81,8 +86,9 @@ namespace MonoMac.CoreText {
 		MaximumLineSpacing      = 14,
 		MinimumLineSpacing      = 15,
 		LineSpacingAdjustment   = 16,
+		LineBoundsOptions       = 17,
 
-		Count = 14,
+		Count = 18,
 	}
 
 	internal struct CTParagraphStyleSetting {

@@ -1,5 +1,6 @@
 //
 // Copyright 2009-2010, Novell, Inc.
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -48,6 +49,15 @@ namespace MonoMac.Foundation {
 			return FromNSObjects (_items);
 		}
 
+		static public NSArray FromNSObjects (int count, params NSObject [] items)
+		{
+			if (items.Length < count)
+				throw new ArgumentException ("count is larger than the number of items", "count");
+			
+			IList<NSObject> _items = items;
+			return FromNSObjects (_items, count);
+		}
+
 		public static NSArray FromObjects (params object [] items)
 		{
 			if (items == null)
@@ -56,7 +66,7 @@ namespace MonoMac.Foundation {
 			for (int i = 0; i < items.Length; i++){
 				var k = NSObject.FromObject (items [i]);
 				if (k == null)
-					throw new Exception (String.Format ("Do not know how to marshal object of type {0} to an NSObject", k.GetType ()));
+					throw new ArgumentException (String.Format ("Do not know how to marshal object of type '{0}' to an NSObject", items [i].GetType ()));
 				nsoa [i] = k;
 			}
 			return FromNSObjects (nsoa);
@@ -71,6 +81,19 @@ namespace MonoMac.Foundation {
 			for (int i = 0; i < items.Count; i++)
 				Marshal.WriteIntPtr (buf, i * IntPtr.Size, items [i].Handle);
 			NSArray arr = NSArray.FromObjects (buf, items.Count);
+			Marshal.FreeHGlobal (buf);
+			return arr;
+		}
+
+		internal static NSArray FromNSObjects (IList<NSObject> items, int count)
+		{
+			if (items == null)
+				return new NSArray (true);
+			
+			IntPtr buf = Marshal.AllocHGlobal (items.Count * IntPtr.Size);
+			for (int i = 0; i < count; i++)
+				Marshal.WriteIntPtr (buf, i * IntPtr.Size, items [i].Handle);
+			NSArray arr = NSArray.FromObjects (buf, count);
 			Marshal.FreeHGlobal (buf);
 			return arr;
 		}

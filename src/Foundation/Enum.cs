@@ -2,6 +2,7 @@
 // Enums.cs: enumeration definitions for Foundation
 //
 // Copyright 2009-2010, Novell, Inc.
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -151,7 +152,9 @@ namespace MonoMac.Foundation  {
 	public enum NSDataWritingOptions : uint {
 		Atomic = 1,
 
-		[Since (5,0)]
+		WithoutOverwriting  = 2,
+			
+		[Obsolete ("no longer available")]
 		Coordinated = 1 << 2,
 			
 		[Since (4,0)]
@@ -377,9 +380,11 @@ namespace MonoMac.Foundation  {
 		PrinterDescriptionDirectory = 20,
 		SharedPublicDirectory = 21,
 		PreferencePanesDirectory = 22,
+		ApplicationScriptsDirectory = 23,
 		ItemReplacementDirectory = 99,
 		AllApplicationsDirectory = 100,
-		AllLibrariesDirectory = 101
+		AllLibrariesDirectory = 101,
+		TrashDirectory = 102,
 	}
 
 	[Flags]
@@ -464,7 +469,7 @@ namespace MonoMac.Foundation  {
 	}
 
 	public enum NSUbiquitousKeyValueStoreChangeReason {
-		ServerChange, InitialSyncChange, QuotaViolationChange
+		ServerChange, InitialSyncChange, QuotaViolationChange, AccountChange
 	}
 
 	[Flags]
@@ -531,4 +536,52 @@ namespace MonoMac.Foundation  {
 		Reverse = 1 << 1,
 		LongestEffectiveRangeNotRequired = 1 << 20
 	}
+
+	public enum NSUnderlineStyle {
+		None, Single
+	}
+
+	public enum NSWritingDirection {
+		Natural = -1, LeftToRight = 0, RightToLeft = -1
+	}
+
+	[Flags]
+	public enum NSByteCountFormatterUnits {
+		UseDefault      = 0,
+		UseBytes        = 1 << 0,
+		UseKB           = 1 << 1,
+		UseMB           = 1 << 2,
+		UseGB           = 1 << 3,
+		UseTB           = 1 << 4,
+		UsePB           = 1 << 5,
+		UseEB           = 1 << 6,
+		UseZB           = 1 << 7,
+		UseYBOrHigher   = 0x0FF << 8,
+		UseAll          = 0x0FFFF
+	}
+
+	public enum NSByteCountFormatterCountStyle {
+		File, Memory, Decimal, Binary
+	}
+
+	[Flags]
+	public enum NSUrlBookmarkCreationOptions {
+		PreferFileIDResolution = 1 << 8,
+		MinimalBookmark = 1 << 9,
+		SuitableForBookmarkFile = 1 << 10,
+		WithSecurityScope = 1 << 11,
+		SecurityScopeAllowOnlyReadAccess = 1 << 12
+	}
+
+	[Flags]
+	public enum NSUrlBookmarkResolutionOptions {
+		WithoutUI = 1 << 8,
+		WithoutMounting = 1 << 9,
+		WithSecurityScope = 1 << 10,
+	}
+
+	public enum NSLigatureType {
+		None, Default, All 
+	}
+	
 }

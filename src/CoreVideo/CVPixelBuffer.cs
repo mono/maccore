@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc
 //
 using System;
 using System.Drawing;
@@ -30,6 +31,7 @@ namespace MonoMac.CoreVideo {
 		public static readonly NSString OpenGLCompatibilityKey;
 		public static readonly NSString IOSurfacePropertiesKey;
 		public static readonly NSString PlaneAlignmentKey;
+		public static readonly NSString OpenGLESCompatibilityKey;
 
 		public static readonly int CVImageBufferType;
 		
@@ -57,6 +59,7 @@ namespace MonoMac.CoreVideo {
 				IOSurfacePropertiesKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferIOSurfacePropertiesKey");
 				PlaneAlignmentKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferPlaneAlignmentKey");
 				CVImageBufferType = CVPixelBufferGetTypeID ();
+				OpenGLESCompatibilityKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferOpenGLESCompatibilityKey");
 			}
 			finally {
 				Dlfcn.dlclose (handle);
@@ -75,14 +78,33 @@ namespace MonoMac.CoreVideo {
 #if !COREBUILD
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static CVReturn CVPixelBufferCreate (IntPtr allocator, IntPtr width, IntPtr height, CVPixelFormatType pixelFormatType, IntPtr pixelBufferAttributes, IntPtr pixelBufferOut);
+
+		public CVPixelBuffer (Size size, CVPixelFormatType pixelFormat)
+			: this (size.Width, size.Height, pixelFormat, null)
+		{
+		}
+
+		public CVPixelBuffer (Size size, CVPixelFormatType pixelFormatType, CVPixelBufferAttributes attributes)
+			: this (size.Width, size.Height, pixelFormatType, attributes == null ? null : attributes.Dictionary)
+		{
+		}
+
+		[Obsolete ("Use constructor with CVPixelBufferAttributes")]
 		public CVPixelBuffer (int width, int height, CVPixelFormatType pixelFormatType, NSDictionary pixelBufferAttributes)
 		{
+			if (width <= 0)
+				throw new ArgumentOutOfRangeException ("width");
+
+			if (height <= 0)
+				throw new ArgumentOutOfRangeException ("height");
+
 			IntPtr pixelBufferOut = Marshal.AllocHGlobal (Marshal.SizeOf (typeof (IntPtr)));
-			CVReturn ret = CVPixelBufferCreate (IntPtr.Zero, (IntPtr) width, (IntPtr) height, pixelFormatType, pixelBufferAttributes.Handle, pixelBufferOut);
+			CVReturn ret = CVPixelBufferCreate (IntPtr.Zero, (IntPtr) width, (IntPtr) height, pixelFormatType,
+				pixelBufferAttributes == null ? IntPtr.Zero : pixelBufferAttributes.Handle, pixelBufferOut);
 
 			if (ret != CVReturn.Success) {
 				Marshal.FreeHGlobal (pixelBufferOut);
-				throw new Exception ("CVPixelBufferCreate returned: " + ret);
+				throw new ArgumentException (ret.ToString ());
 			}
 
 			this.handle = Marshal.ReadIntPtr (pixelBufferOut);

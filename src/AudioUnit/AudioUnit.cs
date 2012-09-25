@@ -5,6 +5,7 @@
 //   AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
 //
 // Copyright 2010 Reinforce Lab.
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -404,11 +405,13 @@ namespace MonoMac.AudioUnit
 		SampleRate = 2,
 		ParameterList = 3,
 		ParameterInfo = 4,
+		CPULoad = 6,
 		StreamFormat = 8,
 		ElementCount = 11,
 		Latency = 12,
 		SupportedNumChannels = 13,
 		MaximumFramesPerSlice = 14,
+		ParameterValueStrings = 16,
 		AudioChannelLayout = 19,
 		TailTime = 20,
 		BypassEffect = 21,
@@ -416,11 +419,17 @@ namespace MonoMac.AudioUnit
 		SetRenderCallback = 23,
 		FactoryPresets = 24,
 		RenderQuality = 26,
+		HostCallbacks = 27,
 		InPlaceProcessing = 29,
 		ElementName = 30,
 		SupportedChannelLayoutTags = 32,
 		PresentPreset = 36,
+		OfflineRender = 37,
+		DependentParameters = 45,
+		InputSampleInOutput = 49,
 		ShouldAllocateBuffer = 51,
+		ParameterHistoryInfo = 53,
+		Nickname = 54,
 
 		//Output property
 	        CurrentDevice			= 2000,

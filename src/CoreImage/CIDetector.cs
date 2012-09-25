@@ -37,6 +37,14 @@ namespace MonoMac.CoreImage {
 									      new NSObject [] { Accuracy }))
 				return FromType (TypeFace, context, options);
 		}
+
+		public static CIDetector CreateFaceDetector (CIContext context, bool highAccuracy, float minFeatureSize)
+		{
+			// TypeFace is the only detector supported now
+			using (var options = NSDictionary.FromObjectsAndKeys (new NSObject [] { highAccuracy ? AccuracyHigh : AccuracyLow, new NSNumber (minFeatureSize) },
+									      new NSObject [] { Accuracy, MinFeatureSize, }))
+				return FromType (TypeFace, context, options);
+		}
 		
 		public CIFeature [] FeaturesInImage (CIImage image, CIImageOrientation orientation)
 		{

@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -39,6 +40,7 @@ namespace MonoMac.CoreText {
 	[Since (3,2)]
 	public static class CTTypesetterOptionKey {
 
+		[Obsolete ("Deprecated in iOS 6.0")]
 		public static readonly NSString DisableBidiProcessing;
 		public static readonly NSString ForceEmbeddingLevel;
 
@@ -74,6 +76,7 @@ namespace MonoMac.CoreText {
 
 		public NSDictionary Dictionary {get; private set;}
 
+		[Obsolete ("Deprecated in iOS 6.0")]
 		public bool DisableBidiProcessing {
 			get {
 				return CFDictionary.GetBooleanValue (Dictionary.Handle, 

@@ -7,6 +7,7 @@
 //     
 // Copyright 2009, 2010 Novell, Inc
 // Copyright 2010, Reinforce Lab.
+// Copyright 2011, 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -62,6 +63,9 @@ namespace MonoMac.AudioToolbox {
 		AppleLossless           = 0x616c6163,
 		MPEG4AAC_HE             = 0x61616368,
 		MPEG4AAC_LD             = 0x6161636c,
+		MPEG4AAC_ELD            = 0x61616365, // 'aace'
+		MPEG4AAC_ELD_SBR        = 0x61616366, // 'aacf',
+		MPEG4AAC_ELD_V2         = 0x61616367, // 'aacg',    
 		MPEG4AAC_HE_V2          = 0x61616370,
 		MPEG4AAC_Spatial        = 0x61616373,
 		AMR                     = 0x73616d72,
@@ -70,9 +74,6 @@ namespace MonoMac.AudioToolbox {
 		DVIIntelIMA             = 0x6d730011,
 		MicrosoftGSM            = 0x6d730031,
 		AES3                    = 0x61657333,
-		MPEG4AAC_ELD            = 0x61616365,
-		//[Since (5,1)]
-		MPEG4AAC_ELD_V2         = 0x61616367,			// 'aacg'
 	}
 
 	[Flags]
@@ -469,6 +470,7 @@ namespace MonoMac.AudioToolbox {
 			return buffer;
 		}
 
+#if !COREBUILD
 		public NSData AsData ()
 		{
 			int size;
@@ -478,6 +480,7 @@ namespace MonoMac.AudioToolbox {
 			Marshal.FreeHGlobal (p);
 			return result;
 		}
+#endif
 	}
 
 	[StructLayout(LayoutKind.Sequential)]

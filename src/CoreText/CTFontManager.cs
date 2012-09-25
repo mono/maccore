@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -144,6 +145,37 @@ namespace MonoMac.CoreText {
 				return _errors;
 		}
 
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern bool CTFontManagerRegisterGraphicsFont (IntPtr cgfont, out IntPtr error);
+
+		public static bool RegisterGraphicsFont (CGFont font, out NSError error)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			IntPtr h;
+			var ret = CTFontManagerRegisterGraphicsFont (font.Handle, out h);
+			if (ret)
+				error = null;
+			else 
+				error = new NSError (h);
+			return ret;
+		}
+
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern bool CTFontManagerUnregisterGraphicsFont (IntPtr cgfont, out IntPtr error);
+		public static bool UnregisterGraphicsFont (CGFont font, out NSError error)
+		{
+			if (font == null)
+				throw new ArgumentNullException ("font");
+			IntPtr h;
+			var ret = CTFontManagerUnregisterGraphicsFont (font.Handle, out h);
+			if (ret)
+				error = null;
+			else 
+				error = new NSError (h);
+			return ret;
+		}
+		
 		static CTFontManager ()
 		{
 			var handle = Dlfcn.dlopen (Constants.CoreTextLibrary, 0);

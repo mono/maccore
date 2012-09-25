@@ -2,6 +2,7 @@
 // coreimage.cs: Definitions for CoreImage
 //
 // Copyright 2010, Novell, Inc.
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -60,11 +61,11 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("colorWithRed:green:blue:alpha:")]
-		CIColor FromRgba (float r, float g, float b, float a);
+		CIColor FromRgba (float red, float green, float blue, float alpha);
 
 		[Static]
 		[Export ("colorWithRed:green:blue:")]
-		CIColor FromRgb (float r, float g, float b);
+		CIColor FromRgb (float red, float green, float blue);
 
 		[Static]
 		[Export ("colorWithString:")]
@@ -118,6 +119,10 @@ namespace MonoMac.CoreImage {
 		CIContext FromContext (CGContext ctx, [NullAllowed] NSDictionary options);
 #else
 		[Static]
+		[Wrap ("FromOptions ((NSDictionary) null)")]
+		CIContext Create ();
+
+		[Static]
 		[Export ("contextWithEAGLContext:")]
 		CIContext FromContext (EAGLContext eaglContext);
 
@@ -138,6 +143,7 @@ namespace MonoMac.CoreImage {
 		SizeF OutputImageMaximumSize { get; }
 #endif
 
+		[Obsolete ("Use DrawImage (CIImage, RectangleF, RectangleF) instead")]
 		[Export ("drawImage:atPoint:fromRect:")]
 		void DrawImage (CIImage image, PointF atPoint, RectangleF fromRect);
 
@@ -236,6 +242,14 @@ namespace MonoMac.CoreImage {
 #else
 		[Export ("outputImage")]
 		CIImage OutputImage { get; }
+
+		[Since (6,0)]
+		[Export ("serializedXMPFromFilters:inputImageExtent:"), Static]
+		NSData SerializedXMP (CIFilter[] filters, RectangleF extent); 
+
+		[Since (6,0)]
+		[Export ("filterArrayFromSerializedXMP:inputImageExtent:error:"), Static]
+		CIFilter[] FromSerializedXMP (NSData xmpData, RectangleF extent, out NSError error);
 #endif
 
 		[Export ("setValue:forKey:"), Internal]
@@ -258,6 +272,9 @@ namespace MonoMac.CoreImage {
 
 		[Field ("kCIInputImageKey", "+CoreImage")]
 		NSString Image  { get; }
+
+		[Field ("kCIInputVersionKey", "+CoreImage")]
+		NSString Version { get; }
 
 #if MONOMAC
 		[Field ("kCIInputTimeKey", "+CoreImage")]
@@ -322,6 +339,7 @@ namespace MonoMac.CoreImage {
 
 		[Field ("kCIInputExtentKey", "+CoreImage")]
 		NSString Extent  { get; }
+
 #endif
 	}
 		
@@ -638,9 +656,10 @@ namespace MonoMac.CoreImage {
 		CIImage FromData (NSData bitmapData, int bpr, SizeF size, int ciImageFormat, CGColorSpace colorspace);
 
 #if MONOMAC
+		[Since (6,0)]
 		[Static]
 		[Export ("imageWithTexture:size:flipped:colorSpace:")]
-		CIImage ImageWithTexturesizeflippedcolorSpace (int glTextureName, SizeF size, bool flag, CGColorSpace colorspace);
+		CIImage ImageWithTexture (uint glTextureName, SizeF size, bool flipped, CGColorSpace colorspace);
 #endif
 
 		[Static]
@@ -710,10 +729,11 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (NSData data, NSDictionary d);
 
 		[Export ("initWithBitmapData:bytesPerRow:size:format:colorSpace:")]
-		IntPtr Constructor (NSData d, int bpr, SizeF size, int f, CGColorSpace c);
+		IntPtr Constructor (NSData d, int bpr, SizeF size, int f, CGColorSpace colorSpace);
 
+		[Since (6,0)]
 		[Export ("initWithTexture:size:flipped:colorSpace:")]
-		IntPtr Constructor (int glTextureName, SizeF size, bool flag, CGColorSpace cs);
+		IntPtr Constructor (int glTextureName, SizeF size, bool flipped, CGColorSpace colorSpace);
 
 		[Export ("initWithContentsOfURL:")]
 		IntPtr Constructor (NSUrl url);
@@ -1043,6 +1063,14 @@ namespace MonoMac.CoreImage {
 
 		[Field ("CIDetectorAccuracyHigh"), Internal]
 		NSString AccuracyHigh { get; }
+
+		[Since (6,0)]
+		[Field ("CIDetectorTracking"), Internal]
+		NSString Tracking { get; }
+
+		[Since (6,0)]
+		[Field ("CIDetectorMinFeatureSize"), Internal]
+		NSString MinFeatureSize { get; }
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -1080,5 +1108,21 @@ namespace MonoMac.CoreImage {
 		
 		[Export ("mouthPosition")]
 		PointF MouthPosition { get; }
+
+		[Since (6,0)]
+		[Export ("hasTrackingID")]
+		bool HasTrackingId { get; }
+		
+		[Since (6,0)]
+		[Export ("trackingID")]
+		int TrackingId { get; }
+		
+		[Since (6,0)]
+		[Export ("hasTrackingFrameCount")]
+		bool HasTrackingFrameCount { get; }
+
+		[Since (6,0)]
+		[Export ("trackingFrameCount")]
+		int TrackingFrameCount { get; }
 	}
 }

@@ -3,6 +3,7 @@
 //
 // Authors:
 //    Rolf Bjarne Kvinge
+//    Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2012 Xamarin Inc
 //
@@ -32,28 +33,127 @@ using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreFoundation {	
-	static class CFAllocator {
-		public static IntPtr Default;
-		public static IntPtr SystemDefault;
-		public static IntPtr Malloc;
-		public static IntPtr MallocZone;
-		public static IntPtr Null;
-		public static IntPtr UseContext;
+	public class CFAllocator : INativeObject, IDisposable 
+	{
+		static CFAllocator Default_cf;
+		static CFAllocator SystemDefault_cf;
+		static CFAllocator Malloc_cf;
+		static CFAllocator MallocZone_cf;
+		static CFAllocator Null_cf;
+
+		static readonly IntPtr default_ptr;
+		static readonly IntPtr system_default_ptr;
+		static readonly IntPtr malloc_ptr;
+		static readonly IntPtr malloc_zone_ptr;
+		internal static readonly IntPtr null_ptr;
+		static readonly IntPtr UseContextFlag;
+
+		IntPtr handle;
 		
 		static CFAllocator ()
 		{
 			var handle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
 			try {
-				Default = Dlfcn.GetIntPtr (handle, "kCFAllocatorDefault");
-				SystemDefault = Dlfcn.GetIntPtr (handle, "kCFAllocatorSystemDefault");
-				Malloc = Dlfcn.GetIntPtr (handle, "kCFAllocatorMalloc");
-				MallocZone = Dlfcn.GetIntPtr (handle, "kCFAllocatorMallocZone");
-				Null = Dlfcn.GetIntPtr (handle, "kCFAllocatorNull");
-				UseContext = Dlfcn.GetIntPtr (handle, "kCFAllocatorUseContext");
+				default_ptr = Dlfcn.GetIntPtr (handle, "kCFAllocatorDefault");
+				system_default_ptr = Dlfcn.GetIntPtr (handle, "kCFAllocatorSystemDefault");
+				malloc_ptr = Dlfcn.GetIntPtr (handle, "kCFAllocatorMalloc");
+				malloc_zone_ptr = Dlfcn.GetIntPtr (handle, "kCFAllocatorMallocZone");
+				null_ptr = Dlfcn.GetIntPtr (handle, "kCFAllocatorNull");
+				UseContextFlag = Dlfcn.GetIntPtr (handle, "kCFAllocatorUseContext");
 			} finally {
 				Dlfcn.dlclose (handle);
 			}
 		}
+
+		public CFAllocator (IntPtr handle)
+		{
+			this.handle = handle;
+		}
+
+		public CFAllocator (IntPtr handle, bool owns)
+		{
+			if (!owns)
+				CFObject.CFRetain (handle);
+			this.handle = handle;
+		}
+
+		~CFAllocator ()
+		{
+			Dispose (false);
+		}
+		
+		public void Dispose ()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		public IntPtr Handle {
+			get { return handle; }
+		}
+		
+		protected virtual void Dispose (bool disposing)
+		{
+			if (handle != IntPtr.Zero){
+				CFObject.CFRelease (handle);
+				handle = IntPtr.Zero;
+			}
+		}
+
+		public static CFAllocator Default {
+			get {
+				return Default_cf ?? (Default_cf = new CFAllocator (default_ptr)); 
+			}
+		}
+
+		public static CFAllocator SystemDefault {
+			get {
+				return SystemDefault_cf ?? (SystemDefault_cf = new CFAllocator (system_default_ptr)); 
+			}
+		}
+		
+		public static CFAllocator Malloc {
+			get {
+				return Malloc_cf ?? (Malloc_cf = new CFAllocator (malloc_ptr)); 
+			}
+		}
+
+		public static CFAllocator MallocZone {
+			get {
+				return MallocZone_cf ?? (MallocZone_cf = new CFAllocator (malloc_zone_ptr)); 
+			}
+		}
+
+		public static CFAllocator Null {
+			get {
+				return Null_cf ?? (Null_cf = new CFAllocator (null_ptr)); 
+			}
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		static extern IntPtr CFAllocatorAllocate (IntPtr allocator, /*CFIndex*/ long size, CFAllocatorFlags hint);
+
+		public IntPtr Allocate (long size, CFAllocatorFlags hint = 0)
+		{
+			return CFAllocatorAllocate (handle, size, hint);
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		static extern void CFAllocatorDeallocate(IntPtr allocator, IntPtr ptr);
+
+		public void Deallocate (IntPtr ptr)
+		{
+			CFAllocatorDeallocate (handle, ptr);
+		}
+
+		// TODO: Implement more methods
 	}
-	
+
+	// Seems to be some sort of secret values
+	[Flags]
+	public enum CFAllocatorFlags : ulong
+	{
+		GCScannedMemory	= 0x200,
+		GCObjectMemory	= 0x400,
+	}
 }

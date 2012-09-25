@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright (C) 2009 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -38,9 +39,17 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.AddressBook {
 
 	public enum ABAddressBookError {
-		OperationNotPermittedByStore = 0
+		OperationNotPermittedByStore = 0,
+		OperationNotPermittedByUserError
 	}
 
+	public enum ABAuthorizationStatus {
+		NotDetermined = 0,
+		Restricted,
+		Denied,
+		Authorized
+	}
+	
 	public class ExternalChangeEventArgs : EventArgs {
 		public ExternalChangeEventArgs (ABAddressBook addressBook, NSDictionary info)
 		{
@@ -92,6 +101,8 @@ namespace MonoMac.AddressBook {
 
 		[DllImport (Constants.AddressBookLibrary)]
 		internal extern static IntPtr ABAddressBookCreate ();
+
+		[Obsolete ("Use static Create method in iOS 6.0")]
 		public ABAddressBook ()
 		{
 			this.handle = ABAddressBookCreate ();
@@ -99,11 +110,37 @@ namespace MonoMac.AddressBook {
 			InitConstants.Init ();
 		}
 
-		internal ABAddressBook (IntPtr handle)
+		[DllImport (Constants.AddressBookLibrary)]
+		internal extern static IntPtr ABAddressBookCreateWithOptions (IntPtr dictionary, out IntPtr cfError);
+
+		[Since (6,0)]
+		public static ABAddressBook Create (out NSError error)
 		{
-			this.handle = CFObject.CFRetain (handle);
+			IntPtr e;
+			
+			var handle = ABAddressBookCreateWithOptions (IntPtr.Zero, out e);
+			if (handle == IntPtr.Zero){
+				error = new NSError (e);
+				return null;
+			}
+			error = null;
+			return new ABAddressBook (handle, true);
+		}
+			
+		internal ABAddressBook (IntPtr handle, bool owns)
+		{
+			InitConstants.Init ();
+			if (!owns)
+				CFObject.CFRetain (handle);
+			this.handle = handle;
 		}
 
+		internal ABAddressBook (IntPtr handle)
+		{
+			InitConstants.Init ();
+			this.handle = handle;
+		}
+		
 		static ABAddressBook ()
 		{
 			var handle = Dlfcn.dlopen (Constants.AddressBookLibrary, 0);
@@ -151,6 +188,47 @@ namespace MonoMac.AddressBook {
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
+		extern static ABAuthorizationStatus ABAddressBookGetAuthorizationStatus ();
+
+		[Since (6,0)]
+		public static ABAuthorizationStatus GetAuthorizationStatus ()
+		{
+			return ABAddressBookGetAuthorizationStatus ();
+		}
+
+		
+		[DllImport (Constants.AddressBookLibrary)]
+		extern unsafe static void ABAddressBookRequestAccessWithCompletion (IntPtr addressbook, void * completion);
+
+		[Since (6,0)]
+		public void RequestAccess (Action<bool,NSError> onCompleted)
+		{
+			if (onCompleted == null)
+				throw new ArgumentNullException ("onCompleted");
+			unsafe {
+				BlockLiteral *block_ptr_handler;
+				BlockLiteral block_handler;
+				block_handler = new BlockLiteral ();
+				block_ptr_handler = &block_handler;
+				block_handler.SetupBlock (static_completionHandler, onCompleted);
+
+				ABAddressBookRequestAccessWithCompletion (Handle, (void*) block_ptr_handler);
+				block_ptr_handler->CleanupBlock ();
+			}
+		}
+
+                internal delegate void InnerCompleted (IntPtr block, bool success, IntPtr error);
+		static readonly InnerCompleted static_completionHandler = TrampolineCompletionHandler;
+                [MonoPInvokeCallback (typeof (InnerCompleted))]
+		static unsafe void TrampolineCompletionHandler (IntPtr block, bool success, IntPtr error)
+		{
+                        var descriptor = (BlockLiteral *) block;
+                        var del = (Action<bool,NSError>) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);
+                        if (del != null)
+                                del (success, error == IntPtr.Zero ? null : (MonoMac.Foundation.NSError) Runtime.GetNSObject (error));
+		}
+
+		[DllImport (Constants.AddressBookLibrary)]
 		extern static bool ABAddressBookHasUnsavedChanges (IntPtr addressBook);
 		public bool HasUnsavedChanges {
 			get {
@@ -181,6 +259,9 @@ namespace MonoMac.AddressBook {
 		extern static bool ABAddressBookAddRecord (IntPtr addressBook, IntPtr record, out IntPtr error);
 		public void Add (ABRecord record)
 		{
+			if (record == null)
+				throw new ArgumentNullException ("record");
+
 			AssertValid ();
 			IntPtr error;
 			if (!ABAddressBookAddRecord (Handle, record.Handle, out error))
@@ -192,6 +273,9 @@ namespace MonoMac.AddressBook {
 		extern static bool ABAddressBookRemoveRecord (IntPtr addressBook, IntPtr record, out IntPtr error);
 		public void Remove (ABRecord record)
 		{
+			if (record == null)
+				throw new ArgumentNullException ("record");
+
 			AssertValid ();
 			IntPtr error;
 			if (!ABAddressBookRemoveRecord (Handle, record.Handle, out error))
@@ -279,6 +363,9 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr ABAddressBookCopyLocalizedLabel (IntPtr label);
 		public static string LocalizedLabel (NSString label)
 		{
+			if (label == null)
+				throw new ArgumentNullException ("label");
+
 			using (var s = new NSString (ABAddressBookCopyLocalizedLabel (label.Handle)))
 				return s.ToString ();
 		}
@@ -299,7 +386,7 @@ namespace MonoMac.AddressBook {
 			if (self == null)
 				return;
 			self.OnExternalChange (new ExternalChangeEventArgs (
-						new ABAddressBook (addressBook),
+					       new ABAddressBook (addressBook, false),
 						(NSDictionary) Runtime.GetNSObject (info)));
 		}
 

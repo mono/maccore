@@ -7,6 +7,7 @@
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -506,6 +507,10 @@ namespace MonoMac.CoreAnimation {
 		[Since (3,2)]
 		[Export ("rasterizationScale")]
 		float RasterizationScale { get; set; }
+
+		[Since (6,0)]
+		[Export ("drawsAsynchronously")]
+		bool DrawsAsynchronously { get; set; }
 #endif
 	}
 
@@ -1050,10 +1055,11 @@ namespace MonoMac.CoreAnimation {
 	}
 
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
 	public interface CAMediaTimingFunction {
 		[Export ("functionWithName:")][Static]
-		CAMediaTimingFunction FromName (string  name);
-	
+		CAMediaTimingFunction FromName (NSString  name);
+
 		[Static]
 		[Export ("functionWithControlPoints::::")]
 		CAMediaTimingFunction FromControlPoints (float c1x, float c1y, float c2x, float c2y);
@@ -1061,8 +1067,8 @@ namespace MonoMac.CoreAnimation {
 		[Export ("initWithControlPoints::::")]
 		IntPtr Constructor (float c1x, float c1y, float c2x, float c2y);
 	
-		//[Export ("getControlPointAtIndex:values:")]
-		//void getControlPointAtIndex:values: (size_t idx, float[2] ptr);
+		[Export ("getControlPointAtIndex:values:"), Internal]
+		void GetControlPointAtIndex (int idx, IntPtr point);
 	
 		[Field("kCAMediaTimingFunctionLinear")]
 		NSString Linear { get; }
@@ -1075,6 +1081,9 @@ namespace MonoMac.CoreAnimation {
 		
 		[Field("kCAMediaTimingFunctionEaseInEaseOut")]
 		NSString EaseInEaseOut { get; }
+
+		[Field("kCAMediaTimingFunctionDefault")]
+		NSString Default { get; }
 	}
 
 	[BaseType (typeof (NSObject))]

@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -63,6 +64,18 @@ namespace MonoMac.CoreText {
 		Process      =  60000,
 	}
 
+	public enum CTFontDescriptorMatchingState : uint {
+		Started,
+		Finished,
+		WillBeginQuerying,
+		Stalled,
+		WillBeginDownloading,
+		Downloading,
+		DownloadingFinished,
+		Matched,
+		FailedWithError
+	}
+	
 	[Since (3,2)]
 	public static class CTFontDescriptorAttributeKey {
 
@@ -533,5 +546,18 @@ namespace MonoMac.CoreText {
 			return o;
 		}
 #endregion
+
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern bool CTFontDescriptorMatchFontDescriptorsWithProgressHandler (IntPtr descriptors, IntPtr mandatoryAttributes,
+			Func<CTFontDescriptorMatchingState, IntPtr, bool> progressHandler);
+		[Since (6,0)]
+		public static bool MatchFontDescriptors (CTFontDescriptor[] descriptors, NSSet mandatoryAttributes, Func<CTFontDescriptorMatchingState, IntPtr, bool> progressHandler)
+		{
+			var ma = mandatoryAttributes == null ? IntPtr.Zero : mandatoryAttributes.Handle;
+			// FIXME: SIGSEGV probably due to mandatoryAttributes mismatch
+			using (var ar = CFArray.FromNativeObjects (descriptors)) {
+				return CTFontDescriptorMatchFontDescriptorsWithProgressHandler (ar.Handle, ma, progressHandler);
+			}
+		}
 	}
 }

@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -69,7 +70,10 @@ namespace MonoMac.CoreText {
 		MonoSpace   = (1 << 10),
 		Vertical    = (1 << 11),
 		UIOptimized = (1 << 12),
-		ColorGlyphs = (1 << 13)
+		ColorGlyphs = (1 << 13),
+		Composite   = (1 << 14),
+		
+		Mask        = ((uint) 15 << CTFontTraits.ClassMaskShift)
 	}
 
 	[Since (3,2)]

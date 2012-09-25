@@ -2,8 +2,10 @@
 // CTStringAttributes.cs: Implements the managed CTStringAttributes
 //
 // Authors: Mono Team
+//          Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2012, Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -33,6 +35,10 @@ using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.CoreGraphics;
+
+#if !MONOMAC
+using MonoMac.UIKit;
+#endif
 
 namespace MonoMac.CoreText {
 
@@ -86,6 +92,11 @@ namespace MonoMac.CoreText {
 		public static readonly NSString GlyphInfo;
 		public static readonly NSString CharacterShape;
 		public static readonly NSString RunDelegate;
+		// Since 6,0
+		internal static readonly NSString BaselineClass;
+		internal static readonly NSString BaselineInfo;
+		internal static readonly NSString BaselineReferenceInfo;
+		internal static readonly NSString WritingDirection;
 
 		static CTStringAttributeKey ()
 		{
@@ -108,6 +119,16 @@ namespace MonoMac.CoreText {
 				GlyphInfo                   = Dlfcn.GetStringConstant (handle, "kCTGlyphInfoAttributeName");
 				CharacterShape              = Dlfcn.GetStringConstant (handle, "kCTCharacterShapeAttributeName");
 				RunDelegate                 = Dlfcn.GetStringConstant (handle, "kCTRunDelegateAttributeName");
+
+#if !MONOMAC
+				var version = new Version (UIDevice.CurrentDevice.SystemVersion);
+				if (version.Major >= 6) {
+					BaselineClass           = Dlfcn.GetStringConstant (handle, "kCTBaselineClassAttributeName");
+					BaselineInfo            = Dlfcn.GetStringConstant (handle, "kCTBaselineInfoAttributeName");
+					BaselineReferenceInfo   = Dlfcn.GetStringConstant (handle, "kCTBaselineReferenceInfoAttributeName");
+					WritingDirection        = Dlfcn.GetStringConstant (handle, "kCTWritingDirectionAttributeName");
+				}
+#endif
 			}
 			finally {
 				Dlfcn.dlclose (handle);
@@ -282,6 +303,54 @@ namespace MonoMac.CoreText {
 				return h == IntPtr.Zero ? null : new CTRunDelegate (h, false);
 			}
 			set {Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.RunDelegate, value);}
+		}
+
+		[Since (6, 0)]
+		public CTBaselineClass? BaselineClass {
+			get {
+				var value = CFDictionary.GetValue (Dictionary.Handle, CTStringAttributeKey.BaselineClass.Handle);
+				return value == IntPtr.Zero ? (CTBaselineClass?) null : CTBaselineClassID.FromHandle (value);
+			}
+			set {
+				var ns_value = value == null ? null : CTBaselineClassID.ToNSString (value.Value);
+				Adapter.SetNativeValue (Dictionary, CTStringAttributeKey.BaselineClass, ns_value);
+			}
+		}
+
+		[Since (6, 0)]
+		public void SetBaselineInfo (CTBaselineClass baselineClass, double offset)
+		{
+			SetBaseline (baselineClass, offset, CTStringAttributeKey.BaselineInfo);
+		}
+
+		[Since (6, 0)]
+		public void SetBaselineReferenceInfo (CTBaselineClass baselineClass, double offset)
+		{
+			SetBaseline (baselineClass, offset, CTStringAttributeKey.BaselineReferenceInfo);
+		}
+
+		void SetBaseline (CTBaselineClass baselineClass, double offset, NSString infoKey)
+		{
+			var ptr = CFDictionary.GetValue (Dictionary.Handle, infoKey.Handle);
+			var dict = ptr == IntPtr.Zero ? new NSMutableDictionary () : new NSMutableDictionary (ptr);
+
+			var key = CTBaselineClassID.ToNSString (baselineClass);
+			Adapter.SetValue (dict, key, new NSNumber (offset));
+
+			if (ptr == IntPtr.Zero)
+				Adapter.SetNativeValue (Dictionary, infoKey, (INativeObject)dict);
+		}
+
+		[Since (6, 0)]
+		public void SetWritingDirection (params CTWritingDirection[] writingDirections)
+		{
+			var ptrs = new IntPtr [writingDirections.Length];
+			for (int i = 0; i < writingDirections.Length; ++i) {
+				ptrs[i] = (new NSNumber ((int) writingDirections[i])).Handle;
+			}
+
+			var array = CFArray.Create (ptrs);
+			CFMutableDictionary.SetValue (Dictionary.Handle, CTStringAttributeKey.WritingDirection.Handle, array);
 		}
 	}
 }

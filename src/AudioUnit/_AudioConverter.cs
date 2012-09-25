@@ -3,6 +3,7 @@
 //   AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
 //
 // Copyright 2010 Reinforce Lab.
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -124,7 +125,7 @@ namespace MonoMac.AudioUnitWrapper
         }
         #endregion
 
-        #region IDisposable メンバ
+        #region IDisposable
         public void Dispose()
         {
             _handle.Free();            

@@ -73,7 +73,7 @@ namespace MonoMac.CoreFoundation {
 		
 		public static CFData FromDataNoCopy (IntPtr buffer, int length)
 		{
-			return new CFData (CFDataCreateWithBytesNoCopy (IntPtr.Zero, buffer, length, CFAllocator.Null), true);
+			return new CFData (CFDataCreateWithBytesNoCopy (IntPtr.Zero, buffer, length, CFAllocator.null_ptr), true);
 		}
 		
 		[DllImport (Constants.CoreFoundationLibrary)]

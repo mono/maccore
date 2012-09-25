@@ -1,6 +1,7 @@
 //
 // Authors:
 //   Miguel de Icaza (miguel@gnome.org)
+// Copyright 2011, 2012 Xamarin Inc
 //
 // The class can be either constructed from a string (from user code)
 // or from a handle (from iphone-sharp.dll internal calls).  This
@@ -72,5 +73,14 @@ namespace MonoMac.CoreLocation {
 			}
 		}
 #endif
+	}
+
+	[Obsolete ("Use CLAuthorizationChangedEventArgs")]
+	public class CLAuthroziationChangedEventArgs : CLAuthorizationChangedEventArgs
+	{
+		public CLAuthroziationChangedEventArgs (CLAuthorizationStatus status)
+			: base (status)
+		{
+		}
 	}
 }

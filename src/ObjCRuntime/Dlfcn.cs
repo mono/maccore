@@ -6,6 +6,7 @@
 //   Miguel de Icaza.
 //
 // Copyright 2009-2010, Novell, Inc.
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -30,6 +31,7 @@
 using System;
 using System.Runtime.InteropServices;
 using MonoMac.Foundation;
+using System.Drawing;
 
 namespace MonoMac.ObjCRuntime {
 	
@@ -96,6 +98,17 @@ namespace MonoMac.ObjCRuntime {
 			if (indirect == IntPtr.Zero)
 				return IntPtr.Zero;
 			return Marshal.ReadIntPtr (indirect);
+		}
+
+		public static SizeF GetSizeF (IntPtr handle, string symbol)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return SizeF.Empty;
+			unsafe {
+				float *ptr = (float *) indirect;
+				return new SizeF (ptr [0], ptr [1]);
+			}
 		}
 
 		public static double GetDouble (IntPtr handle, string symbol)

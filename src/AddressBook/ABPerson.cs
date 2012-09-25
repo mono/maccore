@@ -29,6 +29,7 @@
 //
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
@@ -317,17 +318,11 @@ namespace MonoMac.AddressBook {
 		}
 	}
 
-	public static class ABPersonSocialProfile {
-		static readonly NSString URLKey;
-		static readonly NSString ServiceKey;
-		static readonly NSString UsernameKey;
-		static readonly NSString UserIdentifierKey;
-		static readonly NSString ServiceTwitter;
-		static readonly NSString ServiceGameCenter;
-		static readonly NSString ServiceFacebook;
-		static readonly NSString ServiceMyspace;
-		static readonly NSString ServiceLinkedIn;
-		static readonly NSString ServiceFlickr;
+	static class ABPersonSocialProfile {
+		public static readonly NSString URLKey;
+		public static readonly NSString ServiceKey;
+		public static readonly NSString UsernameKey;
+		public static readonly NSString UserIdentifierKey;
 
 		static ABPersonSocialProfile ()
 		{
@@ -339,16 +334,40 @@ namespace MonoMac.AddressBook {
 				ServiceKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceKey");
 				UsernameKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileUsernameKey");
 				UserIdentifierKey = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileUserIdentifierKey");
-				ServiceTwitter = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceTwitter");
-				ServiceGameCenter = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceGameCenter");
-				ServiceFacebook = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceFacebook");
-				ServiceMyspace = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceMyspace");
-				ServiceLinkedIn = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceLinkedIn");
-				ServiceFlickr = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceFlickr");
 			} finally {
 				Dlfcn.dlclose (handle);
 			}
 		}
+	}
+
+	public static class ABPersonSocialProfileService
+	{
+		public static readonly NSString Twitter;
+		public static readonly NSString GameCenter;
+		public static readonly NSString Facebook;
+		public static readonly NSString Myspace;
+		public static readonly NSString LinkedIn;
+		public static readonly NSString Flickr;
+		// Since 6.0
+		public static readonly NSString SinaWeibo;
+
+		static ABPersonSocialProfileService ()
+		{
+			var handle = Dlfcn.dlopen (Constants.AddressBookLibrary, 0);
+			if (handle == IntPtr.Zero)
+				return;
+			try {
+				Twitter = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceTwitter");
+				GameCenter = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceGameCenter");
+				Facebook = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceFacebook");
+				Myspace = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceMyspace");
+				LinkedIn = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceLinkedIn");
+				Flickr = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceFlickr");
+				SinaWeibo = Dlfcn.GetStringConstant (handle, "kABPersonSocialProfileServiceSinaWeibo");
+			} finally {
+				Dlfcn.dlclose (handle);
+			}
+		}		
 	}
 	
 	public static class ABPersonPhoneLabel {
@@ -393,6 +412,12 @@ namespace MonoMac.AddressBook {
 		public static NSString Jabber {get; private set;}
 		public static NSString Msn {get; private set;}
 		public static NSString Yahoo {get; private set;}
+		// Since 5.0
+		public static NSString QQ {get; private set;}
+		public static NSString GoogleTalk {get; private set;}
+		public static NSString Skype {get; private set;}
+		public static NSString Facebook {get; private set;}
+		public static NSString GaduGadu {get; private set;}
 
 		static ABPersonInstantMessageService ()
 		{
@@ -410,6 +435,11 @@ namespace MonoMac.AddressBook {
 				Jabber  = Dlfcn.GetStringConstant (handle, "kABPersonInstantMessageServiceJabber");
 				Msn     = Dlfcn.GetStringConstant (handle, "kABPersonInstantMessageServiceMSN");
 				Yahoo   = Dlfcn.GetStringConstant (handle, "kABPersonInstantMessageServiceYahoo");
+				QQ      = Dlfcn.GetStringConstant (handle, "kABPersonInstantMessageServiceQQ");
+				GoogleTalk = Dlfcn.GetStringConstant (handle, "kABPersonInstantMessageServiceGoogleTalk");
+				Skype   = Dlfcn.GetStringConstant (handle, "kABPersonInstantMessageServiceSkype");
+				Facebook   = Dlfcn.GetStringConstant (handle, "kABPersonInstantMessageServiceFacebook");
+				GaduGadu   = Dlfcn.GetStringConstant (handle, "kABPersonInstantMessageServiceGaduGadu");
 			}
 			finally {
 				Dlfcn.dlclose (handle);
@@ -420,8 +450,6 @@ namespace MonoMac.AddressBook {
 	public static class ABPersonInstantMessageKey {
 		public static NSString Service {get; private set;}
 		public static NSString Username {get; private set;}
-
-		// TODO: More is available
 
 		static ABPersonInstantMessageKey ()
 		{
@@ -494,8 +522,8 @@ namespace MonoMac.AddressBook {
 				Child     = Dlfcn.GetStringConstant (handle, "kABPersonChildLabel");
 				Father    = Dlfcn.GetStringConstant (handle, "kABPersonFatherLabel");
 				Friend    = Dlfcn.GetStringConstant (handle, "kABPersonFriendLabel");
-				Manager   = Dlfcn.GetStringConstant (handle, "kABPersonMotherLabel");
-				Mother    = Dlfcn.GetStringConstant (handle, "kABPersonManagerLabel");
+				Manager   = Dlfcn.GetStringConstant (handle, "kABPersonManagerLabel");
+				Mother    = Dlfcn.GetStringConstant (handle, "kABPersonMotherLabel");
 				Parent    = Dlfcn.GetStringConstant (handle, "kABPersonParentLabel");
 				Partner   = Dlfcn.GetStringConstant (handle, "kABPersonPartnerLabel");
 				Sister    = Dlfcn.GetStringConstant (handle, "kABPersonSisterLabel");
@@ -771,11 +799,29 @@ namespace MonoMac.AddressBook {
 			set {SetValue (ABPersonPropertyId.ModificationDate, value);}
 		}
 
+		[Obsolete ("Use GetAllAddresses")]
 		public ABMultiValue<NSDictionary> GetAddresses ()
 		{
 			return CreateDictionaryMultiValue (CopyValue (ABPersonPropertyId.Address));
 		}
 
+		public ABMultiValue<PersonAddress> GetAllAddresses ()
+		{
+			return CreateDictionaryMultiValue<PersonAddress> (CopyValue (ABPersonPropertyId.Address), l => new PersonAddress (l));
+		}
+
+		// Obsolete
+		public void SetAddresses (ABMultiValue<NSDictionary> value)
+		{
+			SetValue (ABPersonPropertyId.Address, value == null ? IntPtr.Zero : value.Handle);
+		}
+
+		public void SetAddresses (ABMultiValue<PersonAddress> addresses)
+		{
+			SetValue (ABPersonPropertyId.Address, addresses == null ? IntPtr.Zero : addresses.Handle);
+		}
+
+		// Obsolete
 		static ABMultiValue<NSDictionary> CreateDictionaryMultiValue (IntPtr handle)
 		{
 			if (handle == IntPtr.Zero)
@@ -783,9 +829,14 @@ namespace MonoMac.AddressBook {
 			return new ABMultiValue<NSDictionary> (handle);
 		}
 
-		public void SetAddresses (ABMultiValue<NSDictionary> value)
+		static ABMultiValue<T> CreateDictionaryMultiValue<T> (IntPtr handle, Func<NSDictionary, T> factory) where T : DictionaryContainer
 		{
-			SetValue (ABPersonPropertyId.Address, value == null ? IntPtr.Zero : value.Handle);
+			if (handle == IntPtr.Zero)
+				return null;
+
+			return new ABMultiValue<T> (handle,
+				l => factory ((NSDictionary) (object) Runtime.GetNSObject (l)),
+				l => l.Dictionary.Handle);
 		}
 
 		public ABMultiValue<NSDate> GetDates ()
@@ -820,24 +871,48 @@ namespace MonoMac.AddressBook {
 			SetValue (ABPersonPropertyId.Phone, value == null ? IntPtr.Zero : value.Handle);
 		}
 
+		[Obsolete ("Use GetInstantMessageServices")]
 		public ABMultiValue<NSDictionary> GetInstantMessages ()
 		{
 			return CreateDictionaryMultiValue (CopyValue (ABPersonPropertyId.InstantMessage));
 		}
 
+		public ABMultiValue<InstantMessageService> GetInstantMessageServices ()
+		{
+			return CreateDictionaryMultiValue<InstantMessageService> (CopyValue (ABPersonPropertyId.InstantMessage), l => new InstantMessageService (l));
+		}
+
+		// Obsolete
 		public void SetInstantMessages (ABMultiValue<NSDictionary> value)
 		{
 			SetValue (ABPersonPropertyId.InstantMessage, value == null ? IntPtr.Zero : value.Handle);
 		}
 
+		public void SetInstantMessages (ABMultiValue<InstantMessageService> services)
+		{
+			SetValue (ABPersonPropertyId.InstantMessage, services == null ? IntPtr.Zero : services.Handle);
+		}
+
+		[Obsolete ("Use GetSocialProfiles")]
 		public ABMultiValue<NSDictionary> GetSocialProfile ()
 		{
 			return CreateDictionaryMultiValue (CopyValue (ABPersonPropertyId.SocialProfile));
 		}
+
+		public ABMultiValue<SocialProfile> GetSocialProfiles ()
+		{
+			return CreateDictionaryMultiValue<SocialProfile> (CopyValue (ABPersonPropertyId.SocialProfile), l => new SocialProfile (l));
+		}
 		
+		// Obsolete
 		public void SetSocialProfile (ABMultiValue<NSDictionary> value)
 		{
 			SetValue (ABPersonPropertyId.SocialProfile, value == null ? IntPtr.Zero : value.Handle);
+		}
+
+		public void SetSocialProfile (ABMultiValue<SocialProfile> profiles)
+		{
+			SetValue (ABPersonPropertyId.SocialProfile, profiles == null ? IntPtr.Zero : profiles.Handle);
 		}
 		
 		public ABMultiValue<string> GetUrls ()
@@ -944,6 +1019,167 @@ namespace MonoMac.AddressBook {
 				vCardData.Handle);
 
 			return NSArray.ArrayFromHandle (res, l => new ABPerson (l, null));
+		}
+	}
+
+	public class SocialProfile : DictionaryContainer
+	{
+		public SocialProfile ()
+		{
+		}
+
+		public SocialProfile (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public string ServiceName {
+			get {
+				return GetStringValue (ABPersonSocialProfile.ServiceKey);
+			}
+			set {
+				SetStringValue (ABPersonSocialProfile.ServiceKey, value);
+			}			
+		}
+
+		// NSString from ABPersonSocialProfileService
+		public NSString Service {
+			set {
+				SetStringValue (ABPersonSocialProfile.ServiceKey, value);
+			}
+		}		
+
+		public string Username {
+			get {
+				return GetStringValue (ABPersonSocialProfile.UsernameKey);
+			}
+			set {
+				SetStringValue (ABPersonSocialProfile.UsernameKey, value);
+			}
+		}
+
+		public string UserIdentifier {
+			get {
+				return GetStringValue (ABPersonSocialProfile.UserIdentifierKey);
+			}
+			set {
+				SetStringValue (ABPersonSocialProfile.UserIdentifierKey, value);
+			}
+		}
+
+		public string Url {
+			get {
+				return GetStringValue (ABPersonSocialProfile.URLKey);
+			}
+			set {
+				SetStringValue (ABPersonSocialProfile.URLKey, value);
+			}
+		}
+	}
+
+	public class InstantMessageService : DictionaryContainer
+	{
+		public InstantMessageService ()
+		{
+		}
+
+		public InstantMessageService (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public string ServiceName {
+			get {
+				// TODO: It does not return ABPersonInstantMessageService value. Underlying
+				// value is custom string, it coould be MT bug because this makes
+				// ABPersonInstantMessageService constants useless
+				return GetStringValue (ABPersonInstantMessageKey.Service);
+			}
+			set {
+				SetStringValue (ABPersonInstantMessageKey.Service, value);
+			}
+		}
+
+		// NSString from ABPersonInstantMessageService
+		public NSString Service {
+			set {
+				SetStringValue (ABPersonInstantMessageKey.Service, value);
+			}
+		}
+
+		public string Username {
+			get {
+				return GetStringValue (ABPersonInstantMessageKey.Username);
+			}
+			set {
+				SetStringValue (ABPersonInstantMessageKey.Username, value);
+			}
+		}
+	}
+
+	public class PersonAddress : DictionaryContainer
+	{
+		public PersonAddress ()
+		{
+		}
+
+		public PersonAddress (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public string City {
+			get {
+				return GetStringValue (ABPersonAddressKey.City);
+			}
+			set {
+				SetStringValue (ABPersonAddressKey.City, value);
+			}
+		}
+
+		public string Country {
+			get {
+				return GetStringValue (ABPersonAddressKey.Country);
+			}
+			set {
+				SetStringValue (ABPersonAddressKey.Country, value);
+			}
+		}
+
+		public string CountryCode {
+			get {
+				return GetStringValue (ABPersonAddressKey.CountryCode);
+			}
+			set {
+				SetStringValue (ABPersonAddressKey.CountryCode, value);
+			}
+		}
+
+		public string State {
+			get {
+				return GetStringValue (ABPersonAddressKey.State);
+			}
+			set {
+				SetStringValue (ABPersonAddressKey.State, value);
+			}
+		}
+
+		public string Street {
+			get {
+				return GetStringValue (ABPersonAddressKey.Street);
+			}
+			set {
+				SetStringValue (ABPersonAddressKey.Street, value);
+			}
+		}
+
+		public string Zip {
+			get {
+				return GetStringValue (ABPersonAddressKey.Zip);
+			}
+			set {
+				SetStringValue (ABPersonAddressKey.Zip, value);
+			}
 		}
 	}
 }

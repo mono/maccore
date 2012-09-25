@@ -51,7 +51,7 @@ namespace MonoMac.QuickLook {
 			
 			var handle = QLThumbnailImageCreate (IntPtr.Zero, url.Handle, maxThumbnailSize, dictionary == null ? IntPtr.Zero : dictionary.Handle);
 			GC.KeepAlive (dictionary);
-			if (handle != null)
+			if (handle != IntPtr.Zero)
 				return new CGImage (handle, true);
 			
 			return null;

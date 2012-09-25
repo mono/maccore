@@ -1,3 +1,4 @@
+// Copyright 2012 Xamarin Inc
 using System;
 using Mono.Cecil;
 

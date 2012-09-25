@@ -1,3 +1,5 @@
+// Copyright 2012 Xamarin Inc
+
 using System;
 using System.IO;
 using System.Collections.Generic;

@@ -59,7 +59,8 @@ namespace MonoMac.CoreMidi {
         	SetupFormatErr = -10840,
         	WrongThread = -10841,
         	ObjectNotFound = -10842,
-        	IDNotUnique = -10843
+        	IDNotUnique = -10843,
+		NotPermitted = -10844
 	}
 
 	public enum MidiNetworkConnectionPolicy {

@@ -3,7 +3,9 @@
 //
 // TODO:
 //   Remove <h2...> Overview</h2> from merged docs
-//   
+//
+// Copyright 2012 Xamarin Inc
+//
 using System;
 using System.IO;
 using System.Linq;

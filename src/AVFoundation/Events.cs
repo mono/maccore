@@ -5,6 +5,7 @@
 //   Miguel de Icaza (miguel@novell.com)
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
+// Copyright 2011, 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -51,7 +52,8 @@ namespace MonoMac.AVFoundation {
 		public bool Status { get; private set; }
 	}
 
-	internal class InternalAVAudioPlayerDelegate : AVAudioPlayerDelegate {
+	#pragma warning disable 672
+	sealed class InternalAVAudioPlayerDelegate : AVAudioPlayerDelegate {
 		internal EventHandler cbEndInterruption, cbBeginInterruption;
 		internal EventHandler<AVStatusEventArgs> cbFinishedPlaying;
 		internal EventHandler<AVErrorEventArgs> cbDecoderError;
@@ -87,6 +89,7 @@ namespace MonoMac.AVFoundation {
 		}
 
 	}
+	#pragma warning restore 672
 	
 	public partial class AVAudioPlayer {
 		InternalAVAudioPlayerDelegate EnsureEventDelegate ()

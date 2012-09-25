@@ -1,3 +1,24 @@
+// Copyright 2011, 2012 Xamarin Inc
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 using System;
 using System.Runtime.InteropServices;
 
@@ -5,12 +26,17 @@ namespace MonoMac.Foundation {
 	public enum NSRunLoopMode {
 		Default,
 		Common,
-
 #if MONOMAC
-		ConnectionReply,
+		ConnectionReply = 2,
 		ModalPanel,
-		EventTracking
+		EventTracking,
+#else
+		// iOS-specific Enums start in 100 to avoid conflicting with future extensions to MonoMac
+		UITracking = 100,
 #endif
+
+		// If it is not part of these enumerations
+		Other = 1000
 	}
 	
 	public partial class NSRunLoop {
@@ -20,6 +46,10 @@ namespace MonoMac.Foundation {
 				return NSDefaultRunLoopMode;
 			else if (mode == NSRunLoopCommonModes)
 				return NSRunLoopCommonModes;
+#if !MONOMAC
+			else if (mode == UITrackingRunLoopMode)
+				return UITrackingRunLoopMode;
+#endif
 			else
 				return new NSString (mode);
 		}
@@ -36,14 +66,18 @@ namespace MonoMac.Foundation {
 				return NSRunLoopModalPanelMode;
 			case NSRunLoopMode.EventTracking:
 				return NSRunLoopEventTracking;
+#else
+			case NSRunLoopMode.UITracking:
+				return UITrackingRunLoopMode;
 #endif
+	
 			default:
 			case NSRunLoopMode.Default:
 				return NSDefaultRunLoopMode;
 			}
 		}
 		
-		[Obsolete ("Use AddTimer (NSTimer, NSString)")]
+		[Obsolete ("Use AddTimer (NSTimer, NSRunLoopMode)")]
 		public void AddTimer (NSTimer timer, string forMode)
 		{
 			AddTimer (timer, GetRealMode (forMode));
@@ -55,7 +89,7 @@ namespace MonoMac.Foundation {
 		}
 
 
-		[Obsolete ("Use LimitDateForMode (NSString) instead")]
+		[Obsolete ("Use LimitDateForMode (NSRunLoopMode) instead")]
 		public NSDate LimitDateForMode (string mode)
 		{
 			return LimitDateForMode (GetRealMode (mode));
@@ -66,7 +100,7 @@ namespace MonoMac.Foundation {
 			return LimitDateForMode (FromEnum (mode));
 		}
 		
-		[Obsolete ("Use AcceptInputForMode (NSString, NSDate)")]
+		[Obsolete ("Use AcceptInputForMode (NSRunLoopMode, NSDate)")]
 		public void AcceptInputForMode (string mode, NSDate limitDate)
 		{
 			AcceptInputForMode (GetRealMode (mode), limitDate);
@@ -85,6 +119,34 @@ namespace MonoMac.Foundation {
 		public void WakeUp ()
 		{
 			GetCFRunLoop ().WakeUp ();
+		}
+
+		public bool RunUntil (NSRunLoopMode mode, NSDate limitDate)
+		{
+			return RunUntil (FromEnum (mode), limitDate);
+		}
+
+		public NSRunLoopMode CurrentRunLoopMode {
+			get {
+				var mode = CurrentMode;
+
+				if (mode == NSDefaultRunLoopMode)
+					return NSRunLoopMode.Default;
+				if (mode == NSRunLoopCommonModes)
+					return NSRunLoopMode.Common;
+#if MONOMAC
+				if (mode == NSRunLoopConnectionReplyMode)
+					return NSRunLoopMode.ConnectionReply;
+				if (mode == NSRunLoopModalPanelMode)
+					return NSRunLoopMode.ModalPanel;
+				if (mode == NSRunLoopEventTracking)
+					return NSRunLoopMode.EventTracking;
+#else
+				if (mode == UITrackingRunLoopMode)
+					return NSRunLoopMode.UITracking;
+#endif
+				return NSRunLoopMode.Other;
+			}
 		}
 	}
 }

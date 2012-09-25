@@ -7,7 +7,7 @@
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
-// Copyright 2011, Xamarin Inc.
+// Copyright 2011-2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -44,6 +44,7 @@ using MonoMac.UIKit;
 
 using System;
 using System.Drawing;
+using System.ComponentModel;
 
 namespace MonoMac.Foundation
 {
@@ -113,6 +114,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (string str);
 		
 		[Export ("initWithString:attributes:")]
+		[EditorBrowsable (EditorBrowsableState.Advanced)]
 		IntPtr Constructor (string str, NSDictionary attributes);
 
 		[Export ("initWithAttributedString:")]
@@ -218,6 +220,26 @@ namespace MonoMac.Foundation
 		[Export ("drawWithRect:options:")]
 		void DrawString (RectangleF rect, NSStringDrawingOptions options);
 		
+#else
+		[Since (6,0)]
+		[Export ("size")]
+		SizeF Size { get; }
+
+		[Since (6,0)]
+		[Export ("drawAtPoint:")]
+		void DrawString (PointF point);
+
+		[Since (6,0)]
+		[Export ("drawAtPoint:")]
+		void DrawString (RectangleF rect);
+
+		[Since (6,0)]
+		[Export ("drawWithRect:options:context:")]
+		void DrawString (RectangleF rect, NSStringDrawingOptions options, NSStringDrawingContext context);
+
+		[Since (6,0)]
+		[Export ("boundingRectWithSize:options:context:")]
+		RectangleF GetBoundingRect (SizeF size, NSStringDrawingOptions options, NSStringDrawingContext context);
 #endif
 	}
 
@@ -296,7 +318,7 @@ namespace MonoMac.Foundation
 	[DisableDefaultCtor]
 	public interface NSCalendar {
 		[Export ("initWithCalendarIdentifier:")]
-		IntPtr Constructor (string identifier);
+		IntPtr Constructor (NSString identifier);
 
 		[Export ("calendarIdentifier")]
 		string Identifier { get; }
@@ -325,6 +347,39 @@ namespace MonoMac.Foundation
 		//- (NSDateComponents *)components:(NSUInteger)unitFlags fromDate:(NSDate *)date;
 		//- (NSDate *)dateByAddingComponents:(NSDateComponents *)comps toDate:(NSDate *)date options:(NSUInteger)opts;
 		//- (NSDateComponents *)components:(NSUInteger)unitFlags fromDate:(NSDate *)startingDate toDate:(NSDate *)resultDate options:(NSUInteger)opts;
+
+		[Field ("NSGregorianCalendar"), Internal]
+		NSString NSGregorianCalendar { get; }
+		
+		[Field ("NSBuddhistCalendar"), Internal]
+		NSString NSBuddhistCalendar { get; }
+		
+		[Field ("NSChineseCalendar"), Internal]
+		NSString NSChineseCalendar { get; }
+		
+		[Field ("NSHebrewCalendar"), Internal]
+		NSString NSHebrewCalendar { get; }
+		
+		[Field ("NSIslamicCalendar"), Internal]
+		NSString NSIslamicCalendar { get; }
+		
+		[Field ("NSIslamicCivilCalendar"), Internal]
+		NSString NSIslamicCivilCalendar { get; }
+		
+		[Field ("NSJapaneseCalendar"), Internal]
+		NSString NSJapaneseCalendar { get; }
+		
+		[Field ("NSRepublicOfChinaCalendar"), Internal]
+		NSString NSRepublicOfChinaCalendar { get; }
+		
+		[Field ("NSPersianCalendar"), Internal]
+		NSString NSPersianCalendar { get; }
+		
+		[Field ("NSIndianCalendar"), Internal]
+		NSString NSIndianCalendar { get; }
+		
+		[Field ("NSISO8601Calendar"), Internal]
+		NSString NSISO8601Calendar { get; }
 	}
 
 	[Since (3,2)]
@@ -473,6 +528,16 @@ namespace MonoMac.Foundation
 
 		[Internal, Export ("decodeBytesForKey:returnedLength:")]
 		IntPtr DecodeBytes (string key, IntPtr length_ptr);
+
+		[Since (6,0)]
+		[Export ("allowedClasses")]
+		NSSet AllowedClasses { get; }
+
+		[Since (6,0)]
+		[Export ("requiresSecureCoding")]
+		bool RequiresSecureCoding ();
+
+		
 	}
 	
 	[BaseType (typeof (NSPredicate))]
@@ -630,8 +695,47 @@ namespace MonoMac.Foundation
 		[Since (5,0)]
 		[Export ("yearForWeekOfYear")]
 		int YearForWeekOfYear { get; set; }
+
+		[Since (6,0)]
+		[Export ("leapMonth")]
+		bool IsLeapMonth { [Bind ("isLeapMonth")] get; set; }
 	}
 	
+	[Since (6,0)]
+	[BaseType (typeof (NSFormatter))]
+	interface NSByteCountFormatter {
+		[Export ("allowsNonnumericFormatting")]
+		bool AllowsNonnumericFormatting { get; set; }
+
+		[Export ("includesUnit")]
+		bool IncludesUnit { get; set; }
+
+		[Export ("includesCount")]
+		bool IncludesCount { get; set; }
+
+		[Export ("includesActualByteCount")]
+		bool IncludesActualByteCount { get; set; }
+		
+		[Export ("adaptive")]
+		bool Adaptive { [Bind ("isAdaptive")] get; set;  }
+
+		[Export ("zeroPadsFractionDigits")]
+		bool ZeroPadsFractionDigits { get; set;  }
+
+		[Static]
+		[Export ("stringFromByteCount:countStyle:")]
+		string Format (long byteCount, NSByteCountFormatterCountStyle countStyle);
+
+		[Export ("stringFromByteCount:")]
+		string Format (long byteCount);
+
+		[Export ("allowedUnits")]
+		NSByteCountFormatterUnits AllowedUnits { get; set; }
+
+		[Export ("countStyle")]
+		NSByteCountFormatterCountStyle CountStyle { get; set; }
+	}
+
 	[BaseType (typeof (NSFormatter))]
 	public interface NSDateFormatter {
 		[Export ("stringFromDate:")]
@@ -1248,6 +1352,9 @@ namespace MonoMac.Foundation
 		[Export ("initWithContentsOfFile:")]
 		IntPtr Constructor (string fileName);
 
+		[Export ("initWithObjects:forKeys:"), Internal]
+		IntPtr Constructor (NSArray objects, NSArray keys);
+
 		[Export ("initWithContentsOfURL:")]
 		IntPtr Constructor (NSUrl url);
 		
@@ -1283,6 +1390,12 @@ namespace MonoMac.Foundation
 
 		[Export ("writeToURL:atomically:")]
 		bool WriteToUrl (NSUrl url, bool atomically);
+
+		[Since (6,0)]
+		[Static]
+		[Export ("sharedKeySetForKeys:")]
+		NSObject GetSharedKeySetForKeys (NSObject [] keys);
+
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1802,6 +1915,9 @@ namespace MonoMac.Foundation
 
 		[Field ("NSEventTrackingRunLoopMode", "AppKit")]
 		NSString NSRunLoopEventTracking { get; }
+#else
+		[Field ("UITrackingRunLoopMode", "UIKit")]
+		NSString UITrackingRunLoopMode { get; }
 #endif
 	}
 
@@ -1810,6 +1926,9 @@ namespace MonoMac.Foundation
 		[Export ("set")][Static]
 		NSSet CreateSet ();
 
+		[Export ("initWithSet:")]
+		IntPtr Constructor (NSSet other);
+		
 		[Export ("initWithArray:")]
 		IntPtr Constructor (NSArray other);
 		
@@ -1833,9 +1952,16 @@ namespace MonoMac.Foundation
 		
 		[Export ("isSubsetOfSet:")]
 		bool IsSubsetOf (NSSet other);
+		
 		[Export ("enumerateObjectsUsingBlock:")]
 		[Since (4,0)]
 		void Enumerate (NSSetEnumerator enumerator);
+
+		[Export ("setByAddingObjectsFromSet:"), Internal]
+		NSSet SetByAddingObjectsFromSet (NSSet other);
+
+		[Export ("intersectsSet:")]
+		bool IntersectsSet (NSSet other);
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1962,7 +2088,6 @@ namespace MonoMac.Foundation
 		string DataVersion { get; }
 	}
 
-#if !MONOMAC
 	interface NSUbiquitousKeyValueStoreChangeEventArgs {
 		[Export ("NSUbiquitousKeyValueStoreChangedKeysKey")]
 		string [] ChangedKeys { get; }
@@ -2044,8 +2169,22 @@ namespace MonoMac.Foundation
 		[Field ("NSUbiquitousKeyValueStoreChangedKeysKey")]
 		NSString ChangedKeysKey { get; }
 	}
-#endif
 	
+	[BaseType (typeof (NSObject), Name="NSUUID")]
+	public interface NSUuid {
+		[Export ("initWithUUIDString:")]
+		IntPtr Constructor (string str);
+
+		[Export ("initWithUUIDBytes:"), Internal]
+		IntPtr Constructor (IntPtr bytes, bool unused);
+
+		[Export ("getUUIDBytes:"), Internal]
+		void GetUuidBytes (IntPtr uuid);
+
+		[Export ("UUIDString")]
+		string AsString ();
+	}
+
 	[BaseType (typeof (NSObject))]
 	public interface NSUserDefaults {
 		[Static]
@@ -2168,7 +2307,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (string path);
 
 		[Export ("initWithString:relativeToURL:")]
-		IntPtr Constructor (string path, string relativeToUrl);		
+		IntPtr Constructor (string path, NSUrl relativeToUrl);		
 
 		[Export ("URLWithString:")][Static]
 		NSUrl FromString (string s);
@@ -2556,15 +2695,27 @@ namespace MonoMac.Foundation
 
 		[Since (5,0)]
 		[Field ("NSURLUbiquitousItemPercentDownloadedKey")]
+		[Obsolete ("Use NSMetadataQuery.UbiquitousItemPercentDownloadedKey on NSMetadataItem")]
 		NSString UbiquitousItemPercentDownloadedKey { get; }
 
 		[Since (5,0)]
+		[Obsolete ("Use NSMetadataQuery.NSMetadataUbiquitousItemPercentUploadedKey on NSMetadataItem")]
 		[Field ("NSURLUbiquitousItemPercentUploadedKey")]
 		NSString UbiquitousItemPercentUploadedKey { get; }
 		
 		[Since (5,1)]
 		[Field ("NSURLIsExcludedFromBackupKey")]
 		NSString IsExcludedFromBackupKey { get; }
+
+		[Export ("bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:")]
+		NSData CreateBookmarkData (NSUrlBookmarkCreationOptions options, string [] resourceValues, NSUrl relativeUrl, out NSError error);
+
+		[Export ("initByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:")]
+		IntPtr Constructor (NSData bookmarkData, NSUrlBookmarkResolutionOptions resolutionOptions, NSUrl relativeUrl, out bool bookmarkIsStale, out NSError error);
+
+		[Field ("NSURLPathKey")]
+		[Since (6,0)]
+		NSString PathKey { get; }
 	}
 
 	[BaseType (typeof (NSObject), Name="NSURLCache")]
@@ -3132,15 +3283,38 @@ namespace MonoMac.Foundation
 
 		[Export ("setObject:forKey:"), Internal]
 		void SetObject (NSObject obj, NSObject key);
+
+		[Since (6,0)]
+		[Static]
+		[Export ("dictionaryWithSharedKeySet:")]
+		NSDictionary FromSharedKeySet (NSObject sharedKeyToken);
 	}
 
 	[BaseType (typeof (NSSet))]
 	public interface NSMutableSet {
+		[Export ("initWithArray:")]
+		IntPtr Constructor (NSArray other);
+
+		[Export ("initWithSet:")]
+		IntPtr Constructor (NSSet other);
+		
+		[Export ("initWithCapacity:")]
+		IntPtr Constructor (int capacity);
+
 		[Export ("addObject:")]
 		void Add (NSObject nso);
 
 		[Export ("removeObject:")]
 		void Remove (NSObject nso);
+
+		[Export ("removeAllObjects")]
+		void RemoveAll ();
+
+		[Export ("addObjectsFromArray:")]
+		void AddObjects (NSObject [] objects);
+
+		[Internal, Export ("minusSet:")]
+		void MinusSet (NSSet other);
 	}
 	
 	[BaseType (typeof (NSUrlRequest), Name="NSMutableURLRequest")]
@@ -3180,7 +3354,9 @@ namespace MonoMac.Foundation
 
 		[New][Export ("HTTPShouldHandleCookies")]
 		bool ShouldHandleCookies { get; set; }
-		
+
+		[Export ("allowsCellularAccess")]
+		bool AllowsCellularAccess { get; set; }
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLResponse")]
@@ -3395,6 +3571,36 @@ namespace MonoMac.Foundation
 		[Export ("stringByReplacingCharactersInRange:withString:")]
 		NSString Replace (NSRange range, NSString replacement);
 
+		[Since (6,0)]
+		[Export ("capitalizedStringWithLocale:")]
+		string Capitalize (NSLocale locale);
+		
+		[Since (6,0)]
+		[Export ("lowercaseStringWithLocale:")]
+		string ToLower (NSLocale locale);
+		
+		[Since (6,0)]
+		[Export ("uppercaseStringWithLocale:")]
+		string ToUpper (NSLocale locale);
+	}
+
+	[Since (6,0)]
+	[BaseType (typeof (NSObject))]
+	public interface NSStringDrawingContext {
+		[Export ("minimumScaleFactor")]
+		float MinimumScaleFactor { get; set;  }
+
+		[Export ("minimumTrackingAdjustment")]
+		float MinimumTrackingAdjustment { get; set;  }
+
+		[Export ("actualScaleFactor")]
+		float ActualScaleFactor { get;  }
+
+		[Export ("actualTrackingAdjustment")]
+		float ActualTrackingAdjustment { get;  }
+
+		[Export ("totalBounds")]
+		RectangleF TotalBounds { get;  }
 	}
 	
 	[BaseType (typeof (NSStream))]
@@ -3657,11 +3863,10 @@ namespace MonoMac.Foundation
 		bool Suspended { [Bind ("isSuspended")]get; set; }
 	}
 
-#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[__NSArrayM insertObject:atIndex:]: object cannot be nil
 	[DisableDefaultCtor]
-	interface NSOrthography {
+	public interface NSOrthography {
 		[Export ("dominantScript")]
 		string DominantScript { get;  }
 
@@ -3686,7 +3891,6 @@ namespace MonoMac.Foundation
 		[Export ("initWithDominantScript:languageMap:")]
 		IntPtr Constructor (string dominantScript, [NullAllowed] NSDictionary languageMap);
 	}
-#endif
 	
 	[BaseType (typeof (NSStream))]
 	public interface NSOutputStream {
@@ -4003,6 +4207,12 @@ namespace MonoMac.Foundation
 
 		[Export ("section")]
 		int Section { get; }
+
+#if !MONOMAC
+		[Static]
+		[Export ("indexPathForItem:inSection:")]
+		NSIndexPath FromItemSection (int item, int section);
+#endif
 		
 	}
 
@@ -4511,7 +4721,17 @@ namespace MonoMac.Foundation
 		[Export ("CATransform3DValue")]
 		MonoMac.CoreAnimation.CATransform3D CATransform3DValue { get; }
 
+		[Static, Export ("valueWithMKCoordinate:")]
+		NSValue FromMKCoordinate (MonoTouch.CoreLocation.CLLocationCoordinate2D coordinate);
+
+		[Static, Export ("valueWithMKCoordinateSpan:")]
+		NSValue FromMKCoordinateSpan (MonoTouch.MapKit.MKCoordinateSpan coordinateSpan);
+
+		[Export ("MKCoordinateValue")]
+		MonoTouch.CoreLocation.CLLocationCoordinate2D CoordinateValue { get; }
 		
+		[Export ("MKCoordinateSpanValue")]
+		MonoTouch.MapKit.MKCoordinateSpan CoordinateSpanValue { get; }
 #endif
 	}
 	
@@ -4980,6 +5200,11 @@ namespace MonoMac.Foundation
 		[Export ("isMainThread")]
 		bool IsMainThread { get; }
 
+		// MainThread is already used for the instance selector and we can't reuse the same name
+		[Static]
+		[Export ("isMainThread")]
+		bool IsMain { get; }
+
 		[Static]
 		[Export ("mainThread")]
 		NSThread MainThread { get; }
@@ -5054,7 +5279,6 @@ namespace MonoMac.Foundation
 		
 	}
 
-#if !MONOMAC
 	public delegate void NSFileCoordinatorWorker (NSUrl newUrl);
 	public delegate void NSFileCoordinatorWorkerRW (NSUrl newReadingUrl, NSUrl newWritingUrl);
 	
@@ -5094,8 +5318,11 @@ namespace MonoMac.Foundation
 
 		[Export ("cancel")]
 		void Cancel ();
+
+		[Since (6,0)]
+		[Export ("itemAtURL:willMoveToURL:")]
+		void WillMove (NSUrl oldUrl, NSUrl newUrl);
 	}
-#endif
 	
 	[BaseType (typeof (NSObject))]
 	public interface NSFileManager {
@@ -5387,6 +5614,15 @@ namespace MonoMac.Foundation
 		[Since (5,0)]
                 [Export ("URLForPublishingUbiquitousItemAtURL:expirationDate:error:")]
                 NSUrl GetUrlForPublishingUbiquitousItem (NSUrl url, out NSDate expirationDate, out NSError error);
+
+		[Since (6,0)]
+		[Export ("ubiquityIdentityToken")]
+		NSObject UbiquityIdentityToken { get; }
+
+		[Since (6,0)]
+		[Field ("NSUbiquityIdentityDidChangeNotification")]
+		[Notification]
+		NSString UbiquityIdentityDidChangeNotification { get; }
 	}
 
 	[BaseType(typeof(NSObject))]
@@ -5453,7 +5689,6 @@ namespace MonoMac.Foundation
 		bool ShouldProceedAfterErrorRemovingItem (NSFileManager fileManager, NSError error, string path);
 	}
 
-#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	[Model]
 	interface NSFilePresenter {
@@ -5580,7 +5815,6 @@ namespace MonoMac.Foundation
 		[Export ("removeOtherVersionsOfItemAtURL:error:")]
 		bool RemoveOtherVersions (NSUrl url, out NSError outError);
 	}
-#endif
 
 	[BaseType (typeof (NSObject))]
 	public interface NSFileWrapper {

@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -30,6 +31,7 @@ using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
+using MonoMac.CoreGraphics;
 
 namespace MonoMac.CoreVideo {
 
@@ -173,6 +175,24 @@ namespace MonoMac.CoreVideo {
 		public SizeF EncodedSize {
 			get {
 				return CVImageBufferGetDisplaySize (handle);
+			}
+		}
+
+		[DllImport (Constants.CoreVideoLibrary)]
+		extern static bool CVImageBufferIsFlipped (IntPtr imageBuffer);
+		
+		public bool IsFlipped {
+			get {
+				return CVImageBufferIsFlipped (handle);
+			}
+		}
+
+		[DllImport (Constants.CoreVideoLibrary)]
+		extern static IntPtr CVImageBufferGetColorSpace (IntPtr handle);
+		
+		public CGColorSpace ColorSpace {
+			get {
+				return new CGColorSpace (CVImageBufferGetColorSpace (handle));
 			}
 		}
 	}

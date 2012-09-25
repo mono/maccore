@@ -29,6 +29,7 @@ using System;
 
 namespace MonoMac.AVFoundation {
 
+	// Obsolete, use AudioSettings
 	public class AVAudioRecorderSettings {
 		public AVAudioRecorderSettings ()
 		{
@@ -51,9 +52,9 @@ namespace MonoMac.AVFoundation {
 		{
 			var dict = new NSMutableDictionary ();
 
-			dict.SetObject (new NSNumber ((int) AudioFormat), AVAudioPlayer.AVFormatIDKey);
-			dict.SetObject (new NSNumber (SampleRate), AVAudioPlayer.AVSampleRateKey);
-			dict.SetObject (new NSNumber (NumberChannels), AVAudioPlayer.AVNumberOfChannelsKey);
+			dict.SetObject (new NSNumber ((int) AudioFormat), AVAudioSettings.AVFormatIDKey);
+			dict.SetObject (new NSNumber (SampleRate), AVAudioSettings.AVSampleRateKey);
+			dict.SetObject (new NSNumber (NumberChannels), AVAudioSettings.AVNumberOfChannelsKey);
 
 			if (AudioFormat == AudioFormatType.LinearPCM){
 				IntPtr thandle = CFBoolean.True.Handle;
@@ -61,39 +62,48 @@ namespace MonoMac.AVFoundation {
 				
 				if (LinearPcmBitDepth != 0){
 					if (LinearPcmBitDepth == 8 || LinearPcmBitDepth == 16 || LinearPcmBitDepth == 32 || LinearPcmBitDepth == 24)
-						dict.SetObject (new NSNumber (LinearPcmBitDepth), AVAudioRecorder.AVLinearPCMBitDepthKey);
+						dict.SetObject (new NSNumber (LinearPcmBitDepth), AVAudioSettings.AVLinearPCMBitDepthKey);
 					else
 						throw new Exception ("Invalid value for LinearPcmBitDepth, must be one of 8, 16, 24 or 32");
 				}
-				dict.LowlevelSetObject (LinearPcmBigEndian ? thandle : fhandle, AVAudioRecorder.AVLinearPCMIsBigEndianKey.Handle);
-				dict.LowlevelSetObject (LinearPcmFloat ? thandle : fhandle, AVAudioRecorder.AVLinearPCMIsFloatKey.Handle);
-				dict.LowlevelSetObject (LinearPcmNonInterleaved ? thandle : fhandle, AVAudioRecorder.AVLinearPCMIsNonInterleaved.Handle);
+				dict.LowlevelSetObject (LinearPcmBigEndian ? thandle : fhandle, AVAudioSettings.AVLinearPCMIsBigEndianKey.Handle);
+				dict.LowlevelSetObject (LinearPcmFloat ? thandle : fhandle, AVAudioSettings.AVLinearPCMIsFloatKey.Handle);
+				dict.LowlevelSetObject (LinearPcmNonInterleaved ? thandle : fhandle, AVAudioSettings.AVLinearPCMIsNonInterleaved.Handle);
 			}
-			dict.SetObject (new NSNumber ((int) AudioQuality), AVAudioRecorder.AVEncoderAudioQualityKey);
+			dict.SetObject (new NSNumber ((int) AudioQuality), AVAudioSettings.AVEncoderAudioQualityKey);
 			if (EncoderBitRate.HasValue)
-				dict.SetObject (new NSNumber ((int) EncoderBitRate.Value), AVAudioRecorder.AVEncoderBitRateKey);
+				dict.SetObject (new NSNumber ((int) EncoderBitRate.Value), AVAudioSettings.AVEncoderBitRateKey);
 			if (EncoderBitRatePerChannel.HasValue)
-				dict.SetObject (new NSNumber ((int) EncoderBitRatePerChannel.Value), AVAudioRecorder.AVEncoderBitRatePerChannelKey);
+				dict.SetObject (new NSNumber ((int) EncoderBitRatePerChannel.Value), AVAudioSettings.AVEncoderBitRatePerChannelKey);
 			if (EncoderBitDepthHint.HasValue){
 				var n = EncoderBitDepthHint.Value;
 				if (n < 8 || n > 32)
 					throw new Exception ("EncoderBitDepthHint should be a value between 8 and 32");
-				dict.SetObject (new NSNumber ((int) EncoderBitDepthHint.Value), AVAudioRecorder.AVEncoderBitDepthHintKey);
+				dict.SetObject (new NSNumber ((int) EncoderBitDepthHint.Value), AVAudioSettings.AVEncoderBitDepthHintKey);
 			}
 			if (SampleRateConverterAudioQuality.HasValue)
-				dict.SetObject (new NSNumber ((int) SampleRateConverterAudioQuality.Value), AVAudioRecorder.AVSampleRateConverterAudioQualityKey);
+				dict.SetObject (new NSNumber ((int) SampleRateConverterAudioQuality.Value), AVAudioSettings.AVSampleRateConverterAudioQualityKey);
 
 			return dict;
 		}
 	}
 
 	public partial class AVAudioRecorder {
-		[Obsolete ("Use the factory AVAudioRecorder.ToUrl as this method had an invalid signature up to MonoMac 1.4.4")]
+		[Obsolete ("Use static Create method as this method had an invalid signature up to MonoMac 1.4.4")]
 		public AVAudioRecorder (NSUrl url, NSDictionary settings, NSError outError)
 		{
 			throw new Exception ("This constructor is no longer supported, use the AVAudioRecorder.ToUrl factory method instead");
 		}
 
+		public static AVAudioRecorder Create (NSUrl url, AudioSettings settings, out NSError error)
+		{
+			if (settings == null)
+				throw new ArgumentNullException ("settings");
+			
+			return ToUrl (url, settings.Dictionary, out error);
+		}
+
+		[Obsolete ("Use Create method")]
 		public static AVAudioRecorder ToUrl (NSUrl url, AVAudioRecorderSettings settings, out NSError error)
 		{
 			if (settings == null)
@@ -101,7 +111,8 @@ namespace MonoMac.AVFoundation {
 			
 			return ToUrl (url, settings.ToDictionary (), out error);
 		}
-		
+
+		[Obsolete ("Use Create method")]		
 		public static AVAudioRecorder ToUrl (NSUrl url, NSDictionary settings, out NSError error)
 		{
 			unsafe {

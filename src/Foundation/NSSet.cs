@@ -6,6 +6,7 @@
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
+// Copyright 2012, Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -37,9 +38,13 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	public partial class NSSet : IEnumerable<NSObject> {
-		static IntPtr selSetWithArray = Selector.sel_registerName ("setWithArray:");
+		internal static IntPtr selSetWithArray = Selector.sel_registerName ("setWithArray:");
 
-		public NSSet (NSObject [] objs) : this (NSArray.FromNSObjects (objs))
+		public NSSet (params NSObject [] objs) : this (NSArray.FromNSObjects (objs))
+		{
+		}
+
+		public NSSet (params object [] objs) : this (NSArray.FromObjects (objs))
 		{
 		}
 
@@ -77,5 +82,30 @@ namespace MonoMac.Foundation {
 				yield return obj;
 		}
 
+		public static NSSet operator + (NSSet first, NSSet second)
+		{
+			if (first == null)
+				return second;
+			if (second == null)
+				return first;
+			return first.SetByAddingObjectsFromSet (second);
+		}
+
+		public static NSSet operator - (NSSet first, NSSet second)
+		{
+			if (first == null)
+				return null;
+			if (second == null)
+				return first;
+			var copy = new NSMutableSet (first);
+			copy.MinusSet (second);
+			return copy;
+		}
+
+		public bool Contains (object obj)
+		{
+			return Contains (NSObject.FromObject (obj));
+		}
 	}
+		
 }

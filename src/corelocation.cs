@@ -22,6 +22,7 @@ namespace MonoMac.CoreLocation {
 
 #if !MONOMAC
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // will crash, see CoreLocation.cs for compatibility stubs
 	partial interface CLHeading {
 		[Export ("magneticHeading")]
 		double MagneticHeading { get;  }
@@ -83,6 +84,7 @@ namespace MonoMac.CoreLocation {
 		string Description ();
 	
 		[Export ("getDistanceFrom:")]
+		[Obsolete ("Replaced by DistanceFrom")]
 		double Distancefrom (CLLocation  location);
 
 		// NOTE: The old selector was renamed to this guy in 3.2
@@ -146,6 +148,7 @@ namespace MonoMac.CoreLocation {
 		void DismissHeadingCalibrationDisplay ();
 	
 		[Since (3,2)]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		[Export ("purpose", ArgumentSemantic.Copy)]
 		string Purpose { get; set; }
 
@@ -162,6 +165,7 @@ namespace MonoMac.CoreLocation {
 		bool RegionMonitoringAvailable { get; }
 
 		[Since (4,0)]
+		[Obsolete ("Replaced by RegionMonitoringAvailable in iOS 6.0")]
 		[Export ("regionMonitoringEnabled"), Static]
 		bool RegionMonitoringEnabled { get; }
 
@@ -190,6 +194,7 @@ namespace MonoMac.CoreLocation {
 		void StopMonitoringSignificantLocationChanges ();
 
 		[Since (4,0)]
+		[Obsolete ("Deprecated in iOS 6.0")]
 		[Export ("startMonitoringForRegion:desiredAccuracy:")]
 		void StartMonitoring (CLRegion region, double desiredAccuracy);
 
@@ -203,12 +208,39 @@ namespace MonoMac.CoreLocation {
 
 		[Export ("startMonitoringForRegion:")]
 		void StartMonitoring (CLRegion region);
+
+		[Since (6,0)]
+		[Export ("activityType", ArgumentSemantic.Assign)]
+		CLActivityType ActivityType  { get; set; }
+
+		[Since (6,0)]
+		[Export ("pausesLocationUpdatesAutomatically", ArgumentSemantic.Assign)]
+		bool PausesLocationUpdatesAutomatically { get; set; }
+
+		[Since (6,0)]
+		[Export ("allowDeferredLocationUpdatesUntilTraveled:timeout:")]
+		void AllowDeferredLocationUpdatesUntil (double distance, double timeout);
+
+		[Since (6,0)]
+		[Export ("disallowDeferredLocationUpdates")]
+		void DisallowDeferredLocationUpdates ();
+
+		[Since (6,0)]
+		[Static]
+		[Export ("deferredLocationUpdatesAvailable")]
+		bool DeferredLocationUpdatesAvailable { get; }
+
+		[Since (6,0)]
+		[Field ("CLTimeInternalMax")]
+		double MaxTimeInterval { get; }
 #endif
 	}
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
-	partial interface CLLocationManagerDelegate {
+	partial interface CLLocationManagerDelegate
+	{
+		[Obsolete ("Deprecated in iOS 6.0")]
 		[Export ("locationManager:didUpdateToLocation:fromLocation:"), EventArgs ("CLLocationUpdated")]
 		void UpdatedLocation (CLLocationManager  manager, CLLocation newLocation, CLLocation oldLocation);
 	
@@ -242,13 +274,30 @@ namespace MonoMac.CoreLocation {
 #endif
 
 		[Since (4,2)]
-		[Export ("locationManager:didChangeAuthorizationStatus:"), EventArgs ("CLAuthroziationChanged")]
+		[Export ("locationManager:didChangeAuthorizationStatus:"), EventArgs ("CLAuthorizationChanged")]
 		void AuthorizationChanged (CLLocationManager manager, CLAuthorizationStatus status);
+
+		[Since (6,0)]
+		[Export ("locationManager:didUpdateLocations:"), EventArgs ("CLLocationsUpdated")]
+		void LocationsUpdated (CLLocationManager manager, CLLocation[] locations);
+
+		[Since (6,0)]
+		[Export ("locationManagerDidPauseLocationUpdates:"), EventArgs ("")]
+		void LocationUpdatesPaused (CLLocationManager manager);
+
+		[Since (6,0)]
+		[Export ("locationManagerDidResumeLocationUpdates:"), EventArgs ("")]
+		void LocationUpdatesResumed (CLLocationManager manager);
+
+		[Since (6,0)]
+		[Export ("locationManager:didFinishDeferredUpdatesWithError:"), EventArgs ("NSError")]
+		void DeferredUpdatesFinished (CLLocationManager manager, NSError error);
 	}
 
 #if !MONOMAC
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // will crash, see CoreLocation.cs for compatibility stubs
 	partial interface CLRegion {
 		[Export ("center")]
 		CLLocationCoordinate2D Center { get;  }
@@ -268,8 +317,7 @@ namespace MonoMac.CoreLocation {
 
 	[Since (5,0)]
 	[BaseType (typeof (NSObject))]
-	// instances created with 'init' crash when Dispose is called
-	[DisableDefaultCtor]
+	[DisableDefaultCtor] // will crash, see CoreLocation.cs for compatibility stubs
 	interface CLPlacemark {
 		[Export("addressDictionary")]
 		NSDictionary AddressDictionary { get; }

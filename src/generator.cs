@@ -5,6 +5,7 @@
 // Authors:
 //   Geoff Norton
 //   Miguel de Icaza
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2009-2010, Novell, Inc.
 // Copyright 2011-2012 Xamarin, Inc.
@@ -46,6 +47,8 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Drawing;
+using System.ComponentModel;
 
 #if MONOMAC
 using MonoMac.ObjCRuntime;
@@ -55,6 +58,10 @@ using MonoMac.CoreGraphics;
 using MonoMac.CoreVideo;
 using MonoMac.OpenGL;
 using MonoMac.CoreMidi;
+using MonoMac.CoreMedia;
+
+using DictionaryContainerType = MonoMac.Foundation.DictionaryContainer;
+
 #else
 using MonoTouch.ObjCRuntime;
 using MonoTouch.Foundation;
@@ -63,6 +70,10 @@ using MonoTouch.CoreGraphics;
 using MonoTouch.CoreMedia;
 using MonoTouch.CoreVideo;
 using MonoTouch.CoreMidi;
+using MonoTouch.MediaToolbox;
+
+using DictionaryContainerType = MonoTouch.Foundation.DictionaryContainer;
+
 #endif
 
 public static class ReflectionExtensions {
@@ -347,6 +358,10 @@ public class InternalAttribute : Attribute {
 	public InternalAttribute () {}
 }
 
+// When applied to a method or property, flags the resulting generated code as internal
+public sealed class ProtectedAttribute : Attribute {
+}
+
 // When this attribute is applied to the interface definition it will
 // flag the default constructor as private.  This means that you can
 // still instantiate object of this class internally from your
@@ -595,6 +610,18 @@ public class AppearanceAttribute : Attribute {
 }
 
 //
+// This is designed to be applied to setter methods in
+// a base class `Foo' when a `MutableFoo' exists.
+//
+// This allows the Foo.set_XXX to exists but throw an exception 
+// but derived classes would then override the property
+//
+[AttributeUsage (AttributeTargets.Method, AllowMultiple=false)]
+public class NotImplementedAttribute : Attribute {
+	public NotImplementedAttribute () {}
+}
+
+//
 // Used to encapsulate flags about types in either the parameter or the return value
 // For now, it only supports the [PlainString] attribute on strings.
 //
@@ -745,6 +772,7 @@ public class Generator {
 	Dictionary<string,string> original_methods = new Dictionary<string,string> ();
 	List<MarshalType> marshal_types = new List<MarshalType> ();
 	Dictionary<Type,TrampolineInfo> trampolines = new Dictionary<Type,TrampolineInfo> ();
+	Dictionary<Type,int> trampolines_generic_versions = new Dictionary<Type,int> ();
 	Dictionary<Type,Type> delegates_emitted = new Dictionary<Type, Type> ();
 	Dictionary<Type,Type> notification_event_arg_types = new Dictionary<Type,Type> ();
 
@@ -947,6 +975,10 @@ public class Generator {
 		if (mai.Type.IsSubclassOf (typeof (Delegate))){
 			return "IntPtr";
 		}
+
+		if (mai.Type.IsSubclassOf (typeof (DictionaryContainerType))){
+			return "IntPtr";
+		}
 		
 		//
 		// Edit the table in the "void Go ()" routine
@@ -1063,9 +1095,19 @@ public class Generator {
 			throw new BindingException (1001, true, "Do not know how to make a trampoline for {0}", pi);
 		}
 
-		var ti = new TrampolineInfo (t.FullName,
-					     "Inner" + t.Name,
-					     "Trampoline" + t.Name,
+		var trampoline_name = t.Name.Replace ("`", "Arity");
+		if (t.IsGenericType) {
+			var gdef = t.GetGenericTypeDefinition ();
+
+			if (!trampolines_generic_versions.ContainsKey (gdef))
+				trampolines_generic_versions.Add (gdef, 0);
+
+			trampoline_name = trampoline_name + "V" + trampolines_generic_versions [gdef]++;
+		}
+
+		var ti = new TrampolineInfo (FormatType (null, t),
+					     "Inner" + trampoline_name,
+					     "Trampoline" + trampoline_name,
 					     pars.ToString (), invoke.ToString (),
 					     returntype,
 					     mi.ReturnType.ToString (),
@@ -1151,6 +1193,12 @@ public class Generator {
 
 		if (pi.ParameterType.IsSubclassOf (typeof (Delegate))){
 			return String.Format ("(IntPtr) block_ptr_{0}", pi.Name);
+		}
+
+		if (pi.ParameterType.IsSubclassOf (typeof (DictionaryContainerType))){
+			if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute)))
+				return String.Format ("{0} == null ? IntPtr.Zero : {0}.Dictionary.Handle", pi.Name);
+			return pi.Name + ".Dictionary.Handle";
 		}
 		
 		throw new BindingException (1002, true, "Unknown kind {0} in method '{1}.{2}'", pi, mi.DeclaringType.FullName, mi	.Name);
@@ -1403,6 +1451,8 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CGColorSpace), "IntPtr", "{0}.Handle", "new CGColorSpace ("));
 		marshal_types.Add (new MarshalType (typeof (DispatchQueue), "IntPtr", "{0}.Handle", "new DispatchQueue ("));
 		marshal_types.Add (new MarshalType (typeof (MidiEndpoint), "IntPtr", "{0}.Handle", "new MidiEndpoint ("));
+		marshal_types.Add (new MarshalType (typeof (CMTimebase), "IntPtr", "{0}.Handle", "new CMTimebase ("));
+		marshal_types.Add (new MarshalType (typeof (CMClock), "IntPtr", "{0}.Handle", "new CMClock ("));
 #if MONOMAC
 		marshal_types.Add (new MarshalType (typeof (CGLContext), "IntPtr", "{0}.Handle", "new CGLContext ("));
 		marshal_types.Add (new MarshalType (typeof (CGLPixelFormat), "IntPtr", "{0}.Handle", "new CGLPixelFormat ("));
@@ -1413,10 +1463,14 @@ public class Generator {
 #if MONOMAC
 		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoMac.CoreMedia.CMSampleBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreVideo.CVImageBuffer), "IntPtr", "{0}.Handle", "new MonoMac.CoreVideo.CMImageBuffer ("));
+		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreVideo.CVPixelBufferPool), "IntPtr", "{0}.Handle", "new MonoMac.CoreVideo.CVPixelBufferPool ("));
+		marshal_types.Add (new MarshalType (typeof (MonoMac.CoreMedia.CMFormatDescription), "IntPtr", "{0}.Handle", "new MonoMac.CoreMedia.CMFormatDescription ("));
 #else
+		marshal_types.Add (new MarshalType (typeof (MTAudioProcessingTap), "IntPtr", "{0}.Handle", "new MonoTouch.MediaToolbox.MTAudioProcessingTap ("));
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMSampleBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMSampleBuffer ("));
 		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreVideo.CVImageBuffer), "IntPtr", "{0}.Handle", "new MonoTouch.CoreVideo.CMImageBuffer ("));
-
+		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreVideo.CVPixelBufferPool), "IntPtr", "{0}.Handle", "new MonoTouch.CoreVideo.CVPixelBufferPool ("));			
+		marshal_types.Add (new MarshalType (typeof (MonoTouch.CoreMedia.CMFormatDescription), "IntPtr", "{0}.Handle", "new MonoTouch.CoreMedia.CMFormatDescription ("));
 #endif
 
 		marshal_types.Add (new MarshalType (typeof (BlockLiteral), "BlockLiteral", "{0}", "THIS_IS_BROKEN"));
@@ -1513,7 +1567,7 @@ public class Generator {
 					} else if (attr is StaticAttribute){
 						need_static [t] = true;
 						continue;
-					} else if (attr is InternalAttribute){
+					} else if (attr is InternalAttribute || attr is ProtectedAttribute){
 						continue;
 					} else if (attr is NeedsAuditAttribute) {
 						continue;
@@ -1530,7 +1584,9 @@ public class Generator {
 					} else if (attr is NoDefaultValueAttribute) {
 						seenNoDefaultValue = true;
 						continue;
-					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute)
+					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute || attr is EditorBrowsableAttribute)
+						continue;
+					else if (attr is WrapAttribute)
 						continue;
 					else 
 						throw new BindingException (1007, true, "Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -1808,27 +1864,36 @@ public class Generator {
 			return "float";
 		if (type == typeof (bool))
 			return "bool";
-
-		if (usedIn != null && type.Namespace == usedIn.Namespace)
-			return type.Name;
-
-		if (standard_namespaces.Contains (type.Namespace))
-			return type.Name;
-
 		if (type == typeof (string))
 			return "string";
 
-		// Use fully qualified name
-		return type.ToString ();
+		string tname;
+		if ((usedIn != null && type.Namespace == usedIn.Namespace) || standard_namespaces.Contains (type.Namespace))
+			tname = type.Name;
+		else
+			tname = type.FullName;
+
+		var targs = type.GetGenericArguments ();
+		if (targs.Length > 0) {
+			return RemoveArity (tname) + "<" + string.Join (", ", targs.Select (l => FormatType (usedIn, l)).ToArray ()) + ">";
+		}
+
+		return tname;
+	}
+
+	static string RemoveArity (string typeName)
+	{
+		var arity = typeName.IndexOf ('`');
+		return arity > 0 ? typeName.Substring (0, arity) : typeName;
 	}
 
 	//
 	// Makes the public signature for an exposed method
 	//
-	public string MakeSignature (MethodInfo mi)
+	public string MakeSignature (MethodInfo mi, out bool ctor)
 	{
 		StringBuilder sb = new StringBuilder ();
-		bool ctor = mi.Name == "Constructor";
+		ctor = mi.Name == "Constructor";
 		string name =  ctor ? mi.DeclaringType.Name : mi.Name;
 
 		if (mi.Name == "AutocapitalizationType"){
@@ -1858,8 +1923,6 @@ public class Generator {
 			sb.Append (pi.Name);
 		}
 		sb.Append (")");
-		if (ctor)
-			sb.Append (" : base (NSObjectFlag.Empty)");
 		return sb.ToString ();
 	}
 
@@ -1895,6 +1958,7 @@ public class Generator {
 		"MonoTouch.CoreGraphics",
 		"MonoTouch.NewsstandKit",
 		"MonoTouch.GLKit",
+		"MonoTouch.CoreVideo",
 		"OpenTK"
 #endif
 	};
@@ -2172,9 +2236,7 @@ public class Generator {
 
 				convs.AppendFormat (GenerateMarshalString (probe_null, !mai.ZeroCopyStringMarshal), pi.Name);
 				disposes.AppendFormat (GenerateDisposeString (probe_null, !mai.ZeroCopyStringMarshal), pi.Name);
-			}
-
-			if (mai.Type.IsArray){
+			} else if (mai.Type.IsArray){
 				Type etype = mai.Type.GetElementType ();
 				if (etype == typeof (string)){
 					if (null_allowed_override || HasAttribute (pi, typeof (NullAllowedAttribute))){
@@ -2193,10 +2255,7 @@ public class Generator {
 						disposes.AppendFormat ("nsa_{0}.Dispose ();\n", pi.Name);
 					}
 				}
-			}
-
-			
-			if (mai.Type.IsSubclassOf (typeof (Delegate))){
+			} else if (mai.Type.IsSubclassOf (typeof (Delegate))){
 				string trampoline_name = MakeTrampoline (pi.ParameterType);
 				string extra = "";
 				bool null_allowed = HasAttribute (pi, typeof (NullAllowedAttribute));
@@ -2205,7 +2264,7 @@ public class Generator {
 				convs.AppendFormat ("BlockLiteral block_{0};\n", pi.Name);
 				if (null_allowed){
 					convs.AppendFormat ("if ({0} == null){{\n", pi.Name);
-					convs.AppendFormat ("\tblock_ptr_{0} = (BlockLiteral *) 0;\n", pi.Name);
+					convs.AppendFormat ("\tblock_ptr_{0} = null;\n", pi.Name);
 					convs.AppendFormat ("}} else {{\n");
 					extra = "\t";
 				}
@@ -2216,9 +2275,13 @@ public class Generator {
 					convs.AppendFormat ("}}");
 
 				if (null_allowed){
-					disposes.AppendFormat ("if (block_ptr_{0} != (BlockLiteral *) 0)\n", pi.Name);
+					disposes.AppendFormat ("if (block_ptr_{0} != null)\n", pi.Name);
 				}
 				disposes.AppendFormat (extra + "block_ptr_{0}->CleanupBlock ();\n", pi.Name);
+			} else {
+				if (mai.Type.IsClass && !mai.Type.IsByRef && 
+					(mai.Type != typeof (Selector) && mai.Type != typeof (Class) && mai.Type != typeof (string) && !typeof(INativeObject).IsAssignableFrom (mai.Type)))
+					throw new BindingException (1020, true, "Unsupported type {0} used on exported method {1}.{2}'", mai.Type, mi.DeclaringType, mi.Name);
 			}
 
 			// Handle ByRef
@@ -2441,88 +2504,132 @@ public class Generator {
 
 	void PrintPropertyAttributes (PropertyInfo pi)
 	{
-		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
-			print ("[Obsolete (\"{0}\", {1})]",
-			       oa.Message, oa.IsError ? "true" : "false");
-		}
-		foreach (DebuggerBrowsableAttribute ba in pi.GetCustomAttributes (typeof (DebuggerBrowsableAttribute), false)) {
+		foreach (ObsoleteAttribute oa in pi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) 
+			print ("[Obsolete (\"{0}\", {1})]", oa.Message, oa.IsError ? "true" : "false");
+
+		foreach (DebuggerBrowsableAttribute ba in pi.GetCustomAttributes (typeof (DebuggerBrowsableAttribute), false)) 
 			print ("[DebuggerBrowsable (DebuggerBrowsableState.{0})]", ba.State);
-		}
+
 		foreach (DebuggerDisplayAttribute da in pi.GetCustomAttributes (typeof (DebuggerDisplayAttribute), false)) {
 			var narg = da.Name != null ? string.Format (", Name = \"{0}\"", da.Name) : string.Empty;
 			var targ = da.Type != null ? string.Format (", Type = \"{0}\"", da.Type) : string.Empty;
 			print ("[DebuggerDisplay (\"{0}\"{1}{2})]", da.Value, narg, targ);
 		}
-		foreach (SinceAttribute sa in pi.GetCustomAttributes (typeof (SinceAttribute), false)) {
+		foreach (SinceAttribute sa in pi.GetCustomAttributes (typeof (SinceAttribute), false)) 
 			print ("[Since ({0},{1})]", sa.Major, sa.Minor);
-		}
-		foreach (ThreadSafeAttribute sa in pi.GetCustomAttributes (typeof (ThreadSafeAttribute), false)) {
+
+		foreach (ThreadSafeAttribute sa in pi.GetCustomAttributes (typeof (ThreadSafeAttribute), false)) 
 			print ("[ThreadSafe]");
-		}
+
 	}
 
 	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
 	{
 		string wrap;
 		var export = GetExportAttribute (pi, out wrap);
-		bool is_static = HasAttribute (pi, typeof(StaticAttribute));
-		bool is_thread_static = HasAttribute (pi, typeof(IsThreadStaticAttribute));
-		bool is_abstract = HasAttribute (pi, typeof(AbstractAttribute)) && pi.DeclaringType == type;
-		bool is_public = !HasAttribute (pi, typeof(InternalAttribute));
-		bool is_override = HasAttribute (pi, typeof(OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType, type);
-		bool is_new = HasAttribute (pi, typeof(NewAttribute));
-		bool is_sealed = HasAttribute (pi, typeof(SealedAttribute));
+		bool is_static = HasAttribute (pi, typeof (StaticAttribute));
+		bool is_thread_static = HasAttribute (pi, typeof (IsThreadStaticAttribute));
+		bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
+		bool is_protected = HasAttribute (pi, typeof (ProtectedAttribute));
+		bool is_internal = HasAttribute (pi, typeof (InternalAttribute));
+		bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType,  type);
+		bool is_new = HasAttribute (pi, typeof (NewAttribute));
+		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
 		bool is_unsafe = false;
 		
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
 			is_unsafe = true;
 
+		var mod = is_protected ? "protected" : null;
+		mod += is_internal ? "internal" : null;
+		if (string.IsNullOrEmpty (mod))
+			mod = "public";
+
 		if (wrap != null){
 			print_generated_code ();
 			PrintPropertyAttributes (pi);
 			print ("{0} {1}{2}{3}{4} {5} {{",
-			       is_public ? "public" : "internal",
+			       mod,
 			       is_unsafe ? "unsafe " : "",
 			       is_new ? "new " : "",
 			       (is_static ? "static " : ""),
 			       FormatType (pi.DeclaringType,  pi.PropertyType),
 			       pi.Name);
 			indent++;
-			if (pi.CanRead)
-				print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
-			if (pi.CanWrite)
-				print ("set {{ {0} = value; }}", wrap);
+			if (pi.CanRead) {
+				print ("get {");
+				indent++;
+
+				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainerType)))
+					print ("return new {1}({0});", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+				else
+					print ("return {0} as {1};", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+
+				indent--;
+				print ("}");
+			}
+			if (pi.CanWrite) {
+				print ("set {");
+				indent++;
+
+				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainerType)))
+					print ("{0} = value == null ? null : value.Dictionary;", wrap);
+				else
+					print ("{0} = value;", wrap);
+
+				indent--;
+				print ("}");
+			}
+
 			indent--;
 			print ("}\n");
 			return;
 		}
 
 		string var_name = null;
-				
-		// [Model] has properties that only throws, so there's no point in adding unused backing fields
-		if (!is_model && DoesPropertyNeedBackingField (pi)) {
-			var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
+		string override_mod;
+		
+		if (wrap == null) {
+			// [Model] has properties that only throws, so there's no point in adding unused backing fields
+			if (!is_model && DoesPropertyNeedBackingField (pi)) {
+				var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
 
-			if (is_thread_static)
-				print ("[ThreadStatic]");
-			print ("{1}object {0};", var_name, is_static ? "static " : "");
+				print ("[CompilerGenerated]");
 
-			if (!is_static){
-				instance_fields_to_clear_on_dispose.Add (var_name);
+				if (is_thread_static)
+					print ("[ThreadStatic]");
+				print ("{1}object {0};", var_name, is_static ? "static " : "");
+
+				if (!is_static){
+					instance_fields_to_clear_on_dispose.Add (var_name);
+				}
 			}
+			override_mod = is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual ")));
+		} else {
+			override_mod = is_static ? "static " : "";
 		}
 
 		print_generated_code ();
 		PrintPropertyAttributes (pi);
 
 		print ("{0} {1}{2}{3}{4} {5} {{",
-		       is_public ? "public" : "internal",
+		       mod,
 		       is_unsafe ? "unsafe " : "",
 		       is_new ? "new " : "",
-		       is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual "))),
+		       override_mod,
 		       FormatType (pi.DeclaringType,  pi.PropertyType),
 		       pi.Name);
 		indent++;
+
+		if (wrap != null) {
+			if (pi.CanRead)
+				print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
+			if (pi.CanWrite)
+				print ("set {{ {0} = value; }}", wrap);
+			indent--;
+			print ("}\n");
+			return;			
+		}
 
 		ThreadCheck threadCheck = HasAttribute (pi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		if (pi.CanRead){
@@ -2561,6 +2668,7 @@ public class Generator {
 			var setter = pi.GetSetMethod ();
 			var ba = GetBindAttribute (setter);
 			bool null_allowed = HasAttribute (pi, typeof (NullAllowedAttribute)) || HasAttribute (setter, typeof (NullAllowedAttribute));
+			bool not_implemented = HasAttribute (setter, typeof (NotImplementedAttribute));
 			string sel;
 
 			if (ba == null){
@@ -2570,17 +2678,21 @@ public class Generator {
 				sel = ba.Selector;
 			}
 
-			if (export.ArgumentSemantic != ArgumentSemantic.None)
-				print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
-			else
-				print ("[Export (\"{0}\")]", sel);
+			if (!not_implemented){
+				if (export.ArgumentSemantic != ArgumentSemantic.None)
+					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
+				else
+					print ("[Export (\"{0}\")]", sel);
+			}
 			if (is_abstract){
 				print ("set; ");
 			} else {
 				print ("set {");
 				if (debug)
 					print ("Console.WriteLine (\"In {0}\");", pi.GetSetMethod ());
-				if (is_model)
+				if (not_implemented)
+					print ("\tthrow new NotImplementedException ();");
+				else if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck, pi);
@@ -2616,14 +2728,21 @@ public class Generator {
 
 		string selector = null;
 		bool virtual_method = false;
+		string wrap_method = null;
 		object [] attr = mi.GetCustomAttributes (typeof (ExportAttribute), true);
 		if (attr.Length != 1){
 			attr = mi.GetCustomAttributes (typeof (BindAttribute), true);
-			if (attr.Length != 1)
-				throw new BindingException (1012, true, "No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
-			BindAttribute ba = (BindAttribute) attr [0];
-			selector = ba.Selector;
-			virtual_method = ba.Virtual;
+			if (attr.Length != 1) {
+				attr = mi.GetCustomAttributes (typeof (WrapAttribute), true);
+				if (attr.Length != 1)
+					throw new BindingException (1012, true, "No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
+
+				wrap_method = ((WrapAttribute) attr [0]).MethodName;
+			} else {
+				BindAttribute ba = (BindAttribute) attr [0];
+				selector = ba.Selector;
+				virtual_method = ba.Virtual;
+			}
 		} else {
 			ExportAttribute ea = (ExportAttribute) attr [0];
 			selector = ea.Selector;
@@ -2637,13 +2756,22 @@ public class Generator {
 			       oa.Message, oa.IsError ? "true" : "false");
 		}
 
+		foreach (EditorBrowsableAttribute ea in mi.GetCustomAttributes (typeof (EditorBrowsableAttribute), false)) {
+			if (ea.State == EditorBrowsableState.Always) {
+				print ("[EditorBrowsable]");
+			} else {
+				print ("[EditorBrowsable (EditorBrowsableState.{0})]", ea.State);
+			}
+		}
+
 		bool is_static = HasAttribute (mi, typeof (StaticAttribute));
 		if (is_static)
 			virtual_method = false;
 
 		ThreadCheck threadCheck = HasAttribute (mi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		bool is_abstract = HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
-		bool is_public = !HasAttribute (mi, typeof (InternalAttribute));
+		bool is_protected = HasAttribute (mi, typeof (ProtectedAttribute));
+		bool is_internal = HasAttribute (mi, typeof (InternalAttribute));
 		bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
 		bool is_new = HasAttribute (mi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
@@ -2654,23 +2782,43 @@ public class Generator {
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
 				is_unsafe = true;
 
+		var mod = is_protected ? "protected" : null;
+		mod += is_internal ? "internal" : null;
+		if (string.IsNullOrEmpty (mod))
+			mod = "public";
+
+		bool ctor;
 		print_generated_code ();
 		print ("{0} {1}{2}{3}{4}{5}",
-		       is_public ? "public" : "internal",
+		       mod,
 		       is_unsafe ? "unsafe " : "",
 		       is_new ? "new " : "",
 		       is_sealed ? "" : (is_abstract ? "abstract " : (virtual_method ? (is_override ? "override " : "virtual ") : (is_static ? "static " : ""))),
-		       MakeSignature (mi),
+		       MakeSignature (mi, out ctor),
 		       is_abstract ? ";" : "");
 
 		if (!is_abstract){
+			if (ctor) {
+				indent++;
+				print (": {0}", wrap_method == null ? "base (NSObjectFlag.Empty)" : wrap_method);
+				indent--;
+			}
+
 			print ("{");
 			if (debug)
 				print ("\tConsole.WriteLine (\"In {0}\");", mi);
 					
 			if (is_model)
 				print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
-			else {
+			else if (wrap_method != null) {
+				if (!ctor) {
+					indent++;
+
+					string ret = mi.ReturnType == typeof (void) ? null : "return ";
+					print ("{0}{1};", ret, wrap_method);
+					indent--;
+				}
+			} else {
 				if (is_autorelease) {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
@@ -2755,17 +2903,21 @@ public class Generator {
 			print ("namespace {0} {{", type.Namespace);
 			indent++;
 
+			string class_mod = null;
 			if (is_static_class){
 				base_type = typeof (object);
+				class_mod = "static ";
 			} else {
 				print ("[Register(\"{0}\", true)]", objc_type_name);
+				if (need_abstract.ContainsKey (type))
+					class_mod = "abstract ";
 			} 
 			
 			if (is_model)
 				print ("[Model]");
 
 			print ("public unsafe {0}partial class {1} {2} {{",
-			       need_abstract.ContainsKey (type) ? "abstract " : "",
+			       class_mod,
 			       TypeName,
 			       base_type != typeof (object) && TypeName != "NSObject" ? ": " + FormatType (type, base_type) : "");
 
@@ -2773,12 +2925,14 @@ public class Generator {
 			
 			if (!is_model){
 				foreach (var ea in selectors [type]){
+					print ("[CompilerGenerated]");
 					print ("static readonly IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 				}
 			}
 			print ("");
 
 			if (!is_static_class){
+				print ("[CompilerGenerated]");
 				print ("static readonly IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
 				if (!is_model && !external) {
 					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
@@ -2882,6 +3036,7 @@ public class Generator {
 					}
 
 					if (!libraries.Contains (library_name)) {
+						print ("[CompilerGenerated]");
 						if (BindThirdPartyLibrary && library_name == "__Internal") {
 							print ("static readonly IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
 						} else {
@@ -2891,9 +3046,11 @@ public class Generator {
 					}
 
 					string fieldTypeName = FormatType (field_pi.DeclaringType, field_pi.PropertyType);
-					// Value types we dont cache for now, to avoid Nullabel<T>
-					if (!field_pi.PropertyType.IsValueType)
+					// Value types we dont cache for now, to avoid Nullable<T>
+					if (!field_pi.PropertyType.IsValueType) {
+						print ("[CompilerGenerated]");
 						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
+					}
 
 					print ("{0} static {1} {2} {{", HasAttribute (field_pi, typeof (InternalAttribute)) ? "internal" : "public", fieldTypeName, field_pi.Name);
 					indent++;
@@ -2919,6 +3076,8 @@ public class Generator {
 						print ("return Dlfcn.GetFloat ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else if (field_pi.PropertyType == typeof (IntPtr)){
 						print ("return Dlfcn.GetIntPtr ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+					} else if (field_pi.PropertyType == typeof (SizeF)){
+						print ("return Dlfcn.GetSizeF ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else {
 						if (field_pi.PropertyType == typeof (string))
 							throw new BindingException (1013, true, "Unsupported type for Fields (string), you probably meant NSString");
@@ -2971,8 +3130,9 @@ public class Generator {
 
 					var noDefaultValue = new List<MethodInfo> ();
 					
+					print ("#pragma warning disable 672");
 					print ("[Register]");
-					print ("class _{0} : {1} {{ ", dtype.Name, RenderType (dtype));
+					print ("sealed class _{0} : {1} {{ ", dtype.Name, RenderType (dtype));
 					indent++;
 					if (bta.KeepRefUntil != null){
 						print ("object reference;");
@@ -3123,6 +3283,8 @@ public class Generator {
 
 					indent--;
 					print ("}");
+
+					print ("#pragma warning restore 672");
 				}
 				print ("");
 
@@ -3162,7 +3324,8 @@ public class Generator {
 			//
 			foreach (var ti in trampolines.Values){
 				print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
-				print ("static {0} {1} = new {0} ({2});", ti.DelegateName, ti.StaticName, ti.TrampolineName);
+				print ("[CompilerGenerated]");
+				print ("static readonly {0} {1} = {2};", ti.DelegateName, ti.StaticName, ti.TrampolineName);
 				print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
 				print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
 				indent++;
@@ -3290,7 +3453,7 @@ public class Generator {
 			print ("}} /* class {0} */", TypeName);
 			
 			//
-			// Copy delegates from the API files into the output if they were delcared there
+			// Copy delegates from the API files into the output if they were declared there
 			//
 			var rootAssembly = types [0].Assembly;
 			foreach (var deltype in trampolines.Keys){
@@ -3512,7 +3675,7 @@ public class Generator {
 		if (def == null)
 			return "null";
 
-		if (def == typeof (System.Drawing.RectangleF))
+		if ((def as Type) == typeof (System.Drawing.RectangleF))
 			return "System.Drawing.RectangleF.Empty";
 		
 		if (def is bool)

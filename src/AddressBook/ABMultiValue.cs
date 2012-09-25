@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright (C) 2009 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -121,8 +122,8 @@ namespace MonoMac.AddressBook {
 
 		static Exception CreateNotSupportedException ()
 		{
-			return new NotSupportedException ("Instance is read-only.  " + 
-					"To update properties, use an ABMutableMultiValue<T>.  " +
+			return new NotSupportedException ("ABMultiValue record is read-only. " + 
+					"To update properties, use an ABMutableMultiValue<T>. " +
 					"See ABMultiValue<T>.ToMutableMultiValue().");
 		}
 
@@ -132,9 +133,11 @@ namespace MonoMac.AddressBook {
 				return self.toManaged (ABMultiValue.CopyValueAtIndex (self.Handle, index));
 			}
 			set {
-				if (!IsReadOnly)
+				if (IsReadOnly)
 					throw CreateNotSupportedException ();
-				ABMultiValue.ReplaceValueAtIndex (self.Handle, ToIntPtr (value), index);
+				AssertValid ();
+				if (!ABMultiValue.ReplaceValueAtIndex (self.Handle, ToIntPtr (value), index))
+					throw new ArgumentException ("Value cannot be set");
 			}
 		}
 
@@ -144,8 +147,9 @@ namespace MonoMac.AddressBook {
 				return (NSString) Runtime.GetNSObject (ABMultiValue.CopyLabelAtIndex (self.Handle, index));
 			}
 			set {
-				if (!IsReadOnly)
+				if (IsReadOnly)
 					throw CreateNotSupportedException ();
+				AssertValid ();
 				ABMultiValue.ReplaceLabelAtIndex (self.Handle, ABMultiValue.ToIntPtr (value), index);
 			}
 		}

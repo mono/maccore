@@ -1,3 +1,4 @@
+// Copyright 2011, 2012 Xamarin Inc
 using System.Runtime.InteropServices;
 using System;
 using MonoMac.Foundation;

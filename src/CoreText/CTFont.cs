@@ -4,6 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright 2010 Novell, Inc
+// Copyright 2011, 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -121,7 +122,7 @@ namespace MonoMac.CoreText {
 		HorizontalStyle            = 0x68737479,  // 'Hsty'
 		JustificationJust          = 0x6a757374,  // 'Just'
 		Kerning                    = 0x6b65726e,  // 'Kern'
-	        ExtendedKerning            = 0x6b657278,  // 'Kerx'
+		ExtendedKerning            = 0x6b657278,  // 'Kerx'
 		LigatureCaret              = 0x6c636172,  // 'Lcar'
 		IndexToLocation            = 0x6c6f6361,  // 'Loca'
 		MaximumProfile             = 0x6d617870,  // 'Maxp'
@@ -137,6 +138,7 @@ namespace MonoMac.CoreText {
 		VerticalMetrics            = 0x766d7478,  // 'Vmtx'
 		SBitmapData 		   = 0x73626974, // 'sbit'
 		SExtendedBitmapData        = 0x73626978, // 'sbix'
+		AnchorPoints               = 0x616e6b72, // 'ankr'
 	}
 
 	[Since (3,2)]
@@ -907,6 +909,18 @@ namespace MonoMac.CoreText {
 			return CTFontGetBoundingRectsForGlyphs (handle, orientation, glyphs, boundingRects, count);
 		}
 
+		[DllImport (Constants.CoreTextLibrary)]
+		static extern RectangleF CTFontGetOpticalBoundsForGlyphs (IntPtr font, [In] CGGlyph[] glyphs, [Out] RectangleF[] boundingRects, int count, CTFontOptions options);
+		[Since (6,0)]
+		public RectangleF GetOpticalBounds (CGGlyph[] glyphs, RectangleF[] boundingRects, int count, CTFontOptions options = 0)
+		{
+			AssertCount (count);
+			AssertLength ("glyphs",         glyphs, count);
+			AssertLength ("boundingRects",  boundingRects, count, true);
+
+			return CTFontGetOpticalBoundsForGlyphs (handle, glyphs, boundingRects, count, 0);
+		}
+
 		public RectangleF GetBoundingRects (CTFontOrientation orientation, CGGlyph[] glyphs)
 		{
 			if (glyphs == null)
@@ -1091,6 +1105,28 @@ namespace MonoMac.CoreText {
 		}
 #endregion
 
+#region
+		[DllImport (Constants.CoreTextLibrary, EntryPoint="CTFontGetTypeID")]
+		extern static IntPtr CTFontCopyDefaultCascadeListForLanguages (IntPtr font, IntPtr languagePrefList);
+
+		public CTFontDescriptor [] GetDefaultCascadeList (string [] languages)
+		{
+			if (languages == null)
+				throw new ArgumentNullException ("languages");
+			using (var arr = NSArray.FromStrings (languages)){
+				using (var retArray = new CFArray (CTFontCopyDefaultCascadeListForLanguages (handle, arr.Handle), true)){
+					int n = retArray.Count;
+
+					var ret = new CTFontDescriptor [n];
+					for (int i = 0; i < n; i++)
+						ret [i] = new CTFontDescriptor (retArray.GetValue (i), true);
+
+					return ret;
+				}
+			}
+		}
+
+#endregion
 		public override string ToString ()
 		{
 			return FullName;
