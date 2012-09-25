@@ -119,6 +119,10 @@ namespace MonoMac.CoreImage {
 		CIContext FromContext (CGContext ctx, [NullAllowed] NSDictionary options);
 #else
 		[Static]
+		[Wrap ("FromOptions ((NSDictionary) null)")]
+		CIContext Create ();
+
+		[Static]
 		[Export ("contextWithEAGLContext:")]
 		CIContext FromContext (EAGLContext eaglContext);
 
