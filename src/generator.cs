@@ -2348,6 +2348,9 @@ public class Generator {
 				postget = ((PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true));
 			else if (propInfo != null)
 				postget = ((PostGetAttribute []) propInfo.GetCustomAttributes (typeof (PostGetAttribute), true));
+
+			if (postget != null && postget.Length == 0)
+				postget = null;
 		}
 
 		bool release_return = HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ReleaseAttribute));
