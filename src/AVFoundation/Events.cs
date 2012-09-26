@@ -170,6 +170,7 @@ namespace MonoMac.AVFoundation {
 		}
 	
 		[Preserve (Conditional = true)]
+		[Obsolete ("Deprecated in iOS 6.0")]		
 		public override void EndInterruption (AVAudioRecorder recorder)
 		{
 			if (cbEndInterruption != null)
