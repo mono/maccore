@@ -2339,11 +2339,21 @@ public class Generator {
 
 		Inject (mi, typeof (PreSnippetAttribute));
 		AlignAttribute align = GetAttribute (mi, typeof (AlignAttribute)) as AlignAttribute;
-		bool has_postget = HasAttribute (mi, typeof (PostGetAttribute));
+
+		PostGetAttribute [] postget = null;
+		// [PostGet] are not needed (and might not be available) when generating methods inside Appearance types
+		// However we want them even if ImplementsAppearance is true (i.e. the original type needs them)
+		if (!is_appearance) {
+			if (HasAttribute (mi, typeof (PostGetAttribute)))
+				postget = ((PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true));
+			else if (propInfo != null)
+				postget = ((PostGetAttribute []) propInfo.GetCustomAttributes (typeof (PostGetAttribute), true));
+		}
+
 		bool release_return = HasAttribute (mi.ReturnTypeCustomAttributes, typeof (ReleaseAttribute));
 		bool use_temp_return  =
 			release_return ||
-			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || has_postget) && mi.ReturnType != typeof (void)) ||
+			(mi.Name != "Constructor" && (NeedStret (mi) || disposes.Length > 0 || postget != null) && mi.ReturnType != typeof (void)) ||
 			(HasAttribute (mi, typeof (FactoryAttribute))) ||
 			((body_options & BodyOption.NeedsTempReturn) == BodyOption.NeedsTempReturn) ||
 			(mi.ReturnType.IsSubclassOf (typeof (Delegate))) ||
@@ -2406,15 +2416,6 @@ public class Generator {
 			print ("{0} = ret;", var_name);
 		}
 
-		PostGetAttribute [] postget = null;
-		// [PostGet] are not needed (and might not be available) when generating methods inside Appearance types
-		// However we want them even if ImplementsAppearance is true (i.e. the original type needs them)
-		if (!is_appearance) {
-			if (has_postget)
-				postget = ((PostGetAttribute []) mi.GetCustomAttributes (typeof (PostGetAttribute), true));
-			else if (propInfo != null)
-				postget = ((PostGetAttribute []) propInfo.GetCustomAttributes (typeof (PostGetAttribute), true));
-		}
 		if ((postget != null) && (postget.Length > 0)) {
 			print ("#pragma warning disable 168");
 			for (int i = 0; i < postget.Length; i++)
