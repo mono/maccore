@@ -33,6 +33,7 @@ namespace MonoMac.ObjCRuntime {
 		ArmV6        = 2,
 		ArmV7        = 4,
 		Thumb        = 8,
+		ArmV7s       = 16,
 	}
 	
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple=true)]
