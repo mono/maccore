@@ -6074,6 +6074,7 @@ namespace MonoMac.Foundation
 		[Export ("cachedResponse")]
 		NSCachedUrlResponse CachedResponse { get; }
 
+		[Static]
 		[Export ("canInitWithRequest:")]
 		bool CanInitWithRequest (NSUrlRequest request);
 
