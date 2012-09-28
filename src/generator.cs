@@ -2564,9 +2564,10 @@ public class Generator {
 				print ("get {");
 				indent++;
 
-				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainerType)))
-					print ("return new {1}({0});", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
-				else
+				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainerType))) {
+					print ("var src = {0};", wrap);
+					print ("return src == null ? null : new {0}(src);", FormatType (pi.DeclaringType, pi.PropertyType));
+				} else
 					print ("return {0} as {1};", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
 
 				indent--;
