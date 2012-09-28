@@ -314,7 +314,7 @@ namespace MonoMac.Foundation {
 			if (value == null) {
 				RemoveValue (key);
 			} else {
-				Dictionary [key] = new NSString (value);
+				Dictionary [key] = value;
 			}			
 		}
 
