@@ -30,7 +30,7 @@ using System;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
-using MonoMac.CoreGraphics;
+using MonoMac.CoreImage;
 #if !COREBUILD
 using Keys = MonoMac.ImageIO.CGImageProperties;
 #endif
@@ -42,18 +42,6 @@ namespace MonoMac.CoreGraphics {
 		Gray,
 		CMYK,
 		Lab
-	}
-
-	public enum CGImageOrientation
-	{
-		Normal = 1,
-		FlippedHorizontally = 2,
-		Rotared180Degrees = 3,
-		FlippedVertically = 4,
-		FlippedVerticallyRotatedCounterclockwise90Degrees = 5,
-		RotatedCounterclockwise90Degrees = 6,
-		FlippedVerticallyRotatedClockwise90Degrees = 7,
-		RotatedClockwise90Degrees = 8,
 	}
 
 	public class CGImageProperties : DictionaryContainer
@@ -169,9 +157,9 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 
-		public CGImageOrientation? Orientation {
+		public CIImageOrientation? Orientation {
 			get {
-				return (CGImageOrientation?)GetInt32Value (Keys.Orientation);
+				return (CIImageOrientation?)GetInt32Value (Keys.Orientation);
 			}
 			set {
 				SetNumberValue (Keys.Orientation, (int?) value);
@@ -446,9 +434,9 @@ namespace MonoMac.CoreGraphics {
 		{
 		}
 
-		public CGImageOrientation? Orientation {
+		public CIImageOrientation? Orientation {
 			get {
-				return (CGImageOrientation?)GetInt32Value (Keys.TIFFOrientation);
+				return (CIImageOrientation?)GetInt32Value (Keys.TIFFOrientation);
 			}
 			set {
 				SetNumberValue (Keys.TIFFOrientation, (int?) value);
