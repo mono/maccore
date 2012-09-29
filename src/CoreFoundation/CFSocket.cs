@@ -2,7 +2,7 @@
 // MonoMac.CoreFoundation.CFSocket
 //
 // Authors:
-//      Martin Baulig (martin.baulig@gmail.com)
+//      Martin Baulig (martin.baulig@xamarin.com)
 //
 // Copyright 2012 Xamarin Inc. (http://www.xamarin.com)
 //

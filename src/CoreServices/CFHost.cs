@@ -2,7 +2,7 @@
 // MonoMac.CoreServices.CFHost
 //
 // Authors:
-//      Martin Baulig (martin.baulig@gmail.com)
+//      Martin Baulig (martin.baulig@xamarin.com)
 //
 // Copyright 2012 Xamarin Inc. (http://www.xamarin.com)
 //
@@ -70,11 +70,19 @@ namespace MonoMac.CoreServices {
 		[DllImport (Constants.CFNetworkLibrary)]
 		extern static IntPtr CFHostCreateWithAddress (IntPtr allocator, IntPtr address);
 
-		public static CFHost CreateWithAddress (IPAddress address)
+		public static CFHost Create (IPEndPoint endpoint)
 		{
-			using (var data = new CFSocketAddress (new IPEndPoint (address, 0))) {
+			using (var data = new CFSocketAddress (endpoint))
 				return new CFHost (CFHostCreateWithAddress (IntPtr.Zero, data.Handle));
-			}
+		}
+
+		[DllImport (Constants.CFNetworkLibrary)]
+		extern static IntPtr CFHostCreateWithName (IntPtr allocator, IntPtr name);
+
+		public static CFHost Create (string name)
+		{
+			var ptr = new CFString (name);
+			return new CFHost (CFHostCreateWithName (IntPtr.Zero, ptr.Handle));
 		}
 	}
 }

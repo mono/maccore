@@ -103,5 +103,21 @@ namespace MonoMac.CoreFoundation {
 		public IntPtr Bytes {
 			get { return CFDataGetBytePtr (handle); }
 		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static IntPtr CFDataCreate (IntPtr allocator, IntPtr bytes, CFIndex len);
+
+		public static CFData FromData (IntPtr buffer, int length)
+		{
+			return new CFData (CFDataCreate (IntPtr.Zero, buffer, length), true);
+		}
+		
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static IntPtr CFDataCreateCopy (IntPtr allocator, IntPtr data);
+
+		public CFData Copy ()
+		{
+			return new CFData (CFDataCreateCopy (IntPtr.Zero, Handle), true);
+		}
 	}
 }
