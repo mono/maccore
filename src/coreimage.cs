@@ -1091,7 +1091,7 @@ namespace MonoMac.CoreImage {
 	[DisableDefaultCtor]
 	interface CIDetector {
 		[Static, Export ("detectorOfType:context:options:"), Internal]
-		CIDetector FromType (NSString detectorType, CIContext context, [NullAllowed] NSDictionary options);
+		CIDetector FromType (NSString detectorType, [NullAllowed] CIContext context, [NullAllowed] NSDictionary options);
 
 		[Export ("featuresInImage:")]
 		CIFeature [] FeaturesInImage (CIImage image);
