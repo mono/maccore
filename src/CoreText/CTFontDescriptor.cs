@@ -2,6 +2,7 @@
 // CTFontDescriptor.cs: Implements the managed CTFontDescriptor
 //
 // Authors: Mono Team
+//          Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2010 Novell, Inc
 // Copyright 2011, 2012 Xamarin Inc
@@ -446,9 +447,10 @@ namespace MonoMac.CoreText {
 							id.Handle, variationValue));
 		}
 
-		// TODO: is there a better type to use for featureTypeIdentifier, featureSelectorIdentifier?
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontDescriptorCreateCopyWithFeature (IntPtr original, IntPtr featureTypeIdentifier, IntPtr featureSelectorIdentifier);
+
+		[Obsolete]
 		public CTFontDescriptor WithFeature (NSNumber featureTypeIdentifier, NSNumber featureSelectorIdentifier)
 		{
 			if (featureTypeIdentifier == null)
@@ -456,6 +458,203 @@ namespace MonoMac.CoreText {
 			if (featureSelectorIdentifier == null)
 				throw new ArgumentNullException ("featureSelectorIdentifier");
 			return CreateDescriptor (CTFontDescriptorCreateCopyWithFeature (handle, featureTypeIdentifier.Handle, featureSelectorIdentifier.Handle));
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureAllTypographicFeatures.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.AllTypographicFeatures, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureLigatures.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.Ligatures, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureCursiveConnection.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.CursiveConnection, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureLetterCase.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.LetterCase, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureVerticalSubstitutionConnection.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.VerticalSubstitution, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureLinguisticRearrangementConnection.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.LinguisticRearrangement, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureNumberSpacing.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.NumberSpacing, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureSmartSwash.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.SmartSwash, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureDiacritics.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.Diacritics, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureVerticalPosition.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.VerticalPosition, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureFractions.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.Fractions, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureOverlappingCharacters.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.OverlappingCharacters, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureTypographicExtras.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.TypographicExtras, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureMathematicalExtras.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.MathematicalExtras, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureOrnamentSets.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.OrnamentSets, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureCharacterAlternatives.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.CharacterAlternatives, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureDesignComplexity.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.DesignComplexity, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureStyleOptions.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.StyleOptions, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureCharacterShape.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.CharacterShape, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureNumberCase.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.NumberCase, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureTextSpacing.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.TextSpacing, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureTransliteration.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.Transliteration, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureAnnotation.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.Annotation, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureKanaSpacing.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.KanaSpacing, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureIdeographicSpacing.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.IdeographicSpacing, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureUnicodeDecomposition.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.UnicodeDecomposition, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureRubyKana.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.RubyKana, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureCJKSymbolAlternatives.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.CJKSymbolAlternatives, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureIdeographicAlternatives.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.IdeographicAlternatives, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureCJKVerticalRomanPlacement.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.CJKVerticalRomanPlacement, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureItalicCJKRoman.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.ItalicCJKRoman, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureCaseSensitiveLayout.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.CaseSensitiveLayout, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureAlternateKana.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.AlternateKana, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureStylisticAlternatives.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.StylisticAlternatives, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureContextualAlternates.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.ContextualAlternates, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureLowerCase.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.LowerCase, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureUpperCase.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.UpperCase, (int) featureSelector);
+		}
+
+		public CTFontDescriptor WithFeature (CTFontFeatureCJKRomanSpacing.Selector featureSelector)
+		{
+			return WithFeature (FontFeatureGroup.CJKRomanSpacing, (int) featureSelector);
+		}
+
+		CTFontDescriptor WithFeature (FontFeatureGroup featureGroup, int featureSelector)
+		{
+			using (NSNumber t = new NSNumber ((int) featureGroup), f = new NSNumber (featureSelector)) {
+				return CreateDescriptor (CTFontDescriptorCreateCopyWithFeature (handle, t.Handle, f.Handle));
+			}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]

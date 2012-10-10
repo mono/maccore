@@ -2,6 +2,7 @@
 // CTFont.cs: Implements the managed CTFont
 //
 // Authors: Mono Team
+//          Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2010 Novell, Inc
 // Copyright 2011, 2012 Xamarin Inc
@@ -148,6 +149,49 @@ namespace MonoMac.CoreText {
 		ExcludeSynthetic  = (1 << 0),
 	}
 
+	public enum FontFeatureGroup
+	{
+		AllTypographicFeatures   = 0,
+		Ligatures                = 1,
+		CursiveConnection        = 2,
+		[Obsolete ("Use LowerCase or UpperCase instead")]
+		LetterCase               = 3,
+		VerticalSubstitution     = 4,
+		LinguisticRearrangement  = 5,
+		NumberSpacing            = 6,
+		SmartSwash               = 8,
+		Diacritics               = 9,
+		VerticalPosition         = 10,
+		Fractions                = 11,
+		OverlappingCharacters    = 13,
+		TypographicExtras        = 14,
+		MathematicalExtras       = 15,
+		OrnamentSets             = 16,
+		CharacterAlternatives    = 17,
+		DesignComplexity         = 18,
+		StyleOptions             = 19,
+		CharacterShape           = 20,
+		NumberCase               = 21,
+		TextSpacing              = 22,
+		Transliteration          = 23,
+		Annotation               = 24,
+		KanaSpacing              = 25,
+		IdeographicSpacing       = 26,
+		UnicodeDecomposition     = 27,
+		RubyKana                 = 28,
+		CJKSymbolAlternatives    = 29,
+		IdeographicAlternatives  = 30,
+		CJKVerticalRomanPlacement = 31,
+		ItalicCJKRoman           = 32,
+		CaseSensitiveLayout      = 33,
+		AlternateKana            = 34,
+		StylisticAlternatives    = 35,
+		ContextualAlternates     = 36,
+		LowerCase                = 37,
+		UpperCase                = 38,
+		CJKRomanSpacing          = 103
+	}
+
 	[Since (3,2)]
 	public class CTFontFeatureKey {
 
@@ -155,6 +199,8 @@ namespace MonoMac.CoreText {
 		public static readonly NSString Name;
 		public static readonly NSString Exclusive;
 		public static readonly NSString Selectors;
+
+		//static readonly NSString FeatureTypeNameID;
 
 		static CTFontFeatureKey ()
 		{
@@ -166,6 +212,11 @@ namespace MonoMac.CoreText {
 				Name        = Dlfcn.GetStringConstant (handle, "kCTFontFeatureTypeNameKey");
 				Exclusive   = Dlfcn.GetStringConstant (handle, "kCTFontFeatureTypeExclusiveKey");
 				Selectors   = Dlfcn.GetStringConstant (handle, "kCTFontFeatureTypeSelectorsKey");
+
+				//
+				// iOS has some undocumented key
+				//
+				//FeatureTypeNameID = Dlfcn.GetStringConstant (handle, "kCTFontFeatureTypeNameIDKey");
 			}
 			finally {
 				Dlfcn.dlclose (handle);
@@ -190,7 +241,7 @@ namespace MonoMac.CoreText {
 
 		public NSDictionary Dictionary {get; private set;}
 
-		// TODO: what kind of NSNumber?
+		[Obsolete ("Use Type instead")]
 		public NSNumber Identifier {
 			get {return (NSNumber) Dictionary [CTFontFeatureKey.Identifier];}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureKey.Identifier, value);}
@@ -199,6 +250,12 @@ namespace MonoMac.CoreText {
 		public string Name {
 			get {return Adapter.GetStringValue (Dictionary, CTFontFeatureKey.Name);}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureKey.Name, value);}
+		}
+
+		public FontFeatureGroup FeatureGroup {
+			get {
+				return (FontFeatureGroup) (int) (NSNumber) Dictionary [CTFontFeatureKey.Identifier];
+			}
 		}
 
 		public bool Exclusive {
@@ -216,7 +273,7 @@ namespace MonoMac.CoreText {
 		public IEnumerable<CTFontFeatureSelectors> Selectors {
 			get {
 				return Adapter.GetNativeArray (Dictionary, CTFontFeatureKey.Selectors,
-						d => new CTFontFeatureSelectors ((NSDictionary) Runtime.GetNSObject (d)));
+						d => CTFontFeatureSelectors.Create (FeatureGroup, (NSDictionary) Runtime.GetNSObject (d)));
 			}
 			set {
 				List<CTFontFeatureSelectors> v;
@@ -255,6 +312,7 @@ namespace MonoMac.CoreText {
 		}
 	}
 
+	// TODO: Should be abstract
 	[Since (3,2)]
 	public class CTFontFeatureSelectors {
 
@@ -270,12 +328,104 @@ namespace MonoMac.CoreText {
 			Dictionary = dictionary;
 		}
 
+		internal static CTFontFeatureSelectors Create (FontFeatureGroup featureGroup, NSDictionary dictionary)
+		{
+			switch (featureGroup) {
+			case FontFeatureGroup.AllTypographicFeatures:
+				return new CTFontFeatureAllTypographicFeatures (dictionary);
+			case FontFeatureGroup.Ligatures:
+				return new CTFontFeatureLigatures (dictionary);
+			case FontFeatureGroup.CursiveConnection:
+				return new CTFontFeatureCursiveConnection (dictionary);
+			case FontFeatureGroup.LetterCase:
+#pragma warning disable 612
+				return new CTFontFeatureLetterCase (dictionary);
+#pragma warning restore 612
+			case FontFeatureGroup.VerticalSubstitution:
+				return new CTFontFeatureVerticalSubstitutionConnection (dictionary);
+			case FontFeatureGroup.LinguisticRearrangement:
+				return new CTFontFeatureLinguisticRearrangementConnection (dictionary);
+			case FontFeatureGroup.NumberSpacing:
+				return new CTFontFeatureNumberSpacing (dictionary);
+			case FontFeatureGroup.SmartSwash:
+				return new CTFontFeatureSmartSwash (dictionary);
+			case FontFeatureGroup.Diacritics:
+				return new CTFontFeatureDiacritics (dictionary);
+			case FontFeatureGroup.VerticalPosition:
+				return new CTFontFeatureVerticalPosition (dictionary);
+			case FontFeatureGroup.Fractions:
+				return new CTFontFeatureFractions (dictionary);
+			case FontFeatureGroup.OverlappingCharacters:
+				return new CTFontFeatureOverlappingCharacters (dictionary);
+			case FontFeatureGroup.TypographicExtras:
+				return new CTFontFeatureTypographicExtras (dictionary);
+			case FontFeatureGroup.MathematicalExtras:
+				return new CTFontFeatureMathematicalExtras (dictionary);
+			case FontFeatureGroup.OrnamentSets:
+				return new CTFontFeatureOrnamentSets (dictionary);
+			case FontFeatureGroup.CharacterAlternatives:
+				return new CTFontFeatureCharacterAlternatives (dictionary);
+			case FontFeatureGroup.DesignComplexity:
+				return new CTFontFeatureDesignComplexity (dictionary);
+			case FontFeatureGroup.StyleOptions:
+				return new CTFontFeatureStyleOptions (dictionary);
+			case FontFeatureGroup.CharacterShape:
+				return new CTFontFeatureCharacterShape (dictionary);
+			case FontFeatureGroup.NumberCase:
+				return new CTFontFeatureNumberCase (dictionary);
+			case FontFeatureGroup.TextSpacing:
+				return new CTFontFeatureTextSpacing (dictionary);
+			case FontFeatureGroup.Transliteration:
+				return new CTFontFeatureTransliteration (dictionary);
+			case FontFeatureGroup.Annotation:
+				return new CTFontFeatureAnnotation (dictionary);
+			case FontFeatureGroup.KanaSpacing:
+				return new CTFontFeatureKanaSpacing (dictionary);
+			case FontFeatureGroup.IdeographicSpacing:
+				return new CTFontFeatureIdeographicSpacing (dictionary);
+			case FontFeatureGroup.UnicodeDecomposition:
+				return new CTFontFeatureUnicodeDecomposition (dictionary);
+			case FontFeatureGroup.RubyKana:
+				return new CTFontFeatureRubyKana (dictionary);
+			case FontFeatureGroup.CJKSymbolAlternatives:
+				return new CTFontFeatureCJKSymbolAlternatives (dictionary);
+			case FontFeatureGroup.IdeographicAlternatives:
+				return new CTFontFeatureIdeographicAlternatives (dictionary);
+			case FontFeatureGroup.CJKVerticalRomanPlacement:
+				return new CTFontFeatureCJKVerticalRomanPlacement (dictionary);
+			case FontFeatureGroup.ItalicCJKRoman:
+				return new CTFontFeatureItalicCJKRoman (dictionary);
+			case FontFeatureGroup.CaseSensitiveLayout:
+				return new CTFontFeatureCaseSensitiveLayout (dictionary);
+			case FontFeatureGroup.AlternateKana:
+				return new CTFontFeatureAlternateKana (dictionary);
+			case FontFeatureGroup.StylisticAlternatives:
+				return new CTFontFeatureStylisticAlternatives (dictionary);
+			case FontFeatureGroup.ContextualAlternates:
+				return new CTFontFeatureContextualAlternates (dictionary);
+			case FontFeatureGroup.LowerCase:
+				return new CTFontFeatureLowerCase (dictionary);
+			case FontFeatureGroup.UpperCase:
+				return new CTFontFeatureUpperCase (dictionary);
+			case FontFeatureGroup.CJKRomanSpacing:
+				return new CTFontFeatureCJKRomanSpacing (dictionary);
+			default:
+				return new CTFontFeatureSelectors (dictionary);
+			}
+		}
+
 		public NSDictionary Dictionary {get; private set;}
 
-		// TODO: what kind of number?
+		[Obsolete ("Use one of descendant classes")]
 		public NSNumber Identifier {
 			get {return (NSNumber) Dictionary [CTFontFeatureSelectorKey.Identifier];}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureSelectorKey.Identifier, value);}
+		}
+
+		protected int FeatureWeak {
+			get {
+				return (int) (NSNumber) Dictionary [CTFontFeatureSelectorKey.Identifier];
+			}
 		}
 
 		public string Name {
@@ -308,14 +458,949 @@ namespace MonoMac.CoreText {
 		}
 	}
 
-	[Since (3,2)]
-	public class CTFontFeatureSettings {
+	public class CTFontFeatureAllTypographicFeatures : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			AllTypeFeaturesOn    = 0,
+			AllTypeFeaturesOff   = 1
+		}
 
-		public CTFontFeatureSettings ()
-			: this (new NSMutableDictionary ())
+		public CTFontFeatureAllTypographicFeatures (NSDictionary dictionary)
+			: base (dictionary)
 		{
 		}
 
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureLigatures : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			RequiredLigaturesOn  = 0,
+			RequiredLigaturesOff = 1,
+			CommonLigaturesOn    = 2,
+			CommonLigaturesOff   = 3,
+			RareLigaturesOn      = 4,
+			RareLigaturesOff     = 5,
+			LogosOn              = 6,
+			LogosOff             = 7,
+			RebusPicturesOn      = 8,
+			RebusPicturesOff     = 9,
+			DiphthongLigaturesOn = 10,
+			DiphthongLigaturesOff = 11,
+			SquaredLigaturesOn   = 12,
+			SquaredLigaturesOff  = 13,
+			AbbrevSquaredLigaturesOn = 14,
+			AbbrevSquaredLigaturesOff = 15,
+			SymbolLigaturesOn    = 16,
+			SymbolLigaturesOff   = 17,
+			ContextualLigaturesOn = 18,
+			ContextualLigaturesOff = 19,
+			HistoricalLigaturesOn = 20,
+			HistoricalLigaturesOff = 21
+		}
+
+		public CTFontFeatureLigatures (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	[Obsolete]
+	public class CTFontFeatureLetterCase : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			UpperAndLowerCase    = 0,
+			AllCaps              = 1,
+			AllLowerCase         = 2,
+			SmallCaps            = 3,
+			InitialCaps          = 4,
+			InitialCapsAndSmallCaps = 5
+  		}
+
+		public CTFontFeatureLetterCase (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) Feature;
+			}
+		}
+	}
+
+	public class CTFontFeatureCursiveConnection : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+  			Unconnected          = 0,
+			PartiallyConnected   = 1,
+			Cursive              = 2
+  		}
+
+		public CTFontFeatureCursiveConnection (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) Feature;
+			}
+		}
+	}
+
+	public class CTFontFeatureVerticalSubstitutionConnection : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			SubstituteVerticalFormsOn = 0,
+			SubstituteVerticalFormsOff = 1
+  		}
+
+		public CTFontFeatureVerticalSubstitutionConnection (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) Feature;
+			}
+		}
+	}
+
+	public class CTFontFeatureLinguisticRearrangementConnection : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			LinguisticRearrangementOn = 0,
+			LinguisticRearrangementOff = 1
+		}
+
+		public CTFontFeatureLinguisticRearrangementConnection (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) Feature;
+			}
+		}
+	}
+
+	public class CTFontFeatureNumberSpacing : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+  			MonospacedNumbers    = 0,
+			ProportionalNumbers  = 1,
+			ThirdWidthNumbers    = 2,
+			QuarterWidthNumbers  = 3
+  		}
+
+		public CTFontFeatureNumberSpacing (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) Feature;
+			}
+		}
+	}
+
+	public class CTFontFeatureSmartSwash : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			WordInitialSwashesOn = 0,
+			WordInitialSwashesOff = 1,
+ 			WordFinalSwashesOn   = 2,
+			WordFinalSwashesOff  = 3,
+			LineInitialSwashesOn = 4,
+			LineInitialSwashesOff = 5,
+			LineFinalSwashesOn   = 6,
+			LineFinalSwashesOff  = 7,
+			NonFinalSwashesOn    = 8,
+			NonFinalSwashesOff   = 9
+		}
+
+		public CTFontFeatureSmartSwash (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) Feature;
+			}
+		}
+	}
+
+	public class CTFontFeatureDiacritics : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			ShowDiacritics       = 0,
+			HideDiacritics       = 1,
+			DecomposeDiacritics  = 2
+		}
+
+		public CTFontFeatureDiacritics (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureVerticalPosition : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NormalPosition       = 0,
+			Superiors            = 1,
+			Inferiors            = 2,
+			Ordinals             = 3,
+			ScientificInferiors  = 4
+		}
+
+		public CTFontFeatureVerticalPosition (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureFractions : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoFractions          = 0,
+			VerticalFractions    = 1,
+			DiagonalFractions    = 2			
+		}
+
+		public CTFontFeatureFractions (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureOverlappingCharacters : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			PreventOverlapOn     = 0,
+			PreventOverlapOff    = 1
+  		}
+
+		public CTFontFeatureOverlappingCharacters (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureTypographicExtras : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			HyphensToEmDashOn    = 0,
+			HyphensToEmDashOff   = 1,
+			HyphenToEnDashOn     = 2,
+			HyphenToEnDashOff    = 3,
+			SlashedZeroOn        = 4,
+			SlashedZeroOff       = 5,
+			FormInterrobangOn    = 6,
+			FormInterrobangOff   = 7,
+			SmartQuotesOn        = 8,
+			SmartQuotesOff       = 9,
+			PeriodsToEllipsisOn  = 10,
+			PeriodsToEllipsisOff = 11
+		}
+
+		public CTFontFeatureTypographicExtras (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureMathematicalExtras : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			HyphenToMinusOn      = 0,
+			HyphenToMinusOff     = 1,
+			AsteriskToMultiplyOn = 2,
+			AsteriskToMultiplyOff = 3,
+			SlashToDivideOn      = 4,
+			SlashToDivideOff     = 5,
+			InequalityLigaturesOn = 6,
+			InequalityLigaturesOff = 7,
+			ExponentsOn          = 8,
+			ExponentsOff         = 9,
+			MathematicalGreekOn  = 10,
+			MathematicalGreekOff = 11
+		}
+
+		public CTFontFeatureMathematicalExtras (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureOrnamentSets : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoOrnaments          = 0,
+			Dingbats             = 1,
+			PiCharacters         = 2,
+			Fleurons             = 3,
+			DecorativeBorders    = 4,
+			InternationalSymbols = 5,
+			MathSymbols          = 6
+		}
+
+		public CTFontFeatureOrnamentSets (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureCharacterAlternatives : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoAlternates          = 0,
+		}
+
+		public CTFontFeatureCharacterAlternatives (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureDesignComplexity : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			DesignLevel1         = 0,
+			DesignLevel2         = 1,
+			DesignLevel3         = 2,
+			DesignLevel4         = 3,
+			DesignLevel5         = 4
+		}
+
+		public CTFontFeatureDesignComplexity (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureStyleOptions : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoStyleOptions       = 0,
+			DisplayText          = 1,
+			EngravedText         = 2,
+			IlluminatedCaps      = 3,
+			TitlingCaps          = 4,
+			TallCaps             = 5
+		}
+
+		public CTFontFeatureStyleOptions (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureCharacterShape : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			TraditionalCharacters = 0,
+			SimplifiedCharacters = 1,
+			JIS1978Characters    = 2,
+			JIS1983Characters    = 3,
+			JIS1990Characters    = 4,
+			TraditionalAltOne    = 5,
+			TraditionalAltTwo    = 6,
+			TraditionalAltThree  = 7,
+			TraditionalAltFour   = 8,
+			TraditionalAltFive   = 9,
+			ExpertCharacters     = 10,
+			JIS2004Characters    = 11,
+			HojoCharacters       = 12,
+			NLCCharacters        = 13,
+			TraditionalNamesCharacters = 14
+		}
+
+		public CTFontFeatureCharacterShape (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureNumberCase : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			LowerCaseNumbers     = 0,
+			UpperCaseNumbers     = 1
+  		}
+
+		public CTFontFeatureNumberCase (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureTextSpacing : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			ProportionalText     = 0,
+			MonospacedText       = 1,
+			HalfWidthText        = 2,
+			ThirdWidthText       = 3,
+			QuarterWidthText     = 4,
+			AltProportionalText  = 5,
+			AltHalfWidthText     = 6
+		}
+
+		public CTFontFeatureTextSpacing (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureTransliteration : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoTransliteration    = 0,
+			HanjaToHangul        = 1,
+			HiraganaToKatakana   = 2,
+			KatakanaToHiragana   = 3,
+			KanaToRomanization   = 4,
+			RomanizationToHiragana = 5,
+			RomanizationToKatakana = 6,
+			HanjaToHangulAltOne  = 7,
+			HanjaToHangulAltTwo  = 8,
+			HanjaToHangulAltThree = 9
+		}
+
+		public CTFontFeatureTransliteration (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureAnnotation : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoAnnotation         = 0,
+			BoxAnnotation        = 1,
+			RoundedBoxAnnotation = 2,
+			CircleAnnotation     = 3,
+			InvertedCircleAnnotation = 4,
+			ParenthesisAnnotation = 5,
+			PeriodAnnotation     = 6,
+			RomanNumeralAnnotation = 7,
+			DiamondAnnotation    = 8,
+			InvertedBoxAnnotation = 9,
+			InvertedRoundedBoxAnnotation = 10
+		}
+
+		public CTFontFeatureAnnotation (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureKanaSpacing : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			FullWidthKana        = 0,
+			ProportionalKana     = 1
+		}
+
+		public CTFontFeatureKanaSpacing (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureIdeographicSpacing : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			FullWidthIdeographs  = 0,
+			ProportionalIdeographs = 1,
+			HalfWidthIdeographs  = 2
+		}
+
+		public CTFontFeatureIdeographicSpacing (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureUnicodeDecomposition : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			CanonicalCompositionOn = 0,
+			CanonicalCompositionOff = 1,
+			CompatibilityCompositionOn = 2,
+			CompatibilityCompositionOff = 3,
+			TranscodingCompositionOn = 4,
+			TranscodingCompositionOff = 5
+		}
+
+		public CTFontFeatureUnicodeDecomposition (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureRubyKana : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			[Obsolete ("Use RubyKanaOn instead")]
+			NoRubyKana           = 0,
+			[Obsolete ("Use RubyKanaOff instead")]
+			RubyKana             = 1,
+			RubyKanaOn           = 2,
+			RubyKanaOff          = 3
+		}
+
+		public CTFontFeatureRubyKana (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureCJKSymbolAlternatives : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoCJKSymbolAlternatives = 0,
+			CJKSymbolAltOne      = 1,
+			CJKSymbolAltTwo      = 2,
+			CJKSymbolAltThree    = 3,
+			CJKSymbolAltFour     = 4,
+			CJKSymbolAltFive     = 5
+  		}
+
+		public CTFontFeatureCJKSymbolAlternatives (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureIdeographicAlternatives : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoIdeographicAlternatives = 0,
+			IdeographicAltOne    = 1,
+			IdeographicAltTwo    = 2,
+			IdeographicAltThree  = 3,
+			IdeographicAltFour   = 4,
+			IdeographicAltFive   = 5
+  		}
+
+		public CTFontFeatureIdeographicAlternatives (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureCJKVerticalRomanPlacement : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			CJKVerticalRomanCentered = 0,
+			CJKVerticalRomanHBaseline = 1
+  		}
+
+		public CTFontFeatureCJKVerticalRomanPlacement (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureItalicCJKRoman : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			[Obsolete ("Use CJKItalicRomanOff instead")]
+			NoCJKItalicRoman     = 0,
+			[Obsolete ("Use CJKItalicRomanOn instead")]
+			CJKItalicRoman       = 1,
+			CJKItalicRomanOn     = 2,
+			CJKItalicRomanOff    = 3
+		}
+
+		public CTFontFeatureItalicCJKRoman (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureCaseSensitiveLayout : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			CaseSensitiveLayoutOn = 0,
+			CaseSensitiveLayoutOff = 1,
+			CaseSensitiveSpacingOn = 2,
+			CaseSensitiveSpacingOff = 3
+		}
+
+		public CTFontFeatureCaseSensitiveLayout (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureAlternateKana : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			AlternateHorizKanaOn = 0,
+			AlternateHorizKanaOff = 1,
+			AlternateVertKanaOn  = 2,
+			AlternateVertKanaOff = 3
+		}
+
+		public CTFontFeatureAlternateKana (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureStylisticAlternatives : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			NoStylisticAlternates = 0,
+			StylisticAltOneOn    = 2,
+			StylisticAltOneOff   = 3,
+			StylisticAltTwoOn    = 4,
+			StylisticAltTwoOff   = 5,
+			StylisticAltThreeOn  = 6,
+			StylisticAltThreeOff = 7,
+			StylisticAltFourOn   = 8,
+			StylisticAltFourOff  = 9,
+			StylisticAltFiveOn   = 10,
+			StylisticAltFiveOff  = 11,
+			StylisticAltSixOn    = 12,
+			StylisticAltSixOff   = 13,
+			StylisticAltSevenOn  = 14,
+			StylisticAltSevenOff = 15,
+			StylisticAltEightOn  = 16,
+			StylisticAltEightOff = 17,
+			StylisticAltNineOn   = 18,
+			StylisticAltNineOff  = 19,
+			StylisticAltTenOn    = 20,
+			StylisticAltTenOff   = 21,
+			StylisticAltElevenOn = 22,
+			StylisticAltElevenOff = 23,
+			StylisticAltTwelveOn = 24,
+			StylisticAltTwelveOff = 25,
+			StylisticAltThirteenOn = 26,
+			StylisticAltThirteenOff = 27,
+			StylisticAltFourteenOn = 28,
+			StylisticAltFourteenOff = 29,
+			StylisticAltFifteenOn = 30,
+			StylisticAltFifteenOff = 31,
+			StylisticAltSixteenOn = 32,
+			StylisticAltSixteenOff = 33,
+			StylisticAltSeventeenOn = 34,
+			StylisticAltSeventeenOff = 35,
+			StylisticAltEighteenOn = 36,
+			StylisticAltEighteenOff = 37,
+			StylisticAltNineteenOn = 38,
+			StylisticAltNineteenOff = 39,
+			StylisticAltTwentyOn = 40,
+			StylisticAltTwentyOff = 41
+		}
+
+		public CTFontFeatureStylisticAlternatives (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureContextualAlternates : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			ContextualAlternatesOn = 0,
+			ContextualAlternatesOff = 1,
+			SwashAlternatesOn    = 2,
+			SwashAlternatesOff   = 3,
+			ContextualSwashAlternatesOn = 4,
+			ContextualSwashAlternatesOff = 5
+		}
+
+		public CTFontFeatureContextualAlternates (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureLowerCase : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			DefaultLowerCase     = 0,
+			LowerCaseSmallCaps   = 1,
+			LowerCasePetiteCaps  = 2
+		}
+
+		public CTFontFeatureLowerCase (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureUpperCase : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			DefaultUpperCase     = 0,
+			UpperCaseSmallCaps   = 1,
+			UpperCasePetiteCaps  = 2
+		}
+
+		public CTFontFeatureUpperCase (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	public class CTFontFeatureCJKRomanSpacing : CTFontFeatureSelectors
+	{
+		public enum Selector
+		{
+			HalfWidthCJKRoman    = 0,
+			ProportionalCJKRoman = 1,
+			DefaultCJKRoman      = 2,
+			FullWidthCJKRoman    = 3
+		}
+
+		public CTFontFeatureCJKRomanSpacing (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public Selector Feature {
+			get {
+				return (Selector) FeatureWeak;
+			}
+		}
+	}
+
+	[Since (3,2)]
+	public class CTFontFeatureSettings {
+
+		// It should be internal
 		public CTFontFeatureSettings (NSDictionary dictionary)
 		{
 			if (dictionary == null)
@@ -325,16 +1410,28 @@ namespace MonoMac.CoreText {
 
 		public NSDictionary Dictionary {get; private set;}
 
-		// TODO: what kind of number?
+		[Obsolete ("Use Type")]
 		public NSNumber TypeIdentifier {
 			get {return (NSNumber) Dictionary [CTFontFeatureKey.Identifier];}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureKey.Identifier, value);}
 		}
 
-		// TODO: what kind of number?
+		public FontFeatureGroup FeatureGroup {
+			get {
+				return (FontFeatureGroup) (int) (NSNumber) Dictionary [CTFontFeatureKey.Identifier];
+			}
+		}
+
+		[Obsolete ("Use FeatureWeak instead")]
 		public NSNumber SelectorIdentifier {
 			get {return (NSNumber) Dictionary [CTFontFeatureSelectorKey.Identifier];}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureSelectorKey.Identifier, value);}
+		}
+
+		public int FeatureWeak {
+			get {
+				return (int) (NSNumber) Dictionary [CTFontFeatureSelectorKey.Identifier];
+			}
 		}
 	}
 
@@ -1035,6 +2132,8 @@ namespace MonoMac.CoreText {
 #region Font Features
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyFeatures (IntPtr font);
+
+		// Always returns only default features
 		public CTFontFeatures[] GetFeatures ()
 		{
 			var cfArrayRef = CTFontCopyFeatures (handle);
@@ -1048,6 +2147,7 @@ namespace MonoMac.CoreText {
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyFeatureSettings (IntPtr font);
+
 		public CTFontFeatureSettings[] GetFeatureSettings ()
 		{
 			var cfArrayRef = CTFontCopyFeatureSettings (handle);
@@ -1109,6 +2209,7 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary, EntryPoint="CTFontGetTypeID")]
 		extern static IntPtr CTFontCopyDefaultCascadeListForLanguages (IntPtr font, IntPtr languagePrefList);
 
+		[Since (6,0)]
 		public CTFontDescriptor [] GetDefaultCascadeList (string [] languages)
 		{
 			if (languages == null)
