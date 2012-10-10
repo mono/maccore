@@ -36,7 +36,7 @@ namespace MonoMac.AVFoundation {
 		public bool SupportsVideoMinFrameDuration {
 			get {
 				if (RespondsToSelector (new Selector ("isVideoMinFrameDurationSupported")))
-					return SupportsVideoMinFrameDuration;
+					return _SupportsVideoMinFrameDuration;
 				return false;
 			}
 		}
@@ -44,7 +44,7 @@ namespace MonoMac.AVFoundation {
 		public bool SupportsVideoMaxFrameDuration {
 			get {
 				if (RespondsToSelector (new Selector ("isVideoMaxFrameDurationSupported")))
-					return SupportsVideoMinFrameDuration;
+					return _SupportsVideoMaxFrameDuration;
 				return false;
 			}
 		}
