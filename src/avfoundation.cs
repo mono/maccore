@@ -3060,7 +3060,7 @@ namespace MonoMac.AVFoundation {
 		AVCaptureVideoOrientation VideoOrientation { get; set;  }
 
 		[Export ("inputPorts")]
-		AVCaptureInputPort [] inputPorts { get; }
+		AVCaptureInputPort [] InputPorts { get; }
 
 		[Export ("isActive")]
 		bool Active { get; }
