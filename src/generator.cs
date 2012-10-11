@@ -2449,6 +2449,7 @@ public class Generator {
 		if ((postget != null) && (postget.Length > 0)) {
 			print ("#pragma warning disable 168");
 			for (int i = 0; i < postget.Length; i++) {
+#if !MONOMAC
 				// bug #7742: if this code, e.g. existing in iOS 2.0, 
 				// tries to call a property available since iOS 5.0, 
 				// then it will fail when executing in iOS 4.3
@@ -2462,6 +2463,7 @@ public class Generator {
 					}
 				}
 				if (!version_check)
+#endif
 					print ("var postget{0} = {1};", i, postget [i].MethodName);
 			}
 			print ("#pragma warning restore 168");
