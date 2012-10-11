@@ -296,6 +296,93 @@ namespace MonoMac.CoreData
 		NSPropertyDescription [] PropertiesToGroupBy { get; set; }
 	}
 
+	[BaseType (typeof (NSObject), Delegates = new string [] { "WeakDelegate" })]
+	interface NSFetchedResultsController {
+
+		[Export ("initWithFetchRequest:managedObjectContext:sectionNameKeyPath:cacheName:")]
+		IntPtr Constructor (NSFetchRequest fetchRequest, NSManagedObjectContext context, [NullAllowed] string sectionNameKeyPath, [NullAllowed] string name);
+
+		[Wrap ("WeakDelegate")]
+		NSFetchedResultsControllerDelegate Delegate { get; set; }
+
+		[Export ("delegate", ArgumentSemantic.Assign)][NullAllowed]
+		NSObject WeakDelegate { get; set; }
+
+		[Export ("cacheName")]
+		string CacheName { get; }
+
+		[Export ("fetchedObjects")]
+		NSObject[] FetchedObjects { get; }
+
+		[Export ("fetchRequest")]
+		NSFetchRequest FetchRequest { get; }
+
+		[Export ("managedObjectContext")]
+		NSManagedObjectContext ManagedObjectContext { get; }
+
+		[Export ("sectionNameKeyPath")]
+		string SectionNameKeyPath { get; }
+
+		[Export ("sections")]
+		NSFetchedResultsSectionInfo[] Sections { get; }
+
+		[Export ("performFetch:")]
+		bool PerformFetch (out NSError error);
+
+		[Export ("indexPathForObject:")]
+		NSIndexPath FromObject (NSObject obj);
+
+		[Export ("objectAtIndexPath:")]
+		NSObject ObjectAt (NSIndexPath path);
+
+		[Export ("sectionForSectionIndexTitle:atIndex:")]
+		// name like UITableViewSource's similar (and linked) selector
+		int SectionFor (string title, int atIndex);
+
+		[Export ("sectionIndexTitleForSectionName:")]
+		// again named like UITableViewSource
+		string SectionIndexTitles (string sectionName);
+
+		[Static]
+		[Export ("deleteCacheWithName:")]
+		void DeleteCache ([NullAllowed] string name);
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface NSFetchedResultsControllerDelegate {
+		[Export ("controllerWillChangeContent:")]
+		void WillChangeContent (NSFetchedResultsController controller);
+
+		[Export ("controller:didChangeObject:atIndexPath:forChangeType:newIndexPath:")]
+		void DidChangeObject (NSFetchedResultsController controller, NSObject anObject, NSIndexPath indexPath, NSFetchedResultsChangeType type, NSIndexPath newIndexPath);
+
+		[Export ("controller:didChangeSection:atIndex:forChangeType:")]
+		void DidChangeSection (NSFetchedResultsController controller, NSFetchedResultsSectionInfo sectionInfo, uint sectionIndex, NSFetchedResultsChangeType type);
+
+		[Export ("controllerDidChangeContent:")]
+		void DidChangeContent (NSFetchedResultsController controller);
+
+		[Export ("controller:sectionIndexTitleForSectionName:")]
+		string SectionFor (NSFetchedResultsController controller, string sectionName);
+	}
+
+	[BaseType (typeof (NSObject))]
+	[Model]
+	interface NSFetchedResultsSectionInfo {
+		[Export ("numberOfObjects")]
+		int Count { get; }
+
+		[Export ("objects")]
+		NSObject[] Objects { get; }
+
+		[Export ("name")]
+		string Name { get; }
+
+		[Export ("indexTitle")]
+		string IndexTitle { get; }
+	}
+
 	[Since(5,0)]
 	[BaseType (typeof (NSPersistentStore))]
 	interface NSIncrementalStore {
