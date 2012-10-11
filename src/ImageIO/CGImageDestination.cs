@@ -136,9 +136,10 @@ namespace MonoMac.ImageIO {
 				throw new ArgumentNullException ("typeIdentifier");
 
 			var dict = options == null ? null : options.ToDictionary ();
-			var ret = new CGImageDestination (CGImageDestinationCreateWithData (data.Handle, new NSString (typeIdentifier).Handle, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle));
-                        if (dict != null)
-                                dict.Dispose ();
+			IntPtr p = CGImageDestinationCreateWithData (data.Handle, new NSString (typeIdentifier).Handle, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle);
+			var ret = p == IntPtr.Zero ? null : new CGImageDestination (p);
+			if (dict != null)
+				dict.Dispose ();
 			return ret;
 		}
 
@@ -158,9 +159,10 @@ namespace MonoMac.ImageIO {
 				throw new ArgumentNullException ("typeIdentifier");
 
 			var dict = options == null ? null : options.ToDictionary ();
-			var ret = new CGImageDestination (CGImageDestinationCreateWithURL (url.Handle, new NSString (typeIdentifier).Handle, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle));
-                        if (dict != null)
-			        dict.Dispose ();
+			IntPtr p = CGImageDestinationCreateWithURL (url.Handle, new NSString (typeIdentifier).Handle, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle);
+			var ret = p == IntPtr.Zero ? null : new CGImageDestination (p);
+			if (dict != null)
+				dict.Dispose ();
 			return ret;
 		}
 
@@ -202,7 +204,7 @@ namespace MonoMac.ImageIO {
 		{
 			var success = CGImageDestinationFinalize (handle);
 			Dispose ();
-                        return success;
+			return success;
 		}
 	}
 }
