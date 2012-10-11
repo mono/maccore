@@ -3495,6 +3495,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("exposureMode")]
 		AVCaptureExposureMode ExposureMode { get; set;  }
 
+		[Export ("isExposureModeSupported:")]
+		bool IsExposureModeSupported (AVCaptureExposureMode exposureMode);
+
 		[Export ("exposurePointOfInterestSupported")]
 		bool ExposurePointOfInterestSupported { [Bind ("isExposurePointOfInterestSupported")] get;  }
 
