@@ -2194,6 +2194,33 @@ public class Generator {
 		return stringParameters;
 	}
 
+	SinceAttribute GetSince (Type type, string methodName)
+	{
+		if (type == null)
+			return null;
+
+		var props = type.GetProperties ();
+		foreach (var pi in props) {
+			if (pi.Name != methodName)
+				continue;
+			var attrs = pi.GetCustomAttributes (typeof (SinceAttribute), false);
+			return (attrs.Length == 0) ? null : (SinceAttribute) attrs [0];
+		}
+		return GetSince (ReflectionExtensions.GetBaseType (type), methodName);
+	}
+
+	SinceAttribute GetSince (MethodInfo mi, PropertyInfo pi)
+	{
+		var attrs = mi.GetCustomAttributes (typeof (SinceAttribute), false);
+		if ((attrs.Length == 0) && (pi != null)) {
+			attrs = pi.GetCustomAttributes (typeof (SinceAttribute), false);
+		}
+		return (attrs.Length == 0) ? null : (SinceAttribute) attrs [0];
+	}
+
+	// undecorated code is assumed to be iOS 2.0
+	static SinceAttribute SinceDefault = new SinceAttribute (2,0);
+
 	string CurrentMethod;
 	
 	//
@@ -2421,8 +2448,22 @@ public class Generator {
 
 		if ((postget != null) && (postget.Length > 0)) {
 			print ("#pragma warning disable 168");
-			for (int i = 0; i < postget.Length; i++)
-				print ("var postget{0} = {1};", i, postget [i].MethodName);
+			for (int i = 0; i < postget.Length; i++) {
+				// bug #7742: if this code, e.g. existing in iOS 2.0, 
+				// tries to call a property available since iOS 5.0, 
+				// then it will fail when executing in iOS 4.3
+				bool version_check = false;
+				SinceAttribute postget_since = GetSince (type, postget [i].MethodName);
+				if (postget_since != null) {
+					SinceAttribute caller_since = GetSince (mi, propInfo) ?? SinceDefault;
+					if ((caller_since.Major < postget_since.Major) || ((caller_since.Major == postget_since.Major) && (caller_since.Minor < postget_since.Minor))) {
+						version_check = true;
+						print ("var postget{0} = MonoTouch.UIKit.UIDevice.CurrentDevice.CheckSystemVersion ({1},{2}) ? {3} : null;", i, postget_since.Major, postget_since.Minor, postget [i].MethodName);
+					}
+				}
+				if (!version_check)
+					print ("var postget{0} = {1};", i, postget [i].MethodName);
+			}
 			print ("#pragma warning restore 168");
 		}
 		
