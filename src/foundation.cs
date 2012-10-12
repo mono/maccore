@@ -4199,17 +4199,25 @@ namespace MonoMac.Foundation
 		[Export ("compare:")]
 		int Compare (NSIndexPath other);
 
-		[Export ("indexPathForRow:inSection:")][Static]
-		NSIndexPath FromRowSection (int row, int section);
-		
+#if !MONOMAC
+		// NSIndexPath UIKit Additions Reference
+		// https://developer.apple.com/library/ios/#documentation/UIKit/Reference/NSIndexPath_UIKitAdditions/Reference/Reference.html
 		[Export ("row")]
 		int Row { get; }
 
 		[Export ("section")]
 		int Section { get; }
 
-#if !MONOMAC
 		[Static]
+		[Export ("indexPathForRow:inSection:")]
+		NSIndexPath FromRowSection (int row, int section);
+
+		[Export ("item")]
+		[Since (6,0)]
+		int Item { get; }
+
+		[Static]
+		[Since (6,0)]
 		[Export ("indexPathForItem:inSection:")]
 		NSIndexPath FromItemSection (int item, int section);
 #endif
