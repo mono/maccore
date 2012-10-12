@@ -1,9 +1,10 @@
 // 
-// AudioSessions.cs:
+// AudioType.cs:
 //
 // Authors:
 //    Miguel de Icaza (miguel@novell.com)
 //    AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
+//    Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2009, 2010 Novell, Inc
 // Copyright 2010, Reinforce Lab.
@@ -77,7 +78,8 @@ namespace MonoMac.AudioToolbox {
 	}
 
 	[Flags]
-	public enum AudioFormatFlags {
+	public enum AudioFormatFlags : uint
+	{
 		IsFloat                     = (1 << 0),     // 0x1
 		IsBigEndian                 = (1 << 1),     // 0x2
 		IsSignedInteger             = (1 << 2),     // 0x4
@@ -85,7 +87,7 @@ namespace MonoMac.AudioToolbox {
 		IsAlignedHigh               = (1 << 4),     // 0x10
 		IsNonInterleaved            = (1 << 5),     // 0x20
 		IsNonMixable                = (1 << 6),     // 0x40
-		FlagsAreAllClear            = (1 << 31),
+		FlagsAreAllClear            = unchecked((uint)(1 << 31)),
 
 		LinearPCMIsFloat                     = (1 << 0),     // 0x1
 		LinearPCMIsBigEndian                 = (1 << 1),     // 0x2
@@ -96,7 +98,7 @@ namespace MonoMac.AudioToolbox {
 		LinearPCMIsNonMixable                = (1 << 6),     // 0x40
 
 		LinearPCMSampleFractionShift    = 7,
-		LinearPCMSampleFractionMask     = (0x3F << LinearPCMSampleFractionShift),
+		LinearPCMSampleFractionMask     = 0x3F << (int)LinearPCMSampleFractionShift,
 		LinearPCMFlagsAreAllClear            = FlagsAreAllClear,
     
 		AppleLossless16BitSourceData    = 1,
@@ -108,25 +110,35 @@ namespace MonoMac.AudioToolbox {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct AudioStreamBasicDescription {
 		public double SampleRate;
-
-		[Obsolete ("Use the strongly-typed Format property instead")]
-		public int FormatID {
-			get {
-				return (int) Format;
-			}
-			set {
-				Format = (AudioFormatType) value;
-			}
-		}
-
 		public AudioFormatType Format;
 		public AudioFormatFlags FormatFlags;
-		public int BytesPerPacket;
-		public int FramesPerPacket;
-		public int BytesPerFrame;
-		public int ChannelsPerFrame;
-		public int BitsPerChannel;
-		public int Reserved;
+		public uint BytesPerPacket;
+		public uint FramesPerPacket;
+		public uint BytesPerFrame;
+		public uint ChannelsPerFrame;
+		public uint BitsPerChannel;
+		public uint Reserved;
+
+		public const double AudioStreamAnyRate = 0;
+
+		public AudioStreamBasicDescription (AudioFormatType formatType)
+			: this ()
+		{
+			Format = formatType;
+		}
+
+		public static AudioStreamBasicDescription CreateLinearPCM (double sampleRate = 441000, uint channelsPerFrame = 2, uint bitsPerChannel = 16)
+		{
+			var desc = new AudioStreamBasicDescription (AudioFormatType.LinearPCM);
+			desc.SampleRate = sampleRate;
+			desc.ChannelsPerFrame = channelsPerFrame;
+			desc.BitsPerChannel = bitsPerChannel;
+			desc.BytesPerPacket = desc.BytesPerFrame = channelsPerFrame * sizeof (Int16);
+			desc.FramesPerPacket = 1;
+			desc.FormatFlags = AudioFormatFlags.IsBigEndian | AudioFormatFlags.IsSignedInteger | AudioFormatFlags.IsPacked;
+
+			return desc;
+		}
 
 		public override string ToString ()
 		{

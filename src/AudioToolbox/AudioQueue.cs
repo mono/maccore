@@ -1,8 +1,9 @@
 // 
-// AudioSessions.cs:
+// AudioQueue.cs:
 //
 // Authors:
 //    Miguel de Icaza (miguel@xamarin.com)
+//    Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2009 Novell, Inc
 // Copyright 2011, 2012 Xamarin Inc.
@@ -33,9 +34,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
+using MonoMac.ObjCRuntime;
 
 using OSStatus = System.Int32;
-using AudioQueueParameterID = System.UInt32;
 using AudioQueueParameterValue = System.Single;
 using AudioQueueRef = System.IntPtr;
 using AudioQueueTimelineRef = System.IntPtr;
@@ -61,17 +62,27 @@ namespace MonoMac.AudioToolbox {
 		CodecNotFound        = -66673,
 		InvalidCodecAccess   = -66672,
 		QueueInvalidated     = -66671,
+		TooManyTaps          = -66670,
+		InvalidTapContext    = -66669,
 		RecordUnderrun       = -66668,
+		InvalidTapType       = -66667,		
 		EnqueueDuringReset   = -66632,
+		InvalidOfflineMode   = -66626,
 
-		// Not documented, but returned
-		QueueStopped         = 0x73746f70,
+		// There is countless of not well documented error codes returned
+		QueueStopped         = 0x73746f70,	// 'stop'
+        DataFormatError      = 0x666d743f,	// 'fmt?'
+        UnsupportedProperty  = 0x70726F70,  // 'prop'
+
+        // From kAudio_
+        GeneralParamError    = -50
 	}
 
 	public class AudioQueueException : Exception {
 		static string Lookup (int k)
 		{
-			switch ((AudioQueueStatus)k){
+			var status = (AudioQueueStatus)k;
+			switch (status) {
 			case AudioQueueStatus.InvalidBuffer:
 				return "The specified audio queue buffer does not belong to this audio queue";
 				
@@ -118,16 +129,25 @@ namespace MonoMac.AudioToolbox {
 				return "The requested codec was not found";
 				
 			case AudioQueueStatus.InvalidCodecAccess:
-				return "The code could not be accessed";
+				return "The codec could not be accessed";
 				
 			case AudioQueueStatus.QueueInvalidated:
 				return "The audio server has terminated, the queue has been invalidated";
+
+			case AudioQueueStatus.RecordUnderrun:
+				return "Recording lost data because enqueued buffer was not available";
 				
 			case AudioQueueStatus.EnqueueDuringReset:
 				return "You tried to enqueue a buffer during a Reset, Stop or Dispose methods";
-				
+			
+			case AudioQueueStatus.InvalidOfflineMode:
+				return "Offline mode is either required or not required for the operation";
+
+			case AudioQueueStatus.GeneralParamError:
+				return "Error in user parameter list";
+
 			default:
-				return String.Format ("Error code 0x{0:x}", k);
+				return String.Format ("Error code: {0}", status.ToString ());
 			}
 		}
 
@@ -144,23 +164,25 @@ namespace MonoMac.AudioToolbox {
 		public AudioQueueStatus ErrorCode { get; private set; }
 	}
 	
-
-	// typedef UInt32 AudioQueuePropertyID
-	public enum AudioQueueProperty { 
+	public enum AudioQueueProperty : uint
+	{ 
 		IsRunning = 0x6171726e,
-		DeviceSampleRate = 0x61717372,
+		DeviceSampleRate = 0x61717372,			// 'aqsr'
 		DeviceNumberChannels = 0x61716463,
 		CurrentDevice = 0x61716364,
 		MagicCookie = 0x61716d63,
-		MaximumOutputPacketSize = 0x786f7073,
+		MaximumOutputPacketSize = 0x786f7073,	// 'xops'
 		StreamDescription = 0x61716674,
-		ChannelLayout = 0x6171636c,
+		ChannelLayout = 0x6171636c,				// 'aqcl'
 		EnableLevelMetering = 0x61716d65,
 		CurrentLevelMeter = 0x61716d76,
 		CurrentLevelMeterDB = 0x61716d64,
 		DecodeBufferSizeFrames = 0x64636266, 
-		ConverterError = 0x71637665, // 'qcve'
+		ConverterError = 0x71637665,			// 'qcve'
+		HardwareCodecPolicy = 0x61716370,		// 'aqcp'
+		ChannelAssignments = 0x61716361,		// 'aqca'
 	}
+
 	public enum AudioQueueHardwareCodecPolicy {
 		Default = 0,
 		UseSoftwareOnly = 1,
@@ -169,10 +191,11 @@ namespace MonoMac.AudioToolbox {
 		PreferHardware = 4
 	}
 
-	public enum AudioQueueParameter {
+	public enum AudioQueueParameter : uint
+	{
 		Volume = 1,
-		Pan = 13,
 		VolumeRampTime = 4,
+		Pan = 13,
 	}
 	
 	public enum AudioQueueDeviceProperty {
@@ -198,16 +221,43 @@ namespace MonoMac.AudioToolbox {
 		}
 	}
 
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Explicit)]
 	public struct AudioQueueParameterEvent {
+		[FieldOffset(0)]
+		[Obsolete ("Use Parameter")] 
 		public uint ID;
+
+		[FieldOffset(0)] 
+		public AudioQueueParameter Parameter;
+
+		[FieldOffset(4)] 
 		public float Value;
+
+		public AudioQueueParameterEvent (AudioQueueParameter parameter, float value)
+		{
+			this.ID = (uint) parameter;
+			this.Parameter = parameter;
+			this.Value = value;
+		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct AudioQueueLevelMeterState {
 		public float AveragePower;
 		public float PeakPower;
+	}
+
+	[StructLayout(LayoutKind.Sequential)]
+	public struct AudioQueueChannelAssignment
+	{
+		IntPtr deviceUID; // CFString
+		uint channelNumber;
+
+		public AudioQueueChannelAssignment (CFString deviceUID, uint channelNumber)
+		{
+			this.deviceUID = deviceUID.Handle;
+			this.channelNumber = channelNumber;
+		}
 	}
 
 	delegate void AudioQueueOutputCallback (IntPtr userData, IntPtr AQ, IntPtr audioQueueBuffer);
@@ -250,7 +300,7 @@ namespace MonoMac.AudioToolbox {
 		public AudioStreamPacketDescription [] PacketDescriptions { get; private set; }
 	}
 
-	public class AudioQueue : IDisposable {
+	public abstract class AudioQueue : IDisposable {
 		internal protected IntPtr handle;
 		internal protected GCHandle gch;
 
@@ -389,11 +439,9 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern unsafe static AudioQueueStatus AudioQueueEnqueueBuffer (
-			IntPtr AQ,
-			AudioQueueBuffer* audioQueueBuffer,
-			int nPackets,
-			AudioStreamPacketDescription [] desc);
+		internal extern unsafe static AudioQueueStatus AudioQueueEnqueueBuffer (IntPtr AQ, AudioQueueBuffer* audioQueueBuffer, int nPackets, AudioStreamPacketDescription [] desc);
+
+		// TODO: It should not be here, applies to output queues only
 		public AudioQueueStatus EnqueueBuffer (IntPtr audioQueueBuffer, int bytes, AudioStreamPacketDescription [] desc)
 		{
 			if (audioQueueBuffer == IntPtr.Zero)
@@ -405,7 +453,8 @@ namespace MonoMac.AudioToolbox {
 				return EnqueueBuffer (buffer, desc);
 			}
 		}
-		
+
+		// TODO: It should not be here, applies to output queues only
 		public unsafe AudioQueueStatus EnqueueBuffer (AudioQueueBuffer* audioQueueBuffer, AudioStreamPacketDescription [] desc)
 		{
 			if (audioQueueBuffer == null)
@@ -533,26 +582,59 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static AudioQueueStatus AudioQueueGetParameter (IntPtr AQ, int id, out float result);
+		extern static OSStatus AudioQueueGetParameter (IntPtr AQ, AudioQueueParameter parameterId, out float result);
 			
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static AudioQueueStatus AudioQueueSetParameter (IntPtr AQ, int id, float value);
+		extern static OSStatus AudioQueueSetParameter (IntPtr AQ, AudioQueueParameter parameterId, float value);
 
 		public float Volume {
 			get {
 				float r;
-				var k = AudioQueueGetParameter (handle, 1, out r);
-				if (k != 0)
-					throw new AudioQueueException ((int)k);
+				var res = AudioQueueGetParameter (handle, AudioQueueParameter.Volume, out r);
+				if (res != 0)
+					throw new AudioQueueException (res);
 				
 				return r;
 			}
 
 			set {
-				var k = AudioQueueSetParameter (handle, 1, value);
-				if (k != 0)
-					throw new AudioQueueException ((int)k);
+				var res = AudioQueueSetParameter (handle, AudioQueueParameter.Volume, value);
+				if (res != 0)
+					throw new AudioQueueException (res);
+			}
+		}
 
+		public float VolumeRampTime {
+			get {
+				float r;
+				var res = AudioQueueGetParameter (handle, AudioQueueParameter.VolumeRampTime, out r);
+				if (res != 0)
+					throw new AudioQueueException (res);
+				
+				return r;
+			}
+
+			set {
+				var res = AudioQueueSetParameter (handle, AudioQueueParameter.VolumeRampTime, value);
+				if (res != 0)
+					throw new AudioQueueException (res);
+			}
+		}
+
+		public float Pan {
+			get {
+				float r;
+				var res = AudioQueueGetParameter (handle, AudioQueueParameter.Pan, out r);
+				if (res != 0)
+					throw new AudioQueueException (res);
+				
+				return r;
+			}
+
+			set {
+				var res = AudioQueueSetParameter (handle, AudioQueueParameter.Pan, value);
+				if (res != 0)
+					throw new AudioQueueException (res);
 			}
 		}
 
@@ -575,9 +657,9 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		public delegate void AudioQueuePropertyChanged (AudioQueueProperty id);
+		public delegate void AudioQueuePropertyChanged (AudioQueueProperty property);
 		
-		public void AddListener (AudioQueueProperty id, AudioQueuePropertyChanged callback)
+		public void AddListener (AudioQueueProperty property, AudioQueuePropertyChanged callback)
 		{
 			if (callback == null)
 				throw new ArgumentNullException ("callback");
@@ -585,28 +667,28 @@ namespace MonoMac.AudioToolbox {
 				listeners = new Hashtable ();
 			
 			lock (listeners){
-				var a = (ArrayList) listeners [id];
+				var a = (ArrayList) listeners [property];
 				if (a == null){
-					AudioQueueAddPropertyListener (handle, id, property_changed, GCHandle.ToIntPtr (gch));
-					listeners [id] = a = new ArrayList ();
+					AudioQueueAddPropertyListener (handle, property, property_changed, GCHandle.ToIntPtr (gch));
+					listeners [property] = a = new ArrayList ();
 				}
 				a.Add (callback);
 			}
 		}
 
-		public void RemoveListener (AudioQueueProperty id, AudioQueuePropertyChanged callback)
+		public void RemoveListener (AudioQueueProperty property, AudioQueuePropertyChanged callback)
 		{
 			if (callback == null)
 				throw new ArgumentNullException ("callback");
 			if (listeners == null)
 				return;
 			lock (listeners){
-				var a = (ArrayList) listeners [id];
+				var a = (ArrayList) listeners [property];
 				if (a == null)
 					return;
 				a.Remove (callback);
 				if (a.Count == 0){
-					AudioQueueRemovePropertyListener (handle, id, property_changed, GCHandle.ToIntPtr (gch));
+					AudioQueueRemovePropertyListener (handle, property, property_changed, GCHandle.ToIntPtr (gch));
 				}
 			}
 		}
@@ -627,16 +709,19 @@ namespace MonoMac.AudioToolbox {
 		extern static AudioQueueStatus AudioQueueSetProperty (
 			IntPtr AQ, AudioQueueProperty id, IntPtr data, int size);
 
+		[Obsolete] // Should be private
 		public bool GetProperty (AudioQueueProperty property, ref int dataSize, IntPtr outdata)
 		{
 			return AudioQueueGetProperty (handle, property, outdata, ref dataSize) == 0;
 		}
 
+		[Obsolete] // Should be private
 		public bool SetProperty (AudioQueueProperty property, int dataSize, IntPtr propertyData)
 		{
 			return AudioQueueSetProperty (handle, property, propertyData, dataSize) == 0;
 		}      
 
+		[Obsolete] // Should be private
 		public IntPtr GetProperty (AudioQueueProperty property, out int size)
 		{
 			var r = AudioQueueGetPropertySize (handle, property, out size);
@@ -654,6 +739,7 @@ namespace MonoMac.AudioToolbox {
 			return IntPtr.Zero;
 		}
 
+		[Obsolete] // Should be private
 		public T GetProperty<T> (AudioQueueProperty property)
 		{
 			int size;
@@ -712,21 +798,6 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-#if false
-	// Not currently in use.
-		long GetLong (AudioQueueProperty property)
-		{
-			unsafe {
-				long val = 0;
-				int size = 8;
-				int k = AudioQueueGetProperty (handle, property, (IntPtr) (&val), ref size);
-				if (k == 0)
-					return val;
-				throw new AudioQueueException (k);
-			}
-		}
-#endif
-	
 		public bool IsRunning {
 			get {
 				return GetInt (AudioQueueProperty.IsRunning) != 0;
@@ -752,9 +823,12 @@ namespace MonoMac.AudioToolbox {
 
 			set {
 				// TODO
+				throw new NotImplementedException ();
 			}
 		}
 
+#pragma warning disable 612
+		
 		public byte [] MagicCookie {
 			get {
 				int size;
@@ -867,29 +941,59 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+#pragma warning restore 612
+
 		public uint ConverterError {
 			get {
 				return (uint) GetInt (AudioQueueProperty.ConverterError);
 			}
 		}
-		
-		// TODO:
-		// DecodeBufferSizeFrames = 0x64636266
 
-		
-		// TODO:
-		// Manipulating Audio Queue Properties
-		//   AudioQueueAddPropertyListener
-		//   AudioQueueRemovePropertyListener
-	}
-
-	public class OutputAudioQueue : AudioQueue {
-		static AudioQueueOutputCallback dOutputCallback;
-
-		static OutputAudioQueue ()
-		{
-			dOutputCallback = output_callback;
+#if !MONOMAC
+		public AudioQueueHardwareCodecPolicy HardwareCodecPolicy {
+			get {
+				return (AudioQueueHardwareCodecPolicy) GetInt (AudioQueueProperty.HardwareCodecPolicy);
+			}
+			set {
+				SetInt (AudioQueueProperty.HardwareCodecPolicy, (int)value);
+			}
 		}
+
+		[Since (6,0)]
+		public AudioQueueStatus SetChannelAssignments (params AudioQueueChannelAssignment[] channelAssignments)
+		{
+			if (channelAssignments == null)
+				throw new ArgumentNullException ("channelAssignments");
+
+			int length;
+			var ptr = MarshalArray (ref channelAssignments, out length);
+			try {
+				return AudioQueueSetProperty (handle, AudioQueueProperty.ChannelAssignments, ptr, length);
+			} finally {
+				Marshal.FreeHGlobal (ptr);
+			}
+		}
+
+        unsafe static IntPtr MarshalArray<T> (ref T[] array, out int totalSize) where T : struct
+        {
+            int elementSize = Marshal.SizeOf (typeof (T));
+            totalSize = elementSize * array.Length;
+            IntPtr array_ptr = Marshal.AllocHGlobal (totalSize);
+            byte* ptr = (byte*) array_ptr.ToPointer();
+
+            for (int i = 0; i < array.Length; i++, ptr += elementSize)
+            {
+                IntPtr pos = new IntPtr (ptr);
+                Marshal.StructureToPtr (array [i], pos, false);
+            }
+
+            return array_ptr;
+        }	
+#endif
+	}
+	
+	public class OutputAudioQueue : AudioQueue {
+		static readonly AudioQueueOutputCallback dOutputCallback = output_callback;
 						
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static OSStatus AudioQueueNewOutput (ref AudioStreamBasicDescription format, AudioQueueOutputCallback callback,
@@ -979,14 +1083,7 @@ namespace MonoMac.AudioToolbox {
 	}
 
 	public class InputAudioQueue : AudioQueue {
-		static unsafe AudioQueueInputCallback dInputCallback;
-
-		static InputAudioQueue ()
-		{
-			unsafe {
-				dInputCallback = input_callback;
-			}
-		}
+		static unsafe readonly AudioQueueInputCallback dInputCallback = input_callback;
 
 		[MonoPInvokeCallback(typeof(AudioQueueInputCallback))]
 		unsafe static void input_callback (IntPtr userData, IntPtr AQ, IntPtr audioQueueBuffer,
@@ -1016,7 +1113,11 @@ namespace MonoMac.AudioToolbox {
 			UInt32 inFlags,
 			out IntPtr audioQueue);
 
-		public InputAudioQueue (AudioStreamBasicDescription desc) : this (desc, null, null) {}
+		public InputAudioQueue (AudioStreamBasicDescription desc)
+		 : this (desc, null, null)
+		{
+		}
+
 		public InputAudioQueue (AudioStreamBasicDescription desc, CFRunLoop runLoop, string runMode)
 		{
 			IntPtr h;

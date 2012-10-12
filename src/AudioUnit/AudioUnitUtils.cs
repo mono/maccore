@@ -53,11 +53,11 @@ namespace MonoMac.AudioUnit
                 Format = AudioFormatType.LinearPCM,
                 //kAudioFormatFlagsAudioUnitCanonical = kAudioFormatFlagIsSignedInteger | kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked | kAudioFormatFlagIsNonInterleaved | (SampleFractionBits << kLinearPCMFormatFlagsSampleFractionShift),
                 FormatFlags      = (AudioFormatFlags)((int)AudioFormatFlags.IsSignedInteger | (int)AudioFormatFlags.IsPacked | (int)AudioFormatFlags.IsNonInterleaved | (int)(SampleFractionBits << (int)AudioFormatFlags.LinearPCMSampleFractionShift)),
-                ChannelsPerFrame = channel,
-                BytesPerPacket   = AudioUnitSampleTypeSize,
-                BytesPerFrame    = AudioUnitSampleTypeSize,
+                ChannelsPerFrame = (uint)channel,
+                BytesPerPacket   = (uint)AudioUnitSampleTypeSize,
+                BytesPerFrame    = (uint)AudioUnitSampleTypeSize,
                 FramesPerPacket  = 1,
-                BitsPerChannel   = 8 * AudioUnitSampleTypeSize,
+                BitsPerChannel   = 8 * (uint)AudioUnitSampleTypeSize,
                 Reserved = 0
             };
             return audioFormat;
