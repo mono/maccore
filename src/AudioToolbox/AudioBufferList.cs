@@ -1,8 +1,9 @@
-﻿//
+//
 // AudioBufferList.cs: AudioBufferList wrapper class
 //
-// Author:
+// Authors:
 //   AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2010 Reinforce Lab.
 // Copyright 2011, 2012 Xamarin Inc.
@@ -34,65 +35,49 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.AudioToolbox
 {
-	[StructLayout(LayoutKind.Sequential)]
-	public class AudioBufferList {
-		[Preserve (Conditional=true)]
-		internal int bufferCount;
-		// mBuffers array size is variable. But here we uses fixed size of 2, because iPhone phone terminal two (L/R) channels.        
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-		internal AudioBuffer [] buffers;
-		
-		public int BufferCount { get { return bufferCount; }}
-		public AudioBuffer [] Buffers { get { return buffers; }}
-		
-		public AudioBufferList() 
+	public class AudioBufferList
+	{
+		internal AudioBufferList (IntPtr ptr)
 		{
-		}
+			//
+			// Decodes
+			//
+			// struct AudioBufferList
+			// {
+			//    UInt32      mNumberBuffers;
+			//    AudioBuffer mBuffers[1]; // this is a variable length array of mNumberBuffers elements
+			// }
 
-		public AudioBufferList (int count)
-		{
-			bufferCount = count;
-			buffers = new AudioBuffer [count];
-		}
+			int count = Marshal.ReadInt32 (ptr, 0);
+			ptr += sizeof (int);
 
-		public override string ToString ()
-		{
-			if (buffers != null && buffers.Length > 0)
-				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0], buffers [0].DataByteSize);
-			
-			return "[empty]";
-		}
-	}
+			Buffers = new AudioBuffer [count];
 
-	public class MutableAudioBufferList : AudioBufferList, IDisposable {
-		public MutableAudioBufferList (int nubuffers, int bufferSize)
-			: base (nubuffers)
-		{
-			for (int i = 0; i < bufferCount; i++) {
-				buffers[i].NumberChannels = 1;
-				buffers[i].DataByteSize = bufferSize;
-				buffers[i].Data = Marshal.AllocHGlobal((int)bufferSize);
-			}
-		}
-			
-		public void Dispose()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
-		{
-			if (buffers != null){
-				foreach (var mbuf in buffers)
-					Marshal.FreeHGlobal(mbuf.Data);
-				buffers = null;
+			for (int i = 0; i < count; ++i) {
+				Buffers [i] = (AudioBuffer) Marshal.PtrToStructure (ptr, typeof (AudioBuffer));
+				ptr += Marshal.SizeOf (typeof (AudioBuffer));
 			}
 		}
 
-		~MutableAudioBufferList ()
+		public AudioBuffer[] Buffers { get; set; }
+
+		// Caller is resposible for releasing the structure
+		public IntPtr ToPointer ()
 		{
-			Dispose (false);
+			var size = sizeof (int);
+			if (Buffers.Length != 0)
+				size += Buffers.Length * Marshal.SizeOf (Buffers [0]);
+
+			IntPtr buffer = Marshal.AllocHGlobal (size);
+			Marshal.WriteInt32 (buffer, 0, Buffers.Length);
+
+			var ptr = buffer + sizeof (int);
+			foreach (var b in Buffers) {
+				Marshal.StructureToPtr (b, ptr, false);
+				ptr += Marshal.SizeOf (typeof (AudioBuffer));
+			}
+			
+			return buffer;
 		}
 	}
 }

@@ -202,6 +202,17 @@ namespace MonoMac.AudioToolbox {
 		SampleRate = 0x61717372,
 		NumberChannels = 0x61716463
 	}
+
+	[Flags]
+	public enum AudioQueueProcessingTapFlags : uint
+	{
+		PreEffects         = (1 << 0),
+		PostEffects        = (1 << 1),
+		Siphon             = (1 << 2),
+
+		StartOfStream      = (1 << 8),
+		EndOfStream        = (1 << 9),
+	}
 	
 	[StructLayout(LayoutKind.Sequential)]
 	public struct AudioQueueBuffer {
@@ -659,21 +670,27 @@ namespace MonoMac.AudioToolbox {
 
 		public delegate void AudioQueuePropertyChanged (AudioQueueProperty property);
 		
-		public void AddListener (AudioQueueProperty property, AudioQueuePropertyChanged callback)
+		public AudioQueueStatus AddListener (AudioQueueProperty property, AudioQueuePropertyChanged callback)
 		{
 			if (callback == null)
 				throw new ArgumentNullException ("callback");
 			if (listeners == null)
 				listeners = new Hashtable ();
 			
+			AudioQueueStatus res = AudioQueueStatus.Ok;
 			lock (listeners){
 				var a = (ArrayList) listeners [property];
 				if (a == null){
-					AudioQueueAddPropertyListener (handle, property, property_changed, GCHandle.ToIntPtr (gch));
+					res = AudioQueueAddPropertyListener (handle, property, property_changed, GCHandle.ToIntPtr (gch));
+					if (res != AudioQueueStatus.Ok)
+						return res;
+
 					listeners [property] = a = new ArrayList ();
 				}
 				a.Add (callback);
 			}
+
+			return res;
 		}
 
 		public void RemoveListener (AudioQueueProperty property, AudioQueuePropertyChanged callback)
@@ -694,7 +711,7 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioQueueAddPropertyListener (IntPtr AQ, AudioQueueProperty id, AudioQueuePropertyListenerProc proc, IntPtr data);
+		extern static AudioQueueStatus AudioQueueAddPropertyListener (IntPtr AQ, AudioQueueProperty id, AudioQueuePropertyListenerProc proc, IntPtr data);
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static OSStatus AudioQueueRemovePropertyListener (IntPtr AQ, AudioQueueProperty id, AudioQueuePropertyListenerProc proc, IntPtr data);
@@ -990,8 +1007,135 @@ namespace MonoMac.AudioToolbox {
             return array_ptr;
         }	
 #endif
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioQueueStatus AudioQueueProcessingTapNew (IntPtr inAQ, AudioQueueProcessingTapCallbackShared inCallback,
+			IntPtr inClientData, AudioQueueProcessingTapFlags inFlags, out uint outMaxFrames,
+			out AudioStreamBasicDescription outProcessingFormat, out IntPtr outAQTap);
+
+		[Since (6,0)]
+		public AudioQueueProcessingTap CreateProcessingTap (AudioQueueProcessingTapCallback processingCallback, AudioQueueProcessingTapFlags flags,
+		                                                    out AudioQueueStatus status)
+		{
+			var aqpt = new AudioQueueProcessingTap (processingCallback);
+			uint maxFrames;
+			AudioStreamBasicDescription processingFormat;
+			IntPtr tapHandle;
+
+			status = AudioQueueProcessingTapNew (handle, AudioQueueProcessingTap.CreateTapCallback, GCHandle.ToIntPtr (aqpt.Handle), flags, out maxFrames,
+			                                     out processingFormat, out tapHandle);
+
+			if (status != AudioQueueStatus.Ok) {
+				aqpt.Dispose ();
+				return null;
+			}
+
+			aqpt.TapHandle = tapHandle;
+			aqpt.MaxFrames = maxFrames;
+			aqpt.ProcessingFormat = processingFormat;
+			return aqpt;
+		}
 	}
-	
+
+	delegate void AudioQueueProcessingTapCallbackShared (IntPtr clientData, IntPtr tap, uint numberOfFrames,
+	                                                     ref AudioTimeStamp timeStamp, ref AudioQueueProcessingTapFlags flags,
+	                                                     out uint outNumberFrames, IntPtr data);
+
+	public delegate uint AudioQueueProcessingTapCallback (AudioQueueProcessingTap audioQueueTap, uint numberOfFrames,
+	                                                      ref AudioTimeStamp timeStamp, ref AudioQueueProcessingTapFlags flags,
+	                                                      AudioBufferList data);
+
+	public class AudioQueueProcessingTap : IDisposable
+	{
+		internal static readonly AudioQueueProcessingTapCallbackShared CreateTapCallback = TapCallback;
+
+		AudioQueueProcessingTapCallback callback;
+		readonly GCHandle gc_handle;
+
+		internal AudioQueueProcessingTap (AudioQueueProcessingTapCallback callback)
+		{
+			this.callback = callback;
+			gc_handle = GCHandle.Alloc (this);
+		}
+
+		~AudioQueueProcessingTap ()
+		{
+			Dispose (false);
+		}
+
+		internal GCHandle Handle { 
+			get {
+				return gc_handle;
+			}
+		}
+
+		internal IntPtr TapHandle { get; set; }
+		public uint MaxFrames { get; internal set; }
+		public AudioStreamBasicDescription ProcessingFormat { get; internal set; }
+
+		public void Dispose ()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		protected virtual void Dispose (bool disposing)
+		{
+			if (disposing) {
+				callback = null;
+			}
+
+			if (gc_handle.IsAllocated) {
+				gc_handle.Free ();
+				AudioQueueProcessingTapDispose (TapHandle);
+			}
+		}
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static OSStatus AudioQueueProcessingTapDispose (IntPtr inAQTap);
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioQueueStatus AudioQueueProcessingTapGetSourceAudio (IntPtr inAQTap, uint inNumberFrames, ref AudioTimeStamp ioTimeStamp,
+		                                                               out AudioQueueProcessingTapFlags outFlags, out uint outNumberFrames,
+		                                                               IntPtr ioData);
+
+		public AudioQueueStatus GetSourceAudio (uint numberOfFrames, ref AudioTimeStamp timeStamp,
+		                                        out AudioQueueProcessingTapFlags flags, out uint parentNumberOfFrames, AudioBufferList data)
+		{
+			if (data == null)
+				throw new ArgumentNullException ("data");
+
+			IntPtr data_ptr = data.ToPointer ();
+
+			try {
+				return AudioQueueProcessingTapGetSourceAudio (TapHandle, numberOfFrames, ref timeStamp,
+			                                                  out flags, out parentNumberOfFrames, data_ptr);
+			} finally {
+				Marshal.FreeHGlobal (data_ptr);	
+			}
+		}
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioQueueStatus AudioQueueProcessingTapGetQueueTime (IntPtr inAQTap, out double outQueueSampleTime, out uint outQueueFrameCount);
+
+		public AudioQueueStatus GetQueueTime (out double sampleTime, out uint frameCount)
+		{
+			return AudioQueueProcessingTapGetQueueTime (TapHandle, out sampleTime, out frameCount);
+		}
+
+		[MonoPInvokeCallback (typeof (AudioQueueProcessingTapCallbackShared))]
+		static void TapCallback (IntPtr clientData, IntPtr tap, uint numberFrames, ref AudioTimeStamp timeStamp, ref AudioQueueProcessingTapFlags flags,
+		                         out uint outNumberFrames, IntPtr data)
+		{
+			GCHandle gch = GCHandle.FromIntPtr (clientData);
+			var aqpt = (AudioQueueProcessingTap) gch.Target;
+
+			var abl = new AudioBufferList (data);
+			outNumberFrames = aqpt.callback (aqpt, numberFrames, ref timeStamp, ref flags, abl);
+			data = abl.ToPointer ();
+		}
+	}
+
 	public class OutputAudioQueue : AudioQueue {
 		static readonly AudioQueueOutputCallback dOutputCallback = output_callback;
 						
@@ -1137,6 +1281,11 @@ namespace MonoMac.AudioToolbox {
 			}
 			gch.Free ();
 			throw new AudioQueueException (code);
+		}
+
+		public unsafe AudioQueueStatus EnqueueBuffer (AudioQueueBuffer* buffer)
+		{
+			return AudioQueueEnqueueBuffer (handle, buffer, 0, null);
 		}
 	}
 
