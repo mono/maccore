@@ -33,7 +33,7 @@ using MonoMac.Foundation;
 
 namespace MonoMac.AudioToolbox {
 
-	enum AudioServicesError {
+	public enum AudioServicesError {
 		None = 0,
 		UnsupportedProperty = 0x7074793f, // 'pty?'
 		BadPropertySize = 0x2173697a, // '!siz'
@@ -61,14 +61,6 @@ namespace MonoMac.AudioToolbox {
 
 #if false
 	public static class AudioServices {
-
-		
-
-		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern int AudioServicesAddSystemSoundCompletion (uint soundId, CFRunLoopRef runLoop, NSString runLoopMode, SystemSoundCompletionCallback completeionRoutine, IntPtr clientData);
-
-		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern void AudioServicesRemoveSystemSoundCompletion (uint soundId);
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		static extern int AudioServicesGetPropertyInfo (uint propertyId, uint specifierSize, IntPtr specifier, out uint propertyDataSize, out bool writable);

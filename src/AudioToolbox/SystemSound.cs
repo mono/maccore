@@ -1,9 +1,11 @@
 // 
-// AudioServices.cs:
+// SystemSound.cs: AudioServices system sound
 //
 // Authors: Mono Team
+//          Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2009 Novell, Inc
+// Copyright 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -28,32 +30,29 @@
 using System;
 using System.Runtime.InteropServices;
 
-using MonoMac.Foundation;
-using MonoMac.ObjCRuntime;
+using MonoTouch.Foundation;
+using MonoTouch.CoreFoundation;
+using MonoTouch.ObjCRuntime;
 
-namespace MonoMac.AudioToolbox {
-
-	enum AudioServiceErrors {
-		None                      = 0,
-		UnsupportedProperty       = 0x7074793f, // 'pty?'
-		BadPropertySize           = 0x2173697a, // '!siz'
-		BadSpecifierSize          = 0x21737063, // '!spc'
-		SystemSoundUnspecified    = -1500,
-		SystemSoundClientTimedOut = -1501,
-	}
-
-	delegate void SystemSoundCompletionCallback (uint ssID, IntPtr clientData);
+namespace MonoTouch.AudioToolbox {
 
 	enum SystemSoundId : uint {
 		Vibrate = 0x00000FFF,
 	}
 
 	public class SystemSound : INativeObject, IDisposable {
-
+#if MONOMAC
+		// TODO:
+#else
 		public static readonly SystemSound Vibrate = new SystemSound ((uint) SystemSoundId.Vibrate, false);
+#endif
 
 		uint soundId;
 		bool ownsHandle;
+
+		Action completionRoutine;
+		GCHandle gc_handle;
+		static readonly Action<SystemSoundId, IntPtr> SoundCompletionCallback = SoundCompletionShared;
 
 		internal SystemSound (uint soundId, bool ownsHandle)
 		{
@@ -91,16 +90,25 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern AudioServiceErrors AudioServicesDisposeSystemSoundID (uint soundId);
+		static extern AudioServicesError AudioServicesDisposeSystemSoundID (uint soundId);
 
 		void Cleanup (bool checkForError)
 		{
 			if (soundId == 0 || !ownsHandle)
 				return;
+
+			if (gc_handle.IsAllocated) {
+				gc_handle.Free ();
+			}
+
+			if (completionRoutine != null) {
+				RemoveSystemSoundCompletion ();
+			}
+
 			var error = AudioServicesDisposeSystemSoundID (soundId);
 			var oldId = soundId;
 			soundId = 0;
-			if (checkForError && error != AudioServiceErrors.None) {
+			if (checkForError && error != AudioServicesError.None) {
 				throw new InvalidOperationException (string.Format ("Error while disposing SystemSound with ID {0}: {1}",
 							oldId, error.ToString()));
 			}
@@ -128,12 +136,12 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern AudioServiceErrors AudioServicesCreateSystemSoundID (IntPtr fileUrl, out uint soundId);
+		static extern AudioServicesError AudioServicesCreateSystemSoundID (IntPtr fileUrl, out uint soundId);
 
 		public SystemSound (NSUrl fileUrl)
 		{
 			var error = AudioServicesCreateSystemSoundID (fileUrl.Handle, out soundId);
-			if (error != AudioServiceErrors.None)
+			if (error != AudioServicesError.None)
 				throw new InvalidOperationException (string.Format ("Could not create system sound ID for url {0}; error={1}",
 							fileUrl, error));
 			ownsHandle = true;
@@ -143,7 +151,7 @@ namespace MonoMac.AudioToolbox {
 		{
 			uint soundId;
 			var error = AudioServicesCreateSystemSoundID (fileUrl.Handle, out soundId);
-			if (error != AudioServiceErrors.None)
+			if (error != AudioServicesError.None)
 				return null;
 			return new SystemSound (soundId, true);
 		}
@@ -153,10 +161,45 @@ namespace MonoMac.AudioToolbox {
 			using (var url = new NSUrl (filename)){
 				uint soundId;
 				var error = AudioServicesCreateSystemSoundID (url.Handle, out soundId);
-				if (error != AudioServiceErrors.None)
+				if (error != AudioServicesError.None)
 					return null;
 				return new SystemSound (soundId, true);
 			}
+		}
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		static extern AudioServicesError AudioServicesAddSystemSoundCompletion (uint soundId, IntPtr runLoop, IntPtr runLoopMode, Action<SystemSoundId, IntPtr> completionRoutine, IntPtr clientData);
+
+		[MonoPInvokeCallback (typeof (Action<SystemSoundId, IntPtr>))]
+		static void SoundCompletionShared (SystemSoundId id, IntPtr clientData)
+		{
+			GCHandle gch = GCHandle.FromIntPtr (clientData);
+			var ss = (SystemSound) gch.Target;
+
+			ss.completionRoutine ();
+		}
+
+		public AudioServicesError AddSystemSoundCompletion (Action routine, CFRunLoop runLoop = null)
+		{
+			if (gc_handle.IsAllocated)
+				throw new ArgumentException ("Only single completion routine is supported");
+
+			gc_handle = GCHandle.Alloc (this);
+			completionRoutine = routine;
+
+			return AudioServicesAddSystemSoundCompletion (soundId,
+			                                              runLoop == null ? IntPtr.Zero : runLoop.Handle,
+			                                              IntPtr.Zero, // runLoopMode should be enum runLoopMode == null ? IntPtr.Zero : runLoopMode.Handle,
+			                                              SoundCompletionCallback, GCHandle.ToIntPtr (gc_handle));
+		}
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		static extern void AudioServicesRemoveSystemSoundCompletion (uint soundId);
+
+		public void RemoveSystemSoundCompletion ()
+		{
+			completionRoutine = null;
+			AudioServicesRemoveSystemSoundCompletion (soundId);
 		}
 	}
 }
