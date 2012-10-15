@@ -39,6 +39,10 @@ namespace MonoMac.AudioToolbox
 	{
 		internal AudioBufferList (IntPtr ptr)
 		{
+#if MONOMAC
+			// Because it's .net 2.0 based
+			throw new NotImplementedException ();
+#else
 			//
 			// Decodes
 			//
@@ -55,12 +59,9 @@ namespace MonoMac.AudioToolbox
 
 			for (int i = 0; i < count; ++i) {
 				Buffers [i] = (AudioBuffer) Marshal.PtrToStructure (ptr, typeof (AudioBuffer));
-#if MONOMAC
-				throw new NotImplementedException ();
-#else				
 				ptr += Marshal.SizeOf (typeof (AudioBuffer));
-#endif
 			}
+#endif
 		}
 
 		public AudioBuffer[] Buffers { get; set; }
@@ -68,6 +69,9 @@ namespace MonoMac.AudioToolbox
 		// Caller is resposible for releasing the structure
 		public IntPtr ToPointer ()
 		{
+#if MONOMAC
+			throw new NotImplementedException ();
+#else
 			var size = sizeof (int);
 			if (Buffers.Length != 0)
 				size += Buffers.Length * Marshal.SizeOf (Buffers [0]);
@@ -78,14 +82,11 @@ namespace MonoMac.AudioToolbox
 			var ptr = buffer + sizeof (int);
 			foreach (var b in Buffers) {
 				Marshal.StructureToPtr (b, ptr, false);
-#if MONOMAC
-				throw new NotImplementedException ();
-#else				
 				ptr += Marshal.SizeOf (typeof (AudioBuffer));
-#endif
 			}
 			
 			return buffer;
+#endif
 		}
 	}
 }
