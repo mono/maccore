@@ -55,7 +55,11 @@ namespace MonoMac.AudioToolbox
 
 			for (int i = 0; i < count; ++i) {
 				Buffers [i] = (AudioBuffer) Marshal.PtrToStructure (ptr, typeof (AudioBuffer));
+#if MONOMAC
+				throw new NotImplementedException ();
+#else				
 				ptr += Marshal.SizeOf (typeof (AudioBuffer));
+#endif
 			}
 		}
 
@@ -74,7 +78,11 @@ namespace MonoMac.AudioToolbox
 			var ptr = buffer + sizeof (int);
 			foreach (var b in Buffers) {
 				Marshal.StructureToPtr (b, ptr, false);
+#if MONOMAC
+				throw new NotImplementedException ();
+#else				
 				ptr += Marshal.SizeOf (typeof (AudioBuffer));
+#endif
 			}
 			
 			return buffer;
