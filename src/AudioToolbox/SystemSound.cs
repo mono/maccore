@@ -30,11 +30,11 @@
 using System;
 using System.Runtime.InteropServices;
 
-using MonoTouch.Foundation;
-using MonoTouch.CoreFoundation;
-using MonoTouch.ObjCRuntime;
+using MonoMac.Foundation;
+using MonoMac.CoreFoundation;
+using MonoMac.ObjCRuntime;
 
-namespace MonoTouch.AudioToolbox {
+namespace MonoMac.AudioToolbox {
 
 	enum SystemSoundId : uint {
 		Vibrate = 0x00000FFF,
