@@ -1,9 +1,12 @@
 // 
 // Policy.cs: Implements the managed SecPolicy wrapper.
 //
-// Authors: Miguel de Icaza
-//     
+// Authors: 
+//	Miguel de Icaza
+//  Sebastien Pouliot  <sebastien@xamarin.com>
+//
 // Copyright 2010 Novell, Inc
+// Copyright 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,22 +37,49 @@ namespace MonoMac.Security {
 	public class SecPolicy : INativeObject, IDisposable {
 		IntPtr handle;
 
-		internal SecPolicy (IntPtr handle)
+		internal SecPolicy (IntPtr handle) 
+			: this (handle, false)
 		{
-			if (handle == IntPtr.Zero)
-				throw new Exception ("Invalid parameters to context creation");
-
-			CFRetain (handle);
-			this.handle = handle;
 		}
 
 		[Preserve (Conditional=true)]
 		internal SecPolicy (IntPtr handle, bool owns)
 		{
-			if (!owns)
-				CFRetain (handle);
+			if (handle == IntPtr.Zero)
+				throw new Exception ("Invalid handle");
 
 			this.handle = handle;
+			if (!owns)
+				CFObject.CFRetain (handle);
+		}
+
+		[DllImport (Constants.SecurityLibrary)]
+		extern static IntPtr /* SecPolicyRef */ SecPolicyCreateSSL (bool server, IntPtr /* CFStringRef */ hostname);
+
+		static public SecPolicy CreateSslPolicy (bool server, string hostName)
+		{
+#if false
+			NSString host = hostName == null ? null : new NSString (hostName);
+			IntPtr handle = host == null ? IntPtr.Zero : host.Handle; 
+			SecPolicy policy = new SecPolicy (SecPolicyCreateSSL (server, handle), true);
+			if (host != null)
+				host.Dispose ();
+#else
+			CFString host = hostName == null ? null : new CFString (hostName);
+			IntPtr handle = host == null ? IntPtr.Zero : host.Handle; 
+			SecPolicy policy = new SecPolicy (SecPolicyCreateSSL (server, handle), true);
+			if (host != null)
+				host.Dispose ();
+#endif
+			return policy;
+		}
+
+		[DllImport (Constants.SecurityLibrary)]
+		extern static IntPtr /* SecPolicyRef */ SecPolicyCreateBasicX509 ();
+
+		static public SecPolicy CreateBasicX509Policy ()
+		{
+			return new SecPolicy (SecPolicyCreateBasicX509 (), true);
 		}
 
 		~SecPolicy ()
@@ -67,16 +97,10 @@ namespace MonoMac.Security {
 			get { return handle; }
 		}
 
-		[DllImport (Constants.CoreFoundationLibrary)]
-		extern static void CFRelease (IntPtr handle);
-
-		[DllImport (Constants.CoreFoundationLibrary)]
-		extern static void CFRetain (IntPtr handle);
-
 		protected virtual void Dispose (bool disposing)
 		{
 			if (handle != IntPtr.Zero){
-				CFRelease (handle);
+				CFObject.CFRelease (handle);
 				handle = IntPtr.Zero;
 			}
 		}
