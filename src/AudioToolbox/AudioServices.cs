@@ -48,11 +48,6 @@ namespace MonoMac.AudioToolbox {
 		CompletePlaybackIfAppDies	= 0x69666469  // 'ifdi'
 	}
 	
-	public enum AudioSessionInterruptionType {
-		ShouldResume = 1769108333, // 'irsm'
-		ShouldNotResume = 561148781, // '!rsm'
-	}
-
 	static class AudioServices {
 
 		//[DllImport (Constants.AudioToolboxLibrary)]
