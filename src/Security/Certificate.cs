@@ -1,9 +1,12 @@
 // 
 // Certificate.cs: Implements the managed SecCertificate wrapper.
 //
-// Authors: Miguel de Icaza
-//     
+// Authors: 
+//	Miguel de Icaza
+//  Sebastien Pouliot  <sebastien@xamarin.com>
+//
 // Copyright 2010 Novell, Inc
+// Copyright 2012 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -26,6 +29,7 @@
 //
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
@@ -44,6 +48,9 @@ namespace MonoMac.Security {
 		[Preserve (Conditional = true)]
 		internal SecCertificate (IntPtr handle, bool owns)
 		{
+			if (handle == IntPtr.Zero)
+				throw new Exception ("Invalid handle");
+
 			this.handle = handle;
 			if (!owns)
 				CFObject.CFRetain (handle);
@@ -60,6 +67,41 @@ namespace MonoMac.Security {
 			if (data == null)
 				throw new ArgumentNullException ("data");
 
+			Initialize (data);
+		}
+
+		public SecCertificate (byte[] data)
+		{
+			if (data == null)
+				throw new ArgumentNullException ("data");
+
+			using (NSData cert = NSData.FromArray (data)) {
+				Initialize (cert);
+			}
+		}
+
+		public SecCertificate (X509Certificate certificate)
+		{
+			if (certificate == null)
+				throw new ArgumentNullException ("certificate");
+
+			using (NSData cert = NSData.FromArray (certificate.GetRawCertData ())) {
+				Initialize (cert);
+			}
+		}
+
+		public SecCertificate (X509Certificate2 certificate)
+		{
+			if (certificate == null)
+				throw new ArgumentNullException ("certificate");
+
+			using (NSData cert = NSData.FromArray (certificate.RawData)) {
+				Initialize (cert);
+			}
+		}
+
+		void Initialize (NSData data)
+		{
 			handle = SecCertificateCreateWithData (IntPtr.Zero, data.Handle);
 			if (handle == IntPtr.Zero)
 				throw new ArgumentException ("Not a valid DER-encoded X.509 certificate");
