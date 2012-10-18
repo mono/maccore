@@ -3350,6 +3350,9 @@ public class Generator {
 						string ensureArg = bta.KeepRefUntil == null ? "" : "this";
 						
 						if (mi.ReturnType == typeof (void)){
+							foreach (ObsoleteAttribute oa in mi.GetCustomAttributes (typeof (ObsoleteAttribute), false))
+								print ("[Obsolete (\"{0}\", {1})]", oa.Message, oa.IsError ? "true" : "false");
+
 							if (bta.Singleton && mi.GetParameters ().Length == 0 || mi.GetParameters ().Length == 1)
 								print ("public event EventHandler {0} {{", CamelCase (GetEventName (mi)));
 							else 

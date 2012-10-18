@@ -1,8 +1,9 @@
 // 
-// AudioSessions.cs:
+// AudioSession.cs: AudioSession bindings
 //
 // Authors:
 //    Miguel de Icaza (miguel@novell.com)
+//    Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2009 Novell, Inc
 // Copyright 2011, 2012 Xamarin Inc.
@@ -37,10 +38,6 @@ using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
 using OSStatus = System.Int32;
-using AudioQueueParameterID = System.UInt32;
-using AudioQueueParameterValue = System.Single;
-using AudioQueueRef = System.IntPtr;
-using AudioQueueTimelineRef = System.IntPtr;
 
 namespace MonoMac.AudioToolbox {
 
@@ -86,6 +83,18 @@ namespace MonoMac.AudioToolbox {
 
 		public AudioSessionErrors ErrorCode { get; private set; }
 	}
+
+	public class AccessoryInfo
+	{
+		internal AccessoryInfo (int id, string description)
+		{
+			ID = id;
+			Description = description;
+		}
+
+		internal int ID { get; private set; }
+		public string Description { get; private set; }
+	}
 	
 	public class AudioSessionPropertyEventArgs :EventArgs {
 		public AudioSessionPropertyEventArgs (AudioSessionProperty prop, int size, IntPtr data)
@@ -123,6 +132,10 @@ namespace MonoMac.AudioToolbox {
 		static NSString OutputRoute_USBAudio;
 		static NSString OutputRoute_HDMI;
 		static NSString OutputRoute_AirPlay;
+		static NSString InputSourceKey_ID;
+		static NSString InputSourceKey_Description;
+		static NSString OutputDestinationKey_ID;
+		static NSString OutputDestinationKey_Description;
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static OSStatus AudioSessionInitialize(IntPtr cfRunLoop, IntPtr cfstr_runMode, InterruptionListener listener, IntPtr userData);
@@ -163,6 +176,12 @@ namespace MonoMac.AudioToolbox {
 			OutputRoute_USBAudio = new NSString (Dlfcn.GetIntPtr (lib, "kAudioSessionOutputRoute_USBAudio"));
 			OutputRoute_HDMI = new NSString (Dlfcn.GetIntPtr (lib, "kAudioSessionOutputRoute_HDMI"));
 			OutputRoute_AirPlay = new NSString (Dlfcn.GetIntPtr (lib, "kAudioSessionOutputRoute_AirPlay"));
+
+			InputSourceKey_ID = new NSString (Dlfcn.GetIntPtr (lib, "kAudioSession_InputSourceKey_ID"));
+			InputSourceKey_Description = new NSString (Dlfcn.GetIntPtr (lib, "kAudioSession_InputSourceKey_Description"));
+
+			OutputDestinationKey_ID = new NSString (Dlfcn.GetIntPtr (lib, "kAudioSession_OutputDestinationKey_ID"));
+			OutputDestinationKey_Description = new NSString (Dlfcn.GetIntPtr (lib, "kAudioSession_OutputDestinationKey_Description"));
 			
 			Dlfcn.dlclose (lib);
 			
@@ -183,11 +202,21 @@ namespace MonoMac.AudioToolbox {
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static OSStatus AudioSessionSetActive (int active);
+
 		public static void SetActive (bool active)
 		{
 			int k = AudioSessionSetActive (active ? 1 : 0);
 			if (k != 0)
 				throw new AudioSessionException (k);
+		}
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioSessionErrors AudioSessionSetActive (int active, AudioSessionActiveFlags inFlags);
+
+		[Since (4,0)]
+		public static AudioSessionErrors SetActive (bool active, AudioSessionActiveFlags flags)
+		{
+			return AudioSessionSetActive (active ? 1 : 0, flags);
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -298,12 +327,75 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		[Obsolete ("Use InputRoute or OutputRoute instead")]
 		static public string AudioRoute {
 			get {
 				return CFString.FetchString ((IntPtr) GetInt (AudioSessionProperty.AudioRoute));
 			}
 		}
+
+		[Since (5,0)]
+		static public AccessoryInfo[] InputSources {
+			get {
+				using (var array = new CFArray ((IntPtr) GetInt (AudioSessionProperty.InputSources))) {
+					var res = new AccessoryInfo [array.Count];
+					for (int i = 0; i < res.Length; ++i) {
+						var dict = array.GetValue (i);
+						var id = new NSNumber (CFDictionary.GetValue (dict, InputSourceKey_ID.Handle));
+						var desc = CFString.FetchString (CFDictionary.GetValue (dict, InputSourceKey_Description.Handle));
+
+						res [i] = new AccessoryInfo ((int) id, desc);
+						id.Dispose ();
+					}
+					return res;
+				}
+			}
+		}
+
+		[Since (5,0)]
+		static public AccessoryInfo[] OutputDestinations {
+			get {
+				using (var array = new CFArray ((IntPtr) GetInt (AudioSessionProperty.OutputDestinations))) {
+					var res = new AccessoryInfo [array.Count];
+					for (int i = 0; i < res.Length; ++i) {
+						var dict = array.GetValue (i);
+						var id = new NSNumber (CFDictionary.GetValue (dict, OutputDestinationKey_ID.Handle));
+						var desc = CFString.FetchString (CFDictionary.GetValue (dict, OutputDestinationKey_Description.Handle));
+
+						res [i] = new AccessoryInfo ((int) id, desc);
+						id.Dispose ();
+					}
+					return res;
+				}
+			}
+		}
+
+		/* Could not test what sort of unique CFNumberRef value it's
+
+		[Since (5,0)]
+		static public int InputSource {
+			get {
+				return GetInt (AudioSessionProperty.InputSource);
+			}
+			set {
+				SetInt (AudioSessionProperty.InputSource, value);
+			}
+		}
+
+		[Since (5,0)]
+		static public int OutputDestination {
+			get {
+				return GetInt (AudioSessionProperty.OutputDestination);
+			}
+			set {
+				SetInt (AudioSessionProperty.OutputDestination, value);
+			}
+		}
+
+		*/
 		
+		// TODO: Wrong can return more than 1 value
+		[Since (5,0)]
 		static public AudioSessionInputRouteKind InputRoute {
 			get {
 				var arr = (NSArray) AudioRouteDescription [AudioRouteKey_Inputs];
@@ -338,6 +430,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 		
+		[Since (5,0)]
 		static public AudioSessionOutputRouteKind [] OutputRoutes {
 			get {
 				var arr = (NSArray) AudioRouteDescription [AudioRouteKey_Outputs];
@@ -471,15 +564,6 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		static public AudioSessionMode Mode {
-			get {
-				return (AudioSessionMode) GetInt (AudioSessionProperty.Mode);
-			}
-			set {
-				SetInt (AudioSessionProperty.Mode, (int) value);
-			}
-		}
-		
 		static public bool OverrideCategoryDefaultToSpeaker {
 			get {
 				return GetInt (AudioSessionProperty.OverrideCategoryDefaultToSpeaker) != 0;
@@ -498,6 +582,34 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 		
+		[Since (5,0)]
+		static public AudioSessionMode Mode {
+			get {
+				return (AudioSessionMode) GetInt (AudioSessionProperty.Mode);
+			}
+			set {
+				SetInt (AudioSessionProperty.Mode, (int) value);
+			}
+		}
+
+		// InputSources
+
+		[Since (5,0)]
+		static public bool InputGainAvailable {
+			get {
+				return GetInt (AudioSessionProperty.InputGainAvailable) != 0;
+			}
+		}
+
+		[Since (5,0)]
+		static public float InputGainScalar {
+			get {
+				return GetFloat (AudioSessionProperty.InputGainScalar);
+			}
+			set {
+				SetFloat (AudioSessionProperty.InputGainScalar, value);
+			}
+		}
 
 		delegate void _PropertyListener (IntPtr userData, AudioSessionProperty prop, int size, IntPtr data);
 		public delegate void PropertyListener (AudioSessionProperty prop, int size, IntPtr data);

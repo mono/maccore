@@ -32,4 +32,14 @@ namespace MonoMac.Security {
 		PKCS1SHA512 = 0x8006,
 	}
 	
+	public enum SecTrustResult {
+		Invalid,
+		Proceed,
+		Confirm,
+		Deny,
+		Unspecified,
+		RecoverableTrustFailure,
+		FatalTrustFailure,
+		ResultOtherError,
+	}
 }
