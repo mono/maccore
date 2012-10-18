@@ -64,6 +64,11 @@ namespace MonoMac.AudioToolbox
 #endif
 		}
 
+		public AudioBufferList (int bufferSize)
+		{
+			Buffers = new AudioBuffer [bufferSize];
+		}
+
 		public AudioBuffer[] Buffers { get; set; }
 
 		// Caller is resposible for releasing the structure
