@@ -60,6 +60,7 @@ namespace MonoMac.Foundation {
 		GCHandle gch;
 		NSAction action;
 
+#if !MONOTOUCH
 		// This ctor is so that the runtime can create a new instance of this class
 		// if ObjC wants to call release on an instance we've already called Dispose on.
 		// Since we detach the handle from the managed instance when Dispose is called,
@@ -70,6 +71,7 @@ namespace MonoMac.Foundation {
 			: base (handle)
 		{
 		}
+#endif
 
 		public NSAsyncActionDispatcher (NSAction action)
 		{
@@ -94,6 +96,11 @@ namespace MonoMac.Foundation {
 				// problems, so we are removing the Dispose and letting
 				// the GC and our pipeline do their job.
 				// 
+#if MONOTOUCH
+				// MonoTouch has fixed the above problems, and we can call
+				// Dispose here.
+				Dispose ();
+#endif
 			}
 		}
 	}
