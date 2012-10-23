@@ -2992,29 +2992,34 @@ public class Generator {
 					if (external) {
 						if (!disable_default_ctor) {
 							GeneratedCode (sw, 2);
-							sw.WriteLine ("[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\t\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
+							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]");
+							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
 							      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix, ctor_visibility);
 						}
 					} else {
 						if (!disable_default_ctor) {
 							GeneratedCode (sw, 2);
-							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
+							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
+							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
 								      TypeName,
 								      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
 								      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
 								      MainPrefix, ctor_visibility);
 						}
 						GeneratedCode (sw, 2);
-						sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
+						sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
+						sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
 							      TypeName,
 							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
 							      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
 							      MainPrefix);
 					}
 					GeneratedCode (sw, 2);
-					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
+					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
+					sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
 					GeneratedCode (sw, 2);
-					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
+					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
+					sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
 				}
 			}
 			
