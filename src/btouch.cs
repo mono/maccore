@@ -88,6 +88,7 @@ class BindingTouch {
 		bool external = false;
 		bool pmode = true;
 		bool nostdlib = false;
+		bool clean_mono_path = false;
 		List<string> sources;
 		var resources = new List<string> ();
 #if !MONOMAC
@@ -128,6 +129,7 @@ class BindingTouch {
 			{ "baselib=", "Sets the base library", v => baselibdll = v },
 			{ "use-zero-copy", v=> zero_copy = true },
 			{ "nostdlib", "Does not reference mscorlib.dll library", l => nostdlib = true },
+			{ "no-mono-path", "Launches compiler with empty MONO_PATH", l => clean_mono_path = true },
 #if !MONOMAC
 			{ "link-with=,", "Link with a native library {0:FILE} to the binding, embedded as a resource named {1:ID}",
 				(path, id) => {
@@ -188,6 +190,11 @@ class BindingTouch {
 			var si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
 			};
+
+			if (clean_mono_path) {
+				// HACK: We are calling btouch with forced 2.1 path but we need working mono for compiler
+				si.EnvironmentVariables.Remove ("MONO_PATH");
+			}
 
 			if (verbose)
 				Console.WriteLine ("{0} {1}", si.FileName, si.Arguments);
