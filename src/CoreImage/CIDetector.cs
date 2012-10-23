@@ -2,7 +2,7 @@
 // Authors:
 //   Miguel de Icaza
 //
-// Copyright 2011, Xamarin, Inc.
+// Copyright 2011-2012, Xamarin, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -47,6 +47,10 @@ namespace MonoMac.CoreImage {
 
 		public static CIDetector CreateFaceDetector (CIContext context, bool highAccuracy, float minFeatureSize)
 		{
+			// MinFeatureSize exists only in iOS6+, before this the field is null (and would throw if used)
+			if (MinFeatureSize == null)
+				return CreateFaceDetector (context, highAccuracy);
+
 			// TypeFace is the only detector supported now
 			using (var options = NSDictionary.FromObjectsAndKeys (new NSObject [] { highAccuracy ? AccuracyHigh : AccuracyLow, new NSNumber (minFeatureSize) },
 									      new NSObject [] { Accuracy, MinFeatureSize, }))
@@ -63,12 +67,14 @@ namespace MonoMac.CoreImage {
 				values.Add (accuracy == FaceDetectorAccuracy.High ? AccuracyHigh : AccuracyLow);
 			}
 
-			if (minFeatureSize != null) {
+			// MinFeatureSize exists only in iOS6+, before this the field is null (and would throw if used)
+			if (MinFeatureSize != null && minFeatureSize != null) {
 				keys.Add (MinFeatureSize);
 				values.Add (new NSNumber (minFeatureSize.Value));
 			}
 
-			if (trackingEnabled != null) {
+			// Tracking exists only in iOS6+, before this the field is null (and would throw if used)
+			if (Tracking != null && trackingEnabled != null) {
 				keys.Add (Tracking);
 				values.Add (NSObject.FromObject (true));
 			}

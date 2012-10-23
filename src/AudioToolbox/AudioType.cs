@@ -112,12 +112,12 @@ namespace MonoMac.AudioToolbox {
 		public double SampleRate;
 		public AudioFormatType Format;
 		public AudioFormatFlags FormatFlags;
-		public uint BytesPerPacket;
-		public uint FramesPerPacket;
-		public uint BytesPerFrame;
-		public uint ChannelsPerFrame;
-		public uint BitsPerChannel;
-		public uint Reserved;
+		public int BytesPerPacket; // uint
+		public int FramesPerPacket; // uint
+		public int BytesPerFrame; // uint
+		public int ChannelsPerFrame; // uint
+		public int BitsPerChannel; // uint
+		public int Reserved; // uint
 
 		public const double AudioStreamAnyRate = 0;
 
@@ -131,9 +131,9 @@ namespace MonoMac.AudioToolbox {
 		{
 			var desc = new AudioStreamBasicDescription (AudioFormatType.LinearPCM);
 			desc.SampleRate = sampleRate;
-			desc.ChannelsPerFrame = channelsPerFrame;
-			desc.BitsPerChannel = bitsPerChannel;
-			desc.BytesPerPacket = desc.BytesPerFrame = channelsPerFrame * sizeof (Int16);
+			desc.ChannelsPerFrame = (int) channelsPerFrame;
+			desc.BitsPerChannel = (int) bitsPerChannel;
+			desc.BytesPerPacket = desc.BytesPerFrame = (int) channelsPerFrame * sizeof (Int16);
 			desc.FramesPerPacket = 1;
 			desc.FormatFlags = AudioFormatFlags.IsBigEndian | AudioFormatFlags.IsSignedInteger | AudioFormatFlags.IsPacked;
 

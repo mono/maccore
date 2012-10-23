@@ -1871,7 +1871,7 @@ public class Generator {
 		if ((usedIn != null && type.Namespace == usedIn.Namespace) || standard_namespaces.Contains (type.Namespace))
 			tname = type.Name;
 		else
-			tname = type.FullName;
+			tname = "global::" + type.FullName;
 
 		var targs = type.GetGenericArguments ();
 		if (targs.Length > 0) {
