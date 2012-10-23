@@ -94,4 +94,38 @@ namespace MonoMac.AudioToolbox
 #endif
 		}
 	}
+
+	[Obsolete ("Use AudioBufferList")]
+	public class MutableAudioBufferList : AudioBufferList, IDisposable {
+		public MutableAudioBufferList (int nubuffers, int bufferSize)
+			: base (nubuffers)
+		{
+			for (int i = 0; i < nubuffers; i++) {
+				Buffers[i].NumberChannels = 1;
+				Buffers[i].DataByteSize = bufferSize;
+				Buffers[i].Data = Marshal.AllocHGlobal((int)bufferSize);
+			}
+		}
+			
+		public void Dispose()
+		{
+			Dispose (true);
+			GC.SuppressFinalize (this);
+		}
+
+		public virtual void Dispose (bool disposing)
+		{
+			if (Buffers != null){
+				foreach (var mbuf in Buffers)
+					Marshal.FreeHGlobal(mbuf.Data);
+				Buffers = null;
+			}
+		}
+
+		~MutableAudioBufferList ()
+		{
+			Dispose (false);
+		}
+	}
+
 }
