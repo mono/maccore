@@ -938,12 +938,15 @@ namespace MonoMac.Foundation
 	[DisableDefaultCtor]
 	public interface NSKeyedUnarchiver {
 		[Export ("initForReadingWithData:")]
+		[MarshalNativeExceptions]
 		IntPtr Constructor (NSData data);
 	
 		[Static, Export ("unarchiveObjectWithData:")]
+		[MarshalNativeExceptions]
 		NSObject UnarchiveObject (NSData data);
 		
 		[Static, Export ("unarchiveObjectWithFile:")]
+		[MarshalNativeExceptions]
 		NSObject UnarchiveFile (string file);
 
 		[Export ("finishDecoding")]

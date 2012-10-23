@@ -205,6 +205,9 @@ public class NeedsAuditAttribute : Attribute {
 	public string Reason { get; set; }
 }
 
+public class MarshalNativeExceptionsAttribute : Attribute {
+}
+
 public class RetainListAttribute : Attribute {
 	public RetainListAttribute (bool doadd, string name)
 	{
@@ -1270,6 +1273,9 @@ public class Generator {
 	{
 		var sb = new StringBuilder ();
 
+		if (HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute)))
+			sb.Append ("monotouch_");
+		
 		try {
 			sb.Append (ParameterGetMarshalType (mi));
 		} catch (BindingException ex) {
@@ -1334,7 +1340,11 @@ public class Generator {
 			return;
 		}
 
-		print (m, "\t\t[DllImport (LIBOBJC_DYLIB, EntryPoint=\"{0}\")]", entry_point);
+		if (method_name.StartsWith ("monotouch_")) {
+			print (m, "\t\t[DllImport (\"__Internal\", EntryPoint=\"{0}\")]", method_name);
+		} else {
+			print (m, "\t\t[DllImport (LIBOBJC_DYLIB, EntryPoint=\"{0}\")]", entry_point);
+		}
 		print (m, "\t\tpublic extern static {0} {1} ({3}IntPtr receiver, IntPtr selector{2});",
 		       need_stret ? "void" : ParameterGetMarshalType (mi, true), method_name, b.ToString (),
 		       need_stret ? (HasAttribute (mi, typeof (AlignAttribute)) ? "IntPtr" : "out " + FormatType (MessagingType, mi.ReturnType)) + " retval, " : "");
@@ -1585,6 +1595,8 @@ public class Generator {
 						seenNoDefaultValue = true;
 						continue;
 					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute || attr is EditorBrowsableAttribute)
+						continue;
+					else if (attr is MarshalNativeExceptionsAttribute)
 						continue;
 					else if (attr is WrapAttribute)
 						continue;
@@ -2411,6 +2423,13 @@ public class Generator {
 					print (init_binding_type);
 				}
 				
+				var may_throw = HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute));
+				
+				if (may_throw) {
+					print ("try {");
+					indent++;
+				}
+				
 				print ("if (IsDirectBinding) {{", type.Name);
 				indent++;
 				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
@@ -2420,6 +2439,16 @@ public class Generator {
 				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, is_static);
 				indent--;
 				print ("}");
+				
+				if (may_throw) {
+					indent--;
+					print ("} catch {");
+					indent++;
+					print ("Handle = IntPtr.Zero;");
+					print ("throw;");
+					indent--;
+					print ("}");
+				}
 			}
 		} else {
 			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
