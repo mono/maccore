@@ -5221,7 +5221,7 @@ namespace MonoMac.Foundation
 		NSThread MainThread { get; }
 
 		[Export ("initWithTarget:selector:object:")]
-		IntPtr Constructor (NSObject target, Selector selector, NSObject argument);
+		IntPtr Constructor (NSObject target, Selector selector, [NullAllowed] NSObject argument);
 
 		[Export ("isExecuting")]
 		bool IsExecuting { get; }
