@@ -437,7 +437,7 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.SystemLibrary)]
-		unsafe extern static void memcpy (byte * target, byte * source, int n);
+		unsafe extern internal static void memcpy (byte * target, byte * source, int n);
 		
 		public static void FillAudioData (IntPtr audioQueueBuffer, int offset, IntPtr source, int sourceOffset, int size)
 		{
