@@ -3800,7 +3800,7 @@ namespace MonoMac.AVFoundation {
 		AVAsset Asset { get;  }
 
 		[Export ("tracks")]
-		AVPlayerItem [] Tracks { get;  }
+		AVPlayerItemTrack [] Tracks { get;  }
 
 		[Export ("presentationSize")]
 		SizeF PresentationSize { get;  }
