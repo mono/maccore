@@ -87,6 +87,8 @@ class BindingTouch {
 		bool unsafef = true;
 		bool external = false;
 		bool pmode = true;
+		bool nostdlib = false;
+		bool clean_mono_path = false;
 		List<string> sources;
 		var resources = new List<string> ();
 #if !MONOMAC
@@ -126,6 +128,8 @@ class BindingTouch {
 			{ "p", "Sets private mode", v => pmode = false },
 			{ "baselib=", "Sets the base library", v => baselibdll = v },
 			{ "use-zero-copy", v=> zero_copy = true },
+			{ "nostdlib", "Does not reference mscorlib.dll library", l => nostdlib = true },
+			{ "no-mono-path", "Launches compiler with empty MONO_PATH", l => clean_mono_path = true },
 #if !MONOMAC
 			{ "link-with=,", "Link with a native library {0:FILE} to the binding, embedded as a resource named {1:ID}",
 				(path, id) => {
@@ -176,15 +180,21 @@ class BindingTouch {
 			var tmpass = Path.Combine (tmpdir, "temp.dll");
 
 			// -nowarn:436 is to avoid conflicts in definitions between core.dll and the sources
-			var cargs = String.Format ("-unsafe -target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7} {8}",
+			var cargs = String.Format ("-unsafe -target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7} {8} {9}",
 						   string.Join (" ", sources.ToArray ()),
 						   tmpass, Environment.GetCommandLineArgs ()[0],
 						   string.Join (" ", core_sources.ToArray ()), refs, unsafef ? "-unsafe" : "",
-						   baselibdll, string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()), paths);
+						   baselibdll, string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()), paths,
+						   nostdlib ? "-nostdlib" : null);
 
 			var si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
 			};
+
+			if (clean_mono_path) {
+				// HACK: We are calling btouch with forced 2.1 path but we need working mono for compiler
+				si.EnvironmentVariables.Remove ("MONO_PATH");
+			}
 
 			if (verbose)
 				Console.WriteLine ("{0} {1}", si.FileName, si.Arguments);
@@ -263,7 +273,7 @@ class BindingTouch {
 				return 0;
 			}
 
-			cargs = String.Format ("{0} -target:library -out:{1} {2} {3} {4} {5} {6} {7} -r:{8} {9}",
+			cargs = String.Format ("{0} -target:library -out:{1} {2} {3} {4} {5} {6} {7} -r:{8} {9} {10}",
 					       unsafef ? "-unsafe" : "", /* 0 */
 					       outfile, /* 1 */
 					       string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()), /* 2 */
@@ -273,7 +283,8 @@ class BindingTouch {
 					       String.Join (" ", extra_sources.ToArray ()), /* 6 */
 					       refs, /* 7 */
 					       baselibdll, /* 8 */
-					       String.Join (" ", resources.ToArray ()) /* 9 */
+					       String.Join (" ", resources.ToArray ()), /* 9 */
+					       nostdlib ? "-nostdlib" : null
 				);
 
 			si = new ProcessStartInfo (compiler, cargs) {

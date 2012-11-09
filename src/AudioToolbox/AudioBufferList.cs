@@ -1,8 +1,9 @@
-﻿//
+//
 // AudioBufferList.cs: AudioBufferList wrapper class
 //
-// Author:
+// Authors:
 //   AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2010 Reinforce Lab.
 // Copyright 2011, 2012 Xamarin Inc.
@@ -34,44 +35,69 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.AudioToolbox
 {
-	[StructLayout(LayoutKind.Sequential)]
-	public class AudioBufferList {
-		[Preserve (Conditional=true)]
-		internal int bufferCount;
-		// mBuffers array size is variable. But here we uses fixed size of 2, because iPhone phone terminal two (L/R) channels.        
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-		internal AudioBuffer [] buffers;
-		
-		public int BufferCount { get { return bufferCount; }}
-		public AudioBuffer [] Buffers { get { return buffers; }}
-		
-		public AudioBufferList() 
+	public class AudioBufferList
+	{
+		internal unsafe AudioBufferList (IntPtr _ptr)
 		{
+			byte *ptr = (byte *) _ptr;
+			//
+			// Decodes
+			//
+			// struct AudioBufferList
+			// {
+			//    UInt32      mNumberBuffers;
+			//    AudioBuffer mBuffers[1]; // this is a variable length array of mNumberBuffers elements
+			// }
+
+			int count = Marshal.ReadInt32 ((IntPtr) ptr, 0);
+			ptr += sizeof (int);
+
+			Buffers = new AudioBuffer [count];
+
+			for (int i = 0; i < count; ++i) {
+				Buffers [i] = (AudioBuffer) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioBuffer));
+				ptr += Marshal.SizeOf (typeof (AudioBuffer));
+			}
 		}
 
-		public AudioBufferList (int count)
+		public AudioBufferList (int bufferSize)
 		{
-			bufferCount = count;
-			buffers = new AudioBuffer [count];
+			Buffers = new AudioBuffer [bufferSize];
 		}
 
-		public override string ToString ()
+		public AudioBuffer[] Buffers { get; set; }
+
+		// Caller is resposible for releasing the structure
+		public  IntPtr ToPointer ()
 		{
-			if (buffers != null && buffers.Length > 0)
-				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0], buffers [0].DataByteSize);
+			var size = sizeof (int);
+			if (Buffers.Length != 0)
+				size += Buffers.Length * Marshal.SizeOf (Buffers [0]);
+
+			IntPtr buffer = Marshal.AllocHGlobal (size);
+			Marshal.WriteInt32 (buffer, 0, Buffers.Length);
+
+			unsafe {
+				var ptr = (byte *) buffer + sizeof (int);
+				foreach (var b in Buffers) {
+					Marshal.StructureToPtr (b, (IntPtr) ptr, false);
+					ptr += Marshal.SizeOf (typeof (AudioBuffer));
+				}
+			}
 			
-			return "[empty]";
+			return buffer;
 		}
 	}
 
+	[Obsolete ("Use AudioBufferList")]
 	public class MutableAudioBufferList : AudioBufferList, IDisposable {
 		public MutableAudioBufferList (int nubuffers, int bufferSize)
 			: base (nubuffers)
 		{
-			for (int i = 0; i < bufferCount; i++) {
-				buffers[i].NumberChannels = 1;
-				buffers[i].DataByteSize = bufferSize;
-				buffers[i].Data = Marshal.AllocHGlobal((int)bufferSize);
+			for (int i = 0; i < nubuffers; i++) {
+				Buffers[i].NumberChannels = 1;
+				Buffers[i].DataByteSize = bufferSize;
+				Buffers[i].Data = Marshal.AllocHGlobal((int)bufferSize);
 			}
 		}
 			
@@ -83,10 +109,10 @@ namespace MonoMac.AudioToolbox
 
 		public virtual void Dispose (bool disposing)
 		{
-			if (buffers != null){
-				foreach (var mbuf in buffers)
+			if (Buffers != null){
+				foreach (var mbuf in Buffers)
 					Marshal.FreeHGlobal(mbuf.Data);
-				buffers = null;
+				Buffers = null;
 			}
 		}
 
@@ -95,4 +121,5 @@ namespace MonoMac.AudioToolbox
 			Dispose (false);
 		}
 	}
+
 }

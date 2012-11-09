@@ -764,7 +764,7 @@ namespace MonoMac.CoreMidi {
 			int p = 4;
 			var packets = new MidiPacket [npackets];
 			for (int i = 0; i < npackets; i++){
-				ushort len = (ushort) Marshal.ReadInt16 (p, 8);
+				ushort len = (ushort) Marshal.ReadInt16 (packetList, p+8);
 				packets [i] = new MidiPacket (Marshal.ReadInt64 (packetList, p), len, (IntPtr)((long)packetList + 10));
 				p += 10 + len;
 			}

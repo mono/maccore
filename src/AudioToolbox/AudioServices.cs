@@ -33,52 +33,36 @@ using MonoMac.Foundation;
 
 namespace MonoMac.AudioToolbox {
 
-	enum AudioServicesError {
+	public enum AudioServicesError {
 		None = 0,
-		UnsupportedProperty = 0x7074793f, // 'pty?'
-		BadPropertySize = 0x2173697a, // '!siz'
-		BadSpecifierSizeError = 0x21737063, // '!spc'
+		UnsupportedProperty = 0x7074793f,		// 'pty?'
+		BadPropertySize = 0x2173697a,			// '!siz'
+		BadSpecifierSizeError = 0x21737063,		// '!spc'
 		SystemSoundUnspecifiedError = -1500,
 		SystemSoundClientTimedOutError = -1501
 	}
-		
-	enum AudioServiceProperty {
-		IsUISound                 = 0x69737569, // 'isui'
-		CompletePlaybackIfAppDies = 0x69666469, // 'ifdi'
-	}
 
-	delegate void SoundCompletionProc (int systemSoundId, IntPtr clientData);
-
-	enum AudioServicesProperty {
-		IsUISound = 0x69737569, // 'isui'
-		CompletePlaybackIfAppDies = 0x69666469 // 'ifdi'
+	enum AudioServicesPropertyKey : uint
+	{
+		IsUISound 					= 0x69737569, // 'isui'
+		CompletePlaybackIfAppDies	= 0x69666469  // 'ifdi'
 	}
 	
-	public enum AudioSessionInterruptionType {
-		ShouldResume = 1769108333, // 'irsm'
-		ShouldNotResume = 561148781, // '!rsm'
+	static class AudioServices {
+
+		//[DllImport (Constants.AudioToolboxLibrary)]
+		//static extern AudioServicesError AudioServicesGetPropertyInfo (AudioServicesPropertyKey propertyId, uint specifierSize, IntPtr specifier, out uint propertyDataSize, out bool writable);
+
+		//[DllImport (Constants.AudioToolboxLibrary)]
+		//static extern AudioServicesError AudioServicesGetProperty (AudioServicesPropertyKey propertyId, uint specifierSize, IntPtr specifier, out uint propertyDataSize, IntPtr propertyData);
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		public static extern AudioServicesError AudioServicesGetProperty (AudioServicesPropertyKey propertyId, uint specifierSize, ref uint specifier, out uint propertyDataSize, out uint propertyData);
+
+		//[DllImport (Constants.AudioToolboxLibrary)]
+		//static extern AudioServicesError AudioServicesSetProperty (AudioServicesPropertyKey propertyId, uint specifierSize, IntPtr specifier, uint propertyDataSize, IntPtr propertyData);
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		public static extern AudioServicesError AudioServicesSetProperty (AudioServicesPropertyKey propertyId, uint specifierSize, ref uint specifier, uint propertyDataSize, ref uint propertyData);
 	}
-
-#if false
-	public static class AudioServices {
-
-		
-
-		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern int AudioServicesAddSystemSoundCompletion (uint soundId, CFRunLoopRef runLoop, NSString runLoopMode, SystemSoundCompletionCallback completeionRoutine, IntPtr clientData);
-
-		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern void AudioServicesRemoveSystemSoundCompletion (uint soundId);
-
-		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern int AudioServicesGetPropertyInfo (uint propertyId, uint specifierSize, IntPtr specifier, out uint propertyDataSize, out bool writable);
-
-		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern int AudioServicesGetProperty (uint propertyId, uint specifierSize, IntPtr specifier, out uint propertyDataSize, IntPtr propertyData);
-
-		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern int AudioServicesSetProperty (uint propertyId, uint specifierSize, IntPtr specifier, uint propertyDataSize, IntPtr propertyData);
-	}
-#endif
 }
-

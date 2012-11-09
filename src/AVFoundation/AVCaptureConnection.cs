@@ -3,8 +3,9 @@
 //
 // Authors:
 //   Miguel de Icaza
+//   Sebastien Pouliot  <sebastien@xamarin.com>
 //
-// Copyright 2011, Xamarin, Inc.
+// Copyright 2011-2012, Xamarin, Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,6 +26,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
+using System;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.AVFoundation {
@@ -33,7 +36,7 @@ namespace MonoMac.AVFoundation {
 		public bool SupportsVideoMinFrameDuration {
 			get {
 				if (RespondsToSelector (new Selector ("isVideoMinFrameDurationSupported")))
-					return SupportsVideoMinFrameDuration;
+					return _SupportsVideoMinFrameDuration;
 				return false;
 			}
 		}
@@ -41,9 +44,14 @@ namespace MonoMac.AVFoundation {
 		public bool SupportsVideoMaxFrameDuration {
 			get {
 				if (RespondsToSelector (new Selector ("isVideoMaxFrameDurationSupported")))
-					return SupportsVideoMinFrameDuration;
+					return _SupportsVideoMaxFrameDuration;
 				return false;
 			}
+		}
+
+		[Obsolete ("Use InputPorts")]
+		public AVCaptureInputPort [] inputPorts { 
+			get { return InputPorts; }
 		}
 	}
 }

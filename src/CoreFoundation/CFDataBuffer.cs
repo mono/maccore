@@ -2,7 +2,7 @@
 // MonoMac.CoreFoundation.CFDataBuffer
 //
 // Authors:
-//      Martin Baulig (martin.baulig@gmail.com)
+//      Martin Baulig (martin.baulig@xamarin.com)
 //
 // Copyright 2012 Xamarin Inc. (http://www.xamarin.com)
 //
@@ -34,16 +34,20 @@ namespace MonoMac.CoreFoundation {
 
 	class CFDataBuffer : IDisposable {
 		byte[] buffer;
-		GCHandle handle;
 		CFData data;
 		bool owns;
 
 		public CFDataBuffer (byte[] buffer)
 		{
 			this.buffer = buffer;
-			this.handle = GCHandle.Alloc (this.buffer, GCHandleType.Pinned);
 
-			data = CFData.FromDataNoCopy (handle.AddrOfPinnedObject (), buffer.Length);
+			/*
+			 * Copy the buffer to allow the native side to take ownership.
+			 */
+
+			var gch = GCHandle.Alloc (buffer, GCHandleType.Pinned);
+			data = CFData.FromData (gch.AddrOfPinnedObject (), buffer.Length);
+			gch.Free ();
 			owns = true;
 		}
 
@@ -58,7 +62,7 @@ namespace MonoMac.CoreFoundation {
 		{
 			Dispose (false);
 		}
-		
+
 		public void Dispose ()
 		{
 			Dispose (true);
@@ -76,13 +80,11 @@ namespace MonoMac.CoreFoundation {
 		public byte this [int idx] {
 			get { return buffer [idx]; }
 		}
-		
+
 		protected virtual void Dispose (bool disposing)
 		{
 			if (data != null) {
 				data.Dispose ();
-				if (owns)
-					handle.Free ();
 				data = null;
 			}
 		}

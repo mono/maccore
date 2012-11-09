@@ -32,12 +32,11 @@ using MonoMac.CoreFoundation;
 using System;
 using System.Drawing;
 
-// note: this is not an Objective-C based API but we're reusing the generator to bind the fields
-
 namespace MonoMac.ImageIO {
 
 	[Since (4,0)]
-	[BaseType (typeof (NSObject))][Static]
+	[Static]
+	// Bad name should end with Keys
 	interface CGImageProperties {
 		// Format-Specific Dictionaries
 		[Field ("kCGImagePropertyTIFFDictionary")]

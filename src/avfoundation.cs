@@ -3060,7 +3060,7 @@ namespace MonoMac.AVFoundation {
 		AVCaptureVideoOrientation VideoOrientation { get; set;  }
 
 		[Export ("inputPorts")]
-		AVCaptureInputPort [] inputPorts { get; }
+		AVCaptureInputPort [] InputPorts { get; }
 
 		[Export ("isActive")]
 		bool Active { get; }
@@ -3495,6 +3495,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("exposureMode")]
 		AVCaptureExposureMode ExposureMode { get; set;  }
 
+		[Export ("isExposureModeSupported:")]
+		bool IsExposureModeSupported (AVCaptureExposureMode exposureMode);
+
 		[Export ("exposurePointOfInterestSupported")]
 		bool ExposurePointOfInterestSupported { [Bind ("isExposurePointOfInterestSupported")] get;  }
 
@@ -3797,7 +3800,7 @@ namespace MonoMac.AVFoundation {
 		AVAsset Asset { get;  }
 
 		[Export ("tracks")]
-		AVPlayerItem [] Tracks { get;  }
+		AVPlayerItemTrack [] Tracks { get;  }
 
 		[Export ("presentationSize")]
 		SizeF PresentationSize { get;  }

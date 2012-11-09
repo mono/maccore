@@ -63,6 +63,18 @@ namespace MonoMac.Foundation {
 			return NSArray.ArrayFromHandle<T> (value);
 		}
 
+		protected T[] GetArray<T> (NSString key, Func<IntPtr, T> creator)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			var value = CFDictionary.GetValue (Dictionary.Handle, key.Handle);
+			if (value == IntPtr.Zero)
+				return null;
+
+			return NSArray.ArrayFromHandleFunc<T> (value, creator);
+		}
+
 		protected int? GetInt32Value (NSString key)
 		{
 			if (key == null)
@@ -133,6 +145,26 @@ namespace MonoMac.Foundation {
 				return null;
 
 			return CFBoolean.GetValue (value);
+		}
+
+		protected NSDictionary GetNSDictionary (NSString key)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			NSObject value;
+			Dictionary.TryGetValue (key, out value);
+			return value as NSDictionary;
+		}
+
+		protected string GetNSStringValue (NSString key)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			NSObject value;
+			Dictionary.TryGetValue (key, out value);
+			return value as NSString;
 		}
 
 		protected string GetStringValue (NSString key)
@@ -282,7 +314,7 @@ namespace MonoMac.Foundation {
 			if (value == null) {
 				RemoveValue (key);
 			} else {
-				Dictionary [key] = new NSString (value);
+				Dictionary [key] = value;
 			}			
 		}
 
@@ -290,15 +322,15 @@ namespace MonoMac.Foundation {
 
 		#region Sets Native value
 
-		protected void SetNativeValue (NSString key, INativeObject value)
+		protected void SetNativeValue (NSString key, INativeObject value, bool removeNullValue = true)
 		{
 			if (key == null)
 				throw new ArgumentNullException ("key");
 
-			if (value == null) {
+			if (value == null && removeNullValue) {
 				RemoveValue (key);
 			} else {
-				CFMutableDictionary.SetValue (Dictionary.Handle, key.Handle, value.Handle);
+				CFMutableDictionary.SetValue (Dictionary.Handle, key.Handle, value == null ? IntPtr.Zero : value.Handle);
 			}			
 		}
 

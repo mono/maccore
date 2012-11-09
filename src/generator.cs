@@ -205,6 +205,9 @@ public class NeedsAuditAttribute : Attribute {
 	public string Reason { get; set; }
 }
 
+public class MarshalNativeExceptionsAttribute : Attribute {
+}
+
 public class RetainListAttribute : Attribute {
 	public RetainListAttribute (bool doadd, string name)
 	{
@@ -1270,6 +1273,9 @@ public class Generator {
 	{
 		var sb = new StringBuilder ();
 
+		if (HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute)))
+			sb.Append ("monotouch_");
+		
 		try {
 			sb.Append (ParameterGetMarshalType (mi));
 		} catch (BindingException ex) {
@@ -1334,7 +1340,11 @@ public class Generator {
 			return;
 		}
 
-		print (m, "\t\t[DllImport (LIBOBJC_DYLIB, EntryPoint=\"{0}\")]", entry_point);
+		if (method_name.StartsWith ("monotouch_")) {
+			print (m, "\t\t[DllImport (\"__Internal\", EntryPoint=\"{0}\")]", method_name);
+		} else {
+			print (m, "\t\t[DllImport (LIBOBJC_DYLIB, EntryPoint=\"{0}\")]", entry_point);
+		}
 		print (m, "\t\tpublic extern static {0} {1} ({3}IntPtr receiver, IntPtr selector{2});",
 		       need_stret ? "void" : ParameterGetMarshalType (mi, true), method_name, b.ToString (),
 		       need_stret ? (HasAttribute (mi, typeof (AlignAttribute)) ? "IntPtr" : "out " + FormatType (MessagingType, mi.ReturnType)) + " retval, " : "");
@@ -1585,6 +1595,8 @@ public class Generator {
 						seenNoDefaultValue = true;
 						continue;
 					} else if (attr is SealedAttribute || attr is EventArgsAttribute || attr is DelegateNameAttribute || attr is EventNameAttribute || attr is ObsoleteAttribute || attr is AlphaAttribute || attr is NewAttribute || attr is SinceAttribute || attr is PostGetAttribute || attr is NullAllowedAttribute || attr is CheckDisposedAttribute || attr is SnippetAttribute || attr is LionAttribute || attr is AppearanceAttribute || attr is ThreadSafeAttribute || attr is AutoreleaseAttribute || attr is EditorBrowsableAttribute)
+						continue;
+					else if (attr is MarshalNativeExceptionsAttribute)
 						continue;
 					else if (attr is WrapAttribute)
 						continue;
@@ -1871,7 +1883,7 @@ public class Generator {
 		if ((usedIn != null && type.Namespace == usedIn.Namespace) || standard_namespaces.Contains (type.Namespace))
 			tname = type.Name;
 		else
-			tname = type.FullName;
+			tname = "global::" + type.FullName;
 
 		var targs = type.GetGenericArguments ();
 		if (targs.Length > 0) {
@@ -2194,6 +2206,33 @@ public class Generator {
 		return stringParameters;
 	}
 
+	SinceAttribute GetSince (Type type, string methodName)
+	{
+		if (type == null)
+			return null;
+
+		var props = type.GetProperties ();
+		foreach (var pi in props) {
+			if (pi.Name != methodName)
+				continue;
+			var attrs = pi.GetCustomAttributes (typeof (SinceAttribute), false);
+			return (attrs.Length == 0) ? null : (SinceAttribute) attrs [0];
+		}
+		return GetSince (ReflectionExtensions.GetBaseType (type), methodName);
+	}
+
+	SinceAttribute GetSince (MethodInfo mi, PropertyInfo pi)
+	{
+		var attrs = mi.GetCustomAttributes (typeof (SinceAttribute), false);
+		if ((attrs.Length == 0) && (pi != null)) {
+			attrs = pi.GetCustomAttributes (typeof (SinceAttribute), false);
+		}
+		return (attrs.Length == 0) ? null : (SinceAttribute) attrs [0];
+	}
+
+	// undecorated code is assumed to be iOS 2.0
+	static SinceAttribute SinceDefault = new SinceAttribute (2,0);
+
 	string CurrentMethod;
 	
 	//
@@ -2384,6 +2423,13 @@ public class Generator {
 					print (init_binding_type);
 				}
 				
+				var may_throw = HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute));
+				
+				if (may_throw) {
+					print ("try {");
+					indent++;
+				}
+				
 				print ("if (IsDirectBinding) {{", type.Name);
 				indent++;
 				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
@@ -2393,6 +2439,16 @@ public class Generator {
 				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, is_static);
 				indent--;
 				print ("}");
+				
+				if (may_throw) {
+					indent--;
+					print ("} catch {");
+					indent++;
+					print ("Handle = IntPtr.Zero;");
+					print ("throw;");
+					indent--;
+					print ("}");
+				}
 			}
 		} else {
 			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
@@ -2421,8 +2477,24 @@ public class Generator {
 
 		if ((postget != null) && (postget.Length > 0)) {
 			print ("#pragma warning disable 168");
-			for (int i = 0; i < postget.Length; i++)
-				print ("var postget{0} = {1};", i, postget [i].MethodName);
+			for (int i = 0; i < postget.Length; i++) {
+#if !MONOMAC
+				// bug #7742: if this code, e.g. existing in iOS 2.0, 
+				// tries to call a property available since iOS 5.0, 
+				// then it will fail when executing in iOS 4.3
+				bool version_check = false;
+				SinceAttribute postget_since = GetSince (type, postget [i].MethodName);
+				if (postget_since != null) {
+					SinceAttribute caller_since = GetSince (mi, propInfo) ?? SinceDefault;
+					if ((caller_since.Major < postget_since.Major) || ((caller_since.Major == postget_since.Major) && (caller_since.Minor < postget_since.Minor))) {
+						version_check = true;
+						print ("var postget{0} = MonoTouch.UIKit.UIDevice.CurrentDevice.CheckSystemVersion ({1},{2}) ? {3} : null;", i, postget_since.Major, postget_since.Minor, postget [i].MethodName);
+					}
+				}
+				if (!version_check)
+#endif
+					print ("var postget{0} = {1};", i, postget [i].MethodName);
+			}
 			print ("#pragma warning restore 168");
 		}
 		
@@ -2564,9 +2636,10 @@ public class Generator {
 				print ("get {");
 				indent++;
 
-				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainerType)))
-					print ("return new {1}({0});", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
-				else
+				if (pi.PropertyType.IsSubclassOf (typeof (DictionaryContainerType))) {
+					print ("var src = {0};", wrap);
+					print ("return src == null ? null : new {0}(src);", FormatType (pi.DeclaringType, pi.PropertyType));
+				} else
 					print ("return {0} as {1};", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
 
 				indent--;
@@ -2948,29 +3021,34 @@ public class Generator {
 					if (external) {
 						if (!disable_default_ctor) {
 							GeneratedCode (sw, 2);
-							sw.WriteLine ("[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\t\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
+							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]");
+							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
 							      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix, ctor_visibility);
 						}
 					} else {
 						if (!disable_default_ctor) {
 							GeneratedCode (sw, 2);
-							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
+							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
+							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
 								      TypeName,
 								      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
 								      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
 								      MainPrefix, ctor_visibility);
 						}
 						GeneratedCode (sw, 2);
-						sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
+						sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
+						sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
 							      TypeName,
 							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
 							      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
 							      MainPrefix);
 					}
 					GeneratedCode (sw, 2);
-					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
+					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
+					sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
 					GeneratedCode (sw, 2);
-					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
+					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
+					sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
 				}
 			}
 			
@@ -3306,6 +3384,9 @@ public class Generator {
 						string ensureArg = bta.KeepRefUntil == null ? "" : "this";
 						
 						if (mi.ReturnType == typeof (void)){
+							foreach (ObsoleteAttribute oa in mi.GetCustomAttributes (typeof (ObsoleteAttribute), false))
+								print ("[Obsolete (\"{0}\", {1})]", oa.Message, oa.IsError ? "true" : "false");
+
 							if (bta.Singleton && mi.GetParameters ().Length == 0 || mi.GetParameters ().Length == 1)
 								print ("public event EventHandler {0} {{", CamelCase (GetEventName (mi)));
 							else 

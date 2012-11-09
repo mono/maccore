@@ -81,4 +81,11 @@ namespace MonoMac.CoreData {
 	public enum NSMergePolicyType {
 		Error, PropertyStoreTrump, PropertyObjectTrump, Overwrite, RollbackMerge
 	}
+
+	public enum NSFetchedResultsChangeType {
+		Insert = 1,
+		Delete = 2,
+		Move = 3,
+		Update = 4
+	}
 }

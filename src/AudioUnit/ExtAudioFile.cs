@@ -38,10 +38,9 @@ namespace MonoMac.AudioUnit
 {
     public class ExtAudioFile : IDisposable
     {
-        #region Variables
         const int kAudioUnitSampleFractionBits = 24;
         readonly IntPtr _extAudioFile;
-        #endregion
+        IntPtr last_async_write_buffer_ptr;
 
         #region Property        
         public long FileLengthFrames
@@ -168,8 +167,13 @@ namespace MonoMac.AudioUnit
             return frame;
         }
         public int Read(int numberFrames, AudioBufferList data)
-        {            
-            int err = ExtAudioFileRead(_extAudioFile, ref numberFrames, data);
+        {
+            if (data == null)
+                throw new ArgumentNullException ("data");
+
+            var ptr = data.ToPointer ();
+            int err = ExtAudioFileRead(_extAudioFile, ref numberFrames, ptr);
+            Marshal.FreeHGlobal (ptr);
             if (err != 0)
             {
                 throw new ArgumentException(String.Format("Error code:{0}", err));
@@ -179,18 +183,37 @@ namespace MonoMac.AudioUnit
         }
         public void WriteAsync(int numberFrames, AudioBufferList data)
         {
-            int err = ExtAudioFileWriteAsync(_extAudioFile, numberFrames, data);
-            if (err != 0)
-                throw new ArgumentException(String.Format("Error code:{0}", err));            
+            IntPtr buffer = data == null ? IntPtr.Zero : data.ToPointer ();
+            int err = ExtAudioFileWriteAsync(_extAudioFile, numberFrames, buffer);
+            
+            // Try not to leak unmanaged pointer buffer
+            if (last_async_write_buffer_ptr != IntPtr.Zero) {
+                Marshal.FreeHGlobal (last_async_write_buffer_ptr);
+                last_async_write_buffer_ptr = IntPtr.Zero;
+            }
+
+            if (err != 0) {
+                if (buffer != IntPtr.Zero)
+                    Marshal.FreeHGlobal (buffer);
+                throw new ArgumentException(String.Format("Error code:{0}", err));
+            }        
+
+            if (buffer != IntPtr.Zero) {
+                last_async_write_buffer_ptr = buffer;
+            }
         }         
         #endregion
 
-        #region IDisposable メンバ
+        // TODO: Wrong Dispose pattern (missing Finalize)
         public void Dispose()
         {
             ExtAudioFileDispose(_extAudioFile);            
+
+            if (last_async_write_buffer_ptr != IntPtr.Zero) {
+                Marshal.FreeHGlobal (last_async_write_buffer_ptr);
+                last_async_write_buffer_ptr = IntPtr.Zero;
+            }
         }
-        #endregion
 
 
         #region Interop
@@ -198,10 +221,10 @@ namespace MonoMac.AudioUnit
         static extern int ExtAudioFileOpenUrl(IntPtr inUrl, IntPtr outExtAudioFile); // caution
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileRead")]
-        static extern int ExtAudioFileRead(IntPtr  inExtAudioFile, ref int ioNumberFrames, AudioBufferList ioData);
+        static extern int ExtAudioFileRead(IntPtr  inExtAudioFile, ref int ioNumberFrames, IntPtr ioData);
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileWriteAsync")]
-        static extern int ExtAudioFileWriteAsync(IntPtr inExtAudioFile, int inNumberFrames, AudioBufferList ioData);
+        static extern int ExtAudioFileWriteAsync(IntPtr inExtAudioFile, int inNumberFrames, IntPtr ioData);
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileDispose")]
         static extern int ExtAudioFileDispose(IntPtr inExtAudioFile);

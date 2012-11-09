@@ -178,10 +178,27 @@ namespace MonoMac.CoreFoundation {
 		                                               out CFReadStream readStream,
 		                                               out CFWriteStream writeStream)
 		{
-			using (var host = CFHost.CreateWithAddress (endpoint.Address)) {
+			using (var host = CFHost.Create (endpoint)) {
 				IntPtr read, write;
 				CFStreamCreatePairWithSocketToCFHost (
-					IntPtr.Zero, host.Handle, endpoint.Port, out read, out write);
+				IntPtr.Zero, host.Handle, endpoint.Port, out read, out write);
+				readStream = new CFReadStream (read);
+				writeStream = new CFWriteStream (write);
+			}
+		}
+
+		[DllImport (Constants.CFNetworkLibrary)]
+		extern static void CFStreamCreatePairWithSocketToHost (IntPtr allocator, IntPtr host, int port,
+		                                                       out IntPtr read, out IntPtr write);
+
+		public static void CreatePairWithSocketToHost (string host, int port,
+		                                               out CFReadStream readStream,
+		                                               out CFWriteStream writeStream)
+		{
+			using (var str = new CFString (host)) {
+				IntPtr read, write;
+				CFStreamCreatePairWithSocketToHost (
+					IntPtr.Zero, str.Handle, port, out read, out write);
 				readStream = new CFReadStream (read);
 				writeStream = new CFWriteStream (write);
 			}

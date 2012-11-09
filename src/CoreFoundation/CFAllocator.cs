@@ -46,7 +46,7 @@ namespace MonoMac.CoreFoundation {
 		static readonly IntPtr malloc_ptr;
 		static readonly IntPtr malloc_zone_ptr;
 		internal static readonly IntPtr null_ptr;
-		static readonly IntPtr UseContextFlag;
+		//static readonly IntPtr UseContextFlag;
 
 		IntPtr handle;
 		
@@ -59,7 +59,7 @@ namespace MonoMac.CoreFoundation {
 				malloc_ptr = Dlfcn.GetIntPtr (handle, "kCFAllocatorMalloc");
 				malloc_zone_ptr = Dlfcn.GetIntPtr (handle, "kCFAllocatorMallocZone");
 				null_ptr = Dlfcn.GetIntPtr (handle, "kCFAllocatorNull");
-				UseContextFlag = Dlfcn.GetIntPtr (handle, "kCFAllocatorUseContext");
+			//	UseContextFlag = Dlfcn.GetIntPtr (handle, "kCFAllocatorUseContext");
 			} finally {
 				Dlfcn.dlclose (handle);
 			}

@@ -254,11 +254,14 @@ namespace MonoMac.ImageIO {
 
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCopyProperties (IntPtr handle, IntPtr dictOptions);
+
+		[Obsolete ("Use GetProperties")]
 		public NSDictionary CopyProperties (NSDictionary dict)
 		{
 			return new NSDictionary (CGImageSourceCopyProperties (handle, dict == null ? IntPtr.Zero : dict.Handle));
 		}
 
+		[Obsolete ("Use GetProperties")]
 		public NSDictionary CopyProperties (CGImageOptions options)
 		{
 			if (options == null)
@@ -268,11 +271,14 @@ namespace MonoMac.ImageIO {
 
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCopyPropertiesAtIndex (IntPtr handle, int idx, IntPtr dictOptions);
+
+		[Obsolete ("Use GetProperties")]
 		public NSDictionary CopyProperties (NSDictionary dict, int imageIndex)
 		{
 			return new NSDictionary (CGImageSourceCopyPropertiesAtIndex (handle, imageIndex, dict == null ? IntPtr.Zero : dict.Handle));
 		}
 
+		[Obsolete ("Use GetProperties")]
 		public NSDictionary CopyProperties (CGImageOptions options, int imageIndex)
 		{
 			if (options == null)
@@ -280,12 +286,16 @@ namespace MonoMac.ImageIO {
 			return CopyProperties (options.ToDictionary (), imageIndex);
 		}
 		
-		//
-		// TODO: we could introduce a strongly typed CopyProperties to more easily examine properties
-		// instead of a Dictionary like Obj-C does
-		//
-		
-		
+		public CoreGraphics.CGImageProperties GetProperties (CGImageOptions options = null)
+		{
+			return new CoreGraphics.CGImageProperties (CopyProperties (options == null ? null : options.ToDictionary ()));
+		}
+
+		public CoreGraphics.CGImageProperties GetProperties (int index, CGImageOptions options = null)
+		{
+			return new CoreGraphics.CGImageProperties (CopyProperties (options == null ? null : options.ToDictionary (), index));
+		}
+
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCreateImageAtIndex(IntPtr isrc, int index, IntPtr options);
 		public CGImage CreateImage (int index, CGImageOptions options)

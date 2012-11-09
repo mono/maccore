@@ -1,5 +1,9 @@
+// 
+// CIImageInitializationOptions.cs: Implements settings for CIImage initialization
 //
-// Copyright 2011, Xamarin, Inc.
+// Authors: Marek Safar (marek.safar@gmail.com)
+//     
+// Copyright 2012, Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -23,16 +27,51 @@
 
 using System;
 
+using MonoMac.Foundation;
+using MonoMac.CoreFoundation;
+using MonoMac.ObjCRuntime;
+using MonoMac.CoreGraphics;
+
 namespace MonoMac.CoreImage {
 
-	public enum CIImageOrientation {
-		TopLeft = 1,
-		TopRight = 2,
-		BottomRight = 3,
-		BottomLeft = 4,
-		LeftTop = 5,
-		RightTop = 6,
-		RightBottom = 7,
-		LeftBottom = 8
+	public class CIImageInitializationOptions : DictionaryContainer
+	{
+#if !COREBUILD
+		public CIImageInitializationOptions ()
+			: base (new NSMutableDictionary ())
+		{
+		}
+
+		public CIImageInitializationOptions (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public CGColorSpace ColorSpace {
+			set {
+				SetNativeValue (CIImage.CIImageColorSpaceKey, value == null ? null : value);
+			}
+		}
+#endif
+	}
+
+	public class CIImageInitializationOptionsWithMetadata : CIImageInitializationOptions
+	{
+#if !COREBUILD
+		public CIImageInitializationOptionsWithMetadata ()
+		{
+		}
+
+		public CIImageInitializationOptionsWithMetadata (NSDictionary dictionary)
+			: base (dictionary)
+		{
+		}
+
+		public CGImageProperties Properties {
+			set {
+				SetNativeValue (CIImage.CIImagePropertiesKey, value == null ? null : value.Dictionary, false);
+			}
+		}
+#endif
 	}
 }

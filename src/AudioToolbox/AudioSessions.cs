@@ -44,6 +44,7 @@ namespace MonoMac.AudioToolbox {
 		NoHardwareError           = 0x6e6f6877, // 'nohw'
 		IncompatibleCategory      = 0x21636174, // '!cat'
 		NoCategorySet             = 0x3f636174, // '?cat'
+		UnspecifiedError          = 0x77686371, // 'what'
 	}
 
 	public enum AudioSessionInterruptionState {
@@ -72,14 +73,21 @@ namespace MonoMac.AudioToolbox {
 		CategoryChange        = 3,
 		Override              = 4,
 		WakeFromSleep         = 6,
+		NoSuitableRouteForCategory = 7
 	}
 
+	public enum AudioSessionInterruptionType {
+		ShouldResume = 1769108333, // 'irsm'
+		ShouldNotResume = 561148781, // '!rsm'
+	}
+
+	// Should be internal with AudioSessionPropertyListener public
 	public enum AudioSessionProperty {
 		PreferredHardwareSampleRate = 0x68777372,
 		PreferredHardwareIOBufferDuration = 0x696f6264,
 		AudioCategory = 0x61636174,
+		[Obsolete ("Use AudioRouteDescription")]
 		AudioRoute = 0x726f7574,
-		AudioRouteDescription = 0x63726172, // 'crar' 
 		AudioRouteChange = 0x726f6368,
 		CurrentHardwareSampleRate = 0x63687372,
 		CurrentHardwareInputNumberChannels = 0x63686963,
@@ -96,17 +104,30 @@ namespace MonoMac.AudioToolbox {
 		OverrideCategoryMixWithOthers = 0x636d6978,
 		OverrideCategoryDefaultToSpeaker = 0x6373706b, //'cspk'
 		OverrideCategoryEnableBluetoothInput = 0x63626c75, //'cblu'
+		InterruptionType = 0x2172736d,
 		Mode = 0x6d6f6465,
-		InterruptionType = 0x2172736d
+		InputSources                          = 0x73726373,		// 'srcs'
+		OutputDestinations                    = 0x64737473,		// 'dsts'
+		InputSource                           = 0x69737263,		// 'isrc'
+		OutputDestination                     = 0x6f647374,		// 'odst'
+		InputGainAvailable                    = 0x69676176,		// 'igav'
+		InputGainScalar                       = 0x69677363,		// 'igsc'
+		AudioRouteDescription                 = 0x63726172,		// 'crar'
 	}
 
 	public enum AudioSessionMode {
-		Default = 0x64666c74,
-		VoiceChat = 0x76636374,
-		VideoRecording = 0x76726364,
-		Measurement = 0x6d736d74
+		Default			= 0x64666c74,
+		VoiceChat		= 0x76636374,
+		VideoRecording	= 0x76726364,
+		Measurement		= 0x6d736d74,	// 'msmt'
+		GameChat		= 0x676d6374,	// 'gmct'
 	}
-	
+
+	public enum AudioSessionActiveFlags: uint
+	{
+		NotifyOthersOnDeactivation       = (1 << 0)
+	}
+
 	public enum AudioSessionInputRouteKind {
 		None,
 		LineIn,
