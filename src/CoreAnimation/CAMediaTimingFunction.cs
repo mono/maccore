@@ -29,9 +29,9 @@
 using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using MonoTouch.Foundation;
+using MonoMac.Foundation;
 
-namespace MonoTouch.CoreAnimation {
+namespace MonoMac.CoreAnimation {
 	public unsafe partial class CAMediaTimingFunction {
 
 		[Obsolete ("This type is not meant to be created by application code")]
