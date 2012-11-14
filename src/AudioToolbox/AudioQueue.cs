@@ -1085,7 +1085,7 @@ namespace MonoMac.AudioToolbox {
 
 	delegate void AudioQueueProcessingTapCallbackShared (IntPtr clientData, IntPtr tap, uint numberOfFrames,
 	                                                     ref AudioTimeStamp timeStamp, ref AudioQueueProcessingTapFlags flags,
-	                                                     out uint outNumberFrames, IntPtr data);
+	                                                     out uint outNumberFrames, AudioBufferList data);
 
 	public delegate uint AudioQueueProcessingTapCallback (AudioQueueProcessingTap audioQueueTap, uint numberOfFrames,
 	                                                      ref AudioTimeStamp timeStamp, ref AudioQueueProcessingTapFlags flags,
@@ -1143,7 +1143,7 @@ namespace MonoMac.AudioToolbox {
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static AudioQueueStatus AudioQueueProcessingTapGetSourceAudio (IntPtr inAQTap, uint inNumberFrames, ref AudioTimeStamp ioTimeStamp,
 		                                                               out AudioQueueProcessingTapFlags outFlags, out uint outNumberFrames,
-		                                                               IntPtr ioData);
+		                                                               AudioBufferList ioData);
 
 		public AudioQueueStatus GetSourceAudio (uint numberOfFrames, ref AudioTimeStamp timeStamp,
 		                                        out AudioQueueProcessingTapFlags flags, out uint parentNumberOfFrames, AudioBufferList data)
@@ -1151,14 +1151,14 @@ namespace MonoMac.AudioToolbox {
 			if (data == null)
 				throw new ArgumentNullException ("data");
 
-			IntPtr data_ptr = data.ToPointer ();
+			//IntPtr data_ptr = data.ToPointer ();
 
-			try {
+			//try {
 				return AudioQueueProcessingTapGetSourceAudio (TapHandle, numberOfFrames, ref timeStamp,
-			                                                  out flags, out parentNumberOfFrames, data_ptr);
-			} finally {
-				Marshal.FreeHGlobal (data_ptr);	
-			}
+			                                                  out flags, out parentNumberOfFrames, data);
+			//} finally {
+			//	Marshal.FreeHGlobal (data_ptr);	
+			//}
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -1171,14 +1171,12 @@ namespace MonoMac.AudioToolbox {
 
 		[MonoPInvokeCallback (typeof (AudioQueueProcessingTapCallbackShared))]
 		static void TapCallback (IntPtr clientData, IntPtr tap, uint numberFrames, ref AudioTimeStamp timeStamp, ref AudioQueueProcessingTapFlags flags,
-		                         out uint outNumberFrames, IntPtr data)
+		                         out uint outNumberFrames, AudioBufferList data)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (clientData);
 			var aqpt = (AudioQueueProcessingTap) gch.Target;
 
-			var abl = new AudioBufferList (data);
-			outNumberFrames = aqpt.callback (aqpt, numberFrames, ref timeStamp, ref flags, abl);
-			data = abl.ToPointer ();
+			outNumberFrames = aqpt.callback (aqpt, numberFrames, ref timeStamp, ref flags, data);
 		}
 	}
 
