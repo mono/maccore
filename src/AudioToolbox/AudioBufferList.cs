@@ -37,12 +37,9 @@ namespace MonoMac.AudioToolbox
 {
 	public class AudioBufferList
 	{
-		internal AudioBufferList (IntPtr ptr)
+		internal unsafe AudioBufferList (IntPtr _ptr)
 		{
-#if MONOMAC
-			// Because it's .net 2.0 based
-			throw new NotImplementedException ();
-#else
+			byte *ptr = (byte *) _ptr;
 			//
 			// Decodes
 			//
@@ -52,16 +49,15 @@ namespace MonoMac.AudioToolbox
 			//    AudioBuffer mBuffers[1]; // this is a variable length array of mNumberBuffers elements
 			// }
 
-			int count = Marshal.ReadInt32 (ptr, 0);
+			int count = Marshal.ReadInt32 ((IntPtr) ptr, 0);
 			ptr += sizeof (int);
 
 			Buffers = new AudioBuffer [count];
 
 			for (int i = 0; i < count; ++i) {
-				Buffers [i] = (AudioBuffer) Marshal.PtrToStructure (ptr, typeof (AudioBuffer));
+				Buffers [i] = (AudioBuffer) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioBuffer));
 				ptr += Marshal.SizeOf (typeof (AudioBuffer));
 			}
-#endif
 		}
 
 		public AudioBufferList (int bufferSize)
@@ -72,11 +68,8 @@ namespace MonoMac.AudioToolbox
 		public AudioBuffer[] Buffers { get; set; }
 
 		// Caller is resposible for releasing the structure
-		public IntPtr ToPointer ()
+		public  IntPtr ToPointer ()
 		{
-#if MONOMAC
-			throw new NotImplementedException ();
-#else
 			var size = sizeof (int);
 			if (Buffers.Length != 0)
 				size += Buffers.Length * Marshal.SizeOf (Buffers [0]);
@@ -84,14 +77,15 @@ namespace MonoMac.AudioToolbox
 			IntPtr buffer = Marshal.AllocHGlobal (size);
 			Marshal.WriteInt32 (buffer, 0, Buffers.Length);
 
-			var ptr = buffer + sizeof (int);
-			foreach (var b in Buffers) {
-				Marshal.StructureToPtr (b, ptr, false);
-				ptr += Marshal.SizeOf (typeof (AudioBuffer));
+			unsafe {
+				var ptr = (byte *) buffer + sizeof (int);
+				foreach (var b in Buffers) {
+					Marshal.StructureToPtr (b, (IntPtr) ptr, false);
+					ptr += Marshal.SizeOf (typeof (AudioBuffer));
+				}
 			}
 			
 			return buffer;
-#endif
 		}
 	}
 
