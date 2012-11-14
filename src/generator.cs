@@ -1009,8 +1009,12 @@ public class Generator {
 		var clear = new StringBuilder  ();
 		string returntype;
 		var returnformat = "return {0};";
-		
-		if (IsWrappedType (mi.ReturnType)) {
+
+		if (mi.ReturnType.IsArray && IsWrappedType (mi.ReturnType.GetElementType())) {
+			returntype = "IntPtr";
+			returnformat = "return NSArray.FromNSObjects({0}).Handle;";
+		}
+		else if (IsWrappedType (mi.ReturnType)) {
 			returntype = "IntPtr";
 			returnformat = "return {0} != null ? {0}.Handle : IntPtr.Zero;";
 		} else {
