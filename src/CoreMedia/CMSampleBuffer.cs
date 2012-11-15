@@ -578,8 +578,11 @@ namespace MonoMac.CoreMedia {
 			public static readonly NSString SampleReferenceURL;
 			public static readonly NSString SampleReferenceByteOffset;
 			public static readonly NSString GradualDecoderRefresh;
+
+#if !MONOMAC
 			// Since 6,0
 			public static readonly NSString DroppedFrameReason;
+#endif
 
 			static Selectors ()
 			{
@@ -774,13 +777,15 @@ namespace MonoMac.CoreMedia {
 			}
 		}
 
+#if !MONOMAC
 		[Since (6,0)]
 		public string DroppedFrameReason {
 			get {
 				return GetStringValue (Selectors.DroppedFrameReason);
 			}
 		}
-
+#endif
+	
 		// TODO: Implement remaining selector properties
 		// PostNotificationWhenConsumed
 		// ResumeOutput
