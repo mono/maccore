@@ -92,7 +92,7 @@ namespace MonoMac.AudioToolbox {
 			Description = description;
 		}
 
-		internal int ID { get; private set; }
+		public int ID { get; private set; }
 		public string Description { get; private set; }
 	}
 	
