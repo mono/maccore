@@ -52,7 +52,8 @@ namespace MonoMac.AudioToolbox {
 
 		Action completionRoutine;
 		GCHandle gc_handle;
-		static readonly Action<SystemSoundId, IntPtr> SoundCompletionCallback = SoundCompletionShared;
+		delegate void _SoundCompletionCallback (SystemSoundId id, IntPtr clientData);
+		static readonly _SoundCompletionCallback SoundCompletionCallback = SoundCompletionShared;
 
 		internal SystemSound (uint soundId, bool ownsHandle)
 		{
@@ -210,9 +211,9 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		static extern AudioServicesError AudioServicesAddSystemSoundCompletion (uint soundId, IntPtr runLoop, IntPtr runLoopMode, Action<SystemSoundId, IntPtr> completionRoutine, IntPtr clientData);
+		static extern AudioServicesError AudioServicesAddSystemSoundCompletion (uint soundId, IntPtr runLoop, IntPtr runLoopMode, _SoundCompletionCallback completionRoutine, IntPtr clientData);
 
-		[MonoPInvokeCallback (typeof (Action<SystemSoundId, IntPtr>))]
+		[MonoPInvokeCallback (typeof (_SoundCompletionCallback))]
 		static void SoundCompletionShared (SystemSoundId id, IntPtr clientData)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (clientData);
