@@ -127,6 +127,11 @@ namespace MonoMac.Foundation {
 				else if (t == typeof (CATransform3D))
 					return NSValue.FromCATransform3D ((CATransform3D) obj);
 #endif
+				// last chance for types like CGPath, CGColor... that are not NSObject but are CFObject
+				// see https://bugzilla.xamarin.com/show_bug.cgi?id=8458
+				INativeObject native = (obj as INativeObject);
+				if (native != null)
+					return Runtime.GetNSObject (native.Handle);
 				return null;
 			}
 		}

@@ -336,9 +336,6 @@ namespace MonoMac.AudioToolbox {
 		
 		public virtual void Dispose (bool disposing, bool immediate)
 		{
-			if (gch.IsAllocated)
-				gch.Free ();
-
 			if (handle != IntPtr.Zero){
 				if (disposing){
 					if (listeners != null){
@@ -351,6 +348,9 @@ namespace MonoMac.AudioToolbox {
 				AudioQueueDispose (handle, immediate);
 				handle = IntPtr.Zero;
 			}
+			
+			if (gch.IsAllocated)
+				gch.Free ();
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]

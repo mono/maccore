@@ -92,6 +92,14 @@ namespace MonoMac.ObjCRuntime {
 			return Marshal.ReadInt32 (indirect);
 		}
 
+		public static long GetInt64 (IntPtr handle, string symbol)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return 0;
+			return Marshal.ReadInt64 (indirect);
+		}
+
 		public static IntPtr GetIntPtr (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);
@@ -142,6 +150,18 @@ namespace MonoMac.ObjCRuntime {
 				return 0;
 			try {
 				return GetInt32 (handle, symbol);
+			} finally {
+				dlclose (handle);
+			}
+		}
+
+		internal static long SlowGetInt64 (string lib, string symbol)
+		{
+			var handle = dlopen (lib, 0);
+			if (handle == IntPtr.Zero)
+				return 0;
+			try {
+				return GetInt64 (handle, symbol);
 			} finally {
 				dlclose (handle);
 			}
