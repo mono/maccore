@@ -37,6 +37,7 @@ using System.Collections.Generic;
 //		BI1018 No [Export] attribute on property {0}.{1}
 //		BI1019 Invalid [NoDefaultValue] attribute on method `{0}.{1}'
 //		BI1020 Unsupported type {0} used on exported method {1}.{2}
+//		BI1021 Unsupported type for read/write Fields: {0}
 //	BI11xx	warnings
 //		BI1101 Trying to use a string as a [Target]
 //		BI1102 Using the deprecated EventArgs for a delegate signature in {0}.{1}, please use DelegateName instead

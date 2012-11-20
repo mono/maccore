@@ -92,12 +92,28 @@ namespace MonoMac.ObjCRuntime {
 			return Marshal.ReadInt32 (indirect);
 		}
 
+		public static void SetInt32 (IntPtr handle, string symbol, int value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			Marshal.WriteInt32 (indirect, value);
+		}
+		
 		public static long GetInt64 (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);
 			if (indirect == IntPtr.Zero)
 				return 0;
 			return Marshal.ReadInt64 (indirect);
+		}
+		
+		public static void SetInt64 (IntPtr handle, string symbol, long value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			Marshal.WriteInt64 (indirect, value);
 		}
 
 		public static IntPtr GetIntPtr (IntPtr handle, string symbol)
@@ -108,6 +124,14 @@ namespace MonoMac.ObjCRuntime {
 			return Marshal.ReadIntPtr (indirect);
 		}
 
+		public static void SetIntPtr (IntPtr handle, string symbol, IntPtr value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			Marshal.WriteIntPtr (indirect, value);
+		}
+
 		public static SizeF GetSizeF (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);
@@ -116,6 +140,18 @@ namespace MonoMac.ObjCRuntime {
 			unsafe {
 				float *ptr = (float *) indirect;
 				return new SizeF (ptr [0], ptr [1]);
+			}
+		}
+
+		public static void SetSizeF (IntPtr handle, string symbol, SizeF value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			unsafe {
+				float *ptr = (float *) indirect;
+				ptr [0] = value.Width;
+				ptr [1] = value.Height;
 			}
 		}
 
@@ -131,6 +167,16 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
+		public static void SetDouble (IntPtr handle, string symbol, double value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			unsafe {
+				*(double *) indirect = value;
+			}
+		}
+
 		public static float GetFloat (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);
@@ -140,6 +186,16 @@ namespace MonoMac.ObjCRuntime {
 				float *d = (float *) indirect;
 
 				return *d;
+			}
+		}
+
+		public static void SetFloat (IntPtr handle, string symbol, float value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			unsafe {
+				*(float *) indirect = value;
 			}
 		}
 		
