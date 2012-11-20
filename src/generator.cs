@@ -1277,8 +1277,10 @@ public class Generator {
 	{
 		var sb = new StringBuilder ();
 
+#if !MONOMAC
 		if (HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute)))
 			sb.Append ("monotouch_");
+#endif
 		
 		try {
 			sb.Append (ParameterGetMarshalType (mi));
