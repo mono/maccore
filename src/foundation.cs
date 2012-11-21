@@ -4378,7 +4378,7 @@ namespace MonoMac.Foundation
 		[Export ("publishWithOptions:")]
 		void Publish (NSNetServiceOptions options);
 
-		[Obsolete ("Deprecated in iOS 2.0 / OSX 10.4, use Resolve(double)"]
+		[Obsolete ("Deprecated in iOS 2.0 / OSX 10.4, use Resolve(double)")]
 		[Export ("resolve")]
 		void Resolve ();
 
