@@ -235,11 +235,11 @@ namespace MonoMac.Foundation
 
 		[Since (6,0)]
 		[Export ("drawWithRect:options:context:")]
-		void DrawString (RectangleF rect, NSStringDrawingOptions options, NSStringDrawingContext context);
+		void DrawString (RectangleF rect, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
 
 		[Since (6,0)]
 		[Export ("boundingRectWithSize:options:context:")]
-		RectangleF GetBoundingRect (SizeF size, NSStringDrawingOptions options, NSStringDrawingContext context);
+		RectangleF GetBoundingRect (SizeF size, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
 #endif
 	}
 
