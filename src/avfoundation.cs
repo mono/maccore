@@ -329,6 +329,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("deviceCurrentTime")]
 		double DeviceCurrentTime { get;  }
 
+		[Since (4,0)]
 		[Export ("pan")]
 		float Pan { get; set; }
 
@@ -342,6 +343,14 @@ namespace MonoMac.AVFoundation {
 
 		[Wrap ("WeakSettings")]
 		AudioSettings SoundSetting { get; }
+
+		[Since (5,0)]
+		[Export ("enableRate")]
+		bool EnableRate { get; set; }
+
+		[Since (5,0)]
+		[Export ("rate")]
+		float Rate { get; set; }		
 
 		[Since (6,0)]
 		[Export ("channelAssignments")]
