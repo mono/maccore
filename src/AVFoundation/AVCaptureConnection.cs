@@ -43,8 +43,10 @@ namespace MonoMac.AVFoundation {
 
 		public bool SupportsVideoMaxFrameDuration {
 			get {
+#if !MONOMAC
 				if (RespondsToSelector (new Selector ("isVideoMaxFrameDurationSupported")))
 					return _SupportsVideoMaxFrameDuration;
+#endif
 				return false;
 			}
 		}

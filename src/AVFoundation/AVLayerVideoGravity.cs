@@ -32,6 +32,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.AVFoundation {
+#if !MONOMAC
 	public enum AVLayerVideoGravity
 	{
 		ResizeAspect ,
@@ -144,4 +145,5 @@ namespace MonoMac.AVFoundation {
 			}
 		}
 	}
+#endif
 }

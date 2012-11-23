@@ -272,11 +272,10 @@ namespace MonoMac.CoreImage {
 
 		[Field ("kCIInputImageKey", "+CoreImage")]
 		NSString Image  { get; }
-
+#if !MONOMAC
 		[Field ("kCIInputVersionKey", "+CoreImage")]
 		NSString Version { get; }
-
-#if MONOMAC
+#else
 		[Field ("kCIInputTimeKey", "+CoreImage")]
 		NSString Time  { get; }
 
@@ -873,13 +872,15 @@ namespace MonoMac.CoreImage {
 		[Wrap ("this (image, options == null ? null : options.Dictionary)")]
 		IntPtr Constructor (UIImage image, [NullAllowed] CIImageInitializationOptions options);
 #endif
-
+		[MountainLion]
 		[Field ("kCIImageAutoAdjustFeatures"), Internal]
 		NSString AutoAdjustFeaturesKey { get; }
 
+		[MountainLion]
 		[Field ("kCIImageAutoAdjustRedEye"), Internal]
 		NSString AutoAdjustRedEyeKey { get; }
 
+		[MountainLion]
 		[Field ("kCIImageAutoAdjustEnhance"), Internal]
 		NSString AutoAdjustEnhanceKey { get; }
 		
@@ -895,6 +896,7 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIImageColorSpace"), Internal]
 		NSString CIImageColorSpaceKey { get; }
 
+		[MountainLion]
 		[Field ("kCIImageProperties"), Internal]
 		NSString CIImagePropertiesKey { get; }
 	}
@@ -902,6 +904,7 @@ namespace MonoMac.CoreImage {
 #if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CIImageAccumulator {
+		[Static]
 		[Export ("imageAccumulatorWithExtent:format:")]
 		CIImageAccumulator FromRectangle (RectangleF rect, int ciImageFormat);
 
@@ -1101,7 +1104,8 @@ namespace MonoMac.CoreImage {
 
 		[Field ("CIDetectorTypeFace"), Internal]
 		NSString TypeFace { get; }
-		
+
+		[MountainLion]
 		[Field ("CIDetectorImageOrientation"), Internal]
 		NSString ImageOrientation { get; }
 

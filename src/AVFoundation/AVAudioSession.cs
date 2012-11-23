@@ -27,6 +27,7 @@ using System;
 
 namespace MonoMac.AVFoundation {
 
+#if !MONOMAC
 	public partial class AVAudioSession {
 
 		[Obsolete ("Use SetActive(bool, out NSError) instead")]
@@ -58,4 +59,5 @@ namespace MonoMac.AVFoundation {
 			return SetPreferredIOBufferDuration (duration, out outError);
 		}
 	}
+#endif
 }

@@ -481,7 +481,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("autoresizingMask")]
 		CAAutoresizingMask AutoresizinMask { get; set; }
 
-		[Export ("resizeSublayersWithOldSize")]
+		[Export ("resizeSublayersWithOldSize:")]
 		void ResizeSublayers (SizeF oldSize);
 
 		[Export ("resizeWithOldSuperlayerSize:")]

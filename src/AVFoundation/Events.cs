@@ -256,6 +256,7 @@ namespace MonoMac.AVFoundation {
 		public string Category { get; private set; }
 	}
 	
+#if !MONOMAC
 	internal class InternalAVAudioSessionDelegate : AVAudioSessionDelegate {
 		internal EventHandler cbEndInterruption, cbBeginInterruption;
 		internal EventHandler<AVCategoryEventArgs> cbCategoryChanged;
@@ -372,4 +373,5 @@ namespace MonoMac.AVFoundation {
 			}
 		}
 	}
+#endif
 }

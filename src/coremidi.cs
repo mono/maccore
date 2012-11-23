@@ -34,6 +34,7 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreMidi {
 	
+#if !MONOMAC
 	[BaseType (typeof (NSObject), Name="MIDINetworkHost")]
 	interface MidiNetworkHost {
 		[Export ("name")]
@@ -80,7 +81,7 @@ namespace MonoMac.CoreMidi {
 		[Field ("MIDINetworkBonjourServiceType")]
 		NSString NetworkBonjourServiceType { get; }
 	}
-	
+
 	[BaseType (typeof (NSObject), Name="MIDINetworkConnection")]
 	interface MidiNetworkConnection {
 		[Export ("host")]
@@ -137,4 +138,5 @@ namespace MonoMac.CoreMidi {
 		[Export ("destinationEndpoint")]
 		MidiEndpoint DestinationEndpoint { get; }
 	}
+#endif
 }

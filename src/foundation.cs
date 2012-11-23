@@ -574,6 +574,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSPredicate))]
+	[DisableDefaultCtor] // An uncaught exception was raised: Can't have a NOT predicate with no subpredicate.
 	public interface NSCompoundPredicate {
 		[Export ("initWithType:subpredicates:")]
 		IntPtr Constructor (NSCompoundPredicateType type, NSPredicate[] subpredicates);
@@ -2705,11 +2706,11 @@ namespace MonoMac.Foundation
 		[Obsolete ("Use NSMetadataQuery.NSMetadataUbiquitousItemPercentUploadedKey on NSMetadataItem")]
 		[Field ("NSURLUbiquitousItemPercentUploadedKey")]
 		NSString UbiquitousItemPercentUploadedKey { get; }
-		
+#if !MONOMAC
 		[Since (5,1)]
 		[Field ("NSURLIsExcludedFromBackupKey")]
 		NSString IsExcludedFromBackupKey { get; }
-
+#endif
 		[Export ("bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:")]
 		NSData CreateBookmarkData (NSUrlBookmarkCreationOptions options, string [] resourceValues, NSUrl relativeUrl, out NSError error);
 
@@ -2717,7 +2718,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSData bookmarkData, NSUrlBookmarkResolutionOptions resolutionOptions, NSUrl relativeUrl, out bool bookmarkIsStale, out NSError error);
 
 		[Field ("NSURLPathKey")]
-		[Since (6,0)]
+		[Since (6,0)][MountainLion]
 		NSString PathKey { get; }
 	}
 
@@ -2828,7 +2829,7 @@ namespace MonoMac.Foundation
 	
 		[Export ("cancelAuthenticationChallenge:")]
 		void CancelAuthenticationChallenge (NSUrlAuthenticationChallenge  challenge);
-
+#if !MONOMAC
 		[Since (5,0)]
 		[Export ("originalRequest")]
 		NSUrlRequest OriginalRequest { get; }
@@ -2836,7 +2837,7 @@ namespace MonoMac.Foundation
 		[Since (5,0)]
 		[Export ("currentRequest")]
 		NSUrlRequest CurrentRequest { get; }
-
+#endif
 		[Export ("setDelegateQueue:")]
 		[Since (5,0)]
 		void SetDelegateQueue (NSOperationQueue queue);
@@ -3586,7 +3587,7 @@ namespace MonoMac.Foundation
 		[Export ("uppercaseStringWithLocale:")]
 		string ToUpper (NSLocale locale);
 	}
-
+#if !MONOMAC
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	public interface NSStringDrawingContext {
@@ -3605,7 +3606,7 @@ namespace MonoMac.Foundation
 		[Export ("totalBounds")]
 		RectangleF TotalBounds { get;  }
 	}
-	
+#endif
 	[BaseType (typeof (NSStream))]
 	public interface NSInputStream {
 		[Export ("hasBytesAvailable")]
@@ -4022,6 +4023,9 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSObject))]
+#if MONOMAC
+	[DisableDefaultCtor] // An uncaught exception was raised: -[__NSCFDictionary removeObjectForKey:]: attempt to remove nil key
+#endif
 	public interface NSBundle {
 		[Export ("mainBundle")][Static]
 		NSBundle MainBundle { get; }
@@ -5415,7 +5419,7 @@ namespace MonoMac.Foundation
 
 		[Field("NSFileBusy")]
 		NSString Busy { get; }
-
+#if !MONOMAC
 		[Field ("NSFileProtectionKey")]
 		NSString FileProtectionKey { get; }
 
@@ -5432,7 +5436,7 @@ namespace MonoMac.Foundation
 		[Since (5,0)]
 		[Field ("NSFileProtectionCompleteUntilFirstUserAuthentication")]
 		NSString FileProtectionCompleteUntilFirstUserAuthentication  { get; }
-		
+#endif
 		[Field("NSFileSystemSize")]
 		NSString SystemSize { get; }
 
@@ -5630,11 +5634,12 @@ namespace MonoMac.Foundation
 		[Since (6,0)]
 		[Export ("ubiquityIdentityToken")]
 		NSObject UbiquityIdentityToken { get; }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Field ("NSUbiquityIdentityDidChangeNotification")]
 		[Notification]
 		NSString UbiquityIdentityDidChangeNotification { get; }
+#endif
 	}
 
 	[BaseType(typeof(NSObject))]

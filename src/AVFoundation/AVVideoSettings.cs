@@ -57,8 +57,10 @@ namespace MonoMac.AVFoundation {
 		Main31,
 		Main32,
 		Main41,
+#if !MONOMAC
 		High40,
 		High41
+#endif
 	}
 
 	public class AVVideoSettingsUncompressed : CVPixelBufferAttributes
@@ -263,12 +265,14 @@ namespace MonoMac.AVFoundation {
 				case AVVideoProfileLevelH264.Main41:
 					v = AVVideo.ProfileLevelH264Main41;
 					break;
+#if !MONOMAC
 				case AVVideoProfileLevelH264.High40:
 					v = AVVideo.ProfileLevelH264High40;
 					break;
 				case AVVideoProfileLevelH264.High41:
 					v = AVVideo.ProfileLevelH264High41;
 					break;
+#endif
 				case null:
 					v = null;
 					break;
