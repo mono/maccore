@@ -127,7 +127,7 @@ namespace MonoMac.AudioToolbox {
 			Format = formatType;
 		}
 
-		public static AudioStreamBasicDescription CreateLinearPCM (double sampleRate = 441000, uint channelsPerFrame = 2, uint bitsPerChannel = 16)
+		public static AudioStreamBasicDescription CreateLinearPCM (double sampleRate = 441000, uint channelsPerFrame = 2, uint bitsPerChannel = 16, bool bigEndian = false)
 		{
 			var desc = new AudioStreamBasicDescription (AudioFormatType.LinearPCM);
 			desc.SampleRate = sampleRate;
@@ -135,7 +135,9 @@ namespace MonoMac.AudioToolbox {
 			desc.BitsPerChannel = (int) bitsPerChannel;
 			desc.BytesPerPacket = desc.BytesPerFrame = (int) channelsPerFrame * sizeof (Int16);
 			desc.FramesPerPacket = 1;
-			desc.FormatFlags = AudioFormatFlags.IsBigEndian | AudioFormatFlags.IsSignedInteger | AudioFormatFlags.IsPacked;
+			desc.FormatFlags = AudioFormatFlags.IsSignedInteger | AudioFormatFlags.IsPacked;
+			if (bigEndian)
+				desc.FormatFlags |= AudioFormatFlags.IsBigEndian;
 
 			return desc;
 		}
