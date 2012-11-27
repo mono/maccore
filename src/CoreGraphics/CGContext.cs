@@ -246,21 +246,21 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static	void CGContextSetLineDash(IntPtr c, float phase, float [] lenghts, int count);
-		public void SetLineDash (float phase, float [] lenghts)
+		extern static	void CGContextSetLineDash(IntPtr c, float phase, float [] lengths, int count);
+		public void SetLineDash (float phase, float [] lengths)
 		{
-			if (lenghts == null)
-				throw new ArgumentNullException ("lenghts");
-			CGContextSetLineDash (handle, phase, lenghts, lenghts.Length);
+			if (lengths == null)
+				throw new ArgumentNullException ("lengths");
+			CGContextSetLineDash (handle, phase, lengths, lengths.Length);
 		}
 
-		public void SetLineDash (float phase, float [] lenghts, int n)
+		public void SetLineDash (float phase, float [] lengths, int n)
 		{
-			if (lenghts == null)
-				throw new ArgumentNullException ("lenghts");
-			if (n > lenghts.Length)
+			if (lengths == null)
+				throw new ArgumentNullException ("lengths");
+			if (n > lengths.Length)
 				throw new ArgumentNullException ("n");
-			CGContextSetLineDash (handle, phase, lenghts, n);
+			CGContextSetLineDash (handle, phase, lengths, n);
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
