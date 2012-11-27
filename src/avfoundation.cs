@@ -360,10 +360,11 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("rate")]
 		float Rate { get; set; }		
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("channelAssignments")]
 		AVAudioSessionChannelDescription [] ChannelAssignments { get; set; }
+#endif
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -763,7 +764,7 @@ namespace MonoMac.AVFoundation {
                 bool SetOutputDataSource (AVAudioSessionDataSourceDescription dataSource, out NSError outError);
 
 	}
-#endif
+
 	[Since (6,0)]
         [BaseType (typeof (NSObject))]
         interface AVAudioSessionDataSourceDescription {
@@ -846,7 +847,7 @@ namespace MonoMac.AVFoundation {
 		AVAudioSessionPortDescription [] Outputs { get;  }
 
 	}
-
+#endif
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** initialization method -init cannot be sent to an abstract object of class AVAsset: Create a concrete instance!

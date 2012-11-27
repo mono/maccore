@@ -3608,13 +3608,20 @@ namespace MonoMac.Foundation
 	}
 #endif
 	[BaseType (typeof (NSStream))]
+	[DisableDefaultCtor] // crash when used
 	public interface NSInputStream {
 		[Export ("hasBytesAvailable")]
 		bool HasBytesAvailable ();
 	
 		[Export ("initWithFileAtPath:")]
 		IntPtr Constructor (string path);
-	
+
+		[Export ("initWithData:")]
+		IntPtr Constructor (NSData data);
+
+		[Export ("initWithURL:")]
+		IntPtr Constructor (NSUrl url);
+
 		[Static]
 		[Export ("inputStreamWithData:")]
 		NSInputStream FromData (NSData data);
@@ -3622,7 +3629,11 @@ namespace MonoMac.Foundation
 		[Static]
 		[Export ("inputStreamWithFileAtPath:")]
 		NSInputStream FromFile (string  path);
-		
+
+		[Static]
+		[Export ("inputStreamWithURL:")]
+		NSInputStream FromUrl (NSUrl url);
+
 		[Export ("_scheduleInCFRunLoop:forMode:")]
 		void ScheduleInCFRunLoop (CFRunLoop runloop, NSString mode);
 
@@ -3897,7 +3908,11 @@ namespace MonoMac.Foundation
 	}
 	
 	[BaseType (typeof (NSStream))]
+	[DisableDefaultCtor] // crash when used
 	public interface NSOutputStream {
+		[Export ("initToMemory")]
+		IntPtr Constructor ();
+
 		[Export ("hasSpaceAvailable")]
 		bool HasSpaceAvailable ();
 	

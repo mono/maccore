@@ -235,8 +235,6 @@ namespace MonoMac.CoreImage {
 				return new CIToneCurve (handle);
 			case "CIVibrance":
 				return new CIVibrance (handle);
-			case "CIVignette":
-				return new CIVignette (handle);
 			case "CIWhitePointAdjust":
 				return new CIWhitePointAdjust (handle);
 			case "CIFaceBalance":
@@ -333,6 +331,8 @@ namespace MonoMac.CoreImage {
 			case "CIRippleTransition":
 				return new CIRippleTransition (handle);
 #else
+			case "CIVignette":
+				return new CIVignette (handle);
 			case "CILightTunnel":
 				return new CILightTunnel (handle);
 			case "CITriangleKaleidoscope":
@@ -1790,7 +1790,7 @@ namespace MonoMac.CoreImage {
 		}
 		
 	}
-	
+#if !MONOMAC
 	public class CIVignette : CIFilter {
 		public CIVignette () : base (CreateFilter ("CIVignette")) {}
 		public CIVignette (IntPtr handle) : base (handle) {}
@@ -1823,7 +1823,7 @@ namespace MonoMac.CoreImage {
 		}
 		
 	}
-	
+#endif
 	public class CIWhitePointAdjust : CIFilter {
 		public CIWhitePointAdjust () : base (CreateFilter ("CIWhitePointAdjust")) {}
 		public CIWhitePointAdjust (IntPtr handle) : base (handle) {}

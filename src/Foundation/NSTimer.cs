@@ -75,10 +75,11 @@ namespace MonoMac.Foundation {
 			: this (date, when.TotalSeconds, new NSActionDispatcher (action), NSActionDispatcher.Selector, null, repeats)
 		{
 		}
-		
+#if !MONOMAC
 		[Obsolete ("This instance of NSTimer would be unusable. Symbol kept for binary compatibility", true)]
 		public NSTimer () : base (IntPtr.Zero)
 		{
 		}
+#endif
 	}
 }

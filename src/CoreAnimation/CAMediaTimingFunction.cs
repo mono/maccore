@@ -34,10 +34,12 @@ using MonoMac.Foundation;
 namespace MonoMac.CoreAnimation {
 	public unsafe partial class CAMediaTimingFunction {
 
+#if !MONOMAC
 		[Obsolete ("This type is not meant to be created by application code")]
 		public CAMediaTimingFunction () : base (IntPtr.Zero)
 		{
 		}
+#endif
 
 		[Obsolete ("Use FromName(NSString) with one of the CAMediaTimingFunction fields")]
 		static public CAMediaTimingFunction FromName (string name)

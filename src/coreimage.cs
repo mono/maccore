@@ -929,6 +929,7 @@ namespace MonoMac.CoreImage {
 	}
 
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // avoid crashes
 	public interface CIKernel {
 		[Static, Export ("kernelsWithString:")]
 		CIKernel [] FromProgram (string coreImageShaderProgram);
