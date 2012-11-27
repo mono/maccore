@@ -37,13 +37,4 @@ namespace MonoMac.Foundation {
 			}
 		}
 	}
-
-	public partial class NSInputStream {
-
-		// calling 'init' would create an instance that crash, 
-		// this one maintains API compatibility (without the crash)
-		public NSInputStream () : this (new NSData ())
-		{
-		}
-	}
 }
