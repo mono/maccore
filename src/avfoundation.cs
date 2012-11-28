@@ -2502,11 +2502,11 @@ namespace MonoMac.AVFoundation {
 		NSDictionary ExtraAttributes { get; set;  }
 
 		[Export ("key", ArgumentSemantic.Copy)]
-		NSObject Key { get; }
+		NSObject Key { get; set; }
 		
 		[Since (4,2)]
 		[Export ("duration")]
-		CMTime Duration { get; }
+		CMTime Duration { get; set; }
 	}
 
 	[Since (4,0)]
@@ -2579,10 +2579,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("tracks")]
 		AVCompositionTrack [] Tracks { get; }
 
-		[Obsolete ("Deprecated in iOS5")]
+		[Obsolete ("Deprecated in iOS5 and OSX 10.8")]
 		[Export ("naturalSize")]
-		SizeF NaturalSize { get; }
-
+		SizeF NaturalSize { get; [NotImplemented] set; }
 	}
 
 	[Since (4,0)]
@@ -2611,6 +2610,11 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("mutableTrackCompatibleWithTrack:")]
 		AVMutableCompositionTrack CreateMutableTrack (AVAssetTrack referenceTrack);
+
+		[Obsolete ("Deprecated in iOS5 and OSX 10.8")]
+		[Export ("naturalSize")]
+		[Override]
+		SizeF NaturalSize { get; set; }
 	}
 	
 	[Since (4,0)]
@@ -3423,7 +3427,7 @@ namespace MonoMac.AVFoundation {
 		AVMetadataItem [] Metadata { get; set;  }
 
 		[Export ("movieFragmentInterval")]
-		CMTime MovieFragmentInterval { get; }
+		CMTime MovieFragmentInterval { get; set; }
 	}
 
 	[Since (4,0)]
@@ -3798,10 +3802,10 @@ namespace MonoMac.AVFoundation {
 	[Since (4,3)]
 	interface AVTimedMetadataGroup {
 		[Export ("timeRange")]
-		CMTimeRange TimeRange { get;  }
+		CMTimeRange TimeRange { get; [NotImplemented] set; }
 
 		[Export ("items")]
-		AVMetadataItem [] Items { get;  }
+		AVMetadataItem [] Items { get; [NotImplemented] set; }
 
 		[Export ("initWithItems:timeRange:")]
 		IntPtr Constructor (AVMetadataItem [] items, CMTimeRange timeRange);
@@ -3810,10 +3814,12 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (AVTimedMetadataGroup))]
 	interface AVMutableTimedMetadataGroup {
 		[Export ("items")]
+		[Override]
 		AVMetadataItem [] Items { get; set;  }
 
 		[Export ("timeRange")]
-		CMTimeRange Timerange { get; set; }
+		[Override]
+		CMTimeRange TimeRange { get; set; }
 	}
 
 	delegate void AVTimeHandler (CMTime time);

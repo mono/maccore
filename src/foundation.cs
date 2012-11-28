@@ -623,7 +623,7 @@ namespace MonoMac.Foundation
 		IntPtr Bytes { get; }
 
 		[Export ("length")]
-		uint Length { get; }
+		uint Length { get; [NotImplemented] set; }
 
 		[Export ("writeToFile:options:error:")]
 		bool _Save (string file, int options, IntPtr addr);
@@ -1290,6 +1290,10 @@ namespace MonoMac.Foundation
 
 		[Export ("setData:")]
 		void SetData (NSData data);
+
+		[Export ("length")]
+		[Override]
+		uint Length { get; set; }
 	}
 
 	[BaseType (typeof (NSObject))]

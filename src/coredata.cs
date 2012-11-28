@@ -86,7 +86,7 @@ namespace MonoMac.CoreData
 		string AttributeValueClassName { get; set; }
 
 		[Export ("defaultValue")]
-		NSAttributeDescription DefaultValue { get; }
+		NSObject DefaultValue { get; set; }
 
 		[Export ("setDefaultValue:")]
 		void SetDefaultValue (NSObject value);
