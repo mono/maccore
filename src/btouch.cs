@@ -89,6 +89,7 @@ class BindingTouch {
 		bool pmode = true;
 		bool nostdlib = false;
 		bool clean_mono_path = false;
+		bool inline_selectors = false;
 		List<string> sources;
 		var resources = new List<string> ();
 #if !MONOMAC
@@ -130,6 +131,7 @@ class BindingTouch {
 			{ "use-zero-copy", v=> zero_copy = true },
 			{ "nostdlib", "Does not reference mscorlib.dll library", l => nostdlib = true },
 			{ "no-mono-path", "Launches compiler with empty MONO_PATH", l => clean_mono_path = true },
+			{ "inline-selectors:", "If Selector.GetHandle is inlined and does not need to be cached (default: false)", v => inline_selectors = string.Equals ("true", v, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty (v) },
 #if !MONOMAC
 			{ "link-with=,", "Link with a native library {0:FILE} to the binding, embedded as a resource named {1:ID}",
 				(path, id) => {
@@ -256,7 +258,8 @@ class BindingTouch {
 #if MONOMAC
 				OnlyX86 = true,
 #endif
-				Alpha = alpha
+				Alpha = alpha,
+				InlineSelectors = inline_selectors,
 			};
 
 			foreach (var mi in baselib.GetType (RootNS + ".ObjCRuntime.Messaging").GetMethods ()){

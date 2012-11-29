@@ -835,6 +835,7 @@ public class Generator {
 	public string MessagingNS = "MonoTouch.ObjCRuntime";
 	
 	public bool BindThirdPartyLibrary = false;
+	public bool InlineSelectors;
 	public string BaseDir { get { return basedir; } set { basedir = value; }}
 	string basedir;
 	public List<string> GeneratedFiles = new List<string> ();
@@ -1837,10 +1838,13 @@ public class Generator {
 			w.WriteLine (a);
 	}
 	
-	public string SelectorField (string s)
+	public string SelectorField (string s, bool ignore_inline_directive = false)
 	{
 		string name;
 		
+		if (InlineSelectors && !ignore_inline_directive)
+			return "Selector.GetHandle (\"" + s + "\")";
+
 		if (selector_names.TryGetValue (s, out name))
 			return name;
 		
@@ -3011,7 +3015,11 @@ public class Generator {
 			if (!is_model){
 				foreach (var ea in selectors [type]){
 					print ("[CompilerGenerated]");
-					print ("static readonly IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
+					if (InlineSelectors) {
+						print ("static IntPtr {0} {{ get {{ return Selector.GetHandle (\"{1}\"); }} }}", SelectorField (ea, true), ea);
+					} else {
+						print ("static readonly IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
+					}
 				}
 			}
 			print ("");
@@ -3036,20 +3044,38 @@ public class Generator {
 					} else {
 						if (!disable_default_ctor) {
 							GeneratedCode (sw, 2);
-							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
-							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{4} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.Init);\n\t\t\t}}\n\t\t}}\n",
-								      TypeName,
-								      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
-								      debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "",
-								      MainPrefix, ctor_visibility);
+							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]");
+							sw.WriteLine ("\t\t[Export (\"init\")]");
+							sw.WriteLine ("\t\t{1} {0} () : base (NSObjectFlag.Empty)", TypeName, ctor_visibility);
+							sw.WriteLine ("\t\t{");
+							if (BindThirdPartyLibrary)
+								sw.WriteLine ("\t\t\t{0}", init_binding_type);
+							if (debug)
+								sw.WriteLine ("\t\t\tConsole.WriteLine (\"{0}.ctor ()\");", TypeName);
+							sw.WriteLine ("\t\t\tif (IsDirectBinding) {");
+							sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, {0});", InlineSelectors ? "Selector.GetHandle (\"init\")" : "Selector.Init");
+							sw.WriteLine ("\t\t\t} else {");
+							sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, {0});", InlineSelectors ? "Selector.GetHandle (\"init\")" : "Selector.Init");
+							sw.WriteLine ("\t\t\t}");
+							sw.WriteLine ("\t\t}");
+							sw.WriteLine ();
 						}
 						GeneratedCode (sw, 2);
-						sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
-						sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]\n\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}{2}if (IsDirectBinding) {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}} else {{\n\t\t\t\tHandle = {3}.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.InitWithCoder, coder.Handle);\n\t\t\t}}\n\t\t}}\n",
-							      TypeName,
-							      BindThirdPartyLibrary ? init_binding_type + "\n\t\t\t" : "",
-							      debug ? String.Format ("Console.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName) : "",
-							      MainPrefix);
+						sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]");
+						sw.WriteLine ("\t\t[Export (\"initWithCoder:\")]");
+						sw.WriteLine ("\t\tpublic {0} (NSCoder coder) : base (NSObjectFlag.Empty)", TypeName);
+						sw.WriteLine ("\t\t{");
+						if (BindThirdPartyLibrary)
+							sw.WriteLine ("\t\t\t{0}", init_binding_type);
+						if (debug)
+							sw.WriteLine ("\t\t\tConsole.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName);
+						sw.WriteLine ("\t\t\tif (IsDirectBinding) {");
+						sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, {0}, coder.Handle);", InlineSelectors ? "Selector.GetHandle (\"initWithCoder:\")" : "Selector.InitWithCoder");
+						sw.WriteLine ("\t\t\t} else {");
+						sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, {0}, coder.Handle);", InlineSelectors ? "Selector.GetHandle (\"initWithCoder:\")" : "Selector.InitWithCoder");
+						sw.WriteLine ("\t\t\t}");
+						sw.WriteLine ("\t\t}");
+						sw.WriteLine ();
 					}
 					GeneratedCode (sw, 2);
 					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
@@ -3382,24 +3408,34 @@ public class Generator {
 					}
 
 					if (noDefaultValue.Count > 0) {
-						foreach (var mi in noDefaultValue) {
-							var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
-							var export = (ExportAttribute)eattrs[0];
-							print ("static IntPtr sel{0} = Selector.GetHandle (\"{1}\");", mi.Name, export.Selector);
+						string selRespondsToSelector = "Selector.GetHandle (\"respondsToSelector:\")";
+						if (!InlineSelectors) {
+							foreach (var mi in noDefaultValue) {
+								var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
+								var export = (ExportAttribute)eattrs[0];
+								print ("static IntPtr sel{0} = Selector.GetHandle (\"{1}\");", mi.Name, export.Selector);
+							}
+							print ("static IntPtr selRespondsToSelector = " + selRespondsToSelector + ";");
+							selRespondsToSelector = "selRespondsToSelector";
 						}
-						print ("static IntPtr selRespondsToSelector = Selector.GetHandle (\"respondsToSelector:\");");
 
 						print ("[Export (\"respondsToSelector:\")]");
 						print ("bool _RespondsToSelector (IntPtr selHandle)");
 						print ("{");
 						++indent;
 						foreach (var mi in noDefaultValue) {
-							print ("if (selHandle.Equals (sel{0}))", mi.Name);
+							if (InlineSelectors) {
+								var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
+								var export = (ExportAttribute)eattrs[0];
+								print ("if (selHandle.Equals (Selector.GetHandle (\"{0}\"))", export.Selector);
+							} else {
+								print ("if (selHandle.Equals (sel{0}))", mi.Name);
+							}
 							++indent;
 							print ("return {0} != null;", PascalCase (mi.Name));
 							--indent;
 						}
-						print ("return Messaging.bool_objc_msgSendSuper_intptr (SuperHandle, selRespondsToSelector, selHandle);");
+						print ("return Messaging.bool_objc_msgSendSuper_intptr (SuperHandle, " + selRespondsToSelector + ", selHandle);");
 						--indent;
 						print ("}");
 					}
