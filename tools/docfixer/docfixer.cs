@@ -19,6 +19,16 @@ public partial class DocGenerator
 {
 	public static int Main (string[] args)
 	{
+		try {
+			return Main2 (args);
+		} catch (Exception ex) {
+			Console.WriteLine ("Unexpected exception: {0}", ex);
+			return 1;
+		}
+	}
+
+	public static int Main2 (string[] args)
+	{
 		bool show_help = false;
 		bool useRawDoc = false;
 		var mergerOptions = new AppleDocMerger.Options ();
