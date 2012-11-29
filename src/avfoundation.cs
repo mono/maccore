@@ -3727,7 +3727,7 @@ namespace MonoMac.AVFoundation {
 #endif
 		[Since (6,0)]
 		[Export ("masterClock")]
-		CMClock MasterClock { get; }
+		CMClock MasterClock { get; set; }
 #if !MONOMAC
 		[Since (6,0)]
 		[Export ("allowsExternalPlayback")]
