@@ -2236,8 +2236,10 @@ public class Generator {
 		return (attrs.Length == 0) ? null : (SinceAttribute) attrs [0];
 	}
 
+#if !MONOMAC
 	// undecorated code is assumed to be iOS 2.0
 	static SinceAttribute SinceDefault = new SinceAttribute (2,0);
+#endif
 
 	string CurrentMethod;
 	
