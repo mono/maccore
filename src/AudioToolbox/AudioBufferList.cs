@@ -33,6 +33,7 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.AudioToolbox
 {
+	[Obsolete ("Use AudioBuffers")]
 	[StructLayout(LayoutKind.Sequential)]
 	public class AudioBufferList {
 		[Preserve (Conditional=true)]
@@ -63,6 +64,7 @@ namespace MonoMac.AudioToolbox
 		}
 	}
 
+	[Obsolete ("Use AudioBuffers")]
 	public class MutableAudioBufferList : AudioBufferList, IDisposable {
 		public MutableAudioBufferList (int nubuffers, int bufferSize)
 			: base (nubuffers)

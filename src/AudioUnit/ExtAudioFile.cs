@@ -36,6 +36,23 @@ using MonoMac.AudioToolbox;
 
 namespace MonoMac.AudioUnit
 {
+    public enum ExtAudioFileError
+    {
+        OK = 0,
+        CodecUnavailableInputConsumed    = -66559,
+        CodecUnavailableInputNotConsumed = -66560,
+        InvalidProperty          = -66561,
+        InvalidPropertySize      = -66562,
+        NonPCMClientFormat       = -66563,
+        InvalidChannelMap        = -66564,
+        InvalidOperationOrder    = -66565,
+        InvalidDataFormat        = -66566,
+        MaxPacketSizeUnknown     = -66567,
+        InvalidSeek              = -66568,
+        AsyncWriteTooLarge       = -66569,
+        AsyncWriteBufferOverflow = -66570
+    }
+
     public class ExtAudioFile : IDisposable
     {
         const int kAudioUnitSampleFractionBits = 24;
@@ -100,9 +117,6 @@ namespace MonoMac.AudioUnit
         }
         #endregion
 
-        #region Private methods
-        #endregion
-
         #region Public methods        
         public static ExtAudioFile OpenUrl(MonoMac.CoreFoundation.CFUrl url)
         { 
@@ -165,6 +179,8 @@ namespace MonoMac.AudioUnit
             
             return frame;
         }
+
+        [Obsolete ("Use overload with AudioBuffers")]
         public int Read(int numberFrames, AudioBufferList data)
         {
             if (data == null)
@@ -178,6 +194,17 @@ namespace MonoMac.AudioUnit
 
             return numberFrames;
         }
+
+        public uint Read (uint numberFrames, AudioBuffers audioBufferList, out ExtAudioFileError status)
+        {
+            if (audioBufferList == null)
+                throw new ArgumentNullException ("audioBufferList");
+
+            status = ExtAudioFileRead (_extAudioFile, ref numberFrames, (IntPtr) audioBufferList);
+            return numberFrames;
+        }
+
+        [Obsolete ("Use overload with AudioBuffers")]
         public void WriteAsync(int numberFrames, AudioBufferList data)
         {
             int err = ExtAudioFileWriteAsync(_extAudioFile, numberFrames, data);
@@ -185,7 +212,16 @@ namespace MonoMac.AudioUnit
             if (err != 0) {
                 throw new ArgumentException(String.Format("Error code:{0}", err));
             }        
-        }         
+        }
+
+        public ExtAudioFileError WriteAsync (uint numberFrames, AudioBuffers audioBufferList)
+        {
+            if (audioBufferList == null)
+                throw new ArgumentNullException ("audioBufferList");
+
+            return ExtAudioFileWriteAsync (_extAudioFile, numberFrames, (IntPtr) audioBufferList);
+        }
+
         #endregion
 
         // TODO: Wrong Dispose pattern (missing Finalize)
@@ -199,11 +235,19 @@ namespace MonoMac.AudioUnit
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileOpenURL")]
         static extern int ExtAudioFileOpenUrl(IntPtr inUrl, IntPtr outExtAudioFile); // caution
 
+        [Obsolete]
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileRead")]
         static extern int ExtAudioFileRead(IntPtr  inExtAudioFile, ref int ioNumberFrames, AudioBufferList ioData);
 
+        [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+        static extern ExtAudioFileError ExtAudioFileRead (IntPtr inExtAudioFile, ref uint ioNumberFrames, IntPtr ioData);
+
+        [Obsolete]
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileWriteAsync")]
         static extern int ExtAudioFileWriteAsync(IntPtr inExtAudioFile, int inNumberFrames, AudioBufferList ioData);
+
+        [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+        static extern ExtAudioFileError ExtAudioFileWriteAsync(IntPtr inExtAudioFile, uint inNumberFrames, IntPtr ioData);
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileDispose")]
         static extern int ExtAudioFileDispose(IntPtr inExtAudioFile);

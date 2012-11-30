@@ -34,6 +34,7 @@ using MonoMac.AudioToolbox;
 
 namespace MonoMac.AudioUnit
 {
+    [Obsolete]
     public class AudioUnitEventArgs : EventArgs
     {
         #region Variables

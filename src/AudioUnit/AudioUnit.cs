@@ -1,8 +1,9 @@
 ﻿//
 // AudioUnit.cs: AudioUnit wrapper class
 //
-// Author:
+// Authors:
 //   AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2010 Reinforce Lab.
 // Copyright 2011, 2012 Xamarin Inc
@@ -37,6 +38,7 @@ namespace MonoMac.AudioUnit
 {
 	public enum AudioUnitStatus {
 		NoError = 0,
+		OK = NoError,
 		ParameterError = -50,
 		InvalidProperty = -10879,
 		InvalidParameter = -10878,
@@ -121,21 +123,23 @@ namespace MonoMac.AudioUnit
 		{
 		}
 	}
+
+	public delegate AudioUnitStatus RenderDelegate (AudioUnitRenderActionFlags actionFlags, AudioTimeStamp timeStamp, uint busNumber, uint numberFrames, AudioBuffers data);
 	
-	public class AudioUnit : IDisposable, MonoMac.ObjCRuntime.INativeObject {
+	public class AudioUnit : IDisposable, MonoMac.ObjCRuntime.INativeObject
+	{
+		static readonly RenderCallbackShared CreateRenderCallback = RenderCallbackImpl;
+
 		GCHandle gcHandle;
 		IntPtr handle;
 		bool _isPlaying;
 
-		public IntPtr Handle { get { return handle; }}
-
-		public event EventHandler<AudioUnitEventArgs> RenderCallback;
-		//public event EventHandler<AudioUnitEventArgs> InputCallback;
-		public bool IsPlaying { get { return _isPlaying; } }
+		RenderDelegate render;
 
 		internal AudioUnit (IntPtr ptr)
 		{
 			handle = ptr;
+			gcHandle = GCHandle.Alloc(this);
 		}
 		
 		public AudioUnit (AudioComponent component)
@@ -149,13 +153,20 @@ namespace MonoMac.AudioUnit
 			if (err != 0)
 				throw new AudioUnitException (err);
 			
-			_isPlaying = false;
-			
 			gcHandle = GCHandle.Alloc(this);
+
+#pragma warning disable 612
+			BrokenSetRender ();
+#pragma warning restore 612
+		}
+
+		[Obsolete]
+		void BrokenSetRender ()
+		{
 			var callbackStruct = new AURenderCallbackStrct();
 			callbackStruct.inputProc = renderCallback; // setting callback function            
 			callbackStruct.inputProcRefCon = GCHandle.ToIntPtr(gcHandle); // a pointer that passed to the renderCallback (IntPtr inRefCon) 
-			err = AudioUnitSetProperty(handle,
+			var err = AudioUnitSetProperty(handle,
 						   AudioUnitPropertyIDType.SetRenderCallback,
 						   AudioUnitScopeType.Input,
 						   0, // 0 == speaker                
@@ -164,7 +175,25 @@ namespace MonoMac.AudioUnit
 			if (err != 0)
 				throw new AudioUnitException (err);
 		}
+
+		public AudioComponent Component {
+			get {
+				return new AudioComponent (AudioComponentInstanceGetComponent (handle));
+			}
+		}
+
+		public IntPtr Handle {
+			get {
+				return handle;
+			}
+		}
+
+		[Obsolete ("Use SetRenderCallback")]
+		public event EventHandler<AudioUnitEventArgs> RenderCallback;
+
+		public bool IsPlaying { get { return _isPlaying; } }
 		
+		[Obsolete]
 		// callback funtion should be static method and be attatched a MonoPInvokeCallback attribute.        
 		[MonoMac.MonoPInvokeCallback(typeof(AURenderCallback))]
 		static int renderCallback(IntPtr inRefCon, ref AudioUnitRenderActionFlags _ioActionFlags,
@@ -191,7 +220,7 @@ namespace MonoMac.AudioUnit
 			return 0; // noerror
 		}
 
-		public void SetAudioFormat(MonoMac.AudioToolbox.AudioStreamBasicDescription audioFormat, AudioUnitScopeType scope, uint audioUnitElement)
+		public void SetAudioFormat(MonoMac.AudioToolbox.AudioStreamBasicDescription audioFormat, AudioUnitScopeType scope, uint audioUnitElement = 0)
 		{
 			int err = AudioUnitSetProperty(handle,
 						       AudioUnitPropertyIDType.StreamFormat,
@@ -202,7 +231,8 @@ namespace MonoMac.AudioUnit
 			if (err != 0)
 				throw new AudioUnitException (err);
 		}
-		public MonoMac.AudioToolbox.AudioStreamBasicDescription GetAudioFormat(AudioUnitScopeType scope, uint audioUnitElement)
+
+		public AudioStreamBasicDescription GetAudioFormat(AudioUnitScopeType scope, uint audioUnitElement = 0)
 		{
 			MonoMac.AudioToolbox.AudioStreamBasicDescription audioFormat = new AudioStreamBasicDescription();
 			uint size = (uint)Marshal.SizeOf(audioFormat);
@@ -219,19 +249,49 @@ namespace MonoMac.AudioUnit
 			return audioFormat;
 		}
 		
-		public void SetEnableIO(bool enableIO, AudioUnitScopeType scope, uint audioUnitElement)
+		public AudioUnitStatus SetEnableIO (bool enableIO, AudioUnitScopeType scope, uint audioUnitElement = 0)
 		{                                   
-			uint flag = (uint)(enableIO ? 1 : 0);
-			int err = AudioUnitSetProperty(handle,
-						       AudioUnitPropertyIDType.EnableIO,
-						       scope,
-						       audioUnitElement,
-						       ref flag,
-						       (uint)Marshal.SizeOf(typeof(uint)));
-			if (err != 0)
-				throw new AudioUnitException (err);
+			uint flag = enableIO ? (uint)1 : 0;
+			return AudioUnitSetProperty (handle, AudioUnitPropertyIDType.EnableIO, scope, audioUnitElement, ref flag, sizeof (uint));
 		}
-			
+
+		public AudioUnitStatus SetMaximumFramesPerSlice (uint value, AudioUnitScopeType scope, uint audioUnitElement = 0)
+		{
+			return AudioUnitSetProperty (handle, AudioUnitPropertyIDType.MaximumFramesPerSlice, scope, audioUnitElement, ref value, sizeof (uint));
+		}
+
+		#region SetRenderCallback
+
+		public AudioUnitStatus SetRenderCallback (RenderDelegate renderDelegate, AudioUnitScopeType scope, uint audioUnitElement = 0)
+		{
+			var cb = new AURenderCallbackStruct ();
+			cb.Proc = CreateRenderCallback;
+			cb.ProcRefCon = GCHandle.ToIntPtr (gcHandle);
+
+			this.render = renderDelegate;
+
+			return AudioUnitSetProperty (handle, AudioUnitPropertyIDType.SetRenderCallback, scope, audioUnitElement, ref cb, Marshal.SizeOf (cb));
+		}
+
+		delegate AudioUnitStatus RenderCallbackShared (IntPtr clientData, ref AudioUnitRenderActionFlags actionFlags, ref AudioTimeStamp timeStamp, uint busNumber, uint numberFrames, IntPtr data);
+
+		struct AURenderCallbackStruct
+		{
+			public RenderCallbackShared Proc;
+			public IntPtr ProcRefCon; 
+		}
+
+		[MonoPInvokeCallback (typeof (RenderCallbackShared))]
+		static AudioUnitStatus RenderCallbackImpl (IntPtr clientData, ref AudioUnitRenderActionFlags actionFlags, ref AudioTimeStamp timeStamp, uint busNumber, uint numberFrames, IntPtr data)
+		{
+			GCHandle gch = GCHandle.FromIntPtr (clientData);
+			var au = (AudioUnit) gch.Target;
+
+			return au.render (actionFlags, timeStamp, busNumber, numberFrames, new AudioBuffers (data));
+		}
+
+		#endregion
+
 		public int Initialize ()
 		{
 			return AudioUnitInitialize(handle);
@@ -258,6 +318,14 @@ namespace MonoMac.AudioUnit
 			}
 		}
 
+		#region Render
+
+		public AudioUnitStatus Render (ref AudioUnitRenderActionFlags actionFlags, AudioTimeStamp timeStamp, uint busNumber, uint numberFrames, AudioBuffers data)
+		{
+			return AudioUnitRender (handle, ref actionFlags, ref timeStamp, busNumber, numberFrames, (IntPtr) data);
+		}
+
+		[Obsolete]
 		public void Render(AudioUnitRenderActionFlags flags,
 				   AudioTimeStamp timeStamp,
 				   int outputBusnumber,
@@ -273,6 +341,7 @@ namespace MonoMac.AudioUnit
 				throw new AudioUnitException (err);
 		}
 
+		[Obsolete]
 		public AudioUnitStatus TryRender(AudioUnitRenderActionFlags flags,
 						AudioTimeStamp timeStamp,
 						int outputBusnumber,
@@ -285,15 +354,21 @@ namespace MonoMac.AudioUnit
 								numberFrames,
 								data);
 		}
+
+		#endregion
+
+		public AudioUnitStatus SetParameter (AudioUnitParameterType type, float value, AudioUnitScopeType scope, uint audioUnitElement = 0)
+		{
+			return AudioUnitSetParameter (handle, type, scope, audioUnitElement, value, 0);
+		}
 		
-		#region IDisposable メンバ
 		public void Dispose()
 		{
 			Dispose (true);
 			GC.SuppressFinalize (this);
 		}
 		
-		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioComponentInstanceDispose")]
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern int AudioComponentInstanceDispose(IntPtr inInstance);
 
 		public void Dispose (bool disposing)
@@ -307,9 +382,7 @@ namespace MonoMac.AudioUnit
 			}
 		}
 
-		/// <summary>
-		/// AudioUnit call back method declaration
-		/// </summary>
+		[Obsolete]
 		internal delegate int AURenderCallback(IntPtr inRefCon,
 					      ref AudioUnitRenderActionFlags ioActionFlags,
 					      ref AudioTimeStamp inTimeStamp,
@@ -317,6 +390,7 @@ namespace MonoMac.AudioUnit
 					      int inNumberFrames,
 					      AudioBufferList ioData);
 		
+		[Obsolete]
 		[StructLayout(LayoutKind.Sequential)]
 		class AURenderCallbackStrct {
 			public AURenderCallback inputProc;
@@ -330,11 +404,6 @@ namespace MonoMac.AudioUnit
 
 		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioComponentInstanceNew")]
 		static extern IntPtr AudioComponentInstanceGetComponent (IntPtr inComponent);
-		public AudioComponent Component {
-			get {
-				return new AudioComponent (AudioComponentInstanceGetComponent (handle));
-			}
-		}
 		
 		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern int AudioUnitInitialize(IntPtr inUnit);
@@ -348,6 +417,7 @@ namespace MonoMac.AudioUnit
 		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern int AudioOutputUnitStop(IntPtr ci);
 
+		[Obsolete]
 		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern int AudioUnitRender(IntPtr inUnit,
 						  ref AudioUnitRenderActionFlags ioActionFlags,
@@ -356,7 +426,13 @@ namespace MonoMac.AudioUnit
 						  int inNumberFrames,
 						  AudioBufferList ioData);
 
-		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioUnitSetProperty")]
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
+		static extern AudioUnitStatus AudioUnitRender(IntPtr inUnit, ref AudioUnitRenderActionFlags ioActionFlags, ref AudioTimeStamp inTimeStamp,
+						  uint inOutputBusNumber, uint inNumberFrames, IntPtr ioData);
+
+
+		[Obsolete]
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern int AudioUnitSetProperty(IntPtr inUnit,
 						       [MarshalAs(UnmanagedType.U4)] AudioUnitPropertyIDType inID,
 						       [MarshalAs(UnmanagedType.U4)] AudioUnitScopeType inScope,
@@ -364,7 +440,7 @@ namespace MonoMac.AudioUnit
 						       AURenderCallbackStrct inData,
 						       uint inDataSize);
 
-		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioUnitSetProperty")]
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern int AudioUnitSetProperty(IntPtr inUnit,
 						       [MarshalAs(UnmanagedType.U4)] AudioUnitPropertyIDType inID,
 						       [MarshalAs(UnmanagedType.U4)] AudioUnitScopeType inScope,
@@ -372,15 +448,16 @@ namespace MonoMac.AudioUnit
 						       ref MonoMac.AudioToolbox.AudioStreamBasicDescription inData,
 						       uint inDataSize);
         
-		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioUnitSetProperty")]
-		static extern int AudioUnitSetProperty(IntPtr inUnit,
-						       [MarshalAs(UnmanagedType.U4)] AudioUnitPropertyIDType inID,
-						       [MarshalAs(UnmanagedType.U4)] AudioUnitScopeType inScope,
-						       [MarshalAs(UnmanagedType.U4)] uint inElement,
-						       ref uint flag,
-						       uint inDataSize);
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
+		static extern AudioUnitStatus AudioUnitSetProperty (IntPtr inUnit, AudioUnitPropertyIDType inID, AudioUnitScopeType inScope, uint inElement,
+						       ref uint inData, uint inDataSize);
+
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
+		static extern AudioUnitStatus AudioUnitSetProperty (IntPtr inUnit, AudioUnitPropertyIDType inID, AudioUnitScopeType inScope, uint inElement,
+						       ref AURenderCallbackStruct inData, int inDataSize);
+
         
-		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioUnitGetProperty")]
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern int AudioUnitGetProperty(IntPtr inUnit,
 						       [MarshalAs(UnmanagedType.U4)] AudioUnitPropertyIDType inID,
 						       [MarshalAs(UnmanagedType.U4)] AudioUnitScopeType inScope,
@@ -388,7 +465,7 @@ namespace MonoMac.AudioUnit
 						       ref MonoMac.AudioToolbox.AudioStreamBasicDescription outData,
 						       ref uint ioDataSize);
 
-		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioUnitGetProperty")]
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern int AudioUnitGetProperty(IntPtr inUnit,
 						       [MarshalAs(UnmanagedType.U4)] AudioUnitPropertyIDType inID,
 						       [MarshalAs(UnmanagedType.U4)] AudioUnitScopeType inScope,
@@ -396,7 +473,10 @@ namespace MonoMac.AudioUnit
 						       ref uint flag,
 						       ref uint ioDataSize
 			);
-		
+
+		[DllImport (Constants.AudioUnitLibrary)]
+		static extern AudioUnitStatus AudioUnitSetParameter (IntPtr inUnit, AudioUnitParameterType inID, AudioUnitScopeType inScope,
+			uint inElement, float inValue, uint inBufferOffsetInFrames);
 	}
 
 	public enum AudioUnitPropertyIDType {
@@ -430,33 +510,190 @@ namespace MonoMac.AudioUnit
 		ShouldAllocateBuffer = 51,
 		ParameterHistoryInfo = 53,
 		Nickname = 54,
+#if MONOMAC
+		FastDispatch				= 5,
+		SetExternalBuffer			= 15,
+		GetUIComponentList			= 18,
+		ContextName					= 25,
+		CocoaUI						= 31,
+		ParameterIDName				= 34,
+		ParameterClumpName			= 35,
+		ParameterStringFromValue	= 33,
+		ParameterValueFromString	= 38,
+		IconLocation				= 39,
+		PresentationLatency			= 40,
+		AUHostIdentifier			= 46,
+		MIDIOutputCallbackInfo		= 47,
+		MIDIOutputCallback			= 48,
+		ClassInfoFromDocument		= 50,
+		FrequencyResponse			= 52,
+#endif
+		// Output Unit
+		CurrentDevice				= 2000,
+		IsRunning					= 2001,
+	    ChannelMap					= 2002, // this will also work with AUConverter
+	    EnableIO					= 2003,
+	    StartTime					= 2004,
+	    SetInputCallback			= 2005,
+	    HasIO						= 2006,
+	    StartTimestampsAtZero		= 2007,	// this will also work with AUConverter
 
-		//Output property
-	        CurrentDevice			= 2000,
-	        ChannelMap				= 2002, // this will also work with AUConverter
-	        EnableIO				= 2003,
-	        StartTime				= 2004,
-	        SetInputCallback		= 2005,
-	        HasIO					= 2006,
-	        StartTimestampsAtZero  = 2007	// this will also work with AUConverter
-        };
+	    // TODO: Many more are missing but maybe we shold split it by AudioComponentType 
+	}
+
+	public enum AudioUnitParameterType
+	{
+		// Reverb applicable to the 3DMixer
+		ReverbFilterFrequency				= 14,
+		ReverbFilterBandwidth				= 15,
+		ReverbFilterGain					= 16,
+
+		// AUMultiChannelMixer
+		MultiChannelMixerVolume				= 0,
+		MultiChannelMixerEnable				= 1,
+		MultiChannelMixerPan				= 2,
+
+		// AUMatrixMixer unit
+		MatrixMixerVolume					= 0,
+		MatrixMixerEnable					= 1,
+	
+		// AudioDeviceOutput, DefaultOutputUnit, and SystemOutputUnit units
+		HALOutputVolume 					= 14, 
+
+		// AUTimePitch, AUTimePitch (offline), AUPitch units
+		TimePitchRate						= 0,
+#if MONOMAC
+		TimePitchPitch						= 1,
+		TimePitchEffectBlend				= 2,
+#endif
+
+		// AUNewTimePitch
+		NewTimePitchRate					= 0,
+		NewTimePitchPitch					= 1,
+		NewTimePitchOverlap					= 4,
+		NewTimePitchEnablePeakLocking		= 6,
+
+		// AUSampler unit
+		AUSamplerGain						= 900,
+		AUSamplerCoarseTuning				= 901,
+		AUSamplerFineTuning					= 902,
+		AUSamplerPan						= 903,
+
+		// AUBandpass
+		BandpassCenterFrequency 			= 0,
+		BandpassBandwidth	 				= 1,
+
+		// AUHipass
+		HipassCutoffFrequency 				= 0,
+		HipassResonance						= 1,
+
+		// AULowpass
+		LowPassCutoffFrequency 				= 0,
+		LowPassResonance 					= 1,
+
+		// AUHighShelfFilter
+		HighShelfCutOffFrequency 			= 0,
+		HighShelfGain 						= 1,
+
+		// AULowShelfFilter
+		AULowShelfCutoffFrequency			= 0,
+		AULowShelfGain						= 1,
+
+		// AUDCFilter
+		AUDCFilterDecayTime					= 0,		
+
+		// AUParametricEQ
+		ParametricEQCenterFreq				= 0,
+		ParametricEQQ						= 1,
+		ParametricEQGain					= 2,
+
+		// AUPeakLimiter
+		LimiterAttackTime		 			= 0,
+		LimiterDecayTime 					= 1,
+		LimiterPreGain 						= 2,
+
+		// AUDynamicsProcessor
+		DynamicsProcessorThreshold 			= 0,
+		DynamicsProcessorHeadRoom	 		= 1,
+		DynamicsProcessorExpansionRatio		= 2,
+		DynamicsProcessorExpansionThreshold	= 3,
+		DynamicsProcessorAttackTime			= 4,
+		DynamicsProcessorReleaseTime 		= 5,
+		DynamicsProcessorMasterGain			= 6,
+		DynamicsProcessorCompressionAmount 	= 1000,
+		DynamicsProcessorInputAmplitude		= 2000,
+		DynamicsProcessorOutputAmplitude 	= 3000,
+
+		// AUVarispeed
+		VarispeedPlaybackRate				= 0,
+		VarispeedPlaybackCents				= 1,
+
+		// Distortion unit 
+		DistortionDelay						= 0,
+		DistortionDecay						= 1,
+		DistortionDelayMix					= 2,
+		DistortionDecimation				= 3,
+		DistortionRounding					= 4,
+		DistortionDecimationMix				= 5,
+		DistortionLinearTerm				= 6,  
+		DistortionSquaredTerm				= 7,	
+		DistortionCubicTerm					= 8,  
+		DistortionPolynomialMix				= 9,
+		DistortionRingModFreq1				= 10,
+		DistortionRingModFreq2				= 11,
+		DistortionRingModBalance			= 12,
+		DistortionRingModMix				= 13,
+		DistortionSoftClipGain				= 14,
+		DistortionFinalMix					= 15,
+
+		// AUDelay
+		DelayWetDryMix 						= 0,
+		DelayTime							= 1,
+		DelayFeedback 						= 2,
+		DelayLopassCutoff	 				= 3,
+
+#if MONOMAC
+		// TODO
+#else
+		// AUNBandEQ
+		AUNBandEQGlobalGain					= 0,
+		AUNBandEQBypassBand					= 1000,
+		AUNBandEQFilterType					= 2000,
+		AUNBandEQFrequency					= 3000,
+		AUNBandEQGain						= 4000,
+		AUNBandEQBandwidth					= 5000,
+
+		// iOS reverb
+		Reverb2DryWetMix					= 0,
+		Reverb2Gain							= 1,
+		Reverb2MinDelayTime					= 2,
+		Reverb2MaxDelayTime					= 3,
+		Reverb2DecayTimeAt0Hz				= 4,
+		Reverb2DecayTimeAtNyquist			= 5,
+		Reverb2RandomizeReflections			= 6,
+#endif
+	}
         
-        public enum AudioUnitScopeType {
-		Global = 0,
-		Input = 1,
-		Output = 2
-        }
+    public enum AudioUnitScopeType {
+		Global		= 0,
+		Input		= 1,
+		Output		= 2,
+		Group		= 3,
+		Part		= 4,
+		Note		= 5,
+		Layer		= 6,
+		LayerItem	= 7
+    }
 
-        [Flags]
-        public enum AudioUnitRenderActionFlags {
+	[Flags]
+    public enum AudioUnitRenderActionFlags {
 		PreRender = (1 << 2),
 		PostRender = (1 << 3),
 		OutputIsSilence = (1 << 4),
 		OfflinePreflight = (1 << 5),
 		OfflineRender = (1 << 6),
 		OfflineComplete = (1 << 7),
-		PostRenderError = (1 << 8)
-        };
-        #endregion    
-	
+		PostRenderError = (1 << 8),
+		DoNotCheckRenderArgs = (1 << 9)
+    };
 }

@@ -35,6 +35,7 @@ using MonoMac.AudioToolbox;
 
 namespace MonoMac.AudioUnit
 {
+	[Obsolete]
     public class AudioGraphEventArgs : AudioUnitEventArgs {
 	    public AudioGraphEventArgs(AudioUnitRenderActionFlags actionFlags,
 				       MonoMac.AudioToolbox.AudioTimeStamp timeStamp,
