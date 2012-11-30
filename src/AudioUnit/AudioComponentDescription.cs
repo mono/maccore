@@ -31,14 +31,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Runtime.InteropServices;
 using MonoMac.AudioToolbox;
 
- namespace MonoMac.AudioUnit
+namespace MonoMac.AudioUnit
 {
-        public enum AudioComponentType {
+    public enum AudioComponentType : uint {
 		Output = 0x61756f75, //'auou',
 		MusicDevice=0x61756d75, // 'aumu'
 		MusicEffect=0x61756d66, // 'aumf'
@@ -58,19 +56,20 @@ using MonoMac.AudioToolbox;
 		System=0x73797320, // 'sys'
 #else
 		Remote=0x72696f63, // 'rioc'
-		VoiceProcessingIO = 0x7670696f // 'vpio'
 #endif
+		VoiceProcessingIO = 0x7670696f // 'vpio'
 	}
 
 	public enum AudioTypeMusicDevice {
+		[Obsolete]
 		None,
 #if MONOMAC
-		DlsSynth=0x646c7320, // 'dls'
+		DlsSynth	= 0x646c7320, // 'dls '
 #endif
+		Sampler		= 0x73616d70 // 'samp'
 	}
 
 	public enum AudioTypeConverter {
-			
 		AU=0x636f6e76, // 'conv'
 		Varispeed=0x76617269, // 'vari'
 		DeferredRenderer=0x64656672, // 'defr'
@@ -82,8 +81,7 @@ using MonoMac.AudioToolbox;
 		RoundTripAAC=0x72616163, // 'raac'
 #else
 		AUiPodTime=0x6970746d, // 'iptm'
-		AUiPodTimeOther=0x6970746f // 'ipto'
-
+		AUiPodTimeOther=0x6970746f // 'ipto
 #endif
 	}
 
@@ -137,18 +135,21 @@ using MonoMac.AudioToolbox;
 
 	public enum AudioTypeGenerator {
 #if MONOMAC
-		ScheduledSoundPlayer=0x7373706c, // 'sspl'
-		AudioFilePlayer=0x6166706c, // 'afpl'
 		NetReceive=0x6e726376, // 'nrcv'
 #endif
-        }
+		ScheduledSoundPlayer=0x7373706c, // 'sspl'
+		AudioFilePlayer=0x6166706c, // 'afpl'
+    }
         
-        public enum AudioComponentManufacturerType {
+    public enum AudioComponentManufacturerType : uint
+    {
 		Apple = 0x6170706c // little endian 0x6c707061 //'appl'
-        }
+    }
 	
+	// Why is this a class ??
 	[StructLayout(LayoutKind.Sequential)]
-	public class AudioComponentDescription {
+	public class AudioComponentDescription
+	{
 		[MarshalAs(UnmanagedType.U4)] 
 		public AudioComponentType ComponentType;
 		
@@ -168,8 +169,8 @@ using MonoMac.AudioToolbox;
 			ComponentType = type;
 			ComponentSubType = subType;
 			ComponentManufacturer = AudioComponentManufacturerType.Apple;
-			//ComponentFlags = 0;
-			//ComponentFlagsMask = 0;
+//			ComponentFlags = 0;
+//			ComponentFlagsMask = 0;
 		}
 
 		public static AudioComponentDescription CreateGeneric (AudioComponentType type, int subType)
@@ -212,9 +213,10 @@ using MonoMac.AudioToolbox;
 			return new AudioComponentDescription (AudioComponentType.Generator, (int) generator);
 		}
 
-		static string fmt = "[componetType={0}, subType={1}]";
 		public override string ToString ()
 		{
+			const string fmt = "[componetType={0}, subType={1}]";
+
 			switch (ComponentType){
 			case AudioComponentType.Output:
 				return String.Format (fmt, ComponentType, (AudioTypeOutput) ComponentSubType);
