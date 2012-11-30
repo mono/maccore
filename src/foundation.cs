@@ -2804,13 +2804,13 @@ namespace MonoMac.Foundation
 		bool CanHandleRequest (NSUrlRequest request);
 	
 		[Export ("connectionWithRequest:delegate:")][Static]
-		NSUrlConnection FromRequest (NSUrlRequest request, NSUrlConnectionDelegate del);
+		NSUrlConnection FromRequest (NSUrlRequest request, NSUrlConnectionDelegate connectionDelegate);
 	
 		[Export ("initWithRequest:delegate:")]
-		IntPtr Constructor (NSUrlRequest request, NSUrlConnectionDelegate del);
+		IntPtr Constructor (NSUrlRequest request, NSUrlConnectionDelegate connectionDelegate);
 	
 		[Export ("initWithRequest:delegate:startImmediately:")]
-		IntPtr Constructor (NSUrlRequest request, NSUrlConnectionDelegate del, bool startImmediately);
+		IntPtr Constructor (NSUrlRequest request, NSUrlConnectionDelegate connectionDelegate, bool startImmediately);
 	
 		[Export ("start")]
 		void Start ();
