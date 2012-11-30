@@ -401,7 +401,14 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		[Obsolete ("Use DataFormat property")]
 		public AudioStreamBasicDescription StreamBasicDescription {
+			get {
+				return GetProperty<AudioStreamBasicDescription> (AudioFileStreamProperty.DataFormat);
+			}
+		}
+
+		public AudioStreamBasicDescription DataFormat {
 			get {
 				return GetProperty<AudioStreamBasicDescription> (AudioFileStreamProperty.DataFormat);
 			}
