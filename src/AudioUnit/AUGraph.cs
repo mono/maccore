@@ -1,11 +1,13 @@
 ﻿//
 // AUGraph.cs: AUGraph wrapper class
 //
-// Author:
+// Authors:
 //   AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2010 Reinforce Lab.
 // Copyright 2010 Novell, Inc.
+// Copyright 2012 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -34,6 +36,19 @@ using MonoMac.AudioToolbox;
 
 namespace MonoMac.AudioUnit
 {
+	public enum AUGraphError
+	{
+		OK = 0,
+		NodeNotFound 				= -10860,
+		InvalidConnection 			= -10861,
+		OutputNodeError				= -10862,
+		CannotDoInCurrentContext	= -10863,
+		InvalidAudioUnit			= -10864,
+
+		// Values returned & shared with other error enums
+		FormatNotSupported			= -10868,
+	}
+
 	public class AUGraph: IDisposable 
 	{
 		#region Variables
@@ -59,7 +74,7 @@ namespace MonoMac.AudioUnit
 
 		public AUGraph ()
 		{
-			int err = NewAUGraph  (ref handle);
+			int err = NewAUGraph (ref handle);
 			if (err != 0)
 				throw new InvalidOperationException(String.Format("Cannot create new AUGraph. Error code:", err));
 		}
@@ -109,30 +124,27 @@ namespace MonoMac.AudioUnit
 			return err;
 		}
 		
-		public int AddNode(AudioComponentDescription cd)
+		public int AddNode (AudioComponentDescription cd)
 		{
-			int node = 0;
-			int err = AUGraphAddNode(handle, cd, ref node);
+			int node;
+			var err = AUGraphAddNode (handle, cd, out node);
 			if (err != 0)
 				throw new ArgumentException(String.Format("Error code:", err));
 			
 			return node;
 		}
 		
-		public AudioUnit GetNodeInfo(int node)
+		public AudioUnit GetNodeInfo (int node)
 		{
-			int err;
-			IntPtr ptr = new IntPtr();
-			unsafe {
-				err = AUGraphNodeInfo(handle, node, null, (IntPtr)(&ptr));
-			}
+			IntPtr ptr;
+			var err = AUGraphNodeInfo(handle, node, IntPtr.Zero, out ptr);
 			if (err != 0)
 				throw new ArgumentException(String.Format("Error code:{0}", err));
 
 			if (ptr == IntPtr.Zero)
 				throw new InvalidOperationException("Can not get object instance");
 			
-			return new AudioUnit(ptr);
+			return new AudioUnit (ptr);
 		}
 
 		public void ConnnectNodeInput(int inSourceNode, uint inSourceOutputNumber, int inDestNode, uint inDestInputNumber)
@@ -145,25 +157,23 @@ namespace MonoMac.AudioUnit
 				throw new ArgumentException(String.Format("Error code:", err));            
 		}
 
-		public void Start()
+		public AUGraphError Start()
 		{
-			AUGraphStart(handle);
+			return AUGraphStart (handle);
 		}
 
-		public void Stop()
+		public AUGraphError Stop()
 		{
-			AUGraphStop(handle);
+			return AUGraphStop (handle);
 		}
 		
-		public void Initialize()
+		public AUGraphError Initialize()
 		{
-			int err = AUGraphInitialize(handle);
-			if (err != 0)
-				throw new ArgumentException(String.Format("Error code:", err));
+			return AUGraphInitialize (handle);
 		}
+
 		#endregion
 
-		#region IDisposable メンバ (Members)
 		public void Dispose()
 		{
 			Dispose (true);
@@ -185,44 +195,41 @@ namespace MonoMac.AudioUnit
 		{
 			Dispose (false);
 		}
-		#endregion
 			
-		#region Interop
 		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "NewAUGraph")]
 		static extern int NewAUGraph(ref IntPtr outGraph);
 
 		[DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphOpen")]
 		static extern int AUGraphOpen(IntPtr inGraph);
 
-	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphAddNode")]
-	        static extern int AUGraphAddNode(IntPtr inGraph, AudioComponentDescription inDescription, ref int outNode);
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphAddNode(IntPtr inGraph, AudioComponentDescription inDescription, out int outNode);
 	
-	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphNodeInfo")]
-	        static extern int AUGraphNodeInfo(IntPtr inGraph, int inNode, AudioComponentDescription outDescription, IntPtr outAudioUnit);
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphNodeInfo(IntPtr inGraph, int inNode, IntPtr outDescription, out IntPtr outAudioUnit);
 	
 	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphConnectNodeInput")]
 	        static extern int AUGraphConnectNodeInput(IntPtr inGraph, int inSourceNode, uint inSourceOutputNumber, int inDestNode, uint inDestInputNumber);
 	
-	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphInitialize")]
-	        static extern int AUGraphInitialize(IntPtr inGraph);
+	        [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+	        static extern AUGraphError AUGraphInitialize (IntPtr inGraph);
 	
 	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphAddRenderNotify")]
 	        static extern int AUGraphAddRenderNotify(IntPtr inGraph, AudioUnit.AURenderCallback inCallback, IntPtr inRefCon );
 	
-	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphStart")]
-	        static extern int AUGraphStart(IntPtr inGraph);
+	        [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+	        static extern AUGraphError AUGraphStart (IntPtr inGraph);
 	
-	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphStop")]
-	        static extern int AUGraphStop(IntPtr inGraph);
+	        [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+	        static extern AUGraphError AUGraphStop (IntPtr inGraph);
 	
-	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphUninitialize")]
-	        static extern int AUGraphUninitialize(IntPtr inGraph);
+	        [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+	        static extern AUGraphError AUGraphUninitialize (IntPtr inGraph);
 	
 	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphClose")]
 	        static extern int AUGraphClose(IntPtr inGraph);
 	
 	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "DisposeAUGraph")]
 	        static extern int DisposeAUGraph(IntPtr inGraph);
-	        #endregion
 	}
 }
