@@ -76,7 +76,6 @@ namespace MonoMac.AudioToolbox
 			}
 		}
 
-#if !MONOMAC
 		public AudioBuffer this [int index] {
 			get {
 				if (index >= Count)
@@ -91,34 +90,42 @@ namespace MonoMac.AudioToolbox
 				//    AudioBuffer mBuffers[1]; // this is a variable length array of mNumberBuffers elements
 				// }
 				//
-				var ptr = address + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer));
-				return (AudioBuffer) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioBuffer));
+				unsafe {
+					byte *baddress = (byte *) address;
+					
+					var ptr = baddress + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer));
+					return (AudioBuffer) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioBuffer));
+				}
 			}
 			set {
 				if (index >= Count)
 					throw new ArgumentOutOfRangeException ("index");
 
-				var ptr = address + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer));
-				Marshal.WriteInt32 (ptr, value.NumberChannels);
-				Marshal.WriteInt32 (ptr + sizeof (int), value.DataByteSize);
-				Marshal.WriteIntPtr (ptr + sizeof (int) + sizeof (int), value.Data);
+				unsafe {
+					byte *baddress = (byte *) address;
+					var ptr = (IntPtr) (baddress + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer)));
+					Marshal.WriteInt32 (ptr, value.NumberChannels);
+					Marshal.WriteInt32 (ptr, sizeof (int), value.DataByteSize);
+					Marshal.WriteIntPtr (ptr, sizeof (int) + sizeof (int), value.Data);
+				}
 			}
 		}
-#endif
 
 		public static explicit operator IntPtr (AudioBuffers audioBuffers)
 		{
 			return audioBuffers.address;
 		}
 
-#if !MONOMAC
 		public void SetData (int index, IntPtr data)
 		{
 			if (index >= Count)
 				throw new ArgumentOutOfRangeException ("index");
 
-			var ptr = address + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer)) + sizeof (int) + sizeof (int);
-			Marshal.WriteIntPtr (ptr, data);
+			unsafe {
+				byte * baddress = (byte *) address;
+				var ptr = (IntPtr)(baddress + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer)) + sizeof (int) + sizeof (int));
+				Marshal.WriteIntPtr (ptr, data);
+			}
 		}
 
 		public void SetData (int index, IntPtr data, int dataByteSize)
@@ -126,11 +133,13 @@ namespace MonoMac.AudioToolbox
 			if (index >= Count)
 				throw new ArgumentOutOfRangeException ("index");
 
-			var ptr = address + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer)) + sizeof (int);
-			Marshal.WriteInt32 (ptr, dataByteSize);
-			Marshal.WriteIntPtr (ptr + sizeof (int), data);
+			unsafe {
+				byte *baddress = (byte *) address;
+				var ptr = (IntPtr)(baddress + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer)) + sizeof (int));
+				Marshal.WriteInt32 (ptr, dataByteSize);
+				Marshal.WriteIntPtr (ptr, sizeof (int), data);
+			}
 		}
-#endif
 
 		public void Dispose ()
 		{
