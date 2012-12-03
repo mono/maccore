@@ -232,30 +232,37 @@ namespace MonoMac.Foundation {
 	public partial class NSFileManager {
 		public bool SetAttributes (NSFileAttributes attributes, string path, out NSError error)
 		{
+			if (attributes == null)
+				throw new ArgumentNullException ("attributes");
 			return SetAttributes (attributes.ToDictionary (), path, out error);
 		}
 
 		public bool SetAttributes (NSFileAttributes attributes, string path)
 		{
 			NSError ignore;
-			
+			if (attributes == null)
+				throw new ArgumentNullException ("attributes");
+
 			return SetAttributes (attributes.ToDictionary (), path, out ignore);
 		}
 
 		public bool CreateDirectory (string path, bool createIntermediates, NSFileAttributes attributes, out NSError error)
 		{
-			return CreateDirectory (path, createIntermediates, attributes.ToDictionary (), out error);
+			var dict = attributes == null ? null : attributes.ToDictionary ();
+			return CreateDirectory (path, createIntermediates, dict, out error);
 		}
 
 		public bool CreateDirectory (string path, bool createIntermediates, NSFileAttributes attributes)
 		{
 			NSError error;
-			return CreateDirectory (path, createIntermediates, attributes.ToDictionary (), out error);
+			var dict = attributes == null ? null : attributes.ToDictionary ();
+			return CreateDirectory (path, createIntermediates, dict, out error);
 		}
 
 		public bool CreateFile (string path, NSData data, NSFileAttributes attributes)
 		{
-			return CreateFile (path, data, attributes.ToDictionary ());
+			var dict = attributes == null ? null : attributes.ToDictionary ();
+			return CreateFile (path, data, dict);
 		}
 		
 		public NSFileAttributes GetAttributes (string path, out NSError error)

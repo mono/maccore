@@ -5481,7 +5481,7 @@ namespace MonoMac.Foundation
 		bool SetAttributes (NSDictionary attributes, string path, out NSError error);
 
 		[Export ("createDirectoryAtPath:withIntermediateDirectories:attributes:error:")]
-		bool CreateDirectory (string path, bool createIntermediates, NSDictionary attributes, out NSError error);
+		bool CreateDirectory (string path, bool createIntermediates, [NullAllowed] NSDictionary attributes, out NSError error);
 
 		[Export ("contentsOfDirectoryAtPath:error:")]
 		string[] GetDirectoryContent (string path, out NSError error);
@@ -5511,7 +5511,7 @@ namespace MonoMac.Foundation
 		bool Link (string srcPath, string dstPath, out NSError error);
 
 		[Export ("removeItemAtPath:error:")]
-		bool Remove (string path, out NSError error);
+		bool Remove ([NullAllowed] string path, out NSError error);
 
 #if DEPRECATED
 		// These are not available on iOS, and deprecated on OSX.
@@ -5567,7 +5567,7 @@ namespace MonoMac.Foundation
 		NSData Contents (string path);
 
 		[Export ("createFileAtPath:contents:attributes:")]
-		bool CreateFile (string path, NSData data, NSDictionary attr);
+		bool CreateFile (string path, NSData data, [NullAllowed] NSDictionary attr);
 
 		[Since (4,0)]
 		[Export ("contentsOfDirectoryAtURL:includingPropertiesForKeys:options:error:")]
@@ -5587,11 +5587,11 @@ namespace MonoMac.Foundation
 
 		[Since (4,0)]
 		[Export ("removeItemAtURL:error:")]
-		bool Remove (NSUrl url, out NSError error);
+		bool Remove ([NullAllowed] NSUrl url, out NSError error);
 
 		[Since (4,0)]
 		[Export ("enumeratorAtURL:includingPropertiesForKeys:options:errorHandler:")]
-		NSDirectoryEnumerator GetEnumerator (NSUrl url, NSArray properties, NSDirectoryEnumerationOptions options, out NSError error);
+		NSDirectoryEnumerator GetEnumerator (NSUrl url, [NullAllowed] NSArray properties, NSDirectoryEnumerationOptions options, out NSError error);
 
 		[Since (4,0)]
 		[Export ("URLForDirectory:inDomain:appropriateForURL:create:error:")]
@@ -5603,11 +5603,11 @@ namespace MonoMac.Foundation
 
 		[Since (4,0)]
 		[Export ("replaceItemAtURL:withItemAtURL:backupItemName:options:resultingItemURL:error:")]
-		bool Replace (NSUrl originalItem, NSUrl newItem, string backupItemName, NSFileManagerItemReplacementOptions options, out NSUrl resultingURL, out NSError error);
+		bool Replace (NSUrl originalItem, NSUrl newItem, [NullAllowed] string backupItemName, NSFileManagerItemReplacementOptions options, out NSUrl resultingURL, out NSError error);
 
 		[Since (4,0)]
 		[Export ("mountedVolumeURLsIncludingResourceValuesForKeys:options:")]
-		NSUrl[] GetMountedVolumes(NSArray properties, NSVolumeEnumerationOptions options);
+		NSUrl[] GetMountedVolumes ([NullAllowed] NSArray properties, NSVolumeEnumerationOptions options);
 
 		// Methods to convert paths to/from C strings for passing to system calls - Not implemented
 		////- (const char *)fileSystemRepresentationWithPath:(NSString *)path;
@@ -5619,8 +5619,8 @@ namespace MonoMac.Foundation
 		//string StringWithFileSystemRepresentation (const char str, uint len);
 
 		[Since (5,0)]
-                [Export ("createDirectoryAtURL:withIntermediateDirectories:attributes:error:")]
-                bool CreateDirectory (NSUrl url, bool createIntermediates, NSDictionary attributes, out NSError error);
+		[Export ("createDirectoryAtURL:withIntermediateDirectories:attributes:error:")]
+		bool CreateDirectory (NSUrl url, bool createIntermediates, [NullAllowed] NSDictionary attributes, out NSError error);
 
 		[Since (5,0)]
                 [Export ("createSymbolicLinkAtURL:withDestinationURL:error:")]
