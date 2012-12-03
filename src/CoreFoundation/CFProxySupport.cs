@@ -652,7 +652,7 @@ namespace MonoMac.CoreFoundation {
 #endif
 		
 		class CFWebProxy : IWebProxy {
-			NetworkCredential credentials;
+			ICredentials credentials;
 			bool userSpecified;
 			
 			public CFWebProxy ()
@@ -700,7 +700,7 @@ namespace MonoMac.CoreFoundation {
 				return new Uri (uri, UriKind.Absolute);
 			}
 			
-			static Uri GetProxyUriFromScript (IntPtr script, Uri targetUri, out NetworkCredential credentials)
+			static Uri GetProxyUriFromScript (NSString script, Uri targetUri, out NetworkCredential credentials)
 			{
 				CFProxy[] proxies = CFNetwork.GetProxiesForAutoConfigurationScript (script, targetUri);
 				
@@ -734,7 +734,7 @@ namespace MonoMac.CoreFoundation {
 			
 			public Uri GetProxy (Uri targetUri)
 			{
-				NetworkCredentials credentials = null;
+				NetworkCredential credentials = null;
 				Uri proxy = null;
 				
 				if (targetUri == null)
@@ -796,13 +796,9 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 		
-		static CFWebProxy defaultWebProxy;
 		public static IWebProxy GetDefaultProxy ()
 		{
-			if (defaultWebProxy == null)
-				defaultWebProxy = new CFWebProxy ();
-			
-			return defaultWebProxy;
+			return new CFWebProxy ();
 		}
 	}
 }
