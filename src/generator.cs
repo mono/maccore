@@ -3531,10 +3531,18 @@ public class Generator {
 						Inject (snippet);
 					}
 					
-					foreach (var field in instance_fields_to_clear_on_dispose){
-						print ("{0} = null;", field);
-					}
 					print ("base.Dispose (disposing);");
+					
+					if (instance_fields_to_clear_on_dispose.Count > 0) {
+						print ("if (Handle == IntPtr.Zero) {");
+						indent++;
+						foreach (var field in instance_fields_to_clear_on_dispose){
+							print ("{0} = null;", field);
+						}
+						indent--;
+						print ("}");
+					}
+					
 					indent--;
 					print ("}");
 				}
