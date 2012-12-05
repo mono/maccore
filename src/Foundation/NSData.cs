@@ -122,7 +122,7 @@ namespace MonoMac.Foundation {
 		unsafe class UnmanagedMemoryStreamWithRef : UnmanagedMemoryStream {
 			NSData source;
 			
-			public UnmanagedMemoryStreamWithRef (NSData source, byte *pointer, long length) : base (pointer, length)
+			public UnmanagedMemoryStreamWithRef (NSData source) : base ((byte *)source.Bytes, source.Length)
 			{
 				this.source = source;
 			}
@@ -134,13 +134,69 @@ namespace MonoMac.Foundation {
 			}
 		}
 
+		//
+		// This variation of the class can be used with NSMutableData, but
+		// displays an error if the NSMutableData changes while the stream is used
+		//
+		unsafe class UnmanagedMemoryStreamWithMutableRef : UnmanagedMemoryStreamWithRef {
+			NSData source;
+			IntPtr base_address;
+			
+			public UnmanagedMemoryStreamWithMutableRef (NSData source) : base (source)
+			{
+				base_address = source.Bytes;
+				this.source = source;
+			}
+
+			protected override void Dispose (bool disposing)
+			{
+				source = null;
+				base.Dispose (disposing);
+			}
+
+			static void InvalidOperation ()
+			{
+				throw new InvalidOperationException ("The underlying NSMutableData changed while we were consuming data");
+			}
+			
+			public override int Read ([InAttribute] [OutAttribute] byte[] buffer, int offset, int count)
+			{
+				if (base_address != source.Bytes)
+					InvalidOperation ();
+				
+				return base.Read (buffer, offset, count);
+			}
+
+			public override int ReadByte ()
+			{
+				if (base_address != source.Bytes)
+					InvalidOperation ();
+
+				return base.ReadByte ();
+			}
+
+			public override void Write (byte[] buffer, int offset, int count)
+			{
+				if (base_address != source.Bytes)
+					InvalidOperation ();
+				base.Write (buffer, offset, count);
+			}
+
+			public override void WriteByte (byte value)
+			{
+				if (base_address != source.Bytes)
+					InvalidOperation ();
+				base.WriteByte (value);
+			}
+		}
+
 		public virtual Stream AsStream ()
 		{
-			if (this is NSMutableData)
-				throw new Exception ("Wrapper for NSMutableData is not supported, call new UnmanagedMemoryStream ((Byte*) mutableData.Bytes, mutableData.Length) instead");
-
 			unsafe {
-				return new UnmanagedMemoryStreamWithRef (this, (byte *) Bytes, Length);
+				if (this is NSMutableData)
+					return new UnmanagedMemoryStreamWithMutableRef (this);
+				else
+					return new UnmanagedMemoryStreamWithRef (this);
 			}
 		}
 		
