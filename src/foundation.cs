@@ -616,6 +616,10 @@ namespace MonoMac.Foundation
 		[Static]
 		NSData FromFile (string path, NSDataReadingOptions mask, out NSError error);
 
+		[Export ("dataWithData:")]
+		[Static]
+		NSData FromData (NSData source);
+
 		[Export ("dataWithBytes:length:"), Static]
 		NSData FromBytes (IntPtr bytes, uint size);
 
