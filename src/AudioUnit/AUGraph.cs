@@ -33,6 +33,7 @@ using System;
 using System.Text;
 using System.Runtime.InteropServices;
 using MonoMac.AudioToolbox;
+using System.Collections.Generic;
 
 namespace MonoMac.AudioUnit
 {
@@ -47,29 +48,31 @@ namespace MonoMac.AudioUnit
 
 		// Values returned & shared with other error enums
 		FormatNotSupported			= -10868,
+		InvalidElement				= -10877,		
 	}
 
 	public class AUGraph: IDisposable 
 	{
-		#region Variables
 		readonly GCHandle gcHandle;
-		readonly IntPtr handle;
-		#endregion
+		IntPtr handle;
 
-		#region Properties
-		public event EventHandler<AudioGraphEventArgs> RenderCallback;
-		public IntPtr Handler { get { return handle; } }
-		#endregion
-
-		#region Constructor
 		private AUGraph(IntPtr ptr)
 		{
 			handle = ptr;
 			
-			gcHandle = GCHandle.Alloc(this);            
 			int err = AUGraphAddRenderNotify(handle, renderCallback, GCHandle.ToIntPtr(gcHandle));
 			if (err != 0)
 				throw new ArgumentException(String.Format("Error code: {0}", err));
+
+			gcHandle = GCHandle.Alloc (this);
+		}
+
+		public event EventHandler<AudioGraphEventArgs> RenderCallback;
+
+		public IntPtr Handler {
+			get {
+				return handle;
+				}
 		}
 
 		public AUGraph ()
@@ -78,10 +81,28 @@ namespace MonoMac.AudioUnit
 			if (err != 0)
 				throw new InvalidOperationException(String.Format("Cannot create new AUGraph. Error code:", err));
 		}
+
+		public bool IsInitialized {
+			get {
+				bool b;
+				return AUGraphIsInitialized (handle, out b) == AUGraphError.OK && b;
+			}
+		}
+
+		public bool IsOpen {
+			get {
+				bool b;
+				return AUGraphIsOpen (handle, out b) == AUGraphError.OK && b;
+			}
+		}
+
+		public bool IsRunning {
+			get {
+				bool b;
+				return AUGraphIsRunning (handle, out b) == AUGraphError.OK && b;
+			}
+		}
 		
-		#endregion
-			
-		#region Private methods
 		// callback funtion should be static method and be attatched a MonoPInvokeCallback attribute.        
 		[MonoMac.MonoPInvokeCallback(typeof(AudioUnit.AURenderCallback))]
 		static int renderCallback(IntPtr inRefCon,
@@ -108,9 +129,7 @@ namespace MonoMac.AudioUnit
 			
 			return 0; // noerror
 		}
-		#endregion
 
-		#region Public methods
 		public void Open ()
 		{ 
 			int err = AUGraphOpen (handle);
@@ -124,14 +143,39 @@ namespace MonoMac.AudioUnit
 			return err;
 		}
 		
-		public int AddNode (AudioComponentDescription cd)
+		public int AddNode (AudioComponentDescription description)
 		{
 			int node;
-			var err = AUGraphAddNode (handle, cd, out node);
+			var err = AUGraphAddNode (handle, description, out node);
 			if (err != 0)
 				throw new ArgumentException(String.Format("Error code:", err));
 			
 			return node;
+		}
+
+		public AUGraphError RemoveNode (int node)
+		{
+			return AUGraphRemoveNode (handle, node);
+		}
+
+		public AUGraphError GetCPULoad (out float averageCPULoad)
+		{
+			return AUGraphGetCPULoad (handle, out averageCPULoad);
+		}
+
+		public AUGraphError GetMaxCPULoad (out float maxCPULoad)
+		{
+			return AUGraphGetMaxCPULoad (handle, out maxCPULoad);
+		}
+
+		public AUGraphError GetNode (uint index, out int node)
+		{
+			return AUGraphGetIndNode (handle, index, out node);
+		}
+
+		public AUGraphError GetNodeCount (out int count)
+		{
+			return AUGraphGetNodeCount (handle, out count);
 		}
 		
 		public AudioUnit GetNodeInfo (int node)
@@ -147,14 +191,79 @@ namespace MonoMac.AudioUnit
 			return new AudioUnit (ptr);
 		}
 
-		public void ConnnectNodeInput(int inSourceNode, uint inSourceOutputNumber, int inDestNode, uint inDestInputNumber)
+		public AUGraphError GetNumberOfInteractions (out uint interactionsCount)
 		{
-			int err = AUGraphConnectNodeInput(handle,                                    
-							  inSourceNode, inSourceOutputNumber,                                    
-							  inDestNode, inDestInputNumber                                    
-				);
-			if (err != 0)
-				throw new ArgumentException(String.Format("Error code:", err));            
+			return AUGraphGetNumberOfInteractions (handle, out interactionsCount);
+		}
+
+		public AUGraphError GetNumberOfInteractions (int node, out uint interactionsCount)
+		{
+			return AUGraphCountNodeInteractions (handle, node, out interactionsCount);
+		}
+
+/*
+		// TODO: requires AudioComponentDescription type to be fixed
+		public AUGraphError GetNodeInfo (int node, out AudioComponentDescription description, out AudioUnit audioUnit)
+		{
+			IntPtr au;
+			var res = AUGraphNodeInfo (handle, node, out description, out au);
+			if (res != AUGraphError.OK) {
+				audioUnit = null;
+				return res;
+			}
+
+			audioUnit = new AudioUnit (au);
+			return res;
+		}
+*/
+		public AUGraphError ConnnectNodeInput (int sourceNode, uint sourceOutputNumber, int destNode, uint destInputNumber)
+		{
+			return AUGraphConnectNodeInput (handle,
+							  sourceNode, sourceOutputNumber,                                    
+							  destNode, destInputNumber);
+		}
+
+		public AUGraphError DisconnectNodeInput (int destNode, uint destInputNumber)
+		{
+			return AUGraphDisconnectNodeInput (handle, destNode, destInputNumber);
+		}
+
+		/*
+		// Don't know how to test it yet
+
+		Dictionary<int, RenderDelegate> nodesCallbacks;
+		static readonly RenderCallbackShared CreateRenderCallback = RenderCallbackImpl;
+
+		public AUGraphError SetNodeInputCallback (int destNode, uint destInputNumber, RenderDelegate renderDelegate)
+		{
+			var cb = new AURenderCallbackStruct ();
+			cb.Proc = CreateRenderCallback;
+			cb.ProcRefCon = GCHandle.ToIntPtr (gcHandle);
+
+			AUGraphError res;
+			if (nodesCallbacks == null) {
+				nodesCallbacks = new Dictionary<int, RenderDelegate> ();
+
+				res = AUGraphSetNodeInputCallback (handle, destNode, destInputNumber, ref cb);
+			} else {
+				res = AUGraphError.OK;
+			}
+
+			nodesCallbacks [destNode] = renderDelegate;
+			return res;
+		}
+
+		[MonoPInvokeCallback (typeof (RenderCallbackShared))]
+		static AudioUnitStatus RenderCallbackImpl (IntPtr clientData, ref AudioUnitRenderActionFlags actionFlags, ref AudioTimeStamp timeStamp, uint busNumber, uint numberFrames, IntPtr data)
+		{
+			GCHandle gch = GCHandle.FromIntPtr (clientData);
+			var au = (AUGraph) gch.Target;
+		}
+		*/
+
+		public AUGraphError ClearConnections ()
+		{
+			return AUGraphClearConnections (handle);
 		}
 
 		public AUGraphError Start()
@@ -172,7 +281,11 @@ namespace MonoMac.AudioUnit
 			return AUGraphInitialize (handle);
 		}
 
-		#endregion
+		public bool Update ()
+		{
+			bool isUpdated;
+			return AUGraphUpdate (handle, out isUpdated) == AUGraphError.OK && isUpdated;
+		}
 
 		public void Dispose()
 		{
@@ -188,6 +301,7 @@ namespace MonoMac.AudioUnit
 				DisposeAUGraph (handle);
 				
 				gcHandle.Free();
+				handle = IntPtr.Zero;
 			}
 		}
 
@@ -204,12 +318,36 @@ namespace MonoMac.AudioUnit
 
 		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 		static extern AUGraphError AUGraphAddNode(IntPtr inGraph, AudioComponentDescription inDescription, out int outNode);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphRemoveNode (IntPtr inGraph, int inNode);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphGetNodeCount (IntPtr inGraph, out int outNumberOfNodes);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphGetIndNode (IntPtr inGraph, uint inIndex, out int outNode);
 	
 		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 		static extern AUGraphError AUGraphNodeInfo(IntPtr inGraph, int inNode, IntPtr outDescription, out IntPtr outAudioUnit);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphNodeInfo (IntPtr inGraph, int inNode, out AudioComponentDescription outDescription, out IntPtr outAudioUnit);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphClearConnections (IntPtr inGraph);
 	
-	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphConnectNodeInput")]
-	        static extern int AUGraphConnectNodeInput(IntPtr inGraph, int inSourceNode, uint inSourceOutputNumber, int inDestNode, uint inDestInputNumber);
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphConnectNodeInput (IntPtr inGraph, int inSourceNode, uint inSourceOutputNumber, int inDestNode, uint inDestInputNumber);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphDisconnectNodeInput (IntPtr inGraph, int inDestNode, uint inDestInputNumber);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphGetNumberOfInteractions (IntPtr inGraph, out uint outNumInteractions);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphCountNodeInteractions (IntPtr inGraph, int inNode, out uint outNumInteractions);
 	
 	        [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
 	        static extern AUGraphError AUGraphInitialize (IntPtr inGraph);
@@ -229,7 +367,28 @@ namespace MonoMac.AudioUnit
 	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AUGraphClose")]
 	        static extern int AUGraphClose(IntPtr inGraph);
 	
-	        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "DisposeAUGraph")]
-	        static extern int DisposeAUGraph(IntPtr inGraph);
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern int DisposeAUGraph(IntPtr inGraph);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphIsOpen (IntPtr inGraph, out bool outIsOpen);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphIsInitialized (IntPtr inGraph, out bool outIsInitialized);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphIsRunning (IntPtr inGraph, out bool outIsRunning);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphGetCPULoad (IntPtr inGraph, out float outAverageCPULoad);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphGetMaxCPULoad (IntPtr inGraph, out float outMaxLoad);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphSetNodeInputCallback (IntPtr inGraph, int inDestNode, uint inDestInputNumber, ref AURenderCallbackStruct inInputCallback);
+
+		[DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+		static extern AUGraphError AUGraphUpdate (IntPtr inGraph, out bool outIsUpdated);
 	}
 }

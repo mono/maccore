@@ -125,6 +125,14 @@ namespace MonoMac.AudioUnit
 	}
 
 	public delegate AudioUnitStatus RenderDelegate (AudioUnitRenderActionFlags actionFlags, AudioTimeStamp timeStamp, uint busNumber, uint numberFrames, AudioBuffers data);
+
+	delegate AudioUnitStatus RenderCallbackShared (IntPtr clientData, ref AudioUnitRenderActionFlags actionFlags, ref AudioTimeStamp timeStamp, uint busNumber, uint numberFrames, IntPtr data);
+
+	struct AURenderCallbackStruct
+	{
+		public RenderCallbackShared Proc;
+		public IntPtr ProcRefCon; 
+	}
 	
 	public class AudioUnit : IDisposable, MonoMac.ObjCRuntime.INativeObject
 	{
@@ -271,14 +279,6 @@ namespace MonoMac.AudioUnit
 			this.render = renderDelegate;
 
 			return AudioUnitSetProperty (handle, AudioUnitPropertyIDType.SetRenderCallback, scope, audioUnitElement, ref cb, Marshal.SizeOf (cb));
-		}
-
-		delegate AudioUnitStatus RenderCallbackShared (IntPtr clientData, ref AudioUnitRenderActionFlags actionFlags, ref AudioTimeStamp timeStamp, uint busNumber, uint numberFrames, IntPtr data);
-
-		struct AURenderCallbackStruct
-		{
-			public RenderCallbackShared Proc;
-			public IntPtr ProcRefCon; 
 		}
 
 		[MonoPInvokeCallback (typeof (RenderCallbackShared))]
