@@ -172,15 +172,21 @@ namespace MonoMac.AudioToolbox {
 		CurrentDevice = 0x61716364,
 		MagicCookie = 0x61716d63,
 		MaximumOutputPacketSize = 0x786f7073,	// 'xops'
-		StreamDescription = 0x61716674,
+		StreamDescription = 0x61716674,			// 'aqft'
 		ChannelLayout = 0x6171636c,				// 'aqcl'
 		EnableLevelMetering = 0x61716d65,
 		CurrentLevelMeter = 0x61716d76,
 		CurrentLevelMeterDB = 0x61716d64,
 		DecodeBufferSizeFrames = 0x64636266, 
 		ConverterError = 0x71637665,			// 'qcve'
-		HardwareCodecPolicy = 0x61716370,		// 'aqcp'
-		ChannelAssignments = 0x61716361,		// 'aqca'
+#if MONOMAC
+		EnableTimePitch         = 0x615f7470,	// 'q_tp'
+		TimePitchAlgorithm      = 0x61747061,	// 'qtpa'
+		TimePitchBypass         = 0x61747062,	// 'qtpb'
+#else
+		HardwareCodecPolicy		= 0x61716370,	// 'aqcp'
+		ChannelAssignments		= 0x61716361,	// 'aqca'
+#endif
 	}
 
 	public enum AudioQueueHardwareCodecPolicy {
