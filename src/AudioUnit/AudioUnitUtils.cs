@@ -38,6 +38,7 @@ namespace MonoMac.AudioUnit
     {
         public const int SampleFractionBits = 24;
 
+        [Obsolete ("Use AudioStreamBasicDescription::CreateLinearPCM instead")]
         public static AudioStreamBasicDescription AUCanonicalASBD(double sampleRate, int channel)
         {
             // setting AudioStreamBasicDescription
@@ -63,6 +64,7 @@ namespace MonoMac.AudioUnit
             return audioFormat;
         }
 
+        [Obsolete ("Use AudioSession::OverrideCategoryDefaultToSpeaker instead")]
         public static void SetOverrideCategoryDefaultToSpeaker(bool isSpeaker)
         {
 		int val = isSpeaker ? 1 : 0;
@@ -73,42 +75,11 @@ namespace MonoMac.AudioUnit
 		if (err != 0)
 			throw new ArgumentException();            
         }
-	    
-        /*
-        public static void SetOverrideAudioRoute(OverrideAudioRouteType route)
-        {
-            int err = AudioSessionSetProperty(
-                AudioSessionProperty.OverrideAudioRoute,
-                (UInt32)sizeof(UInt32),
-                ref route);
-            if (err != 0)
-                throw new ArgumentException();
-        }        
-        */
 
-        /*
-Int32 doChangeDefaultRoute = 1;
-         * AudioSessionSetProperty 
-         * (kAudioSessionProperty_OverrideCategoryDefaultToSpeaker,
-         * sizeof (doChangeDefaultRoute),
-         * &doChangeDefaultRou         */
-	    #region Interop
-	    enum OverrideAudioRouteType {
-		    None = 0,
-		    Speaker = 0x73706d72 // 'spkr'
-	    }
-
-	    [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioSessionSetProperty")]
-	    static extern int AudioSessionSetProperty(
-		    AudioSessionProperty inID,
-		    UInt32 inDataSize,
-		    ref OverrideAudioRouteType inData);
-	    
 	    [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "AudioSessionSetProperty")]
 	    static extern int AudioSessionSetProperty(
 		    UInt32 inID,
 		    UInt32 inDataSize,
 		    ref int inData);
-	    #endregion
     }
 }
