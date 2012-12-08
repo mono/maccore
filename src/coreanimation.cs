@@ -860,6 +860,12 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCAAnimationRotateAutoReverse")]
 		NSString RotateModeAutoReverse { get; }
+
+#if MONOMAC
+		[MountainLion]
+		[Export ("usesSceneTimeBase")]
+		bool UsesSceneTimeBase { get; set; }
+#endif
 	}
 	
 	[BaseType (typeof (NSObject))]
