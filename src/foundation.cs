@@ -4699,6 +4699,18 @@ namespace MonoMac.Foundation
 
 		[Export ("rangeValue")]
 		NSRange RangeValue { get; }
+
+		[Static, Export ("valueWithSCNVector3:")]
+		Vector3 FromVector (MonoMac.OpenGL.Vector3 vector);
+		
+		[Static, Export ("valueWithSCNVector4:")]
+		Vector3 FromVector (MonoMac.OpenGL.Vector4 vector);
+
+		[Export ("SCNVector3Value")]
+		Vector3 Vector3Value { get; }
+
+		[Export ("SCNVector4Value")]
+		Vector4 Vector4Value { get; }
 #else
 		[Static, Export ("valueWithCMTime:"), Since (4,0)]
 		NSValue FromCMTime (CMTime time);
