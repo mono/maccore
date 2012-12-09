@@ -2394,15 +2394,15 @@ namespace MonoMac.Foundation
 		
 		[Export("bookmarkDataWithContentsOfURL:error:")]
 		[Static]
-		NSData BookmarkDataWithContentsOfURL( NSUrl bookmarkFileUrl, out NSError error );
+		NSData GetBookmarkData (NSUrl bookmarkFileUrl, out NSError error);
 
 		[Export("URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:")]
 		[Static]
-		NSUrl URLByResolvingBookmarkData( NSData data, NSUrlBookmarkResolutionOptions options, [NullAllowed] NSUrl relativeToUrl, bool isStale, out NSError error );
+		NSUrl FromBookmarkData (NSData data, NSUrlBookmarkResolutionOptions options, [NullAllowed] NSUrl relativeToUrl, bool isStale, out NSError error);
 
 		[Export("writeBookmarkData:toURL:options:error:")]
 		[Static]
-		bool WriteBookmarkDataToUrl( NSData data, NSUrl bookmarkFileUrl, NSUrlBookmarkCreationOptions options, out NSError error );
+		bool WriteBookmarkData (NSData data, NSUrl bookmarkFileUrl, NSUrlBookmarkCreationOptions options, out NSError error);
 
 		[Export("startAccessingSecurityScopedResource")]
 		bool StartAccessingSecurityScopedResource();
