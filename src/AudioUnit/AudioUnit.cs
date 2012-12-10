@@ -402,7 +402,7 @@ namespace MonoMac.AudioUnit
 		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioComponentInstanceNew")]
 		static extern int AudioComponentInstanceNew(IntPtr inComponent, out IntPtr inDesc);
 
-		[DllImport(MonoMac.Constants.AudioUnitLibrary, EntryPoint = "AudioComponentInstanceNew")]
+		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
 		static extern IntPtr AudioComponentInstanceGetComponent (IntPtr inComponent);
 		
 		[DllImport(MonoMac.Constants.AudioUnitLibrary)]
