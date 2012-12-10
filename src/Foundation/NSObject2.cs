@@ -35,8 +35,8 @@ using MonoMac.CoreGraphics;
 namespace MonoMac.Foundation {
 
 	public partial class NSObject {
-		static IntPtr selConformsToProtocol = Selector.GetHandle ("conformsToProtocol:");
-		static IntPtr selEncodeWithCoder = Selector.GetHandle ("encodeWithCoder:");
+		static readonly IntPtr selConformsToProtocol = Selector.GetHandle ("conformsToProtocol:");
+		static readonly IntPtr selEncodeWithCoder = Selector.GetHandle ("encodeWithCoder:");
 		
 		[Export ("encodeWithCoder:")]
 		public virtual void EncodeTo (NSCoder coder)
