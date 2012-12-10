@@ -121,13 +121,19 @@ namespace MonoMac.AudioToolbox {
 
 		public const double AudioStreamAnyRate = 0;
 
+		const int AudioUnitSampleFractionBits = 24;
+		const AudioFormatFlags AudioFormatFlagIsBigEndian = 0;
+
+		public static readonly AudioFormatFlags AudioFormatFlagsAudioUnitCanonical = AudioFormatFlags.IsSignedInteger | AudioFormatFlagIsBigEndian |
+			AudioFormatFlags.IsPacked | AudioFormatFlags.IsNonInterleaved | (AudioFormatFlags) (AudioUnitSampleFractionBits << (int)AudioFormatFlags.LinearPCMSampleFractionShift);
+
 		public AudioStreamBasicDescription (AudioFormatType formatType)
 			: this ()
 		{
 			Format = formatType;
 		}
 
-		public static AudioStreamBasicDescription CreateLinearPCM (double sampleRate = 441000, uint channelsPerFrame = 2, uint bitsPerChannel = 16, bool bigEndian = false)
+		public static AudioStreamBasicDescription CreateLinearPCM (double sampleRate = 44100, uint channelsPerFrame = 2, uint bitsPerChannel = 16, bool bigEndian = false)
 		{
 			var desc = new AudioStreamBasicDescription (AudioFormatType.LinearPCM);
 			desc.SampleRate = sampleRate;
