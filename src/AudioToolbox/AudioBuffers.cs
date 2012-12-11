@@ -56,18 +56,12 @@ namespace MonoMac.AudioToolbox
 		public AudioBuffers (int count)
 		{
 			var size = sizeof (int) + count * Marshal.SizeOf (typeof (AudioBuffer));
-			address = Marshal.AllocHGlobal (count);
+			address = Marshal.AllocHGlobal (size);
 			owns = true;
 
 			Marshal.WriteInt32 (address, 0, count);
-
-			unsafe {
-				var ptr = (byte *) address + sizeof (int);
-				for (int i = 0; i < count; ++i) {
-					Marshal.StructureToPtr (new AudioBuffer (), (IntPtr) ptr, false);
-					ptr += Marshal.SizeOf (typeof (AudioBuffer));
-				}
-			}
+			for (int i = 1; i < size; i++)
+				Marshal.WriteByte (address, i, 0);
 		}
 
 		public int Count {
