@@ -114,25 +114,25 @@ namespace MonoMac.CoreGraphics {
 		{
 			IntPtr h = Dlfcn.dlopen (Constants.CoreGraphicsLibrary, 0);
 			try {
-				kCGPDFContextTitle = Dlfcn.GetIndirect (h, "kCGPDFContextTitle");
-				kCGPDFContextAuthor = Dlfcn.GetIndirect (h, "kCGPDFContextAuthor");
-				kCGPDFContextSubject = Dlfcn.GetIndirect (h, "kCGPDFContextSubject");
-				kCGPDFContextKeywords = Dlfcn.GetIndirect (h, "kCGPDFContextKeywords");
-				kCGPDFContextCreator = Dlfcn.GetIndirect (h, "kCGPDFContextCreator");
-				kCGPDFContextOwnerPassword = Dlfcn.GetIndirect (h, "kCGPDFContextOwnerPassword");
-				kCGPDFContextUserPassword = Dlfcn.GetIndirect (h, "kCGPDFContextUserPassword");
-				kCGPDFContextEncryptionKeyLength = Dlfcn.GetIndirect (h, "kCGPDFContextEncryptionKeyLength");
-				kCGPDFContextAllowsPrinting = Dlfcn.GetIndirect (h, "kCGPDFContextAllowsPrinting");
-				kCGPDFContextAllowsCopying = Dlfcn.GetIndirect (h, "kCGPDFContextAllowsCopying");
+				kCGPDFContextTitle = Dlfcn.GetIntPtr (h, "kCGPDFContextTitle");
+				kCGPDFContextAuthor = Dlfcn.GetIntPtr (h, "kCGPDFContextAuthor");
+				kCGPDFContextSubject = Dlfcn.GetIntPtr (h, "kCGPDFContextSubject");
+				kCGPDFContextKeywords = Dlfcn.GetIntPtr (h, "kCGPDFContextKeywords");
+				kCGPDFContextCreator = Dlfcn.GetIntPtr (h, "kCGPDFContextCreator");
+				kCGPDFContextOwnerPassword = Dlfcn.GetIntPtr (h, "kCGPDFContextOwnerPassword");
+				kCGPDFContextUserPassword = Dlfcn.GetIntPtr (h, "kCGPDFContextUserPassword");
+				kCGPDFContextEncryptionKeyLength = Dlfcn.GetIntPtr (h, "kCGPDFContextEncryptionKeyLength");
+				kCGPDFContextAllowsPrinting = Dlfcn.GetIntPtr (h, "kCGPDFContextAllowsPrinting");
+				kCGPDFContextAllowsCopying = Dlfcn.GetIntPtr (h, "kCGPDFContextAllowsCopying");
 #if false
-				kCGPDFContextOutputIntent = Dlfcn.GetIndirect (h, "kCGPDFContextOutputIntent");
-				kCGPDFXOutputIntentSubtype = Dlfcn.GetIndirect (h, "kCGPDFXOutputIntentSubtype");
-				kCGPDFXOutputConditionIdentifier = Dlfcn.GetIndirect (h, "kCGPDFXOutputConditionIdentifier");
-				kCGPDFXOutputCondition = Dlfcn.GetIndirect (h, "kCGPDFXOutputCondition");
-				kCGPDFXRegistryName = Dlfcn.GetIndirect (h, "kCGPDFXRegistryName");
-				kCGPDFXInfo = Dlfcn.GetIndirect (h, "kCGPDFXInfo");
-				kCGPDFXDestinationOutputProfile = Dlfcn.GetIndirect (h, "kCGPDFXDestinationOutputProfile");
-				kCGPDFContextOutputIntents = Dlfcn.GetIndirect (h, "kCGPDFContextOutputIntents");
+				kCGPDFContextOutputIntent = Dlfcn.GetIntPtr (h, "kCGPDFContextOutputIntent");
+				kCGPDFXOutputIntentSubtype = Dlfcn.GetIntPtr (h, "kCGPDFXOutputIntentSubtype");
+				kCGPDFXOutputConditionIdentifier = Dlfcn.GetIntPtr (h, "kCGPDFXOutputConditionIdentifier");
+				kCGPDFXOutputCondition = Dlfcn.GetIntPtr (h, "kCGPDFXOutputCondition");
+				kCGPDFXRegistryName = Dlfcn.GetIntPtr (h, "kCGPDFXRegistryName");
+				kCGPDFXInfo = Dlfcn.GetIntPtr (h, "kCGPDFXInfo");
+				kCGPDFXDestinationOutputProfile = Dlfcn.GetIntPtr (h, "kCGPDFXDestinationOutputProfile");
+				kCGPDFContextOutputIntents = Dlfcn.GetIntPtr (h, "kCGPDFContextOutputIntents");
 #endif
 			} finally {
 				Dlfcn.dlclose (h);
