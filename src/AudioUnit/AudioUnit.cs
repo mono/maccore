@@ -58,6 +58,12 @@ namespace MonoMac.AudioUnit
 		InvalidOfflineRender = -10848,
 		Unauthorized = -10847,
 	}
+
+	public enum AudioCodecManufacturer : uint
+	{
+		AppleSoftware	= 0x6170706c,	// 'appl'
+		AppleHardware	= 0x61706877,	// 'aphw'
+	}
 	
 	public class AudioUnitException : Exception {
 		static string Lookup (int k)

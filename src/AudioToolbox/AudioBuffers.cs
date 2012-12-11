@@ -55,6 +55,9 @@ namespace MonoMac.AudioToolbox
 
 		public AudioBuffers (int count)
 		{
+			if (count < 0)
+				throw new ArgumentOutOfRangeException ("count");
+				
 			var size = sizeof (int) + count * Marshal.SizeOf (typeof (AudioBuffer));
 			address = Marshal.AllocHGlobal (size);
 			owns = true;
