@@ -56,7 +56,7 @@ namespace MonoMac.AudioUnit
 		readonly GCHandle gcHandle;
 		IntPtr handle;
 
-		private AUGraph(IntPtr ptr)
+		internal AUGraph (IntPtr ptr)
 		{
 			handle = ptr;
 			
@@ -69,10 +69,17 @@ namespace MonoMac.AudioUnit
 
 		public event EventHandler<AudioGraphEventArgs> RenderCallback;
 
+		[Obsolete ("Use Handle property instead")]
 		public IntPtr Handler {
 			get {
 				return handle;
 				}
+		}
+
+		public IntPtr Handle {
+			get {
+				return handle;
+			}
 		}
 
 		public AUGraph ()
