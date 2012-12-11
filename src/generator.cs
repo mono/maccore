@@ -3079,10 +3079,18 @@ public class Generator {
 					}
 					GeneratedCode (sw, 2);
 					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
-					sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t) {{}}\n", TypeName);
+					sw.WriteLine ("\t\tpublic {0} (NSObjectFlag t) : base (t)\n", TypeName);
+					sw.WriteLine ("\t\t{");
+					if (BindThirdPartyLibrary)
+						sw.WriteLine ("\t\t\t{0}", init_binding_type);
+					sw.WriteLine ("\t\t}");
 					GeneratedCode (sw, 2);
 					sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]\n");
-					sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle) {{}}\n", TypeName);
+					sw.WriteLine ("\t\tpublic {0} (IntPtr handle) : base (handle)\n", TypeName);
+					sw.WriteLine ("\t\t{");
+					if (BindThirdPartyLibrary)
+						sw.WriteLine ("\t\t\t{0}", init_binding_type);
+					sw.WriteLine ("\t\t}");
 				}
 			}
 			
