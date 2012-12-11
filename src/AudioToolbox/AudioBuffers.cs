@@ -60,7 +60,7 @@ namespace MonoMac.AudioToolbox
 			owns = true;
 
 			Marshal.WriteInt32 (address, 0, count);
-			for (int i = 1; i < size; i++)
+			for (int i = sizeof (int); i < size; i++)
 				Marshal.WriteByte (address, i, 0);
 		}
 
