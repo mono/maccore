@@ -52,6 +52,7 @@ namespace MonoMac.AudioToolbox {
 		AAC_ADTS = 0x61647473, // adts
 		MPEG4 = 0x6d703466, // mp4f
 		M4A = 0x6d346166, // m4af
+		M4B = 0x6d346266, // m4bf
 		CAF = 0x63616666, // caff
 		ThreeGP = 0x33677070, // 3gpp
 		ThreeGP2 = 0x33677032, // 3gp2
