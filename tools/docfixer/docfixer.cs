@@ -79,7 +79,7 @@ public partial class DocGenerator
 		if (useRawDoc)
 			mdocArchive = new MDocDirectoryArchive (Path.Combine (monodocPath, "en"));
 		else
-			mdocArchive = MDocZipArchive.ExtractAndLoad (Path.Combine (monodocPath, "MonoTouch-lib.zip"));
+			mdocArchive = MDocZipArchive.ExtractAndLoad (Path.Combine (monodocPath, ArchiveName));
 		mergerOptions.MonodocArchive = mdocArchive;
 		var merger = new AppleDocMerger (mergerOptions);
 		merger.MergeDocumentation ();

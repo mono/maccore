@@ -30,6 +30,7 @@ using System.Reflection;
 public partial class DocGenerator
 {
 	const string BaseNamespace = "MonoTouch";
+	const string ArchiveName = "MonoTouch-lib.zip";
 
 	static string GetMostRecentDocBase ()
 	{

@@ -8,6 +8,7 @@ using MonoMac.Foundation;
 public partial class DocGenerator {
 	static Assembly assembly = typeof (MonoMac.Foundation.NSObject).Assembly;
 	const string BaseNamespace = "MonoMac";
+	const string ArchiveName = "monomac-lib.zip";
 	
 	static string GetMostRecentDocBase ()
 	{
