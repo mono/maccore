@@ -521,6 +521,23 @@ namespace MonoMac.AudioToolbox {
 					      Subframes, SubframeDivisor, Counter, Type, Flags, Hours, Minutes, Seconds, Frames);
 		}
 	}
+
+	public enum SmpteTimeType
+	{
+		None		= 0,
+		Type24		= 1,
+		Type25		= 2,
+		Type30Drop    = 3,
+		Type30        = 4,
+		Type2997      = 5,
+		Type2997Drop  = 6,
+		Type60        = 7,
+		Type5994      = 8,
+		Type60Drop    = 9,
+		Type5994Drop  = 10,
+		Type50        = 11,
+		Type2398      = 12
+	}
 	
 	[StructLayout(LayoutKind.Sequential)]
 	public struct AudioTimeStamp {
