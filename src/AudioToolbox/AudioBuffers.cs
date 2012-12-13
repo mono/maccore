@@ -37,7 +37,7 @@ namespace MonoMac.AudioToolbox
 	public class AudioBuffers : IDisposable
 	{
 		IntPtr address;
-		bool owns;
+		readonly bool owns;
 
 		public AudioBuffers (IntPtr address)
 			: this (address, false)
@@ -57,7 +57,7 @@ namespace MonoMac.AudioToolbox
 		{
 			if (count < 0)
 				throw new ArgumentOutOfRangeException ("count");
-				
+
 			var size = sizeof (int) + count * Marshal.SizeOf (typeof (AudioBuffer));
 			address = Marshal.AllocHGlobal (size);
 			owns = true;
@@ -65,6 +65,12 @@ namespace MonoMac.AudioToolbox
 			Marshal.WriteInt32 (address, 0, count);
 			for (int i = sizeof (int); i < size; i++)
 				Marshal.WriteByte (address, i, 0);
+		}
+
+		~AudioBuffers ()
+		{
+			Dispose (false);
+			GC.SuppressFinalize (this);
 		}
 
 		public int Count {
