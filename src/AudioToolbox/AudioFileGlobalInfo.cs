@@ -215,13 +215,13 @@ namespace MonoMac.AudioToolbox {
 		}
 */
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static int AudioFileGetGlobalInfoSize (AudioFileGlobalProperty propertyID, uint inSpecifierSize, IntPtr inSpecifier, out uint outDataSize);
+		extern static int AudioFileGetGlobalInfoSize (AudioFileGlobalProperty propertyID, uint size, IntPtr inSpecifier, out uint outDataSize);
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static int AudioFileGetGlobalInfoSize (AudioFileGlobalProperty propertyID, uint inSpecifierSize, ref AudioFileType inSpecifier, out uint outDataSize);
+		extern static int AudioFileGetGlobalInfoSize (AudioFileGlobalProperty propertyID, uint size, ref AudioFileType inSpecifier, out uint outDataSize);
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static int AudioFileGetGlobalInfoSize (AudioFileGlobalProperty propertyID, uint inSpecifierSize, ref AudioFileTypeAndFormatID inSpecifier, out uint outDataSize);
+		extern static int AudioFileGetGlobalInfoSize (AudioFileGlobalProperty propertyID, uint size, ref AudioFileTypeAndFormatID inSpecifier, out uint outDataSize);
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static int AudioFileGetGlobalInfo (AudioFileGlobalProperty propertyID, uint size, IntPtr inSpecifier, ref uint ioDataSize, AudioFileType* outPropertyData);
