@@ -179,6 +179,16 @@ namespace MonoMac.Foundation {
 			return CFString.FetchString (value.Handle);
 		}
 
+		protected string GetStringValue (string key)
+		{
+			if (key == null)
+				throw new ArgumentNullException ("key");
+
+			using (var str = new CFString (key)) {
+				return CFString.FetchString (CFDictionary.GetValue (Dictionary.Handle, str.handle));
+			}
+		}		
+
 		protected void SetArrayValue (NSString key, NSNumber[] values)
 		{
 			if (key == null)
