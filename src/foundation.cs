@@ -2787,7 +2787,7 @@ namespace MonoMac.Foundation
 	[DisableDefaultCtor]
 	public interface NSUrlAuthenticationChallenge {
 		[Export ("initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:")]
-		IntPtr Constructor (NSUrlProtectionSpace space, NSUrlCredential credential, int previousFailureCount, NSUrlResponse response, NSError error, NSUrlConnection sender);
+		IntPtr Constructor (NSUrlProtectionSpace space, NSUrlCredential credential, int previousFailureCount, NSUrlResponse response, [NullAllowed] NSError error, NSUrlConnection sender);
 		
 		[Export ("initWithAuthenticationChallenge:sender:")]
 		IntPtr Constructor (NSUrlAuthenticationChallenge  challenge, NSUrlConnection sender);
@@ -2809,14 +2809,6 @@ namespace MonoMac.Foundation
 	
 		[Export ("sender")]
 		NSUrlConnection Sender { get; }
-
-		[Since (5,0)]
-		[Export ("performDefaultHandlingForAuthenticationChallenge:")]
-		void PerformDefaultHandlingForChallenge (NSUrlAuthenticationChallenge challenge);
-
-		[Since (5,0)]
-		[Export ("rejectProtectionSpaceAndContinueWithChallenge:")]
-		void PejectProtectionSpaceAndContinueWithChallenge (NSUrlAuthenticationChallenge challenge);
 	}
 
 	public delegate void NSUrlConnectionDataResponse (NSUrlResponse response, NSData data, NSError error);
@@ -2856,6 +2848,15 @@ namespace MonoMac.Foundation
 	
 		[Export ("cancelAuthenticationChallenge:")]
 		void CancelAuthenticationChallenge (NSUrlAuthenticationChallenge  challenge);
+
+		[Since (5,0)]
+		[Export ("performDefaultHandlingForAuthenticationChallenge:")]
+		void PerformDefaultHandlingForChallenge (NSUrlAuthenticationChallenge challenge);
+		
+		[Since (5,0)]
+		[Export ("rejectProtectionSpaceAndContinueWithChallenge:")]
+		void RejectProtectionSpaceAndContinueWithChallenge (NSUrlAuthenticationChallenge challenge);
+
 #if !MONOMAC
 		[Since (5,0)]
 		[Export ("originalRequest")]
