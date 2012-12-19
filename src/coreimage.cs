@@ -157,10 +157,10 @@ namespace MonoMac.CoreImage {
 		[Export ("createCGImage:fromRect:format:colorSpace:")]
 		[return: Release ()]
 		CGImage CreateCGImage (CIImage image, RectangleF fromRect, int ciImageFormat, [NullAllowed] CGColorSpace colorSpace);
-
+#if MONOMAC
 		[Internal, Export ("createCGLayerWithSize:info:")]
 		CGLayer CreateCGLayer (SizeF size, [NullAllowed] NSDictionary info);
-
+#endif
 		[Export ("render:toBitmap:rowBytes:bounds:format:colorSpace:")]
 		void RenderToBitmap (CIImage image, IntPtr bitmapPtr, int bytesPerRow, RectangleF bounds, int bitmapFormat, CGColorSpace colorSpace);
 
