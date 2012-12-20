@@ -71,6 +71,7 @@ namespace MonoMac.AudioToolbox {
 
 	public enum AudioFormatError
 	{
+		None					= 0,
 		Unspecified				= 0x77686174,	// 'what'
 		UnsupportedProperty 	= 0x70726f70,	// 'prop'
 		BadPropertySize			= 0x2173697a,	// '!siz'
