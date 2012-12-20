@@ -949,8 +949,11 @@ namespace MonoMac.AudioToolbox {
 			}
 
 			set {
+				if (value == null)
+					throw new ArgumentNullException ("value"); // TODO: enable ?
+
 				int size;
-				var h = AudioChannelLayout.ToBlock (value, out size);
+				var h = value.ToBlock (out size);
 				SetProperty (AudioQueueProperty.ChannelLayout, size, h);
 				Marshal.FreeHGlobal (h);
 			}
@@ -1278,7 +1281,7 @@ namespace MonoMac.AudioToolbox {
 		public AudioQueueStatus SetOfflineRenderFormat (AudioStreamBasicDescription desc, AudioChannelLayout layout)
 		{
 			int size;
-			var h = layout == null ? IntPtr.Zero : AudioChannelLayout.ToBlock (layout, out size);
+			var h = layout == null ? IntPtr.Zero : layout.ToBlock (out size);
 			try {
 				return AudioQueueSetOfflineRenderFormat (handle, ref desc, h);
 			} finally {

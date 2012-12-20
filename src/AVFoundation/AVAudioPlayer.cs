@@ -28,7 +28,7 @@ using System;
 
 namespace MonoMac.AVFoundation {
 
-	// Obsoleted by AudioPlayerSettings
+	// Obsoleted by AudioSettings
 	public class AVAudioPlayerSettings {
 		NSDictionary dict;
 		

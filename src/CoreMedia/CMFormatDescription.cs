@@ -18,9 +18,7 @@ using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
 using MonoMac.CoreVideo;
-#if !COREBUILD
 using MonoMac.AudioToolbox;
-#endif
 
 namespace MonoMac.CoreMedia {
 
@@ -109,6 +107,12 @@ namespace MonoMac.CoreMedia {
 			}
 		}
 
+		public AudioFormatType AudioFormatType {
+			get {
+				return MediaType == CMMediaType.Audio ? (AudioFormatType) MediaSubType : 0;
+			}
+		}
+
 		public CMSubtitleFormatType SubtitleFormatType {
 			get {
 				return MediaType == CMMediaType.Subtitle ? (CMSubtitleFormatType) MediaSubType : 0;
@@ -169,7 +173,6 @@ namespace MonoMac.CoreMedia {
 		[DllImport (Constants.CoreMediaLibrary)]
 		extern static CMFormatDescriptionError CMFormatDescriptionCreate (IntPtr allocator, CMMediaType mediaType, uint mediaSubtype, IntPtr extensions, out IntPtr handle);
 
-		// TODO: Better overloads for each FormatType
 		public static CMFormatDescription Create (CMMediaType mediaType, uint mediaSubtype, out CMFormatDescriptionError error)
 		{
 			IntPtr handle;
@@ -177,7 +180,24 @@ namespace MonoMac.CoreMedia {
 			if (error != CMFormatDescriptionError.None)
 				return null;
 
-			return new CMFormatDescription (handle, true);
+			return Create (mediaType, handle, true);
+		}
+
+		public static CMFormatDescription Create (IntPtr handle, bool owns)
+		{
+			return Create (CMFormatDescriptionGetMediaType (handle), handle, owns);
+		}
+
+		static CMFormatDescription Create (CMMediaType type, IntPtr handle, bool owns)
+		{		
+			switch (type) {
+			case CMMediaType.Video:
+				return new CMVideoFormatDescription (handle);
+			case CMMediaType.Audio:
+				return new CMAudioFormatDescription (handle);
+			default:
+				return new CMFormatDescription (handle);
+			}
 		}
 
 		[DllImport (Constants.CoreMediaLibrary)]
@@ -202,9 +222,9 @@ namespace MonoMac.CoreMedia {
 			get {
 				int size;
 				var res = CMAudioFormatDescriptionGetChannelLayout (handle, out size);
-				if (res == IntPtr.Zero)
+				if (res == IntPtr.Zero || size == 0)
 					return null;
-				return AudioChannelLayout.FromHandle (handle);
+				return AudioChannelLayout.FromHandle (res);
 			}
 		}
 

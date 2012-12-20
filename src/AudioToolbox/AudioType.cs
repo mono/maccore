@@ -34,6 +34,7 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
@@ -107,6 +108,15 @@ namespace MonoMac.AudioToolbox {
 		AppleLossless32BitSourceData    = 4
 	}
 
+	[StructLayout (LayoutKind.Sequential)]
+	unsafe struct AudioFormatInfo
+	{
+		public AudioStreamBasicDescription AudioStreamBasicDescription;
+		public byte* MagicCookieWeak;
+		public int MagicCookieSize;
+	}
+
+	[DebuggerDisplay ("{FormatName}")]
 	[StructLayout(LayoutKind.Sequential)]
 	public struct AudioStreamBasicDescription {
 		public double SampleRate;
@@ -146,6 +156,148 @@ namespace MonoMac.AudioToolbox {
 				desc.FormatFlags |= AudioFormatFlags.IsBigEndian;
 
 			return desc;
+		}
+
+		public unsafe static AudioChannelLayoutTag[] GetAvailableEncodeChannelLayoutTags (AudioStreamBasicDescription format)
+		{
+			var type_size = Marshal.SizeOf (format);
+			uint size;
+			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.AvailableEncodeChannelLayoutTags, type_size, ref format, out size) != 0)
+				return null;
+
+			var data = new AudioChannelLayoutTag[size / sizeof (AudioChannelLayoutTag)];
+			fixed (AudioChannelLayoutTag* ptr = data) {
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.AvailableEncodeChannelLayoutTags, type_size, ref format, ref size, (int*)ptr);
+				if (res != 0)
+					return null;
+
+				return data;
+			}
+		}
+
+		public unsafe static int[] GetAvailableEncodeNumberChannels (AudioStreamBasicDescription format)
+		{
+			uint size;
+			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.AvailableEncodeNumberChannels, Marshal.SizeOf (format), ref format, out size) != 0)
+				return null;
+
+			var data = new int[size / sizeof (int)];
+			fixed (int* ptr = data) {
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.AvailableEncodeNumberChannels, Marshal.SizeOf (format), ref format, ref size, ptr);
+				if (res != 0)
+					return null;
+
+				return data;
+			}
+		}
+
+		public unsafe AudioFormat[] GetOutputFormatList (byte[] magicCookie = null)
+		{
+			var afi = new AudioFormatInfo ();
+			afi.AudioStreamBasicDescription = this;
+
+			var type_size = Marshal.SizeOf (typeof (AudioFormat));
+			uint size;
+			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.OutputFormatList, type_size, ref afi, out size) != 0)
+				return null;
+
+			Debug.Assert (sizeof (AudioFormat) == type_size);
+
+			var data = new AudioFormat[size / type_size];
+			fixed (AudioFormat* ptr = &data[0]) {
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.OutputFormatList, type_size, ref afi, ref size, ptr);
+				if (res != 0)
+					return null;
+
+				Array.Resize (ref data, (int) size / type_size);
+				return data;
+			}
+		}
+
+		public unsafe AudioFormat[] GetFormatList (byte[] magicCookie)
+		{
+			if (magicCookie == null)
+				throw new ArgumentNullException ("magicCookie");
+
+			var afi = new AudioFormatInfo ();
+			afi.AudioStreamBasicDescription = this;
+
+			fixed (byte* b = magicCookie)
+			{
+				afi.MagicCookieWeak = b;
+				afi.MagicCookieSize = magicCookie.Length;
+
+				var type_size = Marshal.SizeOf (typeof (AudioFormat));
+				uint size;
+				if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.FormatList, type_size, ref afi, out size) != 0)
+					return null;
+
+				Debug.Assert (sizeof (AudioFormat) == type_size);
+
+				var data = new AudioFormat[size / type_size];
+				fixed (AudioFormat* ptr = &data[0]) {
+					var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatList, type_size, ref afi, ref size, ptr);
+					if (res != 0)
+						return null;
+
+					Array.Resize (ref data, (int)size / type_size);
+					return data;
+				}
+			}
+		}
+
+		public static AudioFormatError GetFormatInfo (ref AudioStreamBasicDescription format)
+		{
+			var size = Marshal.SizeOf (format);
+			return AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatInfo, 0, IntPtr.Zero, ref size, ref format);
+		}
+
+		public unsafe string FormatName {
+			get {
+				IntPtr ptr;
+				var size = Marshal.SizeOf (typeof (IntPtr));
+
+				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatName, Marshal.SizeOf (this), ref this, ref size, out ptr) != 0)
+					return null;
+
+				return new CFString (ptr, true);
+			}
+		}
+
+		public unsafe bool IsEncrypted {
+			get {
+				uint data;
+				var size = sizeof (uint);
+
+				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatIsEncrypted, Marshal.SizeOf (this), ref this, ref size, out data) != 0)
+					return false;
+
+				return data != 0;				
+			}
+		}
+
+		public unsafe bool IsExternallyFramed {
+			get {
+				uint data;
+				var size = sizeof (uint);
+
+				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatIsExternallyFramed, Marshal.SizeOf (this), ref this, ref size, out data) != 0)
+					return false;
+
+				return data != 0;				
+			}
+		}
+
+		public unsafe bool IsVariableBitrate {
+			get {
+				uint data;
+				var size = sizeof (uint);
+
+				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatName, Marshal.SizeOf (this), ref this, ref size, out data) != 0)
+					return false;
+
+				return data != 0;				
+			}
 		}
 
 		public override string ToString ()
@@ -254,11 +406,76 @@ namespace MonoMac.AudioToolbox {
 		Discrete_15           = (1<<16) | 15,
 		Discrete_65535        = (1<<16) | 65535
 	}
-	
-	public class AudioChannelDescription {
-		public AudioChannelLabel  Label;
-		public AudioChannelFlags  Flags;
-		public float [] Coords;
+
+	[Flags]
+	public enum AudioChannelBit
+	{
+		Left                       = 1<<0,
+		Right                      = 1<<1,
+		Center                     = 1<<2,
+		LFEScreen                  = 1<<3,
+		LeftSurround               = 1<<4,
+		RightSurround              = 1<<5,
+		LeftCenter                 = 1<<6,
+		RightCenter                = 1<<7,
+		CenterSurround             = 1<<8,
+		LeftSurroundDirect         = 1<<9,
+		RightSurroundDirect        = 1<<10,
+		TopCenterSurround          = 1<<11,
+		VerticalHeightLeft         = 1<<12,
+		VerticalHeightCenter       = 1<<13,
+		VerticalHeightRight        = 1<<14,
+		TopBackLeft                = 1<<15,
+		TopBackCenter              = 1<<16,
+		TopBackRight               = 1<<17
+	}
+
+	[StructLayout (LayoutKind.Sequential)]
+	public struct AudioChannelDescription
+	{
+		public AudioChannelLabel Label;
+		public AudioChannelFlags Flags;
+		[MarshalAs (UnmanagedType.ByValArray, SizeConst = 3)]
+		public float[] Coords; // = new float[3];
+
+		public unsafe string Name {
+			get {
+				IntPtr sptr;
+				int size = Marshal.SizeOf (typeof (IntPtr));
+				int ptr_size = Marshal.SizeOf (this);
+				var ptr = ToPointer ();
+
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.ChannelName, ptr_size, ptr, ref size, out sptr);
+				Marshal.FreeHGlobal (ptr);
+				if (res != 0)
+					return null;
+
+				return new CFString (sptr, true);
+			}
+		}
+
+		public unsafe string ShortName {
+			get {
+				IntPtr sptr;
+				int size = Marshal.SizeOf (typeof (IntPtr));
+				int ptr_size = Marshal.SizeOf (this);
+				var ptr = ToPointer ();
+
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.ChannelShortName, ptr_size, ptr, ref size, out sptr);
+				Marshal.FreeHGlobal (ptr);
+				if (res != 0)
+					return null;
+
+				return new CFString (sptr, true);
+			}
+		}
+
+		internal IntPtr ToPointer ()
+		{
+			var ptr = Marshal.AllocHGlobal (sizeof (AudioChannelLabel) + sizeof (AudioChannelFlags) + 3 * sizeof (float));
+			Marshal.StructureToPtr (this, ptr, false);
+			return ptr;
+		}
 
 		public override string ToString ()
 		{
@@ -413,81 +630,290 @@ namespace MonoMac.AudioToolbox {
 		DiscreteInOrder          = (147<<16) | 0,                       // needs to be ORed with the actual number of channels  
 		Unknown                  = unchecked ((int)(0xFFFF0000))                           // needs to be ORed with the actual number of channels  
 	}
-	
-	public class AudioChannelLayout {
-		[Obsolete ("Use the strongly typed enum AudioTag instead")]
-		public int Tag { get { return (int) AudioTag; } set { AudioTag = (AudioChannelLayoutTag) value; } }
-		public AudioChannelLayoutTag AudioTag;
-		public int Bitmap;
-		public AudioChannelDescription [] Channels ;
 
-		static internal AudioChannelLayout FromHandle (IntPtr h)
+	public static class AudioChannelLayoutTagExtensions
+	{
+		public static AudioChannelBit? ToAudioChannel (this AudioChannelLayoutTag layoutTag)
 		{
-			var layout = new AudioChannelLayout ();
-			layout.AudioTag  = (AudioChannelLayoutTag) Marshal.ReadInt32 (h, 0);
-			layout.Bitmap = Marshal.ReadInt32 (h, 4);
-			layout.Channels = new AudioChannelDescription [Marshal.ReadInt32 (h, 8)];
-			int p = 12;
-			for (int i = 0; i < layout.Channels.Length; i++){
-				var desc = new AudioChannelDescription ();
-				desc.Label = (AudioChannelLabel) Marshal.ReadInt32 (h, p);
-				desc.Flags = (AudioChannelFlags) Marshal.ReadInt32 (h, p+4);
-				desc.Coords = new float [3];
-				desc.Coords [0] = ReadFloat (h, p+8);
-				desc.Coords [1] = ReadFloat (h, p+12);
-				desc.Coords [2] = ReadFloat (h, p+16);
-				layout.Channels [i] = desc;
-				
-				p += 20;
-			}
+			int value;
+			int size = sizeof (uint);
+			int layout = (int) layoutTag;
 
+			if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.BitmapForLayoutTag, sizeof (AudioChannelLayoutTag), ref layout, ref size, out value) != 0)
+				return null;
+
+			return (AudioChannelBit) value;
+		}
+	}
+	
+	[DebuggerDisplay ("{Name}")]
+	public class AudioChannelLayout
+	{
+		public AudioChannelLayout ()
+		{
+		}
+
+		internal unsafe AudioChannelLayout (IntPtr h)
+		{
+			AudioTag = (AudioChannelLayoutTag) Marshal.ReadInt32 (h, 0);
+			ChannelUsage = (AudioChannelBit) Marshal.ReadInt32 (h, 4);
+			Channels = new AudioChannelDescription [Marshal.ReadInt32 (h, 8)];
+			int p = 12;
+			for (int i = 0; i < Channels.Length; i++){
+				Channels [i] = (AudioChannelDescription) Marshal.PtrToStructure((IntPtr) (unchecked (((byte *) h) + p)), typeof(AudioChannelDescription));
+				p += Marshal.SizeOf (typeof (AudioChannelDescription));
+			}
+		}
+
+		[Obsolete ("Use the strongly typed AudioTag instead")]
+		public int Tag {
+			get {
+				return (int) AudioTag;
+			}
+			set {
+				AudioTag = (AudioChannelLayoutTag) value;
+			}
+		}
+
+		[Obsolete ("Use ChannelUsage instead")]
+		public int Bitmap {
+			get {
+				return (int) ChannelUsage;
+			}
+			set {
+				ChannelUsage = (AudioChannelBit) value;
+			}
+		}
+
+		public AudioChannelLayoutTag AudioTag;
+		public AudioChannelBit ChannelUsage;
+		public AudioChannelDescription[] Channels;
+
+		public unsafe string Name {
+			get {
+				IntPtr sptr;
+				int size = Marshal.SizeOf (typeof (IntPtr));
+				int ptr_size;
+				var ptr = ToBlock (out ptr_size);
+
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.ChannelLayoutName, ptr_size, ptr, ref size, out sptr);
+				Marshal.FreeHGlobal (ptr);
+				if (res != 0)
+					return null;
+
+				return new CFString (sptr, true);
+			}
+		}
+
+		public unsafe string SimpleName {
+			get {
+				IntPtr sptr;
+				int size = Marshal.SizeOf (typeof (IntPtr));
+				int ptr_size;
+				var ptr = ToBlock (out ptr_size);
+
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.ChannelLayoutSimpleName, ptr_size, ptr, ref size, out sptr);
+				Marshal.FreeHGlobal (ptr);
+				if (res != 0)
+					return null;
+
+				return new CFString (sptr, true);
+			}
+		}
+
+		public static AudioChannelLayout FromAudioChannelBitmap (AudioChannelBit channelBitmap)
+		{
+			return GetChannelLayout (AudioFormatProperty.ChannelLayoutForBitmap, (int) channelBitmap);
+		}
+
+		public static AudioChannelLayout FromAudioChannelLayoutTag (AudioChannelLayoutTag channelLayoutTag)
+		{
+			return GetChannelLayout (AudioFormatProperty.ChannelLayoutForTag, (int) channelLayoutTag);
+		}
+
+		static AudioChannelLayout GetChannelLayout (AudioFormatProperty property, int value)
+		{
+			int size;
+			AudioFormatPropertyNative.AudioFormatGetPropertyInfo (property, sizeof (AudioFormatProperty), ref value, out size);
+
+			AudioChannelLayout layout;
+			IntPtr ptr = Marshal.AllocHGlobal (size);
+			if (AudioFormatPropertyNative.AudioFormatGetProperty (property, sizeof (AudioFormatProperty), ref value, ref size, ptr) == 0)
+				layout = new AudioChannelLayout (ptr);
+			else
+				layout = null;
+				
+			Marshal.FreeHGlobal (ptr);
 			return layout;
 		}
-		
+
+		internal static AudioChannelLayout FromHandle (IntPtr handle)
+		{
+			if (handle == IntPtr.Zero)
+				return null;
+
+			return new AudioChannelLayout (handle);
+		}
+
 		public override string ToString ()
 		{
-			return String.Format ("AudioChannelLayout: Tag={0} Bitmap={1} Channels={2}", AudioTag, Bitmap, Channels.Length);
-		}
-
-		unsafe static float ReadFloat (IntPtr p, int offset)
-		{
-			byte *src = ((byte *)p) + offset;
-
-			return *(float *) src;
-		}
-
-		unsafe static void WriteFloat (IntPtr p, int offset, float f)
-		{
-			byte *dest = ((byte *)p) + offset;
-			*((float *) dest) = f;
+			return String.Format ("AudioChannelLayout: Tag={0} Bitmap={1} Channels={2}", AudioTag, ChannelUsage, Channels.Length);
 		}
 		
-		// The returned block must be released with FreeHGbloal
-		static internal IntPtr ToBlock (AudioChannelLayout layout, out int size)
+		// The returned block must be released with FreeHGlobal
+		internal unsafe IntPtr ToBlock (out int size)
 		{
-			if (layout == null)
-				throw new ArgumentNullException ("layout");
-			if (layout.Channels == null)
-				throw new ArgumentNullException ("layout.Channels");
+			if (Channels == null)
+				throw new ArgumentNullException ("Channels");
 			
-			size = 12 + layout.Channels.Length * 20;
+			var desc_size = Marshal.SizeOf (typeof (AudioChannelDescription));
+
+			size = 12 + Channels.Length * desc_size;
 			IntPtr buffer = Marshal.AllocHGlobal (size);
 			int p;
-			Marshal.WriteInt32 (buffer, 0, (int) layout.AudioTag);
-			Marshal.WriteInt32 (buffer, 4, layout.Bitmap);
-			Marshal.WriteInt32 (buffer, 8, layout.Channels.Length);
+			Marshal.WriteInt32 (buffer, (int) AudioTag);
+			Marshal.WriteInt32 (buffer, 4, (int) ChannelUsage);
+			Marshal.WriteInt32 (buffer, 8, Channels.Length);
 			p = 12;
-			foreach (var desc in layout.Channels){
-				Marshal.WriteInt32 (buffer, p, (int) desc.Label);
-				Marshal.WriteInt32 (buffer, p + 4, (int) desc.Flags);
-				WriteFloat (buffer, p + 8, desc.Coords [0]);
-				WriteFloat (buffer, p + 12, desc.Coords [1]);
-				WriteFloat (buffer, p + 16, desc.Coords [2]);
 
-				p += 20;
+			foreach (var desc in Channels){
+				Marshal.StructureToPtr (desc, (IntPtr) (unchecked (((byte *) buffer) + p)), false);
+				p += desc_size;
 			}
 			
 			return buffer;
+		}
+
+		public static AudioFormatError Validate (AudioChannelLayout layout)
+		{
+			if (layout == null)
+				throw new ArgumentNullException ("layout");
+
+			int ptr_size;
+			var ptr = layout.ToBlock (out ptr_size);
+
+			var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.ValidateChannelLayout, ptr_size, ptr, IntPtr.Zero, IntPtr.Zero);
+			Marshal.FreeHGlobal (ptr);
+			return res;
+		}
+
+		public unsafe static int[] GetChannelMap (AudioChannelLayout inputLayout, AudioChannelLayout outputLayout)
+		{
+			if (inputLayout == null)
+				throw new ArgumentNullException ("inputLayout");
+			if (outputLayout == null)
+				throw new ArgumentNullException ("outputLayout");
+
+			var channels_count = GetNumberOfChannels (outputLayout);
+			if (channels_count == null)
+				throw new ArgumentException ("outputLayout");
+
+			int ptr_size;
+			var input_ptr = inputLayout.ToBlock (out ptr_size);
+			var output_ptr = outputLayout.ToBlock (out ptr_size);
+			var array = new IntPtr[] { input_ptr, output_ptr };
+			ptr_size = Marshal.SizeOf (typeof (IntPtr)) * array.Length;
+
+			int[] value;
+			AudioFormatError res;
+
+			fixed (IntPtr* ptr = &array[0]) {
+				value = new int[channels_count.Value];
+				var size = sizeof (int) * value.Length;
+				fixed (int* value_ptr = &value[0]) {
+					res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.ChannelMap, ptr_size, ptr, ref size, value_ptr);
+				}
+			}
+
+			Marshal.FreeHGlobal (input_ptr);
+			Marshal.FreeHGlobal (output_ptr);
+
+			return res == 0 ? value : null;
+		}
+
+		public unsafe static float[,] GetMatrixMixMap (AudioChannelLayout inputLayout, AudioChannelLayout outputLayout)
+		{
+			if (inputLayout == null)
+				throw new ArgumentNullException ("inputLayout");
+			if (outputLayout == null)
+				throw new ArgumentNullException ("outputLayout");
+
+			var channels_count_output = GetNumberOfChannels (outputLayout);
+			if (channels_count_output == null)
+				throw new ArgumentException ("outputLayout");
+
+			var channels_count_input = GetNumberOfChannels (inputLayout);
+			if (channels_count_input == null)
+				throw new ArgumentException ("inputLayout");
+
+			int ptr_size;
+			var input_ptr = inputLayout.ToBlock (out ptr_size);
+			var output_ptr = outputLayout.ToBlock (out ptr_size);
+			var array = new IntPtr[] { input_ptr, output_ptr };
+			ptr_size = Marshal.SizeOf (typeof (IntPtr)) * array.Length;
+
+			float[,] value;
+			AudioFormatError res;
+
+			fixed (IntPtr* ptr = &array[0]) {
+				value = new float[channels_count_input.Value, channels_count_output.Value];
+				var size = sizeof (float) * channels_count_input.Value * channels_count_output.Value;
+				fixed (float* value_ptr = &value[0, 0]) {
+					res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.MatrixMixMap, ptr_size, ptr, ref size, value_ptr);
+				}
+			}
+
+			Marshal.FreeHGlobal (input_ptr);
+			Marshal.FreeHGlobal (output_ptr);
+
+			return res == 0 ? value : null;
+		}
+
+		public static int? GetNumberOfChannels (AudioChannelLayout layout)
+		{
+			if (layout == null)
+				throw new ArgumentNullException ("layout");
+
+			int ptr_size;
+			var ptr = layout.ToBlock (out ptr_size);
+			int size = sizeof (int);
+			int value;
+
+			var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.NumberOfChannelsForLayout, ptr_size, ptr, ref size, out value);
+			Marshal.FreeHGlobal (ptr);
+			return res != 0 ? null : (int?) value;
+		}
+
+		public static AudioChannelLayoutTag? GetTagForChannelLayout (AudioChannelLayout layout)
+		{
+			if (layout == null)
+				throw new ArgumentNullException ("layout");
+
+			int ptr_size;
+			var ptr = layout.ToBlock (out ptr_size);
+			int size = sizeof (AudioChannelLayoutTag);
+			int value;
+
+			var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.TagForChannelLayout, ptr_size, ptr, ref size, out value);
+			Marshal.FreeHGlobal (ptr);
+			return res != 0 ? null : (AudioChannelLayoutTag?) value;
+		}
+
+		public unsafe static AudioChannelLayoutTag[] GetTagsForNumberOfChannels (int count)
+		{
+			const int type_size = sizeof (uint);
+			int size;
+			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.TagsForNumberOfChannels, type_size, ref count, out size) != 0)
+				return null;
+
+			var data = new AudioChannelLayoutTag[size / type_size];
+			fixed (AudioChannelLayoutTag* ptr = data) {
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.TagsForNumberOfChannels, type_size, ref count, ref size, (int*)ptr);
+				if (res != 0)
+					return null;
+
+				return data;
+			}
 		}
 
 #if !COREBUILD
@@ -495,7 +921,7 @@ namespace MonoMac.AudioToolbox {
 		{
 			int size;
 			
-			var p = ToBlock (this, out size);
+			var p = ToBlock (out size);
 			var result = NSData.FromBytes (p, (uint) size);
 			Marshal.FreeHGlobal (p);
 			return result;

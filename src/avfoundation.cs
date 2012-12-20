@@ -1475,9 +1475,12 @@ namespace MonoMac.AVFoundation {
 		[Export ("mediaType")]
 		string MediaType { get;  }
 
-		// TODO: CMFormatDescriptions
+		// Weak version
 		[Export ("formatDescriptions")]
 		NSObject [] FormatDescriptionsAsObjects { get;  }
+
+		[Wrap ("Array.ConvertAll (FormatDescriptionsAsObjects, l => CMFormatDescription.Create (l.Handle, false))")]
+		CMFormatDescription[] FormatDescriptions { get; }
 
 		[Export ("enabled")]
 		bool Enabled { [Bind ("isEnabled")] get;  }
