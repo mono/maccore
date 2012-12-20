@@ -602,6 +602,7 @@ namespace MonoMac.CoreImage {
 	[BaseType (typeof (NSObject))]
 	[DisableDefaultCtor]
 	public interface CIFilterShape {
+		[Static]
 		[Export ("shapeWithRect:")]
 		CIFilterShape FromRect (RectangleF rect);
 
@@ -1095,7 +1096,7 @@ namespace MonoMac.CoreImage {
 	[DisableDefaultCtor]
 	interface CIDetector {
 		[Static, Export ("detectorOfType:context:options:"), Internal]
-		CIDetector FromType (NSString detectorType, [NullAllowed] CIContext context, [NullAllowed] NSDictionary options);
+		CIDetector FromType ([NullAllowed] NSString detectorType, [NullAllowed] CIContext context, [NullAllowed] NSDictionary options);
 
 		[Export ("featuresInImage:")]
 		CIFeature [] FeaturesInImage (CIImage image);

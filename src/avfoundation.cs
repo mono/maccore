@@ -1017,10 +1017,11 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("requestedTimeToleranceAfter")]
 		CMTime RequestedTimeToleranceAfter { get; set;  }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("asset")]
 		AVAsset Asset { get; }
+#endif
 	}
 	
 	[Since (4,1)]
@@ -1277,11 +1278,11 @@ namespace MonoMac.AVFoundation {
 		[Export ("finishWriting")]
 		[Obsolete ("This is a synchronous methods, use the asynchronous FinishWriting(NSAction completionHandler) instead")]
 		bool FinishWriting ();
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("finishWritingWithCompletionHandler:")]
 		void FinishWriting (NSAction completionHandler);
-
+#endif
 		[Export ("movieTimeScale")]
 		int MovieTimeScale { get; set; }
 	}
@@ -3568,7 +3569,7 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVCaptureDeviceSubjectAreaDidChangeNotification")]
 		[Notification]
 		NSString SubjectAreaDidChangeNotification { get; }
-#endif
+
 		// 5.0
 		[Since(5,0)]
 		[Export ("isFlashAvailable")]
@@ -3610,6 +3611,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("automaticallyEnablesLowLightBoostWhenAvailable")]
 		bool AutomaticallyEnablesLowLightBoostWhenAvailable { get; set; }
+#endif
 	}
 
 	public delegate void AVCompletionHandler ();
@@ -4005,7 +4007,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("timebase")]
 		CMTimebase Timebase { get;  }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("seekToDate:completionHandler:")]
 		bool Seek (NSDate date, AVCompletion completion);
@@ -4013,7 +4015,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("seekingWaitsForVideoCompositionRendering")]
 		bool SeekingWaitsForVideoCompositionRendering { get; set;  }
-#if !MONOMAC
+
 		[Since (6,0)]
 		[Export ("textStyleRules")]
 		AVTextStyleRule [] TextStyleRules { get; set;  }
