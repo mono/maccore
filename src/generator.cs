@@ -438,12 +438,21 @@ public class AlignAttribute : Attribute {
 // When applied, flags the [Flags] as a notification and generates the
 // code to strongly type the notification.
 //
+// The type has information about the strong type notification, while the
+// NotificationCenter if not null, indicates how to get the notification center.
+//
+// If you do not specify it, it will use NSNotificationCenter.DefaultCenter,
+// you would typically use this to specify the code needed to get to it.
+//
 [AttributeUsage(AttributeTargets.Property, AllowMultiple=true)]
 public class NotificationAttribute : Attribute {
 	public NotificationAttribute (Type t) { Type = t; }
+	public NotificationAttribute (Type t, string notificationCenter) { Type = t; NotificationCenter = notificationCenter; }
+	public NotificationAttribute (string notificationCenter) { NotificationCenter = notificationCenter; }
 	public NotificationAttribute () {}
 	
 	public Type Type { get; set; }
+	public string NotificationCenter { get; set; }
 }
 
 //
@@ -3614,6 +3623,7 @@ public class Generator {
 				print ("public static partial class Notifications {\n");
 				foreach (var property in notifications){
 					string notification_name = GetNotificationName (property);
+					string notification_center = GetNotificationCenter (property);
 					Type event_args_type = GetNotificationArgType (property);
 					string event_name = event_args_type == null ? "NSNotificationEventArgs" : event_args_type.FullName;
 
@@ -3621,7 +3631,7 @@ public class Generator {
 						notification_event_arg_types [event_args_type] = event_args_type;
 					print ("\tpublic static NSObject Observe{0} (EventHandler<{1}> handler)", notification_name, event_name);
 					print ("\t{");
-					print ("\t\treturn NSNotificationCenter.DefaultCenter.AddObserver ({0}, notification => handler (null, new {1} (notification)));", property.Name, event_name);
+					print ("\t\treturn {0}.AddObserver ({1}, notification => handler (null, new {2} (notification)));", notification_center, property.Name, event_name);
 					print ("\t}");
 				}
 				print ("\n}");
@@ -3719,6 +3729,15 @@ public class Generator {
 		}
 	}
 
+	string GetNotificationCenter (PropertyInfo pi)
+	{
+		object [] a = pi.GetCustomAttributes (typeof (NotificationAttribute), true);
+		var str =  (a [0] as NotificationAttribute).NotificationCenter;
+		if (str == null)
+			str = "NSNotificationCenter.DefaultCenter";
+		return str;
+	}
+		
 	string GetNotificationName (PropertyInfo pi)
 	{
 		// TODO: fetch the NotificationAttribute, see if there is an override there.
