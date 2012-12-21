@@ -3800,6 +3800,24 @@ namespace MonoMac.Foundation
 
 		[Export ("debugDescription")]
 		string DebugDescription { get; }
+
+		//
+		// Extra Perform methods, with selectors
+		//
+		[Export ("performSelector:withObject:afterDelay:inModes:")]
+		void PerformSelector (Selector selector, NSObject withObject, double afterDelay, NSString [] nsRunLoopModes);
+		
+		[Export ("performSelector:onThread:withObject:waitUntilDone:")]
+		void PerformSelector (Selector selector, NSThread onThread, NSObject withObject, bool waitUntilDone);
+		
+		[Export ("performSelector:onThread:withObject:waitUntilDone:modes:")]
+		void PerformSelector (Selector selector, NSThread onThread, NSObject withObject, bool waitUntilDone, NSString [] nsRunLoopModes);
+		
+		[Static, Export ("cancelPreviousPerformRequestsWithTarget:")]
+		void CancelPreviousPerformRequest (NSObject aTarget);
+
+		[Static, Export ("cancelPreviousPerformRequestsWithTarget:selector:object:")]
+		void CancelPreviousPerformRequest (NSObject aTarget, Selector selector, [NullAllowed] NSObject argument);
 	}
 	
 	[BaseType (typeof (NSObject))]

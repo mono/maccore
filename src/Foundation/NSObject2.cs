@@ -152,5 +152,17 @@ namespace MonoMac.Foundation {
 		{
 			return Description ?? base.ToString ();
 		}
+
+                public virtual void Invoke (NSAction action, double delay)
+                {
+                        var d = new NSAsyncActionDispatcher (action);
+                        PerformSelector (NSActionDispatcher.Selector, d, delay);
+                }
+
+                public virtual void Invoke (NSAction action, TimeSpan delay)
+                {
+                        var d = new NSAsyncActionDispatcher (action);
+                        PerformSelector (NSActionDispatcher.Selector, d, delay.TotalSeconds);
+                }
 	}
 }
