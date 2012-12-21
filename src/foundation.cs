@@ -5275,8 +5275,11 @@ namespace MonoMac.Foundation
 		[Static, Export ("exit")]
 		void Exit ();
 
-		[Static, Export ("threadPriority")]
-		double Priority { get; set; }
+		[Static, Export ("threadPriority"), Internal]
+		double _GetPriority ();
+
+		[Static, Export ("setThreadPriority:"), Internal]
+		bool _SetPriority (double priority);
 
 		//+ (NSArray *)callStackReturnAddresses;
 
