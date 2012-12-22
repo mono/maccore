@@ -51,7 +51,9 @@ namespace MonoMac.Foundation
 	public delegate int NSComparator (NSObject obj1, NSObject obj2);
 	public delegate void NSAttributedRangeCallback (NSDictionary attrs, NSRange range, ref bool stop);
 	public delegate void NSAttributedStringCallback (NSObject value, NSRange range, ref bool stop);
-	
+
+	public delegate bool NSEnumerateErrorHandler (NSUrl url, NSError error);
+
 	[BaseType (typeof (NSObject))]
 	public interface NSArray {
 		[Export ("count")]
@@ -5591,7 +5593,7 @@ namespace MonoMac.Foundation
 		bool FileExists (string path);
 
 		[Export ("fileExistsAtPath:isDirectory:")]
-		bool FileExists (string path, bool isDirectory);
+		bool FileExists (string path, ref bool isDirectory);
 
 		[Export ("isReadableFileAtPath:")]
 		bool IsReadableFile (string path);
@@ -5648,7 +5650,7 @@ namespace MonoMac.Foundation
 
 		[Since (4,0)]
 		[Export ("enumeratorAtURL:includingPropertiesForKeys:options:errorHandler:")]
-		NSDirectoryEnumerator GetEnumerator (NSUrl url, [NullAllowed] NSArray properties, NSDirectoryEnumerationOptions options, out NSError error);
+		NSDirectoryEnumerator GetEnumerator (NSUrl url, [NullAllowed] NSArray properties, NSDirectoryEnumerationOptions options, [NullAllowed] NSEnumerateErrorHandler handler);
 
 		[Since (4,0)]
 		[Export ("URLForDirectory:inDomain:appropriateForURL:create:error:")]
