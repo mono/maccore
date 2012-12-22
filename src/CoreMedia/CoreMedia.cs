@@ -91,8 +91,8 @@ namespace MonoMac.CoreMedia {
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct CMTimeMapping {
-		public CMTime Source;
-		public CMTime Target;
+		public CMTimeRange Source;
+		public CMTimeRange Target;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
