@@ -456,11 +456,11 @@ namespace MonoMac.AVFoundation {
 
 		[Since (6,0)]
 		[Export ("recordAtTime:")]
-		void RecordAt (double time);
+		bool RecordAt (double time);
 
 		[Since (6,0)]
 		[Export ("recordAtTime:forDuration:")]
-		void RecordAt (double time, float duration);
+		bool RecordAt (double time, double duration);
 
 		[Since (6,0)]
 		[Export ("deviceCurrentTime")]
@@ -2776,7 +2776,7 @@ namespace MonoMac.AVFoundation {
 		int TrackID { get;  }
 
 		[Export ("getVolumeRampForTime:startVolume:endVolume:timeRange:")]
-		bool GetVolumeRamp (CMTime forTime, float startVolume, float endVolume, CMTimeRange timeRange);
+		bool GetVolumeRamp (CMTime forTime, ref float startVolume, ref float endVolume, ref CMTimeRange timeRange);
 
 #if !MONOMAC
 		[Since (6,0)]
@@ -2923,10 +2923,10 @@ namespace MonoMac.AVFoundation {
 		int TrackID { get;  }
 
 		[Export ("getTransformRampForTime:startTransform:endTransform:timeRange:")]
-		bool GetTransformRamp (CMTime time, CGAffineTransform startTransform, CGAffineTransform endTransform, CMTimeRange timeRange);
+		bool GetTransformRamp (CMTime time, ref CGAffineTransform startTransform, ref CGAffineTransform endTransform, ref CMTimeRange timeRange);
 
 		[Export ("getOpacityRampForTime:startOpacity:endOpacity:timeRange:")]
-		bool GetOpacityRamp (CMTime time, float startOpacity, float endOpacity, CMTimeRange timeRange);
+		bool GetOpacityRamp (CMTime time, ref float startOpacity, ref float endOpacity, ref CMTimeRange timeRange);
 	}
 
 	[Since (4,0)]
@@ -3273,7 +3273,7 @@ namespace MonoMac.AVFoundation {
 		PointF PointForCaptureDevicePointOfInterest (PointF captureDevicePointOfInterest);
 
 		[Since (6,0)]
-		[Export ("rectForMetadataObject:")]
+		[Export ("transformedMetadataObjectForMetadataObject:")]
 		AVMetadataObject GetTransformedMetadataObject (AVMetadataObject metadataObject);
 #endif
         }
@@ -3904,10 +3904,10 @@ namespace MonoMac.AVFoundation {
 		bool Seek (NSDate date);
 
 		[Export ("seekToTime:")]
-		bool Seek (CMTime time);
+		void Seek (CMTime time);
 		
-		[Export ("seekToDate:")]
-		bool SeekToDate (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter);
+		[Export ("seekToTime:toleranceBefore:toleranceAfter:")]
+		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter);
 
 		[Export ("error")]
 		NSError Error { get; }
