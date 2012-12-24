@@ -286,5 +286,11 @@ namespace MonoMac.Foundation {
 		{
 			return NSFileSystemAttributes.FromDict (_GetFileSystemAttributes (path, out error));
 		}
+
+		public string CurrentDirectory {
+			get { return GetCurrentDirectory (); }
+			// ignore boolean return value
+			set { ChangeCurrentDirectory (value); }
+		}
 	}
 }

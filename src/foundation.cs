@@ -232,7 +232,7 @@ namespace MonoMac.Foundation
 		void DrawString (PointF point);
 
 		[Since (6,0)]
-		[Export ("drawAtPoint:")]
+		[Export ("drawInRect:")]
 		void DrawString (RectangleF rect);
 
 		[Since (6,0)]
@@ -1609,8 +1609,8 @@ namespace MonoMac.Foundation
 		[Export ("setOrthography:range:")]
 		void SetOrthographyrange (NSOrthography orthography, NSRange range);
 
-		[Export ("orthographyAtIndex:effectiveRange:"), Internal]
-		NSOrthography GetOrthography (int charIndex, IntPtr effectiveRangePtr);
+		[Export ("orthographyAtIndex:effectiveRange:")]
+		NSOrthography GetOrthography (int charIndex, ref NSRange effectiveRange);
 
 		[Export ("stringEditedInRange:changeInLength:")]
 		void StringEditedInRange (NSRange newRange, int delta);
@@ -1621,14 +1621,14 @@ namespace MonoMac.Foundation
 		[Export ("sentenceRangeForRange:")]
 		NSRange GetSentenceRangeForRange (NSRange range);
 
-		[Export ("tagAtIndex:scheme:tokenRange:sentenceRange:"), Internal]
-		string GetTag (int charIndex, NSString tagScheme, IntPtr tokenRangePtr, IntPtr sentenceRangePtr);
+		[Export ("tagAtIndex:scheme:tokenRange:sentenceRange:")]
+		string GetTag (int charIndex, NSString tagScheme, ref NSRange tokenRange, ref NSRange sentenceRange);
 
 		[Export ("tagsInRange:scheme:options:tokenRanges:"), Internal]
-		NSString [] GetTangsInRange (NSRange range, NSString tagScheme, NSLinguisticTaggerOptions opts, IntPtr refToNSArrayTokenRanges);
+		NSString [] GetTagsInRange (NSRange range, NSString tagScheme, NSLinguisticTaggerOptions opts, ref NSArray tokenRanges);
 
 		[Export ("possibleTagsAtIndex:scheme:tokenRange:sentenceRange:scores:"), Internal]
-		NSString [] GetPossibleTags (int charIndex, NSString tagScheme, IntPtr tokenRangePointer, IntPtr sentenceRangePointer, IntPtr IntPtrToReturnArrayScores);
+		NSString [] GetPossibleTags (int charIndex, NSString tagScheme, ref NSRange tokenRange, ref NSRange sentenceRange, ref NSArray scores);
 
 		//Detected properties
 		[Export ("string")]
@@ -4112,13 +4112,13 @@ namespace MonoMac.Foundation
 		NSBundle [] AllFrameworks { get; }
 
 		[Export ("load")]
-		void Load ();
+		bool Load ();
 
 		[Export ("isLoaded")]
 		bool IsLoaded { get; }
 
 		[Export ("unload")]
-		void Unload ();
+		bool Unload ();
 
 		[Export ("bundlePath")]
 		string BundlePath { get; }
@@ -4400,7 +4400,7 @@ namespace MonoMac.Foundation
 		void Remove (uint index);
 
 		[Export ("shiftIndexesStartingAtIndex:by:")]
-		void ShiftIndexes (uint startIndex, uint delta);
+		void ShiftIndexes (uint startIndex, int delta);
 	}
 	
 	[BaseType (typeof (NSObject), Delegates=new string [] { "WeakDelegate" }, Events=new Type [] { typeof (NSNetServiceDelegate)})]
@@ -4468,7 +4468,12 @@ namespace MonoMac.Foundation
 		bool GetStreams (IntPtr ptrToInputStorage, IntPtr ptrToOutputStorage);
 		
 		[Export ("TXTRecordData")]
-		NSData TxtRecordData { get; set; }
+		NSData GetTxtRecordData ();
+
+		[Export ("setTXTRecordData:")]
+		bool SetTxtRecordData (NSData data);
+
+		//NSData TxtRecordData { get; set; }
 
 		[Export ("startMonitoring")]
 		void StartMonitoring ();
@@ -4606,7 +4611,7 @@ namespace MonoMac.Foundation
 
 		[Since (4,0)]
 		[Export ("addObserverForName:object:queue:usingBlock:")]
-		void AddObserver (string name, NSObject obj, NSOperationQueue queue, NSNotificationHandler handler);
+		NSObject AddObserver (string name, NSObject obj, NSOperationQueue queue, NSNotificationHandler handler);
 	}
 
 #if MONOMAC
@@ -5232,16 +5237,16 @@ namespace MonoMac.Foundation
 		NSDecimalNumber Divide (NSDecimalNumber d, NSObject Behavior);
 
 		[Export ("decimalNumberByRaisingToPower:")]
-		NSDecimalNumber RaiseTo (NSDecimalNumber d);
+		NSDecimalNumber RaiseTo (uint power);
 
 		[Export ("decimalNumberByRaisingToPower:withBehavior:")]
-		NSDecimalNumber RaiseTo (NSDecimalNumber d, NSObject Behavior);
+		NSDecimalNumber RaiseTo (uint power, NSObject Behavior);
 		
 		[Export ("decimalNumberByMultiplyingByPowerOf10:")]
-		NSDecimalNumber MultiplyPowerOf10 (NSDecimalNumber d);
+		NSDecimalNumber MultiplyPowerOf10 (short power);
 
 		[Export ("decimalNumberByMultiplyingByPowerOf10:withBehavior:")]
-		NSDecimalNumber MultiplyPowerOf10 (NSDecimalNumber d, NSObject Behavior);
+		NSDecimalNumber MultiplyPowerOf10 (short power, NSObject Behavior);
 
 		[Export ("decimalNumberByRoundingAccordingToBehavior:")]
 		NSDecimalNumber Rounding (NSObject behavior);
@@ -5358,7 +5363,7 @@ namespace MonoMac.Foundation
 		string OperatingSystemVersionString { get; }
 
 		[Export ("physicalMemory")]
-		long PhysicalMemory { get; }
+		ulong PhysicalMemory { get; }
 		
 		[Export ("processorCount")]
 		int ProcessorCount { get; }
@@ -5587,7 +5592,10 @@ namespace MonoMac.Foundation
 		bool RemoveFileAtPath (string path, IntPtr handler);
 #endif
 		[Export ("currentDirectoryPath")]
-		string CurrentDirectory { get; [Bind ("changeCurrentDirectoryPath:")] set; }
+		string GetCurrentDirectory ();
+
+		[Export ("changeCurrentDirectoryPath:")]
+		bool ChangeCurrentDirectory (string path);
 
 		[Export ("fileExistsAtPath:")]
 		bool FileExists (string path);
