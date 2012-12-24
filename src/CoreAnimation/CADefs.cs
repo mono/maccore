@@ -69,17 +69,6 @@ namespace MonoMac.CoreAnimation {
 		const string FromBottom = "fromBottom";
 	}
 
-	public partial class CAKeyFrameAnimation {
-		public CGPath Path {
-			get {
-				return new CGPath (_Path);
-			}
-			set {
-				_Path = value.Handle;
-			}
-		}
-	}
-	
 	public partial class CAGradientLayer {
 		public CGColor CreateColor (IntPtr p)
 		{

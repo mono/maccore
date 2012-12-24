@@ -925,8 +925,8 @@ namespace MonoMac.CoreAnimation {
 		[Export ("values", ArgumentSemantic.Copy)]
 		NSObject [] Values { get; set; }
 	
-		[Export ("path")][Internal]
-		IntPtr _Path { get; set; }
+		[Export ("path")]
+		CGPath Path { get; set; }
 	
 		[Export ("keyTimes", ArgumentSemantic.Copy)][NullAllowed]
 		NSNumber [] KeyTimes { get; set; }
