@@ -134,6 +134,9 @@ namespace MonoMac.CoreAnimation {
 	
 		[Export ("frameInterval")]
 		int FrameInterval { get; set;  }
+
+		[Export ("duration")]
+		double Duration { get; }
 	}
 #endif
 
