@@ -625,7 +625,7 @@ namespace MonoMac.CoreImage {
 		CIFilterShape Intersect (CIFilterShape other);
 
 		[Export ("intersectWithRect:")]
-		CIFilterShape IntersectWithRect (Rectangle rectangle);
+		CIFilterShape IntersectWithRect (RectangleF rectangle);
 	}
 #endif
 	
