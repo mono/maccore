@@ -61,9 +61,10 @@ namespace MonoMac.AVFoundation {
 	}
 	
 	public partial class AVCaptureVideoDataOutput {
+		[Obsolete ("Use SetSampleBufferDelegate")]
 		public void SetSampleBufferDelegateAndQueue (AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, DispatchQueue queue)
 		{
-			SetSampleBufferDelegate (sampleBufferDelegate, queue == null ? IntPtr.Zero : queue.Handle);
+			SetSampleBufferDelegate (sampleBufferDelegate, queue);
 		}
 
 		[Obsolete ("Use Compressed or Uncompressed property")]
