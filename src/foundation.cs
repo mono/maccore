@@ -2400,7 +2400,7 @@ namespace MonoMac.Foundation
 
 		[Export("URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:")]
 		[Static]
-		NSUrl FromBookmarkData (NSData data, NSUrlBookmarkResolutionOptions options, [NullAllowed] NSUrl relativeToUrl, bool isStale, out NSError error);
+		NSUrl FromBookmarkData (NSData data, NSUrlBookmarkResolutionOptions options, [NullAllowed] NSUrl relativeToUrl, out bool isStale, out NSError error);
 
 		[Export("writeBookmarkData:toURL:options:error:")]
 		[Static]
@@ -2410,7 +2410,7 @@ namespace MonoMac.Foundation
 		bool StartAccessingSecurityScopedResource();
 
 		[Export("stopAccessingSecurityScopedResource")]
-		bool StopAccessingSecurityScopedResource();
+		void StopAccessingSecurityScopedResource();
 
 #endif
 
@@ -3779,7 +3779,7 @@ namespace MonoMac.Foundation
 
 		[Static]
 		[Export ("setDefaultPlaceholder:forMarker:withBinding:")]
-		NSObject SetDefaultPlaceholder (NSObject placeholder, NSObject marker, string binding);
+		void SetDefaultPlaceholder (NSObject placeholder, NSObject marker, string binding);
 #endif
 		[Export ("objectDidEndEditing:")]
 		void ObjectDidEndEditing (NSObject editor);
@@ -4746,10 +4746,10 @@ namespace MonoMac.Foundation
 		NSRange RangeValue { get; }
 
 		[Static, Export ("valueWithSCNVector3:")]
-		MonoMac.OpenGL.Vector3 FromVector (MonoMac.OpenGL.Vector3 vector);
+		NSValue FromVector (MonoMac.OpenGL.Vector3 vector);
 		
 		[Static, Export ("valueWithSCNVector4:")]
-		MonoMac.OpenGL.Vector3 FromVector (MonoMac.OpenGL.Vector4 vector);
+		NSValue FromVector (MonoMac.OpenGL.Vector4 vector);
 
 		[Export ("SCNVector3Value")]
 		MonoMac.OpenGL.Vector3 Vector3Value { get; }
