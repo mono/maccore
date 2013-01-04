@@ -116,6 +116,38 @@ namespace MonoMac.ObjCRuntime {
 			Marshal.WriteInt64 (indirect, value);
 		}
 
+		public static void SetString (IntPtr handle, string symbol, string value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			Marshal.WriteIntPtr (indirect, value == null ? IntPtr.Zero : NSString.CreateNative (value));
+		}
+
+		public static void SetString (IntPtr handle, string symbol, NSString value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			var strHandle = value == null ? IntPtr.Zero : value.Handle;
+			if (strHandle != IntPtr.Zero)
+				MonoTouch.CoreFoundation.CFObject.CFRetain (strHandle);
+			Marshal.WriteIntPtr (indirect, strHandle);
+		}
+
+#if !(GENERATOR || COREBUILD)
+		public static void SetArray (IntPtr handle, string symbol, NSArray array)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			var arrayHandle = array == null ? IntPtr.Zero : array.Handle;
+			if (arrayHandle != IntPtr.Zero)
+				MonoTouch.CoreFoundation.CFObject.CFRetain (arrayHandle);
+			Marshal.WriteIntPtr (indirect, arrayHandle);
+		}
+#endif
+
 		public static IntPtr GetIntPtr (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);

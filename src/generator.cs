@@ -3224,35 +3224,29 @@ public class Generator {
 					print ("}");
 
 					if (field_pi.CanWrite) {
-						// We've allowed read/write fields, but ignored the write part. Continue ignoring (but warn)
-						// for the types we used to ignore, and only generate errors for types we've never supported.
-						if (field_pi.PropertyType == typeof (NSString)){
-							ErrorHelper.Show (new BindingException (1021, false, "Unsupported type for read/write Fields: {0} for {1}.{2}", fieldTypeName, field_pi.DeclaringType.FullName, field_pi.Name));
+						print ("set {");
+						indent++;
+						if (field_pi.PropertyType == typeof (int)) {
+							print ("Dlfcn.SetInt32 ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+						} else if (field_pi.PropertyType == typeof (double)) {
+							print ("Dlfcn.SetDouble ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+						} else if (field_pi.PropertyType == typeof (float)) {
+							print ("Dlfcn.SetFloat ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+						} else if (field_pi.PropertyType == typeof (IntPtr)) {
+							print ("Dlfcn.SetIntPtr ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+						} else if (field_pi.PropertyType == typeof (SizeF)) {
+							print ("Dlfcn.SetSizeF ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+						} else if (field_pi.PropertyType == typeof (long)) {
+							print ("Dlfcn.SetInt64 ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+						} else if (field_pi.PropertyType == typeof (NSString)){
+							print ("Dlfcn.SetString ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else if (field_pi.PropertyType.Name == "NSArray"){
-							ErrorHelper.Show (new BindingException (1021, false, "Unsupported type for read/write Fields: {0} for {1}.{2}", fieldTypeName, field_pi.DeclaringType.FullName, field_pi.Name));
-						} else {
-							print ("set {");
-							indent++;
-							if (field_pi.PropertyType == typeof (int)) {
-								print ("Dlfcn.SetInt32 ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
-							} else if (field_pi.PropertyType == typeof (double)) {
-								print ("Dlfcn.SetDouble ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
-							} else if (field_pi.PropertyType == typeof (float)) {
-								print ("Dlfcn.SetFloat ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
-							} else if (field_pi.PropertyType == typeof (IntPtr)) {
-								print ("Dlfcn.SetIntPtr ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
-							} else if (field_pi.PropertyType == typeof (SizeF)) {
-								print ("Dlfcn.SetSizeF ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
-							} else if (field_pi.PropertyType == typeof (long)) {
-								print ("Dlfcn.SetInt64 ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
-							} else {
-								throw new BindingException (1021, true, "Unsupported type for read/write Fields: {0} for {1}.{2}", fieldTypeName, field_pi.DeclaringType.FullName, field_pi.Name);
-							}
-							indent--;
-							print ("}");
-						}
+							print ("Dlfcn.SetArray ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+						} else
+							throw new BindingException (1021, true, "Unsupported type for read/write Fields: {0} for {1}.{2}", fieldTypeName, field_pi.DeclaringType.FullName, field_pi.Name);
+						indent--;
+						print ("}");
 					}
-
 					indent--;
 					print ("}");
 				}
