@@ -31,6 +31,7 @@
 using System;
 using System.Runtime.InteropServices;
 using MonoMac.Foundation;
+using MonoMac.ObjCRuntime;
 using System.Drawing;
 
 namespace MonoMac.ObjCRuntime {
@@ -132,7 +133,7 @@ namespace MonoMac.ObjCRuntime {
 				return;
 			var strHandle = value == null ? IntPtr.Zero : value.Handle;
 			if (strHandle != IntPtr.Zero)
-				MonoTouch.CoreFoundation.CFObject.CFRetain (strHandle);
+				CFObject.CFRetain (strHandle);
 			Marshal.WriteIntPtr (indirect, strHandle);
 		}
 
@@ -143,7 +144,7 @@ namespace MonoMac.ObjCRuntime {
 				return;
 			var arrayHandle = array == null ? IntPtr.Zero : array.Handle;
 			if (arrayHandle != IntPtr.Zero)
-				MonoTouch.CoreFoundation.CFObject.CFRetain (arrayHandle);
+				CFObject.CFRetain (arrayHandle);
 			Marshal.WriteIntPtr (indirect, arrayHandle);
 		}
 #endif
