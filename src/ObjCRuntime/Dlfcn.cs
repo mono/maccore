@@ -31,7 +31,7 @@
 using System;
 using System.Runtime.InteropServices;
 using MonoMac.Foundation;
-using MonoMac.CoreFounation;
+using MonoMac.CoreFoundation;
 using System.Drawing;
 
 namespace MonoMac.ObjCRuntime {

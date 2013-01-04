@@ -639,7 +639,6 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithCGImage:options:")]
-		[Obsolete ("Use FromCGImage (CGImage, CIImageInitializationOptionsWithMetadata) overload")]
 		CIImage FromCGImage (CGImage image, [NullAllowed] NSDictionary d);
 
 		[Static]
@@ -674,7 +673,6 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithContentsOfURL:options:")]
-		[Obsolete ("Use FromUrl (NSUrl, CIImageInitializationOptions) overload")]
 		CIImage FromUrl (NSUrl url, [NullAllowed] NSDictionary d);
 
 		[Static]
@@ -687,7 +685,6 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithData:options:")]
-		[Obsolete ("Use FromData (NSData, CIImageInitializationOptionsWithMetadata) overload")]		
 		CIImage FromData (NSData data, [NullAllowed] NSDictionary d);
 
 		[Static]
@@ -709,7 +706,6 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithCVPixelBuffer:options:")]
-		[Obsolete ("Use FromImageBuffer (CVPixelBuffer, CIImageInitializationOptions) overload")]		
 		CIImage FromImageBuffer (CVPixelBuffer buffer, [NullAllowed] NSDictionary dict);
 
 		[Static]
@@ -735,7 +731,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (CGImage image);
 
 		[Export ("initWithCGImage:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptionsWithMetadata")]
 		IntPtr Constructor (CGImage image, [NullAllowed] NSDictionary d);
 
 		[Wrap ("this (image, options == null ? null : options.Dictionary)")]
@@ -745,7 +740,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (CGLayer layer);
 
 		[Export ("initWithCGLayer:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptions")]
 		IntPtr Constructor (CGLayer layer, [NullAllowed] NSDictionary d);
 
 		[Wrap ("this (layer, options == null ? null : options.Dictionary)")]
@@ -755,7 +749,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (NSData data);
 
 		[Export ("initWithData:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptionsWithMetadata")]
 		IntPtr Constructor (NSData data, [NullAllowed] NSDictionary d);
 
 		[Wrap ("this (data, options == null ? null : options.Dictionary)")]
@@ -772,7 +765,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (NSUrl url);
 
 		[Export ("initWithContentsOfURL:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptions")]
 		IntPtr Constructor (NSUrl url, [NullAllowed] NSDictionary d);
 
 		[Wrap ("this (url, options == null ? null : options.Dictionary)")]
@@ -789,7 +781,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (CVImageBuffer imageBuffer);
 
 		[Export ("initWithCVImageBuffer:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptions")]
 		IntPtr Constructor (CVImageBuffer imageBuffer, [NullAllowed] NSDictionary dict);
 
 		[Wrap ("this (imageBuffer, options == null ? null : options.Dictionary)")]
@@ -866,7 +857,6 @@ namespace MonoMac.CoreImage {
 
 		[Since (5,0)]
 		[Export ("initWithImage:options")]
-		[Obsolete ("Use constructor with CIImageInitializationOptions")]
 		IntPtr Constructor (UIImage image, [NullAllowed] NSDictionary options);
 
 		[Since (5,0)]

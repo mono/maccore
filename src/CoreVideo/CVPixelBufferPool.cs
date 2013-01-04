@@ -106,7 +106,6 @@ namespace MonoMac.CoreVideo {
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static IntPtr CVPixelBufferPoolGetAttributes (IntPtr pool);
 
-		[Obsolete ("Use Settings")]
 		public NSDictionary Attributes {
 			get {
 				return (NSDictionary) Runtime.GetNSObject (CVPixelBufferPoolGetAttributes (handle));

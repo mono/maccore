@@ -97,8 +97,7 @@ namespace MonoMac.CoreMedia {
 		
 		[DllImport(Constants.CoreMediaLibrary)]
 		extern static uint CMFormatDescriptionGetMediaSubType (IntPtr handle);
-		
-		[Obsolete ("Use specific SubType property")]
+
 		public uint MediaSubType
 		{
 			get
