@@ -123,6 +123,7 @@ namespace MonoMac.ObjCRuntime {
 				return;
 			Marshal.WriteIntPtr (indirect, value == null ? IntPtr.Zero : NSString.CreateNative (value));
 		}
+#if !(GENERATOR || COREBUILD)
 
 		public static void SetString (IntPtr handle, string symbol, NSString value)
 		{
@@ -135,7 +136,6 @@ namespace MonoMac.ObjCRuntime {
 			Marshal.WriteIntPtr (indirect, strHandle);
 		}
 
-#if !(GENERATOR || COREBUILD)
 		public static void SetArray (IntPtr handle, string symbol, NSArray array)
 		{
 			var indirect = dlsym (handle, symbol);
