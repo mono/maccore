@@ -93,9 +93,55 @@ namespace MonoMac.AudioToolbox {
 	[StructLayout (LayoutKind.Sequential)]
 	public struct AudioClassDescription
 	{
-    	public AudioFormatType Type;
-    	public AudioFormatType SubType;
-    	public AudioFormatType Manufacturer;
+		public AudioComponentType Type;
+		public AudioFormatType SubType;
+		public AudioCodecManufacturer Manufacturer;
+
+		public AudioClassDescription (AudioComponentType type, AudioFormatType subType, AudioCodecManufacturer manufacturer)
+		{
+			Type = type;
+			SubType = subType;
+			Manufacturer = manufacturer;
+		}
+
+		public bool IsHardwareCodec {
+			get {
+				return Manufacturer == AudioCodecManufacturer.AppleHardware;
+			}
+		}
+
+/*
+		// TODO: Fails with 'prop', so probably Apple never implemented it
+		// The documentation is wrong too
+		public unsafe static uint? HardwareCodecCapabilities (AudioClassDescription[] descriptions)
+		{
+			if (descriptions == null)
+				throw new ArgumentNullException ("descriptions");
+
+			fixed (AudioClassDescription* item = &descriptions[0]) {
+				uint successfulCodecs;
+				int size = sizeof (uint);
+				var ptr_size = Marshal.SizeOf (typeof (AudioClassDescription)) * descriptions.Length;
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.HardwareCodecCapabilities, ptr_size, item, ref size, out successfulCodecs);
+				if (res != 0)
+					return null;
+
+				return successfulCodecs;
+			}
+		}
+*/
+	}
+
+	public enum AudioComponentType
+	{
+		Decoder	= 0x61646563,	// 'adec'	
+		Encoder	= 0x61656e63,	// 'aenc'
+	}
+
+	public enum AudioCodecManufacturer
+	{
+		AppleSoftware	= 0x6170706c,	// 'appl'
+		AppleHardware	= 0x61706877,	// 'aphw'
 	}
 
 	public enum AudioBalanceFadeType
@@ -258,14 +304,14 @@ namespace MonoMac.AudioToolbox {
 			return GetAvailable<AudioValueRange> (AudioFormatProperty.AvailableEncodeSampleRates, format);
 		}
 
-		public static AudioClassDescription[] GetEncodeFormats (AudioFormatType format)
+		public static AudioClassDescription[] GetDecoders (AudioFormatType format)
 		{
-			return GetAvailable<AudioClassDescription> (AudioFormatProperty.EncodeFormatIDs, format);
+			return GetAvailable<AudioClassDescription> (AudioFormatProperty.Decoders, format);
 		}
 
-		public static AudioClassDescription[] GetDecodeFormats (AudioFormatType format)
+		public static AudioClassDescription[] GetEncoders (AudioFormatType format)
 		{
-			return GetAvailable<AudioClassDescription> (AudioFormatProperty.DecodeFormatIDs, format);
+			return GetAvailable<AudioClassDescription> (AudioFormatProperty.Encoders, format);
 		}
 
 		unsafe static T[] GetAvailable<T> (AudioFormatProperty prop, AudioFormatType format) where T : struct
@@ -370,6 +416,10 @@ namespace MonoMac.AudioToolbox {
 		[DllImport (Constants.AudioToolboxLibrary)]
 		public unsafe extern static AudioFormatError AudioFormatGetProperty (AudioFormatProperty inPropertyID, int inSpecifierSize, AudioFormat* inSpecifier, ref int ioPropertyDataSize,
 			out uint outPropertyData);
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		public unsafe extern static AudioFormatError AudioFormatGetProperty (AudioFormatProperty inPropertyID, int inSpecifierSize, AudioClassDescription* inSpecifier, ref int ioPropertyDataSize,
+			out uint outPropertyData);
 	}
 
 	// Properties are used from various types (most suitable should be used)
@@ -388,7 +438,7 @@ namespace MonoMac.AudioToolbox {
 		FormatIsExternallyFramed	= 0x66657866,	// 'fexf'
 		FormatIsEncrypted			= 0x63727970,	// 'cryp'
 		Encoders					= 0x6176656e,	// 'aven'	
-		Decoders					= 0x61766565,	// 'avde'
+		Decoders					= 0x61766465,	// 'avde'
 		AvailableEncodeChannelLayoutTags	= 0x6165636c,	// 'aecl'
 		AvailableEncodeNumberChannels		= 0x61766e63,	// 'avnc'
 		AvailableEncodeBitRates		= 0x61656272,	// 'aebr'
@@ -417,7 +467,7 @@ namespace MonoMac.AudioToolbox {
 		ID3TagToDictionary			= 0x69643364,	// 'id3d' // TODO:
 
 #if !MONOMAC
-		HardwareCodecCapabilities	= 0x68776363,	// 'hwcc' // TODO:
+		HardwareCodecCapabilities	= 0x68776363,	// 'hwcc'
 #endif
 	}
 }
