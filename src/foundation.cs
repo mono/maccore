@@ -4,10 +4,11 @@
 // Authors:
 //   Geoff Norton
 //   Miguel de Icaza
+//   Aaron Bockover
 //
 // Copyright 2009, Novell, Inc.
 // Copyright 2010, Novell, Inc.
-// Copyright 2011-2012 Xamarin Inc.
+// Copyright 2011-2013 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -6216,5 +6217,26 @@ namespace MonoMac.Foundation
 		void UnregisterClass (Class protocolClass);
 	}
 
+	[BaseType (typeof(NSObject))]
+	public interface NSPropertyListSerialization {
+		[Static, Export ("dataWithPropertyList:format:options:error:")]
+		NSData DataWithPropertyList (NSObject plist, NSPropertyListFormat format,
+			NSPropertyListWriteOptions options, out NSError error);
+
+		[Static, Export ("writePropertyList:toStream:format:options:error:")]
+		int WritePropertyList (NSObject plist, NSOutputStream stream, NSPropertyListFormat format,
+			NSPropertyListWriteOptions options, out NSError error);
+
+		[Static, Export ("propertyListWithData:options:format:error:")]
+		NSObject PropertyListWithData (NSData data, NSPropertyListReadOptions options,
+			NSPropertyListFormat format, out NSError error);
+
+		[Static, Export ("propertyListWithStream:options:format:error:")]
+		NSObject PropertyListWithStream (NSInputStream stream, NSPropertyListReadOptions options,
+			NSPropertyListFormat format, out NSError error);
+
+		[Static, Export ("propertyList:isValidForFormat:")]
+		bool IsValidForFormat (NSObject plist, NSPropertyListFormat format);
+	}
 }
 
