@@ -34,8 +34,8 @@ namespace MonoMac.Foundation {
 
 	public partial class NSString {
 		//static Selector selDataUsingEncoding = new Selector ("dataUsingEncoding:");
-		static IntPtr selDataUsingEncodingAllow = Selector.sel_registerName ("dataUsingEncoding:allowLossyConversion:");
-		static IntPtr selInitWithDataEncoding = Selector.sel_registerName ("initWithData:encoding:");
+		static IntPtr selDataUsingEncodingAllow = Selector.GetHandle ("dataUsingEncoding:allowLossyConversion:");
+		static IntPtr selInitWithDataEncoding = Selector.GetHandle ("initWithData:encoding:");
 
 		[Obsolete("Use Encode instead")]
 		public NSData DataUsingEncoding (NSStringEncoding enc)
