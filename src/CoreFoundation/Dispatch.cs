@@ -213,6 +213,7 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 
+		[Obsolete ("Deprecated in iOS 6.0")]
 		public static DispatchQueue CurrentQueue {
 			get {
 				return new DispatchQueue (dispatch_get_current_queue (), false);
