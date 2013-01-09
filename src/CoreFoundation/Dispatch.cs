@@ -3,9 +3,10 @@
 //
 // Authors:
 //   Miguel de Icaza (miguel@gnome.org)
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2010 Novell, Inc.
-// Copyright 2011, 2012 Xamarin Inc
+// Copyright 2011-2013 Xamarin Inc
 //
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -29,6 +30,7 @@
 //
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
@@ -267,15 +269,33 @@ namespace MonoMac.CoreFoundation {
 		// Dispatching
 		//
 		delegate void dispatch_callback_t (IntPtr context);
-		static dispatch_callback_t static_dispatch = new dispatch_callback_t (static_dispatcher_to_managed);
+		static readonly dispatch_callback_t static_dispatch = static_dispatcher_to_managed;
 		
 		[MonoPInvokeCallback (typeof (dispatch_callback_t))]
 		static void static_dispatcher_to_managed (IntPtr context)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (context);
-			var action = gch.Target as NSAction;
-			if (action != null)
-				action ();
+			var obj = gch.Target as Tuple<NSAction, DispatchQueue>;
+			if (obj != null) {
+				var sc = SynchronizationContext.Current;
+
+				// Set GCD synchronization context. Mainly used when await executes inside GCD to continue
+				// execution on same dispatch queue. Set the context only when there is no user context
+				// set, including UIKitSynchronizationContext
+				if (sc == null)
+					SynchronizationContext.SetSynchronizationContext (new DispatchQueueSynchronizationContext (obj.Item2));
+
+				try {
+					obj.Item1 ();
+				} catch {
+					gch.Free ();
+					throw;
+				} finally {
+					if (sc == null)
+						SynchronizationContext.SetSynchronizationContext (null);
+				}
+			}
+
 			gch.Free ();
 		}
 		
@@ -284,7 +304,7 @@ namespace MonoMac.CoreFoundation {
 			if (action == null)
 				throw new ArgumentNullException ("action");
 			
-			dispatch_async_f (handle, (IntPtr) GCHandle.Alloc (action), static_dispatch);
+			dispatch_async_f (handle, (IntPtr) GCHandle.Alloc (Tuple.Create (action, this)), static_dispatch);
 		}
 
 		public void DispatchSync (NSAction action)
@@ -292,8 +312,9 @@ namespace MonoMac.CoreFoundation {
 			if (action == null)
 				throw new ArgumentNullException ("action");
 			
-			dispatch_sync_f (handle, (IntPtr) GCHandle.Alloc (action), static_dispatch);
+			dispatch_sync_f (handle, (IntPtr) GCHandle.Alloc (Tuple.Create (action, this)), static_dispatch);
 		}
+
 		//
 		// Native methods
 		//
@@ -333,6 +354,37 @@ namespace MonoMac.CoreFoundation {
 		{
 			dispatch_main ();
 		}
+
+		static class Tuple {
+			public static Tuple<T1, T2> Create<T1, T2>
+				(
+				 T1 item1,
+				 T2 item2) {
+				return new Tuple<T1, T2> (item1, item2);
+			}
+		}
+
+		// FIXME: Remove when MONOMAC is more up-to-date
+		public class Tuple<T1, T2>
+		{
+			T1 item1;
+			T2 item2;
+
+			public Tuple (T1 item1, T2 item2)
+			{
+				 this.item1 = item1;
+				 this.item2 = item2;
+			}
+
+			public T1 Item1 {
+				get { return item1; }
+			}
+
+			public T2 Item2 {
+				get { return item2; }
+			}
+		}
+
 #endif
 	
 	}
