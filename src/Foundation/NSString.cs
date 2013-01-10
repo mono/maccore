@@ -70,9 +70,9 @@ namespace MonoMac.Foundation {
 	[Register ("NSString")]
 #endif
 	public partial class NSString : NSObject {
-		static IntPtr selUTF8String = Selector.sel_registerName ("UTF8String");
-		static IntPtr selInitWithUTF8String = Selector.sel_registerName ("initWithUTF8String:");
-		static IntPtr selInitWithCharactersLength = Selector.sel_registerName ("initWithCharacters:length:");
+		static IntPtr selUTF8String = Selector.GetHandle ("UTF8String");
+		static IntPtr selInitWithUTF8String = Selector.GetHandle ("initWithUTF8String:");
+		static IntPtr selInitWithCharactersLength = Selector.GetHandle ("initWithCharacters:length:");
 
 #if COREBUILD
 		static IntPtr class_ptr = Class.GetHandle ("NSString");

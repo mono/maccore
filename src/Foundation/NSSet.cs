@@ -38,7 +38,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	public partial class NSSet : IEnumerable<NSObject> {
-		internal static IntPtr selSetWithArray = Selector.sel_registerName ("setWithArray:");
+		internal static IntPtr selSetWithArray = Selector.GetHandle ("setWithArray:");
 
 		public NSSet (params NSObject [] objs) : this (NSArray.FromNSObjects (objs))
 		{
