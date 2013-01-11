@@ -4090,7 +4090,7 @@ namespace MonoMac.Foundation
 #if MONOMAC
 	[DisableDefaultCtor] // An uncaught exception was raised: -[__NSCFDictionary removeObjectForKey:]: attempt to remove nil key
 #endif
-	public interface NSBundle {
+	public partial interface NSBundle {
 		[Export ("mainBundle")][Static]
 		NSBundle MainBundle { get; }
 
