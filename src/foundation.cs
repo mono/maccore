@@ -6218,6 +6218,7 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof(NSObject))]
+	[DisableDefaultCtor]
 	public interface NSPropertyListSerialization {
 		[Static, Export ("dataWithPropertyList:format:options:error:")]
 		NSData DataWithPropertyList (NSObject plist, NSPropertyListFormat format,
@@ -6229,11 +6230,11 @@ namespace MonoMac.Foundation
 
 		[Static, Export ("propertyListWithData:options:format:error:")]
 		NSObject PropertyListWithData (NSData data, NSPropertyListReadOptions options,
-			NSPropertyListFormat format, out NSError error);
+			ref NSPropertyListFormat format, out NSError error);
 
 		[Static, Export ("propertyListWithStream:options:format:error:")]
 		NSObject PropertyListWithStream (NSInputStream stream, NSPropertyListReadOptions options,
-			NSPropertyListFormat format, out NSError error);
+			ref NSPropertyListFormat format, out NSError error);
 
 		[Static, Export ("propertyList:isValidForFormat:")]
 		bool IsValidForFormat (NSObject plist, NSPropertyListFormat format);
