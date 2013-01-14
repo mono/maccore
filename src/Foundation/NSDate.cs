@@ -39,7 +39,16 @@ namespace MonoMac.Foundation {
 		
 		public static implicit operator DateTime (NSDate d)
 		{
-			return new DateTime ((long)(d.SecondsSinceReferenceDate * TimeSpan.TicksPerSecond + NSDATE_TICKS), DateTimeKind.Utc);
+
+			double secs = d.SecondsSinceReferenceDate;
+
+			if (secs < -63113904000)
+				return DateTime.MinValue;
+
+			if (secs > 252423993599)
+				return DateTime.MaxValue;
+
+			return new DateTime ((long)(secs * TimeSpan.TicksPerSecond + NSDATE_TICKS), DateTimeKind.Utc);
 		}
 
 		public static implicit operator NSDate (DateTime dt)
