@@ -42,14 +42,14 @@ namespace MonoMac.Foundation
 			return WritePropertyList (plist, stream, format, NSPropertyListWriteOptions.Immutable, out error);
 		}
 
-		public static NSObject PropertyListWithData (NSData data, NSPropertyListFormat format, out NSError error)
+		public static NSObject PropertyListWithData (NSData data, ref NSPropertyListFormat format, out NSError error)
 		{
-			return PropertyListWithData (data, NSPropertyListReadOptions.Immutable, format, out error);
+			return PropertyListWithData (data, NSPropertyListReadOptions.Immutable, ref format, out error);
 		}
 
-		public static NSObject PropertyListWithStream (NSInputStream stream, NSPropertyListFormat format, out NSError error)
+		public static NSObject PropertyListWithStream (NSInputStream stream, ref NSPropertyListFormat format, out NSError error)
 		{
-			return PropertyListWithStream (stream, NSPropertyListReadOptions.Immutable, format, out error);
+			return PropertyListWithStream (stream, NSPropertyListReadOptions.Immutable, ref format, out error);
 		}
 	}
 }
