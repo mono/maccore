@@ -327,7 +327,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		[Obsolete ("Use InputRoute or OutputRoute instead")]
+		[Obsolete ("Deprecated in iOS 5.0. Use InputRoute or OutputRoute instead")]
 		static public string AudioRoute {
 			get {
 				return CFString.FetchString ((IntPtr) GetInt (AudioSessionProperty.AudioRoute));

@@ -1,10 +1,10 @@
 //
-// Extra methods for CAMediaTimingFunction
+// AdviceAttribute.cs
 //
 // Authors:
-//	Sebastien Pouliot  <sebastien@xamarin.com>
+//   Marek Safar (marek.safar@gmail.com)
 //
-// Copyright 2012 Xamarin Inc
+// Copyright 2013 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,38 +25,25 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+//
 
 using System;
-using System.Drawing;
-using System.Runtime.InteropServices;
-using MonoMac.Foundation;
 
-namespace MonoMac.CoreAnimation {
-	public unsafe partial class CAMediaTimingFunction {
-
-#if !MONOMAC
-		[Obsolete ("This type is not meant to be created by application code")]
-		public CAMediaTimingFunction () : base (IntPtr.Zero)
+namespace MonoMac.Foundation
+{
+	[AttributeUsage (AttributeTargets.Class | AttributeTargets.Struct |
+		AttributeTargets.Enum | AttributeTargets.Constructor |
+		AttributeTargets.Method | AttributeTargets.Property |
+		AttributeTargets.Field | AttributeTargets.Event |
+		AttributeTargets.Interface | AttributeTargets.Delegate,
+		Inherited=false)]
+	public sealed class AdviceAttribute : Attribute
+	{
+		public AdviceAttribute (string message)
 		{
-		}
-#endif
-
-		[Advice ("Use FromName(NSString) with one of the CAMediaTimingFunction fields")]
-		static public CAMediaTimingFunction FromName (string name)
-		{
-			using (NSString s = new NSString (name))
-				return FromName (s);
+			Message = message;
 		}
 
-		public PointF GetControlPoint (int index)
-		{
-			if ((index < 0) || (index > 3))
-				throw new ArgumentOutOfRangeException ("index");
-
-			float [] values = new float [2];
-			fixed (float *p = &values [0])
-				GetControlPointAtIndex (index, (IntPtr) p);
-			return new PointF (values [0], values [1]);
-		}
+		public string Message { get; private set; }
 	}
 }

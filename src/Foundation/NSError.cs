@@ -41,7 +41,7 @@ namespace MonoMac.Foundation {
 
 	public partial class NSError : NSObject {
 #if !COREBUILD
-		[Obsolete ("Always specify a domain and error code when creating an NSError instance")]
+		[Advice ("Always specify a domain and error code when creating an NSError instance")]
 		public NSError () : this (new NSString ("Invalid .ctor used"), 0, null)
 		{
 			Debug.WriteLine ("Warning: you created an NSError without specifying a domain");

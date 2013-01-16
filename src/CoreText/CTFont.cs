@@ -154,7 +154,7 @@ namespace MonoMac.CoreText {
 		AllTypographicFeatures   = 0,
 		Ligatures                = 1,
 		CursiveConnection        = 2,
-		[Obsolete ("Use LowerCase or UpperCase instead")]
+		[Obsolete ("Deprecated. Use LowerCase or UpperCase instead")]
 		LetterCase               = 3,
 		VerticalSubstitution     = 4,
 		LinguisticRearrangement  = 5,
@@ -241,7 +241,7 @@ namespace MonoMac.CoreText {
 
 		public NSDictionary Dictionary {get; private set;}
 
-		[Obsolete ("Use Type instead")]
+		[Advice ("Use FeatureGroup property instead")]
 		public NSNumber Identifier {
 			get {return (NSNumber) Dictionary [CTFontFeatureKey.Identifier];}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureKey.Identifier, value);}
@@ -337,10 +337,10 @@ namespace MonoMac.CoreText {
 				return new CTFontFeatureLigatures (dictionary);
 			case FontFeatureGroup.CursiveConnection:
 				return new CTFontFeatureCursiveConnection (dictionary);
+#pragma warning disable 618
 			case FontFeatureGroup.LetterCase:
-#pragma warning disable 612
 				return new CTFontFeatureLetterCase (dictionary);
-#pragma warning restore 612
+#pragma warning restore 618
 			case FontFeatureGroup.VerticalSubstitution:
 				return new CTFontFeatureVerticalSubstitutionConnection (dictionary);
 			case FontFeatureGroup.LinguisticRearrangement:
@@ -416,7 +416,7 @@ namespace MonoMac.CoreText {
 
 		public NSDictionary Dictionary {get; private set;}
 
-		[Obsolete ("Use one of descendant classes")]
+		[Advice ("Use one of descendant classes")]
 		public NSNumber Identifier {
 			get {return (NSNumber) Dictionary [CTFontFeatureSelectorKey.Identifier];}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureSelectorKey.Identifier, value);}
@@ -518,7 +518,7 @@ namespace MonoMac.CoreText {
 		}
 	}
 
-	[Obsolete]
+	[Obsolete ("Deprecated")]
 	public class CTFontFeatureLetterCase : CTFontFeatureSelectors
 	{
 		public enum Selector
@@ -1094,9 +1094,9 @@ namespace MonoMac.CoreText {
 	{
 		public enum Selector
 		{
-			[Obsolete ("Use RubyKanaOn instead")]
+			[Obsolete ("Deprecated. Use RubyKanaOn instead")]
 			NoRubyKana           = 0,
-			[Obsolete ("Use RubyKanaOff instead")]
+			[Obsolete ("Deprecated. Use RubyKanaOff instead")]
 			RubyKana             = 1,
 			RubyKanaOn           = 2,
 			RubyKanaOff          = 3
@@ -1186,9 +1186,9 @@ namespace MonoMac.CoreText {
 	{
 		public enum Selector
 		{
-			[Obsolete ("Use CJKItalicRomanOff instead")]
+			[Obsolete ("Deprecated. Use CJKItalicRomanOff instead")]
 			NoCJKItalicRoman     = 0,
-			[Obsolete ("Use CJKItalicRomanOn instead")]
+			[Obsolete ("Deprecated. Use CJKItalicRomanOn instead")]
 			CJKItalicRoman       = 1,
 			CJKItalicRomanOn     = 2,
 			CJKItalicRomanOff    = 3
@@ -1410,7 +1410,7 @@ namespace MonoMac.CoreText {
 
 		public NSDictionary Dictionary {get; private set;}
 
-		[Obsolete ("Use Type")]
+		[Advice ("Use FeatureGroup property instead")]
 		public NSNumber TypeIdentifier {
 			get {return (NSNumber) Dictionary [CTFontFeatureKey.Identifier];}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureKey.Identifier, value);}
@@ -1422,7 +1422,7 @@ namespace MonoMac.CoreText {
 			}
 		}
 
-		[Obsolete ("Use FeatureWeak instead")]
+		[Advice ("Use FeatureWeak or FeatureGroup instead")]
 		public NSNumber SelectorIdentifier {
 			get {return (NSNumber) Dictionary [CTFontFeatureSelectorKey.Identifier];}
 			set {Adapter.SetValue (Dictionary, CTFontFeatureSelectorKey.Identifier, value);}

@@ -799,7 +799,7 @@ namespace MonoMac.AddressBook {
 			set {SetValue (ABPersonPropertyId.ModificationDate, value);}
 		}
 
-		[Obsolete ("Use GetAllAddresses")]
+		[Advice ("Use GetAllAddresses")]
 		public ABMultiValue<NSDictionary> GetAddresses ()
 		{
 			return CreateDictionaryMultiValue (CopyValue (ABPersonPropertyId.Address));
@@ -871,7 +871,7 @@ namespace MonoMac.AddressBook {
 			SetValue (ABPersonPropertyId.Phone, value == null ? IntPtr.Zero : value.Handle);
 		}
 
-		[Obsolete ("Use GetInstantMessageServices")]
+		[Advice ("Use GetInstantMessageServices")]
 		public ABMultiValue<NSDictionary> GetInstantMessages ()
 		{
 			return CreateDictionaryMultiValue (CopyValue (ABPersonPropertyId.InstantMessage));
@@ -893,7 +893,7 @@ namespace MonoMac.AddressBook {
 			SetValue (ABPersonPropertyId.InstantMessage, services == null ? IntPtr.Zero : services.Handle);
 		}
 
-		[Obsolete ("Use GetSocialProfiles")]
+		[Advice ("Use GetSocialProfiles")]
 		public ABMultiValue<NSDictionary> GetSocialProfile ()
 		{
 			return CreateDictionaryMultiValue (CopyValue (ABPersonPropertyId.SocialProfile));

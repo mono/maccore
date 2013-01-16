@@ -196,7 +196,7 @@ namespace MonoMac.Foundation {
 			return (int) this.Handle;
 		}
 #if !MONOMAC && !COREBUILD
-		[Obsolete ("Use the version with a `ref float actualFontSize`")]
+		[Advice ("Use the version with a `ref float actualFontSize`")]
 		public System.Drawing.SizeF DrawString (System.Drawing.PointF point, float width, MonoTouch.UIKit.UIFont font, float minFontSize, float actualFontSize, MonoTouch.UIKit.UILineBreakMode breakMode, MonoTouch.UIKit.UIBaselineAdjustment adjustment)
 		{
 			float temp = actualFontSize;

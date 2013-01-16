@@ -16,7 +16,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	public partial class NSIndexPath {
-		[Obsolete ("Use the NSIndexPath.Create (int []) static method instead")]
+		[Advice ("Use NSIndexPath.Create (int[]) instead")]
 		public NSIndexPath FromIndexes (uint [] indexes)
 		{
 			if (indexes == null)

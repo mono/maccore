@@ -32,19 +32,19 @@ using MonoMac.CoreVideo;
 
 namespace MonoMac.AVFoundation {
 	public partial class AVAssetReaderVideoCompositionOutput {
-		[Obsolete ("Use overload with PixelBufferAttributes")]
+		[Advice ("Use overload with PixelBufferAttributes")]
 		public AVAssetReaderVideoCompositionOutput (AVAssetTrack [] videoTracks, AVVideoSettings videoSettings)
 		: this (videoTracks, videoSettings == null ? null : videoSettings.ToDictionary ())
 		{
 		}
 
-		[Obsolete ("Use Create method or constructor")]
+		[Advice ("Use Create method or constructor")]
 		public AVAssetReaderVideoCompositionOutput FromTracks (AVAssetTrack [] videoTracks, AVVideoSettings videoSettings)
 		{
 			return WeakFromTracks (videoTracks, videoSettings == null ? null : videoSettings.ToDictionary ());
 		}
 
-		[Obsolete ("Use UncompressedVideoSettings property")]		
+		[Advice ("Use UncompressedVideoSettings property")]		
 		public AVVideoSettings VideoSettings {
 			get {
 				var dict = WeakVideoSettings;

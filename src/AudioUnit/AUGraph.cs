@@ -33,6 +33,7 @@ using System;
 using System.Text;
 using System.Runtime.InteropServices;
 using MonoMac.AudioToolbox;
+using MonoMac.Foundation;
 using System.Collections.Generic;
 
 namespace MonoMac.AudioUnit
@@ -69,7 +70,7 @@ namespace MonoMac.AudioUnit
 
 		public event EventHandler<AudioGraphEventArgs> RenderCallback;
 
-		[Obsolete ("Use Handle property instead")]
+		[Advice ("Use Handle property instead")]
 		public IntPtr Handler {
 			get {
 				return handle;

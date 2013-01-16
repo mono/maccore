@@ -665,7 +665,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		[Obsolete ("Use the strongly typed AudioTag instead")]
+		[Advice ("Use the strongly typed AudioTag instead")]
 		public int Tag {
 			get {
 				return (int) AudioTag;
@@ -675,7 +675,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		[Obsolete ("Use ChannelUsage instead")]
+		[Advice ("Use ChannelUsage instead")]
 		public int Bitmap {
 			get {
 				return (int) ChannelUsage;

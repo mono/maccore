@@ -294,7 +294,7 @@ namespace MonoMac.CoreMedia {
 		[DllImport (Constants.CoreMediaLibrary)]
 		internal extern static Size CMVideoFormatDescriptionGetDimensions (IntPtr handle);
 
-		[Obsolete ("Use CMVideoFormatDescription")]
+		[Advice ("Use CMVideoFormatDescription")]
 		public Size  VideoDimensions {
 			get {
 				return CMVideoFormatDescriptionGetDimensions (handle);
@@ -304,7 +304,7 @@ namespace MonoMac.CoreMedia {
 		[DllImport (Constants.CoreMediaLibrary)]
 		internal extern static RectangleF CMVideoFormatDescriptionGetCleanAperture (IntPtr handle, bool originIsAtTopLeft);
 
-		[Obsolete ("Use CMVideoFormatDescription")]
+		[Advice ("Use CMVideoFormatDescription")]
 		public RectangleF GetVideoCleanAperture (bool originIsAtTopLeft)
 		{
 			return CMVideoFormatDescriptionGetCleanAperture (handle, originIsAtTopLeft);
@@ -323,7 +323,7 @@ namespace MonoMac.CoreMedia {
 		[DllImport (Constants.CoreMediaLibrary)]
 		internal extern static SizeF CMVideoFormatDescriptionGetPresentationDimensions (IntPtr handle, bool usePixelAspectRatio, bool useCleanAperture);
 
-		[Obsolete ("Use CMVideoFormatDescription")]
+		[Advice ("Use CMVideoFormatDescription")]
 		public SizeF GetVideoPresentationDimensions (bool usePixelAspectRatio, bool useCleanAperture)
 		{
 			return CMVideoFormatDescriptionGetPresentationDimensions (handle, usePixelAspectRatio, useCleanAperture);

@@ -450,7 +450,7 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontDescriptorCreateCopyWithFeature (IntPtr original, IntPtr featureTypeIdentifier, IntPtr featureSelectorIdentifier);
 
-		[Obsolete]
+		[Advice ("Use WithFeature with specific selector")]
 		public CTFontDescriptor WithFeature (NSNumber featureTypeIdentifier, NSNumber featureSelectorIdentifier)
 		{
 			if (featureTypeIdentifier == null)
@@ -475,6 +475,7 @@ namespace MonoMac.CoreText {
 			return WithFeature (FontFeatureGroup.CursiveConnection, (int) featureSelector);
 		}
 
+		[Obsolete ("Deprecated")]
 		public CTFontDescriptor WithFeature (CTFontFeatureLetterCase.Selector featureSelector)
 		{
 			return WithFeature (FontFeatureGroup.LetterCase, (int) featureSelector);

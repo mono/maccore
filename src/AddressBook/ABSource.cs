@@ -49,7 +49,7 @@ namespace MonoMac.AddressBook {
 	};	
 	
 	public class ABSource : ABRecord {
-		[Obsolete ("Use ABSourceType.SearchableMask")]
+		[Advice ("Use ABSourceType.SearchableMask")]
 		public const int SearchableMask = 0x01000000;
 
 		internal ABSource (IntPtr handle, bool owns)

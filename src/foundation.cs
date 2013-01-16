@@ -2729,11 +2729,11 @@ namespace MonoMac.Foundation
 
 		[Since (5,0)]
 		[Field ("NSURLUbiquitousItemPercentDownloadedKey")]
-		[Obsolete ("Use NSMetadataQuery.UbiquitousItemPercentDownloadedKey on NSMetadataItem")]
+		[Obsolete ("Deprecated in iOS 6.0. Use NSMetadataQuery.UbiquitousItemPercentDownloadedKey on NSMetadataItem")]
 		NSString UbiquitousItemPercentDownloadedKey { get; }
 
 		[Since (5,0)]
-		[Obsolete ("Use NSMetadataQuery.NSMetadataUbiquitousItemPercentUploadedKey on NSMetadataItem")]
+		[Obsolete ("Deprecated in iOS 6.0. Use NSMetadataQuery.NSMetadataUbiquitousItemPercentUploadedKey on NSMetadataItem")]
 		[Field ("NSURLUbiquitousItemPercentUploadedKey")]
 		NSString UbiquitousItemPercentUploadedKey { get; }
 #if !MONOMAC

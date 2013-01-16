@@ -28,7 +28,7 @@ using System;
 
 namespace MonoMac.AVFoundation {
 
-	// Obsoleted by AudioSettings
+	[Advice ("Use AudioSettings instead")]
 	public class AVAudioPlayerSettings {
 		NSDictionary dict;
 		
@@ -148,14 +148,14 @@ namespace MonoMac.AVFoundation {
 			
 		}
 
-		[Obsolete ("Use SoundSettings")]
+		[Advice ("Use SoundSettings")]
 		public AVAudioPlayerSettings Settings {
 			get {
 				return new AVAudioPlayerSettings (WeakSettings);
 			}
 		}
 
-		[Obsolete ("This method was incorrectly named, use PlayAtTime instead")]
+		[Advice ("This method was incorrectly named, use PlayAtTime instead")]
 		public bool PlayAtTimetime (double time)
 		{
 			return PlayAtTime (time);

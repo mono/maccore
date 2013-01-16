@@ -41,16 +41,16 @@ namespace MonoMac.AVFoundation {
 		{
 		}
 
-		[Obsolete ("Use PixelBufferAttributes")]
+		[Advice ("Use PixelBufferAttributes")]
 		public AVVideoSettings (CVPixelFormatType formatType)
 		{
 			PixelFormat = formatType;
 		}
 
-		[Obsolete ("Use PixelBufferAttributes")]		
+		[Advice ("Use PixelBufferAttributes")]		
 		public CVPixelFormatType? PixelFormat { get; set; }
 		
-		[Obsolete ("Use PixelBufferAttributes")]		
+		[Advice ("Use PixelBufferAttributes")]		
 		public NSDictionary ToDictionary ()
 		{
 			if (!PixelFormat.HasValue)
@@ -61,13 +61,13 @@ namespace MonoMac.AVFoundation {
 	}
 	
 	public partial class AVCaptureVideoDataOutput {
-		[Obsolete ("Use SetSampleBufferDelegate")]
+		[Advice ("Use SetSampleBufferDelegate")]
 		public void SetSampleBufferDelegateAndQueue (AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, DispatchQueue queue)
 		{
 			SetSampleBufferDelegate (sampleBufferDelegate, queue);
 		}
 
-		[Obsolete ("Use Compressed or Uncompressed property")]
+		[Advice ("Use Compressed or Uncompressed property")]
 		public AVVideoSettings VideoSettings {
 			set {
 				WeakVideoSettings = value == null ? null : value.ToDictionary ();

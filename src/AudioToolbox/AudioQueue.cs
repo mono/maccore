@@ -34,6 +34,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
+using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
 using OSStatus = System.Int32;
@@ -248,7 +249,7 @@ namespace MonoMac.AudioToolbox {
 	[StructLayout(LayoutKind.Explicit)]
 	public struct AudioQueueParameterEvent {
 		[FieldOffset(0)]
-		[Obsolete ("Use Parameter")] 
+		[Advice ("Use Parameter")] 
 		public uint ID;
 
 		[FieldOffset(0)] 
@@ -785,19 +786,19 @@ namespace MonoMac.AudioToolbox {
 		extern static AudioQueueStatus AudioQueueSetProperty (
 			IntPtr AQ, AudioQueueProperty id, IntPtr data, int size);
 
-		[Obsolete] // Should be private
+		// Should be private
 		public bool GetProperty (AudioQueueProperty property, ref int dataSize, IntPtr outdata)
 		{
 			return AudioQueueGetProperty (handle, property, outdata, ref dataSize) == 0;
 		}
 
-		[Obsolete] // Should be private
+		// Should be private
 		public bool SetProperty (AudioQueueProperty property, int dataSize, IntPtr propertyData)
 		{
 			return AudioQueueSetProperty (handle, property, propertyData, dataSize) == 0;
 		}      
 
-		[Obsolete] // Should be private
+		// Should be private
 		public IntPtr GetProperty (AudioQueueProperty property, out int size)
 		{
 			var r = AudioQueueGetPropertySize (handle, property, out size);
@@ -815,7 +816,7 @@ namespace MonoMac.AudioToolbox {
 			return IntPtr.Zero;
 		}
 
-		[Obsolete] // Should be private
+		// Should be private
 		public T GetProperty<T> (AudioQueueProperty property)
 		{
 			int size;

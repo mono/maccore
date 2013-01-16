@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using MonoMac.AudioToolbox;
+using MonoMac.Foundation;
 
 namespace MonoMac.AudioUnit
 {
@@ -38,7 +39,7 @@ namespace MonoMac.AudioUnit
     {
         public const int SampleFractionBits = 24;
 
-        [Obsolete ("Use AudioStreamBasicDescription::CreateLinearPCM instead")]
+        [Advice ("Use AudioStreamBasicDescription::CreateLinearPCM instead")]
         public static AudioStreamBasicDescription AUCanonicalASBD(double sampleRate, int channel)
         {
             // setting AudioStreamBasicDescription
@@ -64,7 +65,7 @@ namespace MonoMac.AudioUnit
             return audioFormat;
         }
 
-        [Obsolete ("Use AudioSession::OverrideCategoryDefaultToSpeaker instead")]
+        [Advice ("Use AudioSession::OverrideCategoryDefaultToSpeaker instead")]
         public static void SetOverrideCategoryDefaultToSpeaker(bool isSpeaker)
         {
 		int val = isSpeaker ? 1 : 0;

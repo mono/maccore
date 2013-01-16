@@ -143,7 +143,7 @@ namespace MonoMac.CoreImage {
 		SizeF OutputImageMaximumSize { get; }
 #endif
 
-		[Obsolete ("Use DrawImage (CIImage, RectangleF, RectangleF) instead")]
+		[Obsolete ("Deprecated in iOS 6.0. Use DrawImage (CIImage, RectangleF, RectangleF) instead")]
 		[Export ("drawImage:atPoint:fromRect:")]
 		void DrawImage (CIImage image, PointF atPoint, RectangleF fromRect);
 

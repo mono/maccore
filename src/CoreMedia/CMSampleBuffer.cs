@@ -280,7 +280,7 @@ namespace MonoMac.CoreMedia {
 		[DllImport(Constants.CoreMediaLibrary)]
 		extern static IntPtr CMSampleBufferGetFormatDescription (IntPtr handle);
 
-		[Obsolete ("Use GetAudioFormatDescription or GetVideoFormatDescription")]		
+		[Advice ("Use GetAudioFormatDescription or GetVideoFormatDescription")]		
 		public CMFormatDescription GetFormatDescription ()
 		{
 			var desc = default(CMFormatDescription);

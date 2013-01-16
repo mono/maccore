@@ -175,7 +175,7 @@ namespace MonoMac.Foundation  {
 
 		WithoutOverwriting  = 2,
 			
-		[Obsolete ("no longer available")]
+		[Obsolete ("No longer available")]
 		Coordinated = 1 << 2,
 			
 		[Since (4,0)]

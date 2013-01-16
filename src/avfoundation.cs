@@ -422,7 +422,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("url")]
 		NSUrl Url { get;  }
 	
-		[Obsolete ("Use AudioSettings")]
+		[Advice ("Use AudioSettings")]
 		[Export ("settings")]
 		NSDictionary Settings { get;  }
 
@@ -504,7 +504,7 @@ namespace MonoMac.AVFoundation {
 		NSObject WeakDelegate { get; set;  }
 
 		[Wrap ("WeakDelegate")]
-		[Obsolete ("AVAudioSession.Delegate is deprecated on iOS 6.0, use AVAudioSession.Notification.Observe* methods instead")]
+		[Obsolete ("Deprecated in iOS 6.0. Use AVAudioSession.Notification.Observe* methods instead")]
 		AVAudioSessionDelegate Delegate { get; set;  }
 	
 		[Export ("setActive:error:")]
@@ -512,13 +512,13 @@ namespace MonoMac.AVFoundation {
 
 		[Since (4,0)]
 		[Export ("setActive:withFlags:error:")]
-		[Obsolete ("Obsolete in iOS 6.0, use SetActive (bool, AVAudioSessionSetActiveOptions, out NSError) instead")]
+		[Obsolete ("Deprecated in iOS 6.0. Use SetActive (bool, AVAudioSessionSetActiveOptions, out NSError) instead")]
 		bool SetActive (bool beActive, AVAudioSessionFlags flags, out NSError outError);
 
 		[Export ("setCategory:error:")]
 		bool SetCategory (NSString theCategory, out NSError outError);
 	
-		[Obsolete ("Obsoleted in iOS 6.0, use SetPreferredSampleRate")]
+		[Obsolete ("Deprecated in iOS 6.0, use SetPreferredSampleRate")]
 		[Export ("setPreferredHardwareSampleRate:error:")]
 		bool SetPreferredHardwareSampleRate (double sampleRate, out NSError outError);
 	
@@ -865,7 +865,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("preferredTransform")]
 		CGAffineTransform PreferredTransform { get;  }
 
-		[Export ("naturalSize"), Obsolete ("Instead use NaturalSize/PreferredTransform as appropriate on the video track")]
+		[Export ("naturalSize"), Obsolete ("Deprecated in iOS 5.0. Use NaturalSize/PreferredTransform as appropriate on the video track")]
 		SizeF NaturalSize { get;  }
 
 		[Export ("providesPreciseDurationAndTiming")]
@@ -1086,7 +1086,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("track")]
 		AVAssetTrack Track { get;  }
 
-		[Obsolete ("Use Create method")]
+		[Advice ("Use Create method")]
 		[Static, Export ("assetReaderTrackOutputWithTrack:outputSettings:")]
 		AVAssetReaderTrackOutput FromTrack (AVAssetTrack track, [NullAllowed] NSDictionary outputSettings);
 
@@ -1120,7 +1120,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioMix", ArgumentSemantic.Copy)]
 		AVAudioMix AudioMix { get; set;  }
 
-		[Obsolete ("Use Create method")]
+		[Advice ("Use Create method")]
 		[Static, Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
 		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
@@ -1133,7 +1133,7 @@ namespace MonoMac.AVFoundation {
 		[Wrap ("this (audioTracks, settings == null ? null : settings.Dictionary)")]
 		IntPtr Constructor (AVAssetTrack [] audioTracks, [NullAllowed] AudioSettings settings);
 
-		[Obsolete ("Use Settings property")]
+		[Advice ("Use Settings property")]
 		[Export ("audioSettings")]
 		NSDictionary AudioSettings { get; }
 
@@ -1152,7 +1152,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("videoComposition", ArgumentSemantic.Copy)]
 		AVVideoComposition VideoComposition { get; set;  }
 
-		[Obsolete ("Use Create method")]
+		[Advice ("Use Create method")]
 		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
 		AVAssetReaderVideoCompositionOutput WeakFromTracks (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
 
@@ -1276,7 +1276,7 @@ namespace MonoMac.AVFoundation {
 		void CancelWriting ();
 
 		[Export ("finishWriting")]
-		[Obsolete ("This is a synchronous methods, use the asynchronous FinishWriting(NSAction completionHandler) instead")]
+		[Obsolete ("Deprecated in iOS 6.0. Use the asynchronous FinishWriting(NSAction completionHandler) instead")]
 		bool FinishWriting ();
 #if !MONOMAC
 		[Since (6,0)]
@@ -1340,7 +1340,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("expectsMediaDataInRealTime")]
 		bool ExpectsMediaDataInRealTime { get; set;  }
 
-		[Obsolete ("Use constructor or Create method")]
+		[Advice ("Use constructor or Create method")]
 		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
 		AVAssetWriterInput FromType (string mediaType, [NullAllowed] NSDictionary outputSettings);
 
@@ -1396,7 +1396,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("pixelBufferPool")]
 		CVPixelBufferPool PixelBufferPool { get;  }
 
-		[Obsolete ("Use Create method")]
+		[Advice ("Use Create method")]
 		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
@@ -1421,7 +1421,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("URL", ArgumentSemantic.Copy)]
 		NSUrl Url { get;  }
 
-		[Obsolete ("Use Create or constructor")]
+		[Advice ("Use Create or constructor")]
 		[Static, Export ("URLAssetWithURL:options:")]
 		AVUrlAsset FromUrl (NSUrl URL, [NullAllowed] NSDictionary options);
 
@@ -2583,7 +2583,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("tracks")]
 		AVCompositionTrack [] Tracks { get; }
 
-		[Obsolete ("Deprecated in iOS5 and OSX 10.8")]
+		[Obsolete ("Deprecated in iOS 5.0 and OSX 10.8")]
 		[Export ("naturalSize")]
 		SizeF NaturalSize { get; [NotImplemented] set; }
 	}
@@ -2615,7 +2615,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("mutableTrackCompatibleWithTrack:")]
 		AVMutableCompositionTrack CreateMutableTrack (AVAssetTrack referenceTrack);
 
-		[Obsolete ("Deprecated in iOS5 and OSX 10.8")]
+		[Obsolete ("Deprecated in iOS 5.0 and OSX 10.8")]
 		[Export ("naturalSize")]
 		[Override]
 		SizeF NaturalSize { get; set; }
@@ -3247,7 +3247,7 @@ namespace MonoMac.AVFoundation {
 		[Obsolete ("Deprecated in iOS 6.0")]
 		bool OrientationSupported { get; }
 
-		[Obsolete ("Use LayerVideoGravity")]
+		[Advice ("Use LayerVideoGravity")]
 		[Export ("videoGravity")]
 		string VideoGravity { get; set; }
 
@@ -3297,7 +3297,7 @@ namespace MonoMac.AVFoundation {
 		AVVideoSettingsCompressed CompressedVideoSetting { get; set; }
 
 		[Export ("minFrameDuration")]
-		[Obsolete ("On iOS 5.0 and later, you can use AVCaptureConnection's MinVideoFrameDuration")]
+		[Obsolete ("Deprecated in iOS 5.0. Use AVCaptureConnection's MinVideoFrameDuration")]
 		CMTime MinFrameDuration { get; set;  }
 
 		[Export ("alwaysDiscardsLateVideoFrames")]
@@ -3684,17 +3684,17 @@ namespace MonoMac.AVFoundation {
 #if !MONOMAC
 		// 5.0
 		[Since (5,0)]
-		[Obsolete ("Obsoleted in iOS6, use AllowsExternalPlayback")]
+		[Obsolete ("Deprecated in iOS 6.0. Use AllowsExternalPlayback instead")]
 		[Export ("allowsAirPlayVideo")]
 		bool AllowsAirPlayVideo { get; set;  }
 
 		[Since (5,0)]
-		[Obsolete ("Obsoleted in iOS6, use ExternalPlaybackActive")]
+		[Obsolete ("Deprecated in iOS 6.0. Use ExternalPlaybackActive instead")]
 		[Export ("airPlayVideoActive")]
 		bool AirPlayVideoActive { [Bind ("isAirPlayVideoActive")] get;  }
 
 		[Since (5,0)]
-		[Obsolete ("Obsoleted in iOS6, use UsesExternalPlaybackWhileExternalScreenIsActive")]
+		[Obsolete ("Deprecated in iOS 6.0. Use UsesExternalPlaybackWhileExternalScreenIsActive instead")]
 		[Export ("usesAirPlayVideoWhileAirPlayScreenIsActive")]
 		bool UsesAirPlayVideoWhileAirPlayScreenIsActive { get; set;  }
 #endif
@@ -4206,7 +4206,7 @@ namespace MonoMac.AVFoundation {
 		[Static, Export ("playerLayerWithPlayer:")]
 		AVPlayerLayer FromPlayer (AVPlayer player);
 
-		[Obsolete ("Use LayerVideoGravity")]
+		[Advice ("Use LayerVideoGravity")]
 		[Export ("videoGravity")]
 		string VideoGravity { get; set; }
 

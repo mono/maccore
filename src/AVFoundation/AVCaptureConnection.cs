@@ -29,6 +29,7 @@
 
 using System;
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.AVFoundation {
 	public partial class AVCaptureConnection {
@@ -51,7 +52,7 @@ namespace MonoMac.AVFoundation {
 			}
 		}
 
-		[Obsolete ("Use InputPorts")]
+		[Advice ("Use InputPorts")]
 		public AVCaptureInputPort [] inputPorts { 
 			get { return InputPorts; }
 		}

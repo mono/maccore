@@ -77,7 +77,7 @@ namespace MonoMac.Foundation {
 			}
 		}
 		
-		[Obsolete ("Use AddTimer (NSTimer, NSRunLoopMode)")]
+		[Advice ("Use AddTimer (NSTimer, NSRunLoopMode)")]
 		public void AddTimer (NSTimer timer, string forMode)
 		{
 			AddTimer (timer, GetRealMode (forMode));
@@ -89,7 +89,7 @@ namespace MonoMac.Foundation {
 		}
 
 
-		[Obsolete ("Use LimitDateForMode (NSRunLoopMode) instead")]
+		[Advice ("Use LimitDateForMode (NSRunLoopMode) instead")]
 		public NSDate LimitDateForMode (string mode)
 		{
 			return LimitDateForMode (GetRealMode (mode));
@@ -100,7 +100,7 @@ namespace MonoMac.Foundation {
 			return LimitDateForMode (FromEnum (mode));
 		}
 		
-		[Obsolete ("Use AcceptInputForMode (NSRunLoopMode, NSDate)")]
+		[Advice ("Use AcceptInputForMode (NSRunLoopMode, NSDate)")]
 		public void AcceptInputForMode (string mode, NSDate limitDate)
 		{
 			AcceptInputForMode (GetRealMode (mode), limitDate);

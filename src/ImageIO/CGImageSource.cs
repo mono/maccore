@@ -255,13 +255,13 @@ namespace MonoMac.ImageIO {
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCopyProperties (IntPtr handle, IntPtr dictOptions);
 
-		[Obsolete ("Use GetProperties")]
+		[Advice ("Use GetProperties")]
 		public NSDictionary CopyProperties (NSDictionary dict)
 		{
 			return new NSDictionary (CGImageSourceCopyProperties (handle, dict == null ? IntPtr.Zero : dict.Handle));
 		}
 
-		[Obsolete ("Use GetProperties")]
+		[Advice ("Use GetProperties")]
 		public NSDictionary CopyProperties (CGImageOptions options)
 		{
 			if (options == null)
@@ -272,13 +272,13 @@ namespace MonoMac.ImageIO {
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCopyPropertiesAtIndex (IntPtr handle, int idx, IntPtr dictOptions);
 
-		[Obsolete ("Use GetProperties")]
+		[Advice ("Use GetProperties")]
 		public NSDictionary CopyProperties (NSDictionary dict, int imageIndex)
 		{
 			return new NSDictionary (CGImageSourceCopyPropertiesAtIndex (handle, imageIndex, dict == null ? IntPtr.Zero : dict.Handle));
 		}
 
-		[Obsolete ("Use GetProperties")]
+		[Advice ("Use GetProperties")]
 		public NSDictionary CopyProperties (CGImageOptions options, int imageIndex)
 		{
 			if (options == null)

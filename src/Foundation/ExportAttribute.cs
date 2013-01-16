@@ -1,5 +1,5 @@
 //
-// ExportAttribetu.cs: The Export attribetu
+// ExportAttribute.cs: The Export attribute
 //
 // Authors:
 //   Geoff Norton

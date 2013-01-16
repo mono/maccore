@@ -32,6 +32,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
+using MonoMac.Foundation;
 
 using OSStatus = System.Int32;
 using AudioFileStreamID = System.IntPtr;
@@ -401,7 +402,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		[Obsolete ("Use DataFormat")]
+		[Advice ("Use DataFormat")]
 		public AudioStreamBasicDescription StreamBasicDescription {
 			get {
 				return DataFormat;

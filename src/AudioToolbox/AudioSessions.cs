@@ -86,7 +86,7 @@ namespace MonoMac.AudioToolbox {
 		PreferredHardwareSampleRate = 0x68777372,
 		PreferredHardwareIOBufferDuration = 0x696f6264,
 		AudioCategory = 0x61636174,
-		[Obsolete ("Use AudioRouteDescription")]
+		[Obsolete ("Deprecated in iOS 5.0")]
 		AudioRoute = 0x726f7574,
 		AudioRouteChange = 0x726f6368,
 		CurrentHardwareSampleRate = 0x63687372,
