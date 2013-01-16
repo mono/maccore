@@ -27,7 +27,7 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 	public partial class NSInputStream : NSStream {
-		static IntPtr selReadMaxLength = Selector.GetHandle ("read:maxLength:");
+		const string selReadMaxLength = "read:maxLength:";
 
 		CFStreamEventType flags;
 		IntPtr callback;
@@ -40,7 +40,7 @@ namespace MonoMac.Foundation {
 		}
 
 		public int Read (byte [] buffer, uint len) {
-			return objc_msgSend (Handle, selReadMaxLength, buffer, len);
+			return objc_msgSend (Handle, Selector.GetHandle (selReadMaxLength), buffer, len);
 		}
 
 		[DllImport ("/usr/lib/libobjc.dylib")]
@@ -54,9 +54,9 @@ namespace MonoMac.Foundation {
 			
 			int ret;
 			if (IsDirectBinding) {
-				ret = Messaging.int_objc_msgSend_IntPtr_UInt32 (this.Handle, selReadMaxLength, buffer, len);
+				ret = Messaging.int_objc_msgSend_IntPtr_UInt32 (this.Handle, Selector.GetHandle (selReadMaxLength), buffer, len);
 			} else {
-				ret = Messaging.int_objc_msgSendSuper_IntPtr_UInt32 (this.SuperHandle, selReadMaxLength, buffer, len);
+				ret = Messaging.int_objc_msgSendSuper_IntPtr_UInt32 (this.SuperHandle, Selector.GetHandle (selReadMaxLength), buffer, len);
 			}
 			
 			return ret;

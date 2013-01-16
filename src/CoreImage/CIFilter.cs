@@ -72,7 +72,7 @@ namespace MonoMac.CoreImage {
 		internal static IntPtr CreateFilter (string name)
 		{
 			using (var nsname = new NSString (name))
-				return ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, selFilterWithName_, nsname.Handle);
+				return ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, Selector.GetHandle (selFilterWithName_), nsname.Handle);
 		}
 
 		// helper methods
@@ -137,7 +137,7 @@ namespace MonoMac.CoreImage {
 		// Calls the selName selector for cases where we do not have an instance created
 		static internal string GetFilterName (IntPtr filterHandle)
 		{
-			return NSString.FromHandle (ObjCRuntime.Messaging.IntPtr_objc_msgSend (filterHandle, CIFilter.selName));
+			return NSString.FromHandle (ObjCRuntime.Messaging.IntPtr_objc_msgSend (filterHandle, Selector.GetHandle (selName)));
 		}
 		
 		internal static CIFilter FromName (string filterName, IntPtr handle)

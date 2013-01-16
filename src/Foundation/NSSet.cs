@@ -38,7 +38,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	public partial class NSSet : IEnumerable<NSObject> {
-		internal static IntPtr selSetWithArray = Selector.GetHandle ("setWithArray:");
+		internal const string selSetWithArray = "setWithArray:";
 
 		public NSSet (params NSObject [] objs) : this (NSArray.FromNSObjects (objs))
 		{
@@ -61,7 +61,7 @@ namespace MonoMac.Foundation {
 		public static NSSet MakeNSObjectSet<T> (T [] values) where T : NSObject
 		{
 			NSArray a = NSArray.FromNSObjects (values);
-			return (NSSet) Runtime.GetNSObject (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, selSetWithArray, a.Handle));
+			return (NSSet) Runtime.GetNSObject (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, Selector.GetHandle (selSetWithArray), a.Handle));
 		}
 
 		public IEnumerator<NSObject> GetEnumerator ()

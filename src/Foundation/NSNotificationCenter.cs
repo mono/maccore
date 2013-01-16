@@ -60,7 +60,7 @@ namespace MonoMac.Foundation {
 
 	// The C# overloads
 	public partial class NSNotificationCenter {
-		static Selector postSelector = new Selector ("post:");
+		const string postSelector = "post:";
 
 		class ObservedData 
 		{
@@ -84,7 +84,7 @@ namespace MonoMac.Foundation {
 			
 			var proxy = new InternalNSNotificationHandler (this, notify);
 			
-			AddObserver (proxy, postSelector, aName, fromObject);
+			AddObserver (proxy, new Selector (postSelector), aName, fromObject);
 
 			return proxy;
 		}

@@ -147,11 +147,11 @@ namespace MonoMac.Foundation {
 			if (handle == IntPtr.Zero)
 				return null;
 			
-			uint c = Messaging.UInt32_objc_msgSend (handle, selCount);
+			uint c = Messaging.UInt32_objc_msgSend (handle, Selector.GetHandle (selCount));
 			string [] ret = new string [c];
 
 			for (uint i = 0; i < c; i++){
-				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex_, i);
+				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, Selector.GetHandle (selObjectAtIndex_), i);
 				ret [i] = NSString.FromHandle (p);
 			}
 			return ret;
@@ -163,11 +163,11 @@ namespace MonoMac.Foundation {
 			if (handle == IntPtr.Zero)
 				return null;
 			
-			uint c = Messaging.UInt32_objc_msgSend (handle, selCount);
+			uint c = Messaging.UInt32_objc_msgSend (handle, Selector.GetHandle (selCount));
 			T [] ret = new T [c];
 
 			for (uint i = 0; i < c; i++){
-				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex_, i);
+				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, Selector.GetHandle (selObjectAtIndex_), i);
 
 				ret [i] = (T) Runtime.GetNSObject (p);
 				ret [i].Handle = p;
@@ -197,11 +197,11 @@ namespace MonoMac.Foundation {
 			if (handle == IntPtr.Zero)
 				return null;
 			
-			uint c = Messaging.UInt32_objc_msgSend (handle, selCount);
+			uint c = Messaging.UInt32_objc_msgSend (handle, Selector.GetHandle (selCount));
 			T [] ret = new T [c];
 
 			for (uint i = 0; i < c; i++){
-				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex_, i);
+				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, Selector.GetHandle (selObjectAtIndex_), i);
 
 				ret [i] = createObject (p);
 			}
@@ -213,11 +213,11 @@ namespace MonoMac.Foundation {
 			if (handle == IntPtr.Zero)
 				return null;
 			
-			uint c = Messaging.UInt32_objc_msgSend (handle, selCount);
+			uint c = Messaging.UInt32_objc_msgSend (handle, Selector.GetHandle (selCount));
 			T [] ret = new T [c];
 
 			for (uint i = 0; i < c; i++){
-				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, selObjectAtIndex_, i);
+				IntPtr p = Messaging.IntPtr_objc_msgSend_UInt32 (handle, Selector.GetHandle (selObjectAtIndex_), i);
 
 				ret [i] = creator (p);
 			}

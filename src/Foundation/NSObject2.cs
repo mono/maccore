@@ -35,8 +35,8 @@ using MonoMac.CoreGraphics;
 namespace MonoMac.Foundation {
 
 	public partial class NSObject {
-		static readonly IntPtr selConformsToProtocol = Selector.GetHandle ("conformsToProtocol:");
-		static readonly IntPtr selEncodeWithCoder = Selector.GetHandle ("encodeWithCoder:");
+		const string selConformsToProtocol = "conformsToProtocol:";
+		const string selEncodeWithCoder = "encodeWithCoder:";
 		
 		[Export ("encodeWithCoder:")]
 		public virtual void EncodeTo (NSCoder coder)
@@ -45,9 +45,9 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("coder");
 			
 			if (IsDirectBinding) {
-				Messaging.void_objc_msgSend_intptr (this.Handle, selEncodeWithCoder, coder.Handle);
+				Messaging.void_objc_msgSend_intptr (this.Handle, Selector.GetHandle (selEncodeWithCoder), coder.Handle);
 			} else {
-				Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, selEncodeWithCoder, coder.Handle);
+				Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, Selector.GetHandle (selEncodeWithCoder), coder.Handle);
 			}
 		}
 
@@ -58,9 +58,9 @@ namespace MonoMac.Foundation {
 			bool does;
 			
 			if (IsDirectBinding) {
-				does = Messaging.bool_objc_msgSend_intptr (this.Handle, selConformsToProtocol, protocol);
+				does = Messaging.bool_objc_msgSend_intptr (this.Handle, Selector.GetHandle (selConformsToProtocol), protocol);
 			} else {
-				does = Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, selConformsToProtocol, protocol);
+				does = Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, Selector.GetHandle (selConformsToProtocol), protocol);
 			}
 
 			if (does)
@@ -141,9 +141,9 @@ namespace MonoMac.Foundation {
 			if (keyPath == null)
 				throw new ArgumentNullException ("keyPath");
 			if (IsDirectBinding) {
-				MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selSetValueForKeyPath_, handle, keyPath.Handle);
+				MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, Selector.GetHandle (selSetValueForKeyPath_), handle, keyPath.Handle);
 			} else {
-				MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selSetValueForKeyPath_, handle, keyPath.Handle);
+				MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, Selector.GetHandle (selSetValueForKeyPath_), handle, keyPath.Handle);
 			}
 			
 		}
