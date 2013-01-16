@@ -70,9 +70,9 @@ namespace MonoMac.Foundation {
 	[Register ("NSString")]
 #endif
 	public partial class NSString : NSObject {
-		static IntPtr selUTF8String = Selector.GetHandle ("UTF8String");
-		static IntPtr selInitWithUTF8String = Selector.GetHandle ("initWithUTF8String:");
-		static IntPtr selInitWithCharactersLength = Selector.GetHandle ("initWithCharacters:length:");
+		const string selUTF8String = "UTF8String";
+		const string selInitWithUTF8String = "initWithUTF8String:";
+		const string selInitWithCharactersLength = "initWithCharacters:length:";
 
 #if COREBUILD
 		static IntPtr class_ptr = Class.GetHandle ("NSString");
@@ -91,7 +91,7 @@ namespace MonoMac.Foundation {
 			unsafe {
 				fixed (char *ptrFirstChar = str){
 					var handle = Messaging.intptr_objc_msgSend (class_ptr, Selector.Alloc);
-					handle = Messaging.intptr_objc_msgsend_intptr_int (handle, selInitWithCharactersLength, (IntPtr) ptrFirstChar, str.Length);
+					handle = Messaging.intptr_objc_msgsend_intptr_int (handle, Selector.GetHandle (selInitWithCharactersLength), (IntPtr) ptrFirstChar, str.Length);
 					return handle;
 				}
 			}
@@ -112,7 +112,7 @@ namespace MonoMac.Foundation {
 
 			IntPtr bytes = Marshal.StringToHGlobalAuto (str);
 
-			Handle = (IntPtr) Messaging.intptr_objc_msgSend_intptr (Handle, selInitWithUTF8String, bytes);
+			Handle = (IntPtr) Messaging.intptr_objc_msgSend_intptr (Handle, Selector.GetHandle (selInitWithUTF8String), bytes);
 
 			Marshal.FreeHGlobal (bytes);
 		}
@@ -124,7 +124,7 @@ namespace MonoMac.Foundation {
 
 			unsafe {
 				fixed (char *ptrFirstChar = str){
-					Handle = Messaging.intptr_objc_msgsend_intptr_int (Handle, selInitWithCharactersLength, (IntPtr) ptrFirstChar, str.Length);
+					Handle = Messaging.intptr_objc_msgsend_intptr_int (Handle, Selector.GetHandle (selInitWithCharactersLength), (IntPtr) ptrFirstChar, str.Length);
 				}
 			}
 		}
@@ -156,7 +156,7 @@ namespace MonoMac.Foundation {
 			if (usrhandle == IntPtr.Zero)
 				return null;
 			
-			return Marshal.PtrToStringAuto (Messaging.intptr_objc_msgSend (usrhandle, selUTF8String));
+			return Marshal.PtrToStringAuto (Messaging.intptr_objc_msgSend (usrhandle, Selector.GetHandle (selUTF8String)));
 		}
 
 		public static bool Equals (NSString a, NSString b)

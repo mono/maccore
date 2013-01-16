@@ -15,7 +15,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 
 	public partial class NSUrlConnection {
-                static Selector selSendSynchronousRequestReturningResponseError = new Selector ("sendSynchronousRequest:returningResponse:error:");
+		const string selSendSynchronousRequestReturningResponseError = "sendSynchronousRequest:returningResponse:error:";
 		
 		public unsafe static NSData SendSynchronousRequest (NSUrlRequest request, out NSUrlResponse response, out NSError error)
 		{
@@ -29,7 +29,7 @@ namespace MonoMac.Foundation {
 			
 			var res = Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr_IntPtr (
 				class_ptr,
-				selSendSynchronousRequestReturningResponseError.Handle,
+				Selector.GetHandle (selSendSynchronousRequestReturningResponseError),
 				request.Handle,
 				rhandle,
 				ehandle);
@@ -58,9 +58,9 @@ namespace MonoMac.Foundation {
 			var nsforMode = NSString.CreateNative (forMode);
 			
 			if (IsDirectBinding) {
-				Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selScheduleInRunLoopForMode_, aRunLoop.Handle, nsforMode);
+				Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, Selector.GetHandle (selScheduleInRunLoopForMode_), aRunLoop.Handle, nsforMode);
 			} else {
-				Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selScheduleInRunLoopForMode_, aRunLoop.Handle, nsforMode);
+				Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, Selector.GetHandle (selScheduleInRunLoopForMode_), aRunLoop.Handle, nsforMode);
 			}
 			NSString.ReleaseNative (nsforMode);
 		}
@@ -76,9 +76,9 @@ namespace MonoMac.Foundation {
 			var nsforMode = NSString.CreateNative (forMode);
 			
 			if (IsDirectBinding) {
-				Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selUnscheduleFromRunLoopForMode_, aRunLoop.Handle, nsforMode);
+				Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, Selector.GetHandle (selUnscheduleFromRunLoopForMode_), aRunLoop.Handle, nsforMode);
 			} else {
-				Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selUnscheduleFromRunLoopForMode_, aRunLoop.Handle, nsforMode);
+				Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, Selector.GetHandle (selUnscheduleFromRunLoopForMode_), aRunLoop.Handle, nsforMode);
 			}
 			NSString.ReleaseNative (nsforMode);
 		}

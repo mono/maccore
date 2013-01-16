@@ -31,9 +31,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.Foundation {
 	[Register ("NSAutoreleasePool", true)]
 	public class NSAutoreleasePool : NSObject, IDisposable {
-		static IntPtr class_ptr = Class.GetHandle ("NSAutoreleasePool");
-
-		public override IntPtr ClassHandle { get { return class_ptr; } }
+		public override IntPtr ClassHandle { get { return Class.GetHandle ("NSAutoreleasePool"); } }
 
 		[Export ("init")]
 		public NSAutoreleasePool () : base (NSObjectFlag.Empty)

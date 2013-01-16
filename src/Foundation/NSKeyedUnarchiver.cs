@@ -37,7 +37,7 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("kls");
 			
 			using (var nsname = new NSString (codedName))
-				MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (class_ptr, selSetClassForClassName_, kls.Handle, nsname.Handle);
+				MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (class_ptr, Selector.GetHandle (selSetClassForClassName_), kls.Handle, nsname.Handle);
 		}
 
 		public static Class GlobalGetClass (string codedName)
@@ -47,7 +47,7 @@ namespace MonoMac.Foundation {
 			using (var nsname = new NSString (codedName))
 				return new Class (
 						MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (
-							class_ptr, selClassForClassName_, nsname.Handle));
+							class_ptr, Selector.GetHandle (selClassForClassName_), nsname.Handle));
 		}
 
 	}

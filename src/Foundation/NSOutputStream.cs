@@ -5,10 +5,10 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 	public partial class NSOutputStream : NSStream {
-		static IntPtr selWriteMaxLength = Selector.GetHandle ("write:maxLength:");
+		const string selWriteMaxLength = "write:maxLength:";
 
 		public int Write (byte [] buffer, uint len) {
-			return objc_msgSend (Handle, selWriteMaxLength, buffer, len);
+			return objc_msgSend (Handle, Selector.GetHandle (selWriteMaxLength), buffer, len);
 		}
 
 		[DllImport ("/usr/lib/libobjc.dylib")]

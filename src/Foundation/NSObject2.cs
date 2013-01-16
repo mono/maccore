@@ -40,10 +40,10 @@ namespace MonoMac.Foundation {
 	}
 
 	public partial class NSObject {
-		static readonly IntPtr selConformsToProtocol = Selector.GetHandle ("conformsToProtocol:");
-		static readonly IntPtr selEncodeWithCoder = Selector.GetHandle ("encodeWithCoder:");
-		static readonly IntPtr selAwakeFromNib = Selector.GetHandle ("awakeFromNib");
-		static readonly IntPtr selRespondsToSelector = Selector.GetHandle ("respondsToSelector:");
+		const string selConformsToProtocol = "conformsToProtocol:";
+		const string selEncodeWithCoder = "encodeWithCoder:";
+		const string selAwakeFromNib = "awakeFromNib";
+		const string selRespondsToSelector = "respondsToSelector:";
 		
 		IntPtr handle;
 		IntPtr super;
@@ -95,9 +95,9 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("coder");
 			
 			if (IsDirectBinding) {
-				Messaging.void_objc_msgSend_intptr (this.Handle, selEncodeWithCoder, coder.Handle);
+				Messaging.void_objc_msgSend_intptr (this.Handle, Selector.GetHandle (selEncodeWithCoder), coder.Handle);
 			} else {
-				Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, selEncodeWithCoder, coder.Handle);
+				Messaging.void_objc_msgSendSuper_intptr (this.SuperHandle, Selector.GetHandle (selEncodeWithCoder), coder.Handle);
 			}
 		}
 #endif
@@ -109,9 +109,9 @@ namespace MonoMac.Foundation {
 			bool does;
 			
 			if (IsDirectBinding) {
-				does = Messaging.bool_objc_msgSend_intptr (this.Handle, selConformsToProtocol, protocol);
+				does = Messaging.bool_objc_msgSend_intptr (this.Handle, Selector.GetHandle (selConformsToProtocol), protocol);
 			} else {
-				does = Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, selConformsToProtocol, protocol);
+				does = Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, Selector.GetHandle (selConformsToProtocol), protocol);
 			}
 
 			if (does)
@@ -128,9 +128,9 @@ namespace MonoMac.Foundation {
 		[Export ("respondsToSelector:")]
 		public virtual bool RespondsToSelector (Selector sel) {
 			if (IsDirectBinding) {
-				return Messaging.bool_objc_msgSend_intptr (this.Handle, selRespondsToSelector, sel.Handle);
+				return Messaging.bool_objc_msgSend_intptr (this.Handle, Selector.GetHandle (selRespondsToSelector), sel.Handle);
 			} else {
-				return Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, selRespondsToSelector, sel.Handle);
+				return Messaging.bool_objc_msgSendSuper_intptr (this.SuperHandle, Selector.GetHandle (selRespondsToSelector), sel.Handle);
 			}
 		}
 		
@@ -238,9 +238,9 @@ namespace MonoMac.Foundation {
 		public virtual void AwakeFromNib ()
 		{
 			if (IsDirectBinding) {
-				Messaging.void_objc_msgSend (this.Handle, selAwakeFromNib);
+				Messaging.void_objc_msgSend (this.Handle, Selector.GetHandle (selAwakeFromNib));
 			} else {
-				Messaging.void_objc_msgSendSuper (this.SuperHandle, selAwakeFromNib);
+				Messaging.void_objc_msgSendSuper (this.SuperHandle, Selector.GetHandle (selAwakeFromNib));
 			}
 		}
 		
@@ -274,16 +274,14 @@ namespace MonoMac.Foundation {
 			}
 		}
 		
-#if !COREBUILD
-		internal static readonly IntPtr retainCount = Selector.GetHandle ("retainCount");
-		
+#if !COREBUILD		
 		[Export ("retainCount")]
 		public virtual int RetainCount {
 			get {
 				if (IsDirectBinding) {
-					return Messaging.int_objc_msgSend (this.Handle, retainCount);
+					return Messaging.int_objc_msgSend (this.Handle, Selector.GetHandle ("retainCount"));
 				} else {
-					return Messaging.int_objc_msgSendSuper (this.SuperHandle, retainCount);
+					return Messaging.int_objc_msgSendSuper (this.SuperHandle, Selector.GetHandle ("retainCount"));
 				}
 			}
 		}
@@ -357,9 +355,9 @@ namespace MonoMac.Foundation {
 			if (keyPath == null)
 				throw new ArgumentNullException ("keyPath");
 			if (IsDirectBinding) {
-				MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, selSetValueForKeyPath_, handle, keyPath.Handle);
+				MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (this.Handle, Selector.GetHandle (selSetValueForKeyPath_), handle, keyPath.Handle);
 			} else {
-				MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selSetValueForKeyPath_, handle, keyPath.Handle);
+				MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, Selector.GetHandle (selSetValueForKeyPath_), handle, keyPath.Handle);
 			}
 		}
 
@@ -410,7 +408,6 @@ namespace MonoMac.Foundation {
 			static readonly List <NSObject> drainList1 = new List<NSObject> ();
 			static readonly List <NSObject> drainList2 = new List<NSObject> ();
 			static List <NSObject> handles = drainList1;
-			static readonly IntPtr selDrain = Selector.GetHandle ("drain:");
 			
 			static readonly IntPtr class_ptr = Class.GetHandle ("__NSObject_Disposer");
 			
@@ -429,7 +426,7 @@ namespace MonoMac.Foundation {
 				}
 				if (!call_drain)
 					return;
-				Messaging.void_objc_msgSend_intptr_intptr_bool (class_ptr, Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone, selDrain, IntPtr.Zero, false);
+				Messaging.void_objc_msgSend_intptr_intptr_bool (class_ptr, Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone, Selector.GetHandle ("drain:"), IntPtr.Zero, false);
 			}
 			
 			[Export ("drain:")]

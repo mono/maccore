@@ -131,9 +131,9 @@ namespace MonoMac.Foundation {
 					properties.Add (NSHttpCookie.KeyVersion, new NSString (version.Value.ToString ()));
 				
 				if (IsDirectBinding) {
-					Handle = Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, selInitWithProperties_, properties.Handle);
+					Handle = Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.GetHandle (selInitWithProperties_), properties.Handle);
 				} else {
-					Handle = Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, selInitWithProperties_, properties.Handle);
+					Handle = Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.GetHandle (selInitWithProperties_), properties.Handle);
 				}
 			}
 		}

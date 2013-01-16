@@ -3105,7 +3105,7 @@ public class Generator {
 				foreach (var ea in selectors [type]){
 					print ("[CompilerGenerated]");
 					if (InlineSelectors) {
-						print ("static IntPtr {0} {{ get {{ return Selector.GetHandle (\"{1}\"); }} }}", SelectorField (ea, true), ea);
+						print ("const string {0} = \"{1}\";", SelectorField (ea, true), ea);
 					} else {
 						print ("static readonly IntPtr {0} = Selector.GetHandle (\"{1}\");", SelectorField (ea), ea);
 					}
@@ -3552,7 +3552,7 @@ public class Generator {
 							if (InlineSelectors) {
 								var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
 								var export = (ExportAttribute)eattrs[0];
-								print ("if (selHandle.Equals (Selector.GetHandle (\"{0}\"))", export.Selector);
+								print ("if (selHandle.Equals (Selector.GetHandle (\"{0}\")))", export.Selector);
 							} else {
 								print ("if (selHandle.Equals (sel{0}))", mi.Name);
 							}
