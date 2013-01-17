@@ -3142,7 +3142,7 @@ public class Generator {
 
 #if RETAIN_AUDITING
 				if (mi.Name.StartsWith ("Set"))
-					foreach (ParameterInfo pi in mi.GetParameters ()) {
+					foreach (ParameterInfo pi in mi.GetParameters ())
 						if (IsWrappedType (pi.ParameterType) || pi.ParameterType.IsArray) {
 							Console.WriteLine ("AUDIT: {0}", mi);
 						}
