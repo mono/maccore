@@ -266,8 +266,6 @@ namespace MonoMac.Foundation {
 			SetObject (value, key);
 		}
 
-		static readonly NSObject marker = new NSObject ();
-
 		public bool Remove (NSObject key)
 		{
 			if (key == null)
@@ -283,13 +281,15 @@ namespace MonoMac.Foundation {
 			if (key == null)
 				throw new ArgumentNullException ("key");
 
-			var keys   = NSArray.FromNSObjects (new [] {key});
-			var values = ObjectsForKeys (keys, marker);
-			if (object.ReferenceEquals (marker, values [0])) {
-				value = null;
-				return false;
+			using (var marker = new NSObject ()) {
+				var keys = NSArray.FromNSObjects (new [] {key});
+				var values = ObjectsForKeys (keys, marker);
+				if (object.ReferenceEquals (marker, values [0])) {
+					value = null;
+					return false;
+				}
+				value = values [0];
 			}
-			value = values [0];
 			return true;
 		}
 

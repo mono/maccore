@@ -334,8 +334,6 @@ namespace MonoMac.Foundation {
 			throw new NotSupportedException ();
 		}
 
-		static readonly NSObject marker = new NSObject ();
-
 		public bool ContainsKey (NSObject key)
 		{
 			if (key == null)
