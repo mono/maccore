@@ -378,7 +378,7 @@ namespace MonoMac.Foundation {
 
 		public static NSMutableDictionary LowlevelFromObjectAndKey (IntPtr obj, IntPtr key)
 		{
-			return (NSMutableDictionary) Runtime.GetNSObject (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr (class_ptr, Selector.GetHandle (selDictionaryWithObjectForKey_), obj, key));
+			return (NSMutableDictionary) Runtime.GetNSObject (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr (Class.GetHandle (ObjectiveCClassName), Selector.GetHandle (selDictionaryWithObjectForKey_), obj, key));
 		}
 
 		public void LowlevelSetObject (IntPtr obj, IntPtr key)

@@ -28,7 +28,7 @@ namespace MonoMac.Foundation {
 			IntPtr ehandle = (IntPtr) errp;
 			
 			var res = Messaging.IntPtr_objc_msgSend_IntPtr_IntPtr_IntPtr (
-				class_ptr,
+				Class.GetHandle (ObjectiveCClassName),
 				Selector.GetHandle (selSendSynchronousRequestReturningResponseError),
 				request.Handle,
 				rhandle,

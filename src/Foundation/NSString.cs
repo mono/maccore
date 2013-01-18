@@ -75,7 +75,7 @@ namespace MonoMac.Foundation {
 		const string selInitWithCharactersLength = "initWithCharacters:length:";
 
 #if COREBUILD
-		static IntPtr class_ptr = Class.GetHandle ("NSString");
+		static string ObjectiveCClassName = "NSString";
 #endif
 		
 #if GENERATOR && !MONOMAC
@@ -90,7 +90,7 @@ namespace MonoMac.Foundation {
 			
 			unsafe {
 				fixed (char *ptrFirstChar = str){
-					var handle = Messaging.intptr_objc_msgSend (class_ptr, Selector.Alloc);
+					var handle = Messaging.intptr_objc_msgSend (Class.GetHandle (ObjectiveCClassName), Selector.Alloc);
 					handle = Messaging.intptr_objc_msgsend_intptr_int (handle, Selector.GetHandle (selInitWithCharactersLength), (IntPtr) ptrFirstChar, str.Length);
 					return handle;
 				}

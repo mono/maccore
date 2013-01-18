@@ -61,7 +61,7 @@ namespace MonoMac.Foundation {
 		public static NSSet MakeNSObjectSet<T> (T [] values) where T : NSObject
 		{
 			NSArray a = NSArray.FromNSObjects (values);
-			return (NSSet) Runtime.GetNSObject (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, Selector.GetHandle (selSetWithArray), a.Handle));
+			return (NSSet) Runtime.GetNSObject (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (Class.GetHandle (ObjectiveCClassName), Selector.GetHandle (selSetWithArray), a.Handle));
 		}
 
 		public IEnumerator<NSObject> GetEnumerator ()

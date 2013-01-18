@@ -30,7 +30,7 @@ namespace MonoMac.Foundation {
 
 	public partial class NSKeyedArchiver {
 
-		public static void GlobalSetClassName (string name, Class kls)
+		public static void GlobalSetObjectiveCClassName (string name, Class kls)
 		{
 			if (name == null)
 				throw new ArgumentNullException ("name");
@@ -38,15 +38,15 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("kls");
 
 			var nsname = new NSString (name);
-			MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (class_ptr, Selector.GetHandle (selSetClassNameForClass_), nsname.Handle, kls.Handle);
+			MonoMac.ObjCRuntime.Messaging.void_objc_msgSend_IntPtr_IntPtr (Class.GetHandle (ObjectiveCClassName), Selector.GetHandle (selSetClassNameForClass_), nsname.Handle, kls.Handle);
 			nsname.Dispose ();
 		}
 
-		public static string GlobalGetClassName (Class kls)
+		public static string GlobalGetObjectiveCClassName (Class kls)
 		{
 			if (kls == null)
 				throw new ArgumentNullException ("kls");
-			return NSString.FromHandle (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, Selector.GetHandle (selClassNameForClass_), kls.Handle));
+			return NSString.FromHandle (MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (Class.GetHandle (ObjectiveCClassName), Selector.GetHandle (selClassNameForClass_), kls.Handle));
 		}
 
 	}

@@ -2036,7 +2036,7 @@ public class Generator {
 		print (w, "");
 	}
 
-	void GenerateInvoke (bool stret, bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static)
+	void GenerateInvoke (bool stret, bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static, string class_handle)
 	{
 		string target_name = "this";
 		string handle = supercall ? ".SuperHandle" : ".Handle";
@@ -2076,7 +2076,7 @@ public class Generator {
 		if (stret){
 			string ret_val = HasAttribute (mi, typeof (AlignAttribute)) ? "ret" : "out ret";
 			if (is_static)
-				print ("{0} ({5}, class_ptr, {3}{4});", sig, "/*unusued*/", "/*unusued*/", selector, args, ret_val);
+				print ("{0} ({5}, {6}, {3}{4});", sig, "/*unusued*/", "/*unusued*/", selector, args, ret_val, class_handle);
 			else
 				print ("{0} ({5}, {1}{2}, {3}{4});", sig, target_name, handle, selector, args, ret_val);
 		} else {
@@ -2117,11 +2117,11 @@ public class Generator {
 			}
 
 			if (is_static)
-				print ("{0}{1}{2} (class_ptr, {5}{6}){7};",
+				print ("{0}{1}{2} ({8}, {5}{6}){7};",
 				       returns ? (assign_to_temp ? "ret = " : "return ") : "",
 				       cast_a, sig, target_name, 
 				       "/*unusued3*/", //supercall ? "Super" : "",
-				       selector, args, cast_b);
+				       selector, args, cast_b, class_handle);
 			else
 				print ("{0}{1}{2} ({3}{4}, {5}{6}){7};",
 				       returns ? (assign_to_temp ? "ret = " : "return ") : "",
@@ -2131,13 +2131,13 @@ public class Generator {
 		}
 	}
 	
-	void GenerateInvoke (bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static)
+	void GenerateInvoke (bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static, string class_handle)
 	{
 		bool arm_stret = ArmNeedStret (mi);
 		bool x86_stret = X86NeedStret (mi);
 
 		if (OnlyX86){
-			GenerateInvoke (x86_stret, supercall, mi, selector, args, assign_to_temp, is_static);
+			GenerateInvoke (x86_stret, supercall, mi, selector, args, assign_to_temp, is_static, class_handle);
 			return;
 		}
 		
@@ -2145,15 +2145,15 @@ public class Generator {
 		if (need_two_paths){
 			print ("if (Runtime.Arch == Arch.DEVICE){");
 			indent++;
-			GenerateInvoke (arm_stret, supercall, mi, selector, args, assign_to_temp, is_static);
+			GenerateInvoke (arm_stret, supercall, mi, selector, args, assign_to_temp, is_static, class_handle);
 			indent--;
 			print ("} else {");
 			indent++;
-			GenerateInvoke (x86_stret, supercall, mi, selector, args, assign_to_temp, is_static);
+			GenerateInvoke (x86_stret, supercall, mi, selector, args, assign_to_temp, is_static, class_handle);
 			indent--;
 			print ("}");
 		} else {
-			GenerateInvoke (arm_stret, supercall, mi, selector, args, assign_to_temp, is_static);
+			GenerateInvoke (arm_stret, supercall, mi, selector, args, assign_to_temp, is_static, class_handle);
 		}
 	}
 
@@ -2293,7 +2293,7 @@ public class Generator {
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo = null, bool is_appearance = false)
+	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo, bool is_appearance, string class_handle)
 	{
 		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
 		
@@ -2471,7 +2471,7 @@ public class Generator {
 		if (virtual_method || mi.Name == "Constructor"){
 			//print ("if (this.GetType () == typeof ({0})) {{", type.Name);
 			if (external) {
-				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
+				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, class_handle);
 			} else {
 				if (BindThirdPartyLibrary && mi.Name == "Constructor"){
 					print (init_binding_type);
@@ -2486,11 +2486,11 @@ public class Generator {
 				
 				print ("if (IsDirectBinding) {{", type.Name);
 				indent++;
-				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
+				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, class_handle);
 				indent--;
 				print ("} else {");
 				indent++;
-				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, is_static);
+				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, is_static, class_handle);
 				indent--;
 				print ("}");
 				
@@ -2505,7 +2505,7 @@ public class Generator {
 				}
 			}
 		} else {
-			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
+			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, class_handle);
 		}
 		
 		if (release_return)
@@ -2653,7 +2653,7 @@ public class Generator {
 
 	}
 
-	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
+	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model, string class_handle)
 	{
 		string wrap;
 		var export = GetExportAttribute (pi, out wrap);
@@ -2782,14 +2782,14 @@ public class Generator {
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					if (!DoesPropertyNeedBackingField (pi)) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck, pi);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck, pi, false, class_handle);
 					} else if (is_static) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck, pi);
+						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck, pi, false, class_handle);
 					} else {
 						if (DoesPropertyNeedDirtyCheck (pi, export))
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck, pi);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck, pi, false, class_handle);
 						else
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck, pi);
+							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck, pi, false, class_handle);
 					}
 				}
 				print ("}\n");
@@ -2826,7 +2826,7 @@ public class Generator {
 				else if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck, pi);
+					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck, pi, false, class_handle);
 					if (!is_static && DoesPropertyNeedBackingField (pi)) {
 						if (DoesPropertyNeedDirtyCheck (pi, export)) {
 #if !MONOMAC
@@ -2848,7 +2848,7 @@ public class Generator {
 		print ("}}\n", pi.Name);
 	}
 
-	void GenerateMethod (Type type, MethodInfo mi, bool is_model, bool is_appearance = false)
+	void GenerateMethod (Type type, MethodInfo mi, bool is_model, bool is_appearance, string class_handle)
 	{
 		foreach (ParameterInfo pi in mi.GetParameters ())
 			if (HasAttribute (pi, typeof (RetainAttribute))){
@@ -2954,7 +2954,7 @@ public class Generator {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
 				}
-				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck, null, is_appearance);
+				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck, null, is_appearance, class_handle);
 				if (is_autorelease) {
 					print ("}");
 					indent--;
@@ -2999,7 +2999,7 @@ public class Generator {
 			print ("}\n");
 		}
 	}
-	
+
 	public void Generate (Type type)
 	{
 		type_wants_zero_copy = HasAttribute (type, typeof (ZeroCopyStringsAttribute)) || ZeroCopyStrings;
@@ -3029,6 +3029,8 @@ public class Generator {
 			BaseTypeAttribute bta = btype.Length > 0 ? ((BaseTypeAttribute) btype [0]) : null;
 			Type base_type = bta != null ?  bta.BaseType : typeof (object);
 			string objc_type_name = bta != null ? (bta.Name != null ? bta.Name : TypeName) : TypeName;
+			string class_name = is_model ? "NSObject" : objc_type_name;
+			string class_handle = InlineSelectors ? "Class.GetHandle (\"" + class_name + "\")" : "class_ptr";
 			Header (sw);
 
 			print ("namespace {0} {{", type.Namespace);
@@ -3067,10 +3069,14 @@ public class Generator {
 			print ("");
 
 			if (!is_static_class){
-				print ("[CompilerGenerated]");
-				print ("static readonly IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
+				print ("const string ObjectiveCClassName = \"{0}\";", class_name);
+				if (!InlineSelectors) {
+					print ("[CompilerGenerated]");
+					print ("static readonly IntPtr class_ptr = Class.GetHandle (ObjectiveCClassName);\n");
+				}
+
 				if (!is_model && !external) {
-					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
+					print ("public {1} IntPtr ClassHandle {{ get {{ return {2}; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override", class_handle);
 				}
 
 				string ctor_visibility = private_default_ctor ? "" : "public ";
@@ -3154,7 +3160,7 @@ public class Generator {
 				if (appearance_selectors != null && HasAttribute (mi, typeof (AppearanceAttribute)))
 					appearance_selectors.Add (mi);
 
-				GenerateMethod (type, mi, is_model);
+				GenerateMethod (type, mi, is_model, false, class_handle);
 			}
 
 			var field_exports = new List<PropertyInfo> ();
@@ -3174,7 +3180,7 @@ public class Generator {
 				if (appearance_selectors != null && HasAttribute (pi, typeof (AppearanceAttribute)))
 					appearance_selectors.Add (pi);
 				
-				GenerateProperty (type, pi, instance_fields_to_clear_on_dispose, is_model);
+				GenerateProperty (type, pi, instance_fields_to_clear_on_dispose, is_model, class_handle);
 			}
 			
 			if (field_exports.Count != 0){
@@ -3626,9 +3632,9 @@ public class Generator {
 					
 					foreach (MemberInfo mi in appearance_selectors){
 						if (mi is MethodInfo)
-							GenerateMethod (type, mi as MethodInfo, false, true);
+							GenerateMethod (type, mi as MethodInfo, false, true, class_handle);
 						else
-							GenerateProperty (type, mi as PropertyInfo, currently_ignored_fields, false);
+							GenerateProperty (type, mi as PropertyInfo, currently_ignored_fields, false, class_handle);
 					}
 				}
 				
@@ -3636,13 +3642,13 @@ public class Generator {
 				print ("}\n");
 				print ("public static {0}{1} Appearance {{", parent_implements_appearance ? "new " : "", appearance_type_name);
 				indent++;
-				print ("get {{ return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (class_ptr, UIAppearance.SelectorAppearance)); }}", appearance_type_name);
+				print ("get {{ return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend ({1}, UIAppearance.SelectorAppearance)); }}", appearance_type_name, class_handle);
 				indent--;
 				print ("}\n");
 				print ("public static {0}{1} AppearanceWhenContainedIn (params Type [] containers)", parent_implements_appearance ? "new " : "", appearance_type_name);
 				print ("{");
 				indent++;
-				print ("return new {0} (UIAppearance.GetAppearance (class_ptr, containers));", appearance_type_name);
+				print ("return new {0} (UIAppearance.GetAppearance ({1}, containers));", appearance_type_name, class_handle);
 				indent--;
 				print ("}");
 				print ("");
