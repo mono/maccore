@@ -4676,7 +4676,7 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	// init returns NIL
 	[DisableDefaultCtor]
-	public interface NSValue {
+	public partial interface NSValue {
 		[Export ("getValue:")]
 		void StoreValueAtAddress (IntPtr value);
 
@@ -4745,18 +4745,6 @@ namespace MonoMac.Foundation
 
 		[Export ("rangeValue")]
 		NSRange RangeValue { get; }
-
-		[Static, Export ("valueWithSCNVector3:")]
-		NSValue FromVector (MonoMac.OpenGL.Vector3 vector);
-		
-		[Static, Export ("valueWithSCNVector4:")]
-		NSValue FromVector (MonoMac.OpenGL.Vector4 vector);
-
-		[Export ("SCNVector3Value")]
-		MonoMac.OpenGL.Vector3 Vector3Value { get; }
-
-		[Export ("SCNVector4Value")]
-		MonoMac.OpenGL.Vector4 Vector4Value { get; }
 #else
 		[Static, Export ("valueWithCMTime:"), Since (4,0)]
 		NSValue FromCMTime (CMTime time);
