@@ -2854,6 +2854,9 @@ public class Generator {
 			       oa.Message, oa.IsError ? "true" : "false");
 		}
 
+		foreach (ThreadSafeAttribute sa in mi.GetCustomAttributes (typeof (ThreadSafeAttribute), false)) 
+			print ("[ThreadSafe]");
+		
 		foreach (EditorBrowsableAttribute ea in mi.GetCustomAttributes (typeof (EditorBrowsableAttribute), false)) {
 			if (ea.State == EditorBrowsableState.Always) {
 				print ("[EditorBrowsable]");
