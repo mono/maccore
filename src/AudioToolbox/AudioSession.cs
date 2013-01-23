@@ -107,7 +107,7 @@ namespace MonoMac.AudioToolbox {
 		public int Size  { get; set; }
 		public IntPtr Data { get; set; }
 	}
-	
+
 	public static class AudioSession {
 		static bool initialized;
 		public static event EventHandler Interrupted;
@@ -394,7 +394,6 @@ namespace MonoMac.AudioToolbox {
 
 		*/
 		
-		// TODO: Wrong can return more than 1 value
 		[Since (5,0)]
 		static public AudioSessionInputRouteKind InputRoute {
 			get {
@@ -424,8 +423,7 @@ namespace MonoMac.AudioToolbox {
 				} else if (val == InputRoute_USBAudio) {
 					return AudioSessionInputRouteKind.USBAudio;
 				} else {
-					// now what?
-					throw new Exception (); // return AudioSessionInputRouteKind.None;
+					return (AudioSessionInputRouteKind) val.Handle;
 				}
 			}
 		}
@@ -470,8 +468,8 @@ namespace MonoMac.AudioToolbox {
 						result [i] = AudioSessionOutputRouteKind.HDMI;
 					} else if (val == OutputRoute_AirPlay) {
 						result [i] = AudioSessionOutputRouteKind.AirPlay;
-					
-					}
+					} else
+						result [i] = (AudioSessionOutputRouteKind) val.Handle;
 				}
 				
 				return result;
