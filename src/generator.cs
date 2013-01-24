@@ -655,6 +655,24 @@ public class NotImplementedAttribute : Attribute {
 }
 
 //
+// Apply this attribute to a class to add methods that in Objective-c
+// are added as categories
+//
+// Use the BaseType attribute to reference which class this is extending
+//
+// Like this:
+//   [Category]
+//   [BaseType (typeof (UIView))]
+//   interface UIViewExtensions {
+//     [Export ("method_in_the_objective_c_category")]
+//     void ThisWillBecome_a_c_sharp_extension_method_in_class_UIViewExtensions ();
+// }
+[AttributeUsage (AttributeTargets.Interface, AllowMultiple=false)]
+public class CategoryAttribute : Attribute {
+	public CategoryAttribute () {}
+}
+
+//
 // Used to encapsulate flags about types in either the parameter or the return value
 // For now, it only supports the [PlainString] attribute on strings.
 //
@@ -761,10 +779,10 @@ public class GeneratedType {
 	public GeneratedType (Type t)
 	{
 		Type = t;
-		foreach (var iface in Type.GetInterfaces ())
+		foreach (var iface in Type.GetInterfaces ()){
 			if (iface.Name == "UIAppearance")
 				ImplementsAppearance = true;
-		
+		}
 		var btype = ReflectionExtensions.GetBaseType (Type);
 		if (btype != typeof (object)){
 			Parent = btype;
@@ -775,6 +793,9 @@ public class GeneratedType {
 				ImplementsAppearance = true;
 			ParentGenerated.Children.Add (this);
 		}
+
+		if (t.GetCustomAttributes (typeof (CategoryAttribute), true).Length != 0)
+			ImplementsAppearance = false;
 	}
 	public Type Type;
 	public List<GeneratedType> Children = new List<GeneratedType> (1);
@@ -1966,7 +1987,7 @@ public class Generator {
 	//
 	// Makes the public signature for an exposed method
 	//
-	public string MakeSignature (MethodInfo mi, out bool ctor)
+	public string MakeSignature (MethodInfo mi, out bool ctor, Type category_class)
 	{
 		StringBuilder sb = new StringBuilder ();
 		ctor = mi.Name == "Constructor";
@@ -1982,6 +2003,13 @@ public class Generator {
 		sb.Append (" (");
 
 		bool comma = false;
+		if (category_class != null){
+			sb.Append ("this ");
+			Console.WriteLine ("Gto {0} and {1}", mi.DeclaringType, category_class);
+			sb.Append (FormatType (mi.DeclaringType, category_class));
+			sb.Append (" This");
+			comma = true;
+		}
 		foreach (var pi in mi.GetParameters ()){
 			if (comma)
 				sb.Append (", ");
@@ -2048,9 +2076,9 @@ public class Generator {
 		print (w, "");
 	}
 
-	void GenerateInvoke (bool stret, bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static)
+	void GenerateInvoke (bool stret, bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static, Type category_type)
 	{
-		string target_name = "this";
+		string target_name = category_type == null ? "this" : "This";
 		string handle = supercall ? ".SuperHandle" : ".Handle";
 		
 		// If we have supercall == false, we can be a Bind methdo that has a [Target]
@@ -2143,13 +2171,13 @@ public class Generator {
 		}
 	}
 	
-	void GenerateInvoke (bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static)
+	void GenerateInvoke (bool supercall, MethodInfo mi, string selector, string args, bool assign_to_temp, bool is_static, Type category_type)
 	{
 		bool arm_stret = ArmNeedStret (mi);
 		bool x86_stret = X86NeedStret (mi);
 
 		if (OnlyX86){
-			GenerateInvoke (x86_stret, supercall, mi, selector, args, assign_to_temp, is_static);
+			GenerateInvoke (x86_stret, supercall, mi, selector, args, assign_to_temp, is_static, category_type);
 			return;
 		}
 		
@@ -2157,15 +2185,15 @@ public class Generator {
 		if (need_two_paths){
 			print ("if (Runtime.Arch == Arch.DEVICE){");
 			indent++;
-			GenerateInvoke (arm_stret, supercall, mi, selector, args, assign_to_temp, is_static);
+			GenerateInvoke (arm_stret, supercall, mi, selector, args, assign_to_temp, is_static, category_type);
 			indent--;
 			print ("} else {");
 			indent++;
-			GenerateInvoke (x86_stret, supercall, mi, selector, args, assign_to_temp, is_static);
+			GenerateInvoke (x86_stret, supercall, mi, selector, args, assign_to_temp, is_static, category_type);
 			indent--;
 			print ("}");
 		} else {
-			GenerateInvoke (arm_stret, supercall, mi, selector, args, assign_to_temp, is_static);
+			GenerateInvoke (arm_stret, supercall, mi, selector, args, assign_to_temp, is_static, category_type);
 		}
 	}
 
@@ -2305,7 +2333,7 @@ public class Generator {
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo = null, bool is_appearance = false)
+	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo = null, bool is_appearance = false, Type category_type = null)
 	{
 		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
 		
@@ -2483,7 +2511,7 @@ public class Generator {
 		if (virtual_method || mi.Name == "Constructor"){
 			//print ("if (this.GetType () == typeof ({0})) {{", type.Name);
 			if (external) {
-				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
+				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, category_type);
 			} else {
 				if (BindThirdPartyLibrary && mi.Name == "Constructor"){
 					print (init_binding_type);
@@ -2498,11 +2526,11 @@ public class Generator {
 				
 				print ("if (IsDirectBinding) {{", type.Name);
 				indent++;
-				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
+				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, category_type);
 				indent--;
 				print ("} else {");
 				indent++;
-				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, is_static);
+				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, is_static, category_type);
 				indent--;
 				print ("}");
 				
@@ -2517,7 +2545,7 @@ public class Generator {
 				}
 			}
 		} else {
-			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static);
+			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, category_type);
 		}
 		
 		if (release_return)
@@ -2860,7 +2888,7 @@ public class Generator {
 		print ("}}\n", pi.Name);
 	}
 
-	void GenerateMethod (Type type, MethodInfo mi, bool is_model, bool is_appearance = false)
+	void GenerateMethod (Type type, MethodInfo mi, bool is_model, Type category_extension_type, bool is_appearance)
 	{
 		foreach (ParameterInfo pi in mi.GetParameters ())
 			if (HasAttribute (pi, typeof (RetainAttribute))){
@@ -2910,7 +2938,7 @@ public class Generator {
 			}
 		}
 
-		bool is_static = HasAttribute (mi, typeof (StaticAttribute));
+		bool is_static = HasAttribute (mi, typeof (StaticAttribute)) || category_extension_type != null;
 		if (is_static)
 			virtual_method = false;
 
@@ -2940,7 +2968,7 @@ public class Generator {
 		       is_unsafe ? "unsafe " : "",
 		       is_new ? "new " : "",
 		       is_sealed ? "" : (is_abstract ? "abstract " : (virtual_method ? (is_override ? "override " : "virtual ") : (is_static ? "static " : ""))),
-		       MakeSignature (mi, out ctor),
+		       MakeSignature (mi, out ctor, category_extension_type),
 		       is_abstract ? ";" : "");
 
 		if (!is_abstract){
@@ -2969,7 +2997,7 @@ public class Generator {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
 				}
-				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck, null, is_appearance);
+				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck, null, is_appearance, category_extension_type);
 				if (is_autorelease) {
 					print ("}");
 					indent--;
@@ -3036,7 +3064,9 @@ public class Generator {
 		
 		using (var sw = new StreamWriter (output_file)){
 			this.sw = sw;
-			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0;
+			var category_attribute = type.GetCustomAttributes (typeof (CategoryAttribute), true);
+			bool is_category_class = category_attribute.Length > 0;
+			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0 || is_category_class;
 			bool is_model = type.GetCustomAttributes (typeof (ModelAttribute), true).Length > 0;
 			var default_ctor_visibility = GetAttribute<DefaultCtorVisibilityAttribute> (type);
 			object [] btype = type.GetCustomAttributes (typeof (BaseTypeAttribute), true);
@@ -3049,7 +3079,7 @@ public class Generator {
 			indent++;
 
 			string class_mod = null;
-			if (is_static_class){
+			if (is_static_class || is_category_class){
 				base_type = typeof (object);
 				class_mod = "static ";
 			} else {
@@ -3058,13 +3088,16 @@ public class Generator {
 					class_mod = "abstract ";
 			} 
 			
-			if (is_model)
+			if (is_model){
+				if (is_category_class)
+					ErrorHelper.Show (new BindingException (1022, true, "Category classes can not use the [Model] attribute"));
 				print ("[Model]");
+			}
 
 			print ("public unsafe {0}partial class {1} {2} {{",
 			       class_mod,
 			       TypeName,
-			       base_type != typeof (object) && TypeName != "NSObject" ? ": " + FormatType (type, base_type) : "");
+			       base_type != typeof (object) && TypeName != "NSObject" && !is_category_class ? ": " + FormatType (type, base_type) : "");
 
 			indent++;
 			
@@ -3080,9 +3113,17 @@ public class Generator {
 			}
 			print ("");
 
-			if (!is_static_class){
+			// Regular bindings (those that are not-static) or categories need this
+			if (!is_static_class || is_category_class){
 				print ("[CompilerGenerated]");
+
+				if (is_category_class)
+					objc_type_name = FormatType (null, bta.BaseType);
+				
 				print ("static readonly IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
+			}
+			
+			if (!is_static_class){
 				if (!is_model && !external) {
 					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
 				}
@@ -3190,7 +3231,9 @@ public class Generator {
 				if (appearance_selectors != null && HasAttribute (mi, typeof (AppearanceAttribute)))
 					appearance_selectors.Add (mi);
 
-				GenerateMethod (type, mi, is_model);
+				GenerateMethod (type, mi, is_model,
+						category_extension_type: is_category_class ? bta.BaseType : null,
+						is_appearance: false);
 			}
 
 			var field_exports = new List<PropertyInfo> ();
@@ -3643,7 +3686,6 @@ public class Generator {
 					base_class = "UIAppearance";
 
 				string appearance_type_name = TypeName + "Appearance";
-				print ("");
 				print ("public partial class {0} : {1} {{", appearance_type_name, base_class);
 				indent++;
 				print ("internal {0} (IntPtr handle) : base (handle) {{}}", appearance_type_name);
@@ -3653,7 +3695,10 @@ public class Generator {
 					
 					foreach (MemberInfo mi in appearance_selectors){
 						if (mi is MethodInfo)
-							GenerateMethod (type, mi as MethodInfo, false, true);
+							GenerateMethod (type, mi as MethodInfo,
+									is_model: false,
+									category_extension_type: is_category_class ? base_type : null,
+									is_appearance: true);
 						else
 							GenerateProperty (type, mi as PropertyInfo, currently_ignored_fields, false);
 					}
