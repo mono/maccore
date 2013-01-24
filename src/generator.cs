@@ -1710,24 +1710,40 @@ public class Generator {
 					throw new BindingException (1010, true, "No Export attribute on {0}.{1} property", eventType, prop.Name);
 
 				var export = attrs [0] as ExportAttribute;
+				var use_export_as_string_constant = export.ArgumentSemantic != ArgumentSemantic.None;
 				var null_allowed = HasAttribute (prop, typeof (NullAllowedAttribute));
 				var nullable_type = prop.PropertyType.IsValueType && null_allowed;
 				var propertyType = prop.PropertyType;
 				var propNamespace = prop.DeclaringType.Namespace;
 				var probe_presence = HasAttribute (prop, typeof (ProbePresenceAttribute));
-			
+
 				string kn = "k" + (i++);
-				var lib = propNamespace.Substring (propNamespace.IndexOf (".") + 1);
-				print ("static IntPtr {0};", kn);
-				print ("public {0}{1} {2} {{\n\tget {{\n", propertyType, nullable_type ? "?" : "", prop.Name); indent += 2;
-				print ("if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.SlowGetIntPtr (Constants.{2}Library, \"{3}\");", kn, MainPrefix, lib, export.Selector);
+				if (use_export_as_string_constant){
+					print ("public {0}{1} {2} {{\n\tget {{\n", propertyType, nullable_type ? "?" : "", prop.Name);
+					indent += 2;
+					print ("IntPtr value;");
+					print ("using (var str = new NSString (\"{0}\")){{", export.Selector);
+					kn = "str.Handle";
+					indent++;
+				} else {
+					var lib = propNamespace.Substring (propNamespace.IndexOf (".") + 1);
+					print ("static IntPtr {0};", kn);
+					print ("public {0}{1} {2} {{\n\tget {{\n", propertyType, nullable_type ? "?" : "", prop.Name); indent += 2;
+					print ("IntPtr value; if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.SlowGetIntPtr (Constants.{2}Library, \"{3}\");", kn, MainPrefix, lib, export.Selector);
+				}
 				if (null_allowed || probe_presence){
 					if (probe_presence)
 						print ("if (Notification.UserInfo == null)\n\treturn false;");
 					else
 						print ("if (Notification.UserInfo == null)\n\treturn null;");
 				}
-				print ("var value = Notification.UserInfo.LowlevelObjectForKey ({0});\n", kn);
+				print ("value = Notification.UserInfo.LowlevelObjectForKey ({0});", kn);
+				if (use_export_as_string_constant){
+					indent--;
+					print ("}");
+				} else
+					print ("");
+						
 				if (probe_presence)
 					print ("return value != IntPtr.Zero;");
 				else {
