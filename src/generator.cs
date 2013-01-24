@@ -370,14 +370,35 @@ public sealed class ProtectedAttribute : Attribute {
 // still instantiate object of this class internally from your
 // extension file, but it just wont be accessible to users of your
 // class.
-public class PrivateDefaultCtorAttribute : Attribute {
-	public PrivateDefaultCtorAttribute () {}
+public class PrivateDefaultCtorAttribute : DefaultCtorVisibilityAttribute {
+	public PrivateDefaultCtorAttribute () : base (Visibility.Private) {}
+}
+
+public enum Visibility {
+	Public,
+	Protected,
+	Internal,
+	ProtectedInternal,
+	Private,
+	Disabled
+}
+
+// When this attribute is applied to the interface definition it will
+// flag the default ctor with the corresponding visibility (or disabled
+// altogether if Visibility.Disabled is used).
+public class DefaultCtorVisibilityAttribute : Attribute {
+	public DefaultCtorVisibilityAttribute (Visibility visibility)
+	{
+		this.Visibility = visibility;
+	}
+
+	public Visibility Visibility { get; set; }
 }
 
 // When this attribute is applied to the interface definition it will
 // prevent the generator from producing the default constructor.
-public class DisableDefaultCtorAttribute : Attribute {
-	public DisableDefaultCtorAttribute () {}
+public class DisableDefaultCtorAttribute : DefaultCtorVisibilityAttribute {
+	public DisableDefaultCtorAttribute () : base (Visibility.Disabled) {}
 }
 
 //
@@ -1257,11 +1278,19 @@ public class Generator {
 		return false;
 	}
 
-	public object GetAttribute (MethodInfo mi, Type t)
+	public object GetAttribute (ICustomAttributeProvider mi, Type t)
 	{
 		object [] a = mi.GetCustomAttributes (t, true);
 		if (a.Length > 0)
 			return a [0];
+		return null;
+	}
+	
+	public T GetAttribute<T> (ICustomAttributeProvider mi) where T: class
+	{
+		object [] a = mi.GetCustomAttributes (typeof (T), true);
+		if (a.Length > 0)
+			return (T) a [0];
 		return null;
 	}
 
@@ -3009,8 +3038,7 @@ public class Generator {
 			this.sw = sw;
 			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0;
 			bool is_model = type.GetCustomAttributes (typeof (ModelAttribute), true).Length > 0;
-			bool private_default_ctor = type.GetCustomAttributes (typeof (PrivateDefaultCtorAttribute), true).Length > 0;
-			bool disable_default_ctor = type.GetCustomAttributes (typeof (DisableDefaultCtorAttribute), true).Length > 0;
+			var default_ctor_visibility = GetAttribute<DefaultCtorVisibilityAttribute> (type);
 			object [] btype = type.GetCustomAttributes (typeof (BaseTypeAttribute), true);
 			BaseTypeAttribute bta = btype.Length > 0 ? ((BaseTypeAttribute) btype [0]) : null;
 			Type base_type = bta != null ?  bta.BaseType : typeof (object);
@@ -3059,7 +3087,29 @@ public class Generator {
 					print ("public {1} IntPtr ClassHandle {{ get {{ return class_ptr; }} }}\n", objc_type_name, TypeName == "NSObject" ? "virtual" : "override");
 				}
 
-				string ctor_visibility = private_default_ctor ? "" : "public ";
+				var ctor_visibility = "public";
+				var disable_default_ctor = false;
+				if (default_ctor_visibility != null) {
+					switch (default_ctor_visibility.Visibility) {
+					case Visibility.Public:
+						break; // default
+					case Visibility.Internal: 
+						ctor_visibility = "internal";
+						break;
+					case Visibility.Protected:
+						ctor_visibility = "protected";
+						break;
+					case Visibility.ProtectedInternal:
+						ctor_visibility = "protected internal";
+						break;
+					case Visibility.Private:
+						ctor_visibility = string.Empty;
+						break;
+					case Visibility.Disabled:
+						disable_default_ctor = true;
+						break;
+					}
+				}
 				
 				if (TypeName != "NSObject"){
 					if (external) {

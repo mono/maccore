@@ -3639,6 +3639,7 @@ namespace MonoMac.Foundation
 	}
 #endif
 	[BaseType (typeof (NSStream))]
+	[DefaultCtorVisibility (Visibility.Protected)]
 	public interface NSInputStream {
 		[Export ("hasBytesAvailable")]
 		bool HasBytesAvailable ();
