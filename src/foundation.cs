@@ -3639,7 +3639,6 @@ namespace MonoMac.Foundation
 	}
 #endif
 	[BaseType (typeof (NSStream))]
-	[DisableDefaultCtor] // crash when used
 	public interface NSInputStream {
 		[Export ("hasBytesAvailable")]
 		bool HasBytesAvailable ();

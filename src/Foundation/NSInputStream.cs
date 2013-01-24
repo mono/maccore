@@ -33,12 +33,6 @@ namespace MonoMac.Foundation {
 		IntPtr callback;
 		CFStreamClientContext context;
 
-		// calling 'init' would create an instance that crash, 
-		// this one maintains API compatibility (without the crash)
-		public NSInputStream () : this (new NSData ())
-		{
-		}
-
 		public int Read (byte [] buffer, uint len) {
 			return objc_msgSend (Handle, selReadMaxLength, buffer, len);
 		}
