@@ -397,7 +397,7 @@ namespace MonoMac.AudioToolbox
 
 		public static AudioConverter Create (AudioStreamBasicDescription sourceFormat, AudioStreamBasicDescription destinationFormat, out AudioConverterError error)
 		{
-			IntPtr ptr;
+			IntPtr ptr = new IntPtr ();
 			error = AudioConverterNew (ref sourceFormat, ref destinationFormat, ref ptr);
 			if (error != AudioConverterError.None)
 				return null;
@@ -410,7 +410,7 @@ namespace MonoMac.AudioToolbox
 			if (descriptions == null)
 				throw new ArgumentNullException ("descriptions");
 
-			IntPtr ptr;
+			IntPtr ptr = new IntPtr ();
 			var res = AudioConverterNewSpecific (ref sourceFormat, ref destinationFormat, descriptions.Length, ref descriptions, ref ptr);
 			if (res != AudioConverterError.None)
 				return null;
