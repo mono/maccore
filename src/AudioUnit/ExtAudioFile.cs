@@ -100,6 +100,17 @@ namespace MonoMac.AudioUnit
             }
         }
 
+        public AudioConverter AudioConverter {
+            get {
+                uint size = sizeof (uint);
+                IntPtr value;
+
+                if (ExtAudioFileGetProperty (_extAudioFile, PropertyIDType.AudioConverter, ref size, out value) != ExtAudioFileError.OK)
+                    return null;
+
+                return new AudioConverter (value, false);
+            }
+        }
 
         public long FileLengthFrames {
             get {
@@ -393,7 +404,7 @@ namespace MonoMac.AudioUnit
 	        CodecManufacturer	 	= 0x636d616e,      // 'cman'
 	
 	        // read-only:
-	        //kExtAudioFileProperty_AudioConverter		= 'acnv',	// AudioConverterRef
+            AudioConverter          = 0x61636e76,      // 'acnv'
 	        AudioFile				= 0x6166696c,      // 'afil'
 	        FileMaxPacketSize		= 0x666d7073,      // 'fmps'
 	        ClientMaxPacketSize    	= 0x636d7073,      // 'cmps'

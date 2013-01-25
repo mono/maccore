@@ -73,7 +73,7 @@ namespace MonoMac.AudioToolbox {
 				return "This operation requries AudioSession.Category to be explicitly set";
 				
 			}
-			return String.Format ("Unknown error code: 0x{0:x}", k);
+			return String.Format ("Unknown error code: {0}", k);
 		}
 		
 		internal AudioSessionException (int k) : base (Lookup (k))
@@ -353,7 +353,7 @@ namespace MonoMac.AudioToolbox {
 		static void SetInt (AudioSessionProperty property, int val)
 		{
 			unsafe {
-				int k = AudioSessionSetProperty (property, 4, (IntPtr) (&val));
+				int k = AudioSessionSetProperty (property, sizeof (int), (IntPtr) (&val));
 				if (k != 0)
 					throw new AudioSessionException (k);
 			}
