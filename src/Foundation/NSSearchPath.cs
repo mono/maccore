@@ -33,7 +33,7 @@ namespace MonoMac.Foundation
 {
 	public static class NSSearchPath
 	{
-		public static string[] GetDirectoriesInDomains (NSSearchPathDirectory directory, NSSearchPathDomain domainMask, bool expandTilde = true)
+		public static string[] GetDirectories (NSSearchPathDirectory directory, NSSearchPathDomain domainMask, bool expandTilde = true)
 		{
 			return NSArray.StringArrayFromHandle (NSSearchPathForDirectoriesInDomains (directory, domainMask, expandTilde));
 		}
