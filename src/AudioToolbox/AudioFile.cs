@@ -60,7 +60,7 @@ namespace MonoMac.AudioToolbox {
 		AMR = 0x616d7266, // amrf
 	}
 
-	enum AudioFileError {
+	public enum AudioFileError {
 		Unspecified = 0x7768743f, // wht?
 		UnsupportedFileType = 0x7479703f, // typ?
 		UnsupportedDataFormat = 0x666d743f, // fmt?
@@ -693,6 +693,19 @@ namespace MonoMac.AudioToolbox {
 			return ReadPacketData (useCache, inStartingPacket, ref nPackets, buffer, offset, ref count);
 		}
 
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioFileError AudioFileReadPackets (IntPtr inAudioFile, bool inUseCache, out int numBytes,
+			[MarshalAs (UnmanagedType.LPArray)] AudioStreamPacketDescription[] packetDescriptions, long startingPacket, ref int numPackets, IntPtr buffer);
+
+		public AudioFileError ReadPackets (bool useCache, out int numBytes,
+			AudioStreamPacketDescription[] packetDescriptions, long startingPacket, ref int numPackets, IntPtr buffer)
+		{
+			if (buffer == IntPtr.Zero)
+				throw new ArgumentException ("buffer");
+
+			return AudioFileReadPackets (handle, useCache, out numBytes, packetDescriptions, startingPacket, ref numPackets, buffer);
+		}
+
 		static internal AudioStreamPacketDescription [] PacketDescriptionFrom (int nPackets, IntPtr b)
 		{
 			if (b == IntPtr.Zero)
@@ -798,29 +811,29 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioFileWritePackets (
+		extern static AudioFileError AudioFileWritePackets (
 			AudioFileID audioFile, bool useCache, int inNumBytes, AudioStreamPacketDescription [] inPacketDescriptions,
                         long inStartingPacket, ref int numPackets, IntPtr buffer);
 
-		public int WritePackets (bool useCache, long inStartingPacket, int numPackets, IntPtr buffer, int count)
+		public int WritePackets (bool useCache, long startingPacket, int numPackets, IntPtr buffer, int count)
 		{
 			if (buffer == IntPtr.Zero)
 				throw new ArgumentNullException ("buffer");
 
-			if (AudioFileWritePackets (handle, useCache, count, null, inStartingPacket, ref numPackets, buffer) == 0)
+			if (AudioFileWritePackets (handle, useCache, count, null, startingPacket, ref numPackets, buffer) == 0)
 				return numPackets;
 
 			return -1;
 		}
 
-		unsafe public int WritePackets (bool useCache, long inStartingPacket, AudioStreamPacketDescription [] inPacketDescriptions, IntPtr buffer, int count)
+		public int WritePackets (bool useCache, long startingPacket, AudioStreamPacketDescription [] packetDescriptions, IntPtr buffer, int count)
 		{
-			if (inPacketDescriptions == null)
-				throw new ArgumentNullException ("inPacketDescriptions");
+			if (packetDescriptions == null)
+				throw new ArgumentNullException ("packetDescriptions");
 			if (buffer == IntPtr.Zero)
 				throw new ArgumentNullException ("buffer");
-			int nPackets = inPacketDescriptions.Length;
-			if (AudioFileWritePackets (handle, useCache, count, inPacketDescriptions, inStartingPacket, ref nPackets, buffer) == 0)
+			int nPackets = packetDescriptions.Length;
+			if (AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, buffer) == 0)
 				return nPackets;
 			return -1;
 		}
@@ -846,15 +859,15 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		unsafe public int WritePackets (bool useCache, long inStartingPacket, AudioStreamPacketDescription [] inPacketDescriptions, IntPtr buffer, int count, out int errorCode)
+		public int WritePackets (bool useCache, long startingPacket, AudioStreamPacketDescription [] packetDescriptions, IntPtr buffer, int count, out int errorCode)
 		{
-			if (inPacketDescriptions == null)
-				throw new ArgumentNullException ("inPacketDescriptions");
+			if (packetDescriptions == null)
+				throw new ArgumentNullException ("packetDescriptions");
 			if (buffer == IntPtr.Zero)
-				throw new ArgumentNullException ("buffer");
-			int nPackets = inPacketDescriptions.Length;
+				throw new ArgumentException ("buffer");
+			int nPackets = packetDescriptions.Length;
 			
-			errorCode = AudioFileWritePackets (handle, useCache, count, inPacketDescriptions, inStartingPacket, ref nPackets, buffer);
+			errorCode = (int) AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, buffer);
 			if (errorCode == 0)
 				return nPackets;
 			return -1;
@@ -875,11 +888,19 @@ namespace MonoMac.AudioToolbox {
 
 			int nPackets = packetDescriptions.Length;
 			fixed (byte *bop = &buffer [offset]){
-				errorCode = AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, (IntPtr) bop);
+				errorCode = (int) AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, (IntPtr) bop);
 				if (errorCode == 0)
 					return nPackets;
 				return -1;
 			}
+		}
+
+		public AudioFileError WritePackets (bool useCache, int numBytes, AudioStreamPacketDescription[] packetDescriptions, long startingPacket, ref int numPackets, IntPtr buffer)
+		{
+			if (buffer == IntPtr.Zero)
+				throw new ArgumentException ("buffer");
+			
+			return AudioFileWritePackets (handle, useCache, numBytes, packetDescriptions, startingPacket, ref numPackets, buffer);
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -934,6 +955,13 @@ namespace MonoMac.AudioToolbox {
 		public bool GetPropertyInfo (AudioFileProperty property, out int size, out int writable)
 		{
 			return AudioFileGetPropertyInfo (handle, property, out size, out writable) == 0;
+		}
+
+		public bool IsPropertyWritable (AudioFileProperty property)
+		{
+			int writable;
+			int size;
+			return AudioFileGetPropertyInfo (handle, property, out size, out writable) == 0 && writable != 0;
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -1029,6 +1057,9 @@ namespace MonoMac.AudioToolbox {
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static AudioFileError AudioFileSetProperty (AudioFileID audioFile, AudioFileProperty property, int dataSize, IntPtr propertyData);
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioFileError AudioFileSetProperty (AudioFileID audioFile, AudioFileProperty property, int dataSize, ref AudioFilePacketTableInfo propertyData);
 
 		public bool SetProperty (AudioFileProperty property, int dataSize, IntPtr propertyData)
 		{
@@ -1230,6 +1261,15 @@ namespace MonoMac.AudioToolbox {
 		public AudioFilePacketTableInfo? PacketTableInfo {
 			get {
 				return GetProperty<AudioFilePacketTableInfo> (AudioFileProperty.PacketTableInfo);
+			}
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+
+				AudioFilePacketTableInfo afpti = value.Value;
+				var res = AudioFileSetProperty (handle, AudioFileProperty.PacketTableInfo, Marshal.SizeOf (typeof (AudioFilePacketTableInfo)), ref afpti);
+				if (res != 0)
+					throw new ArgumentException (res.ToString ());
 			}
 		}
 
