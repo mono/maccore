@@ -126,7 +126,6 @@ namespace MonoMac.AudioToolbox {
 		public AudioSessionRouteChangeEventArgs (IntPtr dictHandle)
 		{
 			Dictionary = new NSDictionary (dictHandle);
-			Console.WriteLine ("The dict is: {0}", Dictionary.Description);
 		}
 		
 		public AudioSessionRouteChangeReason Reason {
@@ -143,7 +142,7 @@ namespace MonoMac.AudioToolbox {
 			if (dictH == IntPtr.Zero)
 				return null;
 
-			Console.WriteLine ("Extracting from {2} {0} and getting {1}", new NSString (key), new NSDictionary (dictH).Description, Dictionary.Description);
+//			Console.WriteLine ("Extracting from {2} {0} and getting {1}", new NSString (key), new NSDictionary (dictH).Description, Dictionary.Description);
 			// Description dictionary, indexed by the second key, the result is an array
 			using (var descDict = new NSDictionary (dictH)){
 				var sdict = descDict.LowlevelObjectForKey (secondKey.Handle);
