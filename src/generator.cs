@@ -2938,8 +2938,8 @@ public class Generator {
 			}
 		}
 
-		bool is_static = HasAttribute (mi, typeof (StaticAttribute)) || category_extension_type != null;
-		if (is_static)
+		bool is_static = HasAttribute (mi, typeof (StaticAttribute));
+		if (is_static || category_extension_type != null)
 			virtual_method = false;
 
 		ThreadCheck threadCheck = HasAttribute (mi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
@@ -2967,7 +2967,7 @@ public class Generator {
 		       mod,
 		       is_unsafe ? "unsafe " : "",
 		       is_new ? "new " : "",
-		       is_sealed ? "" : (is_abstract ? "abstract " : (virtual_method ? (is_override ? "override " : "virtual ") : (is_static ? "static " : ""))),
+		       is_sealed ? "" : (is_abstract ? "abstract " : (virtual_method ? (is_override ? "override " : "virtual ") : (is_static || category_extension_type != null ? "static " : ""))),
 		       MakeSignature (mi, out ctor, category_extension_type),
 		       is_abstract ? ";" : "");
 
