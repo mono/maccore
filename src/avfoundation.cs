@@ -376,6 +376,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioPlayerDecodeErrorDidOccur:error:")]
 		void DecoderError (AVAudioPlayer player, NSError  error);
 	
+#if !MONOMAC
 		[Export ("audioPlayerBeginInterruption:")]
 		void BeginInterruption (AVAudioPlayer  player);
 	
@@ -383,7 +384,7 @@ namespace MonoMac.AVFoundation {
 		[Obsolete ("Deprecated in iOS 6.0")]
 		void EndInterruption (AVAudioPlayer player);
 
-		// Obsolete in 6,0
+		// Deprecated in iOS 6.0 but we have same C# signature
 		[Since (4,0)]
 		[Export ("audioPlayerEndInterruption:withFlags:")]
 		void EndInterruption (AVAudioPlayer player, AVAudioSessionInterruptionFlags flags);
@@ -391,6 +392,7 @@ namespace MonoMac.AVFoundation {
 		//[Since (6,0)]
 		//[Export ("audioPlayerEndInterruption:withOptions:")]
 		//void EndInterruption (AVAudioPlayer player, AVAudioSessionInterruptionFlags flags);
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -476,7 +478,8 @@ namespace MonoMac.AVFoundation {
 	
 		[Export ("audioRecorderEncodeErrorDidOccur:error:")]
 		void EncoderError (AVAudioRecorder recorder, NSError  error);
-	
+
+#if !MONOMAC	
 		[Export ("audioRecorderBeginInterruption:")]
 		void BeginInterruption (AVAudioRecorder  recorder);
 	
@@ -484,7 +487,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioRecorderEndInterruption:")]
 		void EndInterruption (AVAudioRecorder  recorder);
 
-		// Obsolete in 6,0
+		// Deprecated in iOS 6.0 but we have same C# signature
 		[Since (4,0)]
 		[Export ("audioRecorderEndInterruption:withFlags:")]
 		void EndInterruption (AVAudioRecorder recorder, AVAudioSessionInterruptionFlags flags);
@@ -492,6 +495,7 @@ namespace MonoMac.AVFoundation {
 		//[Since (6,0)]
 		//[Export ("audioRecorderEndInterruption:withOptions:")]
 		//void EndInterruption (AVAudioRecorder recorder, AVAudioSessionInterruptionFlags flags);
+#endif
 	}
 
 #if !MONOMAC
