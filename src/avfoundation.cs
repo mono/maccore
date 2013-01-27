@@ -964,10 +964,6 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("chapterMetadataGroupsBestMatchingPreferredLanguages:")]
 		AVTimedMetadataGroup [] GetChapterMetadataGroupsBestMatchingPreferredLanguages (string [] languages);
-
-		[Since (6,0)]
-		[Export ("resourceLoader")]
-		AVAssetResourceLoader ResourceLoader { get; }
 #endif
 	}
 
@@ -1157,10 +1153,12 @@ namespace MonoMac.AVFoundation {
 		AVVideoComposition VideoComposition { get; set;  }
 
 		[Advice ("Use Create method")]
+		[Static]
 		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
 		AVAssetReaderVideoCompositionOutput WeakFromTracks (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
 
 		[Wrap ("WeakFromTracks (videoTracks, settings == null ? null : settings.Dictionary)")]
+		[Static]
 		AVAssetReaderVideoCompositionOutput Create (AVAssetTrack [] videoTracks, [NullAllowed] CVPixelBufferAttributes settings);
 
 		[Export ("initWithVideoTracks:videoSettings:")]
