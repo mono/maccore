@@ -6158,7 +6158,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSUrlRequest request, [NullAllowed] NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
 
 		[Export ("client")]
-		NSObject WeakClient { get; set; }
+		NSObject WeakClient { get; }
 
 		[Export ("request")]
 		NSUrlRequest Request { get; }
