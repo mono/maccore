@@ -73,7 +73,7 @@ namespace MonoMac.AVFoundation {
 			if (cbDecoderError != null)
 				cbDecoderError (player, new AVErrorEventArgs (error));
 		}
-	
+#if !MONOMAC	
 		[Preserve (Conditional = true)]
 		public override void BeginInterruption (AVAudioPlayer  player)
 		{
@@ -87,7 +87,7 @@ namespace MonoMac.AVFoundation {
 			if (cbEndInterruption != null)
 				cbEndInterruption (player, EventArgs.Empty);
 		}
-
+#endif
 	}
 	#pragma warning restore 672
 	
@@ -161,7 +161,7 @@ namespace MonoMac.AVFoundation {
 			if (cbEncoderError != null)
 				cbEncoderError (recorder, new AVErrorEventArgs (error));
 		}
-	
+#if !MONOMAC	
 		[Preserve (Conditional = true)]
 		public override void BeginInterruption (AVAudioRecorder  recorder)
 		{
@@ -176,7 +176,7 @@ namespace MonoMac.AVFoundation {
 			if (cbEndInterruption != null)
 				cbEndInterruption (recorder, EventArgs.Empty);
 		}
-
+#endif
 	}
 
 	public partial class AVAudioRecorder {
