@@ -3865,30 +3865,6 @@ namespace MonoMac.Foundation
 		[Static, Export ("cancelPreviousPerformRequestsWithTarget:selector:object:")]
 		void CancelPreviousPerformRequest (NSObject aTarget, Selector selector, [NullAllowed] NSObject argument);
 	}
-	
-	[BaseType (typeof (NSObject)), Bind ("NSObject")]
-	public interface NSObjectTransformations {
-
-		
-
-– boolValue
-– charValue
-– decimalValue
-– doubleValue
-– floatValue
-– intValue
-– integerValue
-– longLongValue
-– longValue
-– shortValue
-– unsignedCharValue
-– unsignedIntegerValue
-– unsignedIntValue
-– unsignedLongLongValue
-– unsignedLongValue
-– unsignedShortValue
-
-	}
 
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
