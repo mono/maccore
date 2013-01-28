@@ -50,7 +50,9 @@ namespace MonoMac.CoreText {
 			if (handle == IntPtr.Zero)
 				return;
 			try {
+#pragma warning disable 618				
 				DisableBidiProcessing = Dlfcn.GetStringConstant (handle, "kCTTypesetterOptionDisableBidiProcessing");
+#pragma warning restore 618
 				ForceEmbeddingLevel   = Dlfcn.GetStringConstant (handle, "kCTTypesetterOptionForcedEmbeddingLevel");
 			}
 			finally {

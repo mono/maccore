@@ -36,7 +36,7 @@ using MonoMac.CoreGraphics;
 namespace MonoMac.CoreAnimation {
 
 	public partial class CALayer {
-		static IntPtr selInitWithLayer = Selector.sel_registerName ("initWithLayer:");
+		static IntPtr selInitWithLayer = Selector.GetHandle ("initWithLayer:");
 
 		[Export ("initWithLayer:")]
 		public CALayer (CALayer other)

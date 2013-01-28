@@ -35,7 +35,8 @@ namespace MonoMac.CoreVideo {
 	public struct CVTime {
 		public long TimeValue;
 		public long TimeScale;
-		public int Flags;
+		public CVTimeFlags TimeFlags;
+		public int Flags { get { return (int) TimeFlags; } set { TimeFlags = (CVTimeFlags) value; }}
 
 		static IntPtr CoreVideo_libraryHandle = Dlfcn.dlopen (Constants.CoreVideoLibrary, 0);
 
@@ -58,7 +59,7 @@ namespace MonoMac.CoreVideo {
 			
 			CVTime b = (CVTime) other;
 			
-			return (TimeValue == b.TimeValue) && (TimeScale == b.TimeScale) && (Flags == b.Flags);
+			return (TimeValue == b.TimeValue) && (TimeScale == b.TimeScale) && (TimeFlags == b.TimeFlags);
 		}
 		
 		public override int GetHashCode ()

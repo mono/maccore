@@ -73,7 +73,7 @@ namespace MonoMac.AudioToolbox {
 				return "This operation requries AudioSession.Category to be explicitly set";
 				
 			}
-			return String.Format ("Unknown error code: 0x{0:x}", k);
+			return String.Format ("Unknown error code: {0}", k);
 		}
 		
 		internal AudioSessionException (int k) : base (Lookup (k))
@@ -92,7 +92,7 @@ namespace MonoMac.AudioToolbox {
 			Description = description;
 		}
 
-		internal int ID { get; private set; }
+		public int ID { get; private set; }
 		public string Description { get; private set; }
 	}
 	
@@ -107,15 +107,89 @@ namespace MonoMac.AudioToolbox {
 		public int Size  { get; set; }
 		public IntPtr Data { get; set; }
 	}
+
+	public class AudioSessionRouteChangeEventArgs : EventArgs {
+		static IntPtr route_change_key, previous_route_key, current_route_key;
+
+		static AudioSessionRouteChangeEventArgs ()
+		{
+			var lib = Dlfcn.dlopen (Constants.AudioToolboxLibrary, 0);
+			route_change_key = Dlfcn.GetIntPtr (lib, "kAudioSession_RouteChangeKey_Reason");
+			previous_route_key = Dlfcn.GetIntPtr (lib, "kAudioSession_AudioRouteChangeKey_PreviousRouteDescription");
+			current_route_key = Dlfcn.GetIntPtr (lib, "kAudioSession_AudioRouteChangeKey_CurrentRouteDescription");
+
+			Dlfcn.dlclose (lib);
+		}
+
+		public NSDictionary Dictionary { get; private set; }
+		
+		public AudioSessionRouteChangeEventArgs (IntPtr dictHandle)
+		{
+			Dictionary = new NSDictionary (dictHandle);
+		}
+		
+		public AudioSessionRouteChangeReason Reason {
+			get {
+				using (var num = new NSNumber (Dictionary.LowlevelObjectForKey (route_change_key))){
+					return (AudioSessionRouteChangeReason) num.Int32Value;
+				}
+			}
+		}
+
+		NSArray Extract (IntPtr key, NSString secondKey)
+		{
+			var dictH = Dictionary.LowlevelObjectForKey (key);
+			if (dictH == IntPtr.Zero)
+				return null;
+
+//			Console.WriteLine ("Extracting from {2} {0} and getting {1}", new NSString (key), new NSDictionary (dictH).Description, Dictionary.Description);
+			// Description dictionary, indexed by the second key, the result is an array
+			using (var descDict = new NSDictionary (dictH)){
+				var sdict = descDict.LowlevelObjectForKey (secondKey.Handle);
+				if (sdict == IntPtr.Zero)
+					return null;
+
+				return new NSArray (sdict);
+			}
+		}
+
+		public AudioSessionInputRouteKind PreviousInputRoute {
+			get {
+				using (var array = Extract (previous_route_key, AudioSession.AudioRouteKey_Inputs))
+					return AudioSession.GetInputRoute (array);
+			}
+		}
+
+		public AudioSessionOutputRouteKind [] PreviousOutputRoutes {
+			get {
+				using (var array = Extract (previous_route_key, AudioSession.AudioRouteKey_Outputs))
+					return AudioSession.GetOutputRoutes (array);
+			}
+		}
+
+		public AudioSessionInputRouteKind CurrentInputRoute {
+			get {
+				using (var array = Extract (current_route_key, AudioSession.AudioRouteKey_Inputs))
+					return AudioSession.GetInputRoute (array);
+			}
+		}
+
+		public AudioSessionOutputRouteKind [] CurrentOutputRoutes {
+			get {
+				using (var array = Extract (current_route_key, AudioSession.AudioRouteKey_Outputs))
+					return AudioSession.GetOutputRoutes (array);
+			}
+		}
+	}
 	
 	public static class AudioSession {
 		static bool initialized;
 		public static event EventHandler Interrupted;
 		public static event EventHandler Resumed;
 
-		static NSString AudioRouteKey_Type;
-		static NSString AudioRouteKey_Inputs;
-		static NSString AudioRouteKey_Outputs;
+		internal static NSString AudioRouteKey_Type;
+		internal static NSString AudioRouteKey_Inputs;
+		internal static NSString AudioRouteKey_Outputs;
 		
 		static NSString InputRoute_LineIn;
 		static NSString InputRoute_BuiltInMic;
@@ -278,7 +352,7 @@ namespace MonoMac.AudioToolbox {
 		static void SetInt (AudioSessionProperty property, int val)
 		{
 			unsafe {
-				int k = AudioSessionSetProperty (property, 4, (IntPtr) (&val));
+				int k = AudioSessionSetProperty (property, sizeof (int), (IntPtr) (&val));
 				if (k != 0)
 					throw new AudioSessionException (k);
 			}
@@ -327,7 +401,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		[Obsolete ("Use InputRoute or OutputRoute instead")]
+		[Obsolete ("Deprecated in iOS 5.0. Use InputRoute or OutputRoute instead")]
 		static public string AudioRoute {
 			get {
 				return CFString.FetchString ((IntPtr) GetInt (AudioSessionProperty.AudioRoute));
@@ -393,88 +467,91 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		*/
-		
-		// TODO: Wrong can return more than 1 value
-		[Since (5,0)]
-		static public AudioSessionInputRouteKind InputRoute {
-			get {
-				var arr = (NSArray) AudioRouteDescription [AudioRouteKey_Inputs];
+
+		static internal AudioSessionInputRouteKind GetInputRoute (NSArray arr)
+		{
+			if (arr == null || arr.Count == 0)
+				return AudioSessionInputRouteKind.None;
+			
+			var dict = new NSDictionary (arr.ValueAt (0));
+			
+			if (dict == null || dict.Count == 0)
+				return AudioSessionInputRouteKind.None;
+			
+			var val = (NSString) dict [AudioRouteKey_Type];
+			
+			if (val == null)
+				return AudioSessionInputRouteKind.None;
+			
+			if (val == InputRoute_LineIn) {
+				return AudioSessionInputRouteKind.LineIn;
+			} else if (val == InputRoute_BuiltInMic) {
+				return AudioSessionInputRouteKind.BuiltInMic;
+			} else if (val == InputRoute_HeadsetMic) {
+				return AudioSessionInputRouteKind.HeadsetMic;
+			} else if (val == InputRoute_BluetoothHFP) {
+				return AudioSessionInputRouteKind.BluetoothHFP;
+			} else if (val == InputRoute_USBAudio) {
+				return AudioSessionInputRouteKind.USBAudio;
+			} else {
+				return (AudioSessionInputRouteKind) val.Handle;
+			}
+		}
+
+		static internal AudioSessionOutputRouteKind [] GetOutputRoutes (NSArray arr)
+		{
+			if (arr == null || arr.Count == 0)
+				return null;
+			
+			var result = new AudioSessionOutputRouteKind [arr.Count];
+			for (uint i = 0; i < arr.Count; i++) {
+				var dict = new NSDictionary ((IntPtr) arr.ValueAt (i));
 				
-				if (arr == null || arr.Count == 0)
-					return AudioSessionInputRouteKind.None;
-				
-				var dict = new NSDictionary (arr.ValueAt (0));
+				result [i] = AudioSessionOutputRouteKind.None;
 				
 				if (dict == null || dict.Count == 0)
-					return AudioSessionInputRouteKind.None;
+					continue;
 				
 				var val = (NSString) dict [AudioRouteKey_Type];
 				
 				if (val == null)
-					return AudioSessionInputRouteKind.None;
+					continue;
 				
-				if (val == InputRoute_LineIn) {
-					return AudioSessionInputRouteKind.LineIn;
-				} else if (val == InputRoute_BuiltInMic) {
-					return AudioSessionInputRouteKind.BuiltInMic;
-				} else if (val == InputRoute_HeadsetMic) {
-					return AudioSessionInputRouteKind.HeadsetMic;
-				} else if (val == InputRoute_BluetoothHFP) {
-					return AudioSessionInputRouteKind.BluetoothHFP;
-				} else if (val == InputRoute_USBAudio) {
-					return AudioSessionInputRouteKind.USBAudio;
-				} else {
-					// now what?
-					throw new Exception (); // return AudioSessionInputRouteKind.None;
-				}
+				if (val == OutputRoute_LineOut) {
+					result [i] = AudioSessionOutputRouteKind.LineOut;
+				} else if (val == OutputRoute_Headphones) {
+					result [i] = AudioSessionOutputRouteKind.Headphones;
+				} else if (val == OutputRoute_BluetoothHFP) {
+					result [i] = AudioSessionOutputRouteKind.BluetoothHFP;
+				} else if (val == OutputRoute_BluetoothA2DP) {
+					result [i] = AudioSessionOutputRouteKind.BluetoothA2DP;
+				} else if (val == OutputRoute_BuiltInReceiver) {
+					result [i] = AudioSessionOutputRouteKind.BuiltInReceiver;
+				} else if (val == OutputRoute_BuiltInSpeaker) {
+					result [i] = AudioSessionOutputRouteKind.BuiltInSpeaker;
+				} else if (val == OutputRoute_USBAudio) {
+					result [i] = AudioSessionOutputRouteKind.USBAudio;
+				} else if (val == OutputRoute_HDMI) {
+					result [i] = AudioSessionOutputRouteKind.HDMI;
+				} else if (val == OutputRoute_AirPlay) {
+					result [i] = AudioSessionOutputRouteKind.AirPlay;
+				} else
+					result [i] = (AudioSessionOutputRouteKind) val.Handle;
+			}
+			return result;
+		}
+
+		[Since (5,0)]
+		static public AudioSessionInputRouteKind InputRoute {
+			get {
+				return GetInputRoute ((NSArray) AudioRouteDescription [AudioRouteKey_Inputs]);
 			}
 		}
 		
 		[Since (5,0)]
 		static public AudioSessionOutputRouteKind [] OutputRoutes {
 			get {
-				var arr = (NSArray) AudioRouteDescription [AudioRouteKey_Outputs];
-				
-				if (arr == null || arr.Count == 0)
-					return null;
-				
-				var result = new AudioSessionOutputRouteKind [arr.Count];
-				for (uint i = 0; i < arr.Count; i++) {
-					var dict = new NSDictionary ((IntPtr) arr.ValueAt (i));
-					
-					result [i] = AudioSessionOutputRouteKind.None;
-					
-					if (dict == null || dict.Count == 0)
-						continue;
-					
-					var val = (NSString) dict [AudioRouteKey_Type];
-					
-					if (val == null)
-						continue;
-					
-					if (val == OutputRoute_LineOut) {
-						result [i] = AudioSessionOutputRouteKind.LineOut;
-					} else if (val == OutputRoute_Headphones) {
-						result [i] = AudioSessionOutputRouteKind.Headphones;
-					} else if (val == OutputRoute_BluetoothHFP) {
-						result [i] = AudioSessionOutputRouteKind.BluetoothHFP;
-					} else if (val == OutputRoute_BluetoothA2DP) {
-						result [i] = AudioSessionOutputRouteKind.BluetoothA2DP;
-					} else if (val == OutputRoute_BuiltInReceiver) {
-						result [i] = AudioSessionOutputRouteKind.BuiltInReceiver;
-					} else if (val == OutputRoute_BuiltInSpeaker) {
-						result [i] = AudioSessionOutputRouteKind.BuiltInSpeaker;
-					} else if (val == OutputRoute_USBAudio) {
-						result [i] = AudioSessionOutputRouteKind.USBAudio;
-					} else if (val == OutputRoute_HDMI) {
-						result [i] = AudioSessionOutputRouteKind.HDMI;
-					} else if (val == OutputRoute_AirPlay) {
-						result [i] = AudioSessionOutputRouteKind.AirPlay;
-					
-					}
-				}
-				
-				return result;
+				return GetOutputRoutes ((NSArray) AudioRouteDescription [AudioRouteKey_Outputs]);
 			}
 		}
 		
@@ -664,5 +741,40 @@ namespace MonoMac.AudioToolbox {
 				listeners [property] = null;
 		}
 
+               class RouteChangeListener {
+                       public EventHandler<AudioSessionRouteChangeEventArgs> cback;
+                       
+                       public RouteChangeListener (EventHandler<AudioSessionRouteChangeEventArgs> cback)
+                       {
+                               this.cback = cback;
+                       }
+
+                       public void Listener (AudioSessionProperty prop, int size, IntPtr data)
+                       {
+                               cback (null, new AudioSessionRouteChangeEventArgs (data));
+                       }
+               }
+               
+               static Hashtable strongListenerHash;
+               
+               public static event EventHandler<AudioSessionRouteChangeEventArgs> AudioRouteChanged {
+                       add {
+                               if (strongListenerHash == null)
+                                       strongListenerHash = new Hashtable ();
+                               var routeChangeListener = new RouteChangeListener (value);
+                               strongListenerHash [value] = routeChangeListener;
+                               AddListener (AudioSessionProperty.AudioRouteChange, routeChangeListener.Listener);
+                       }
+
+                       remove {
+                               if (strongListenerHash == null)
+                                       return;
+                               var k = strongListenerHash [value] as RouteChangeListener;
+                               if (k != null){
+                                       RemoveListener (AudioSessionProperty.AudioRouteChange, k.Listener);
+                                       strongListenerHash.Remove (value);
+                               }
+                       }
+               }
 	}
 }

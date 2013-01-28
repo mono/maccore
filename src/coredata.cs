@@ -86,7 +86,7 @@ namespace MonoMac.CoreData
 		string AttributeValueClassName { get; set; }
 
 		[Export ("defaultValue")]
-		NSAttributeDescription DefaultValue { get; }
+		NSObject DefaultValue { get; set; }
 
 		[Export ("setDefaultValue:")]
 		void SetDefaultValue (NSObject value);
@@ -295,7 +295,7 @@ namespace MonoMac.CoreData
 		[Export ("propertiesToGroupBy")]
 		NSPropertyDescription [] PropertiesToGroupBy { get; set; }
 	}
-
+#if !MONOMAC
 	[BaseType (typeof (NSObject), Delegates = new string [] { "WeakDelegate" })]
 	interface NSFetchedResultsController {
 
@@ -382,7 +382,7 @@ namespace MonoMac.CoreData
 		[Export ("indexTitle")]
 		string IndexTitle { get; }
 	}
-
+#endif
 	[Since(5,0)]
 	[BaseType (typeof (NSPersistentStore))]
 	interface NSIncrementalStore {
@@ -1053,9 +1053,10 @@ namespace MonoMac.CoreData
 
 		[Field ("NSPersistentStoreUbiquitousContentURLKey")]
 		NSString PersistentStoreUbiquitousContentUrlLKey { get; }
-
+#if !MONOMAC
 		[Field ("NSPersistentStoreFileProtectionKey")]
 		NSString PersistentStoreFileProtectionKey { get; }
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]

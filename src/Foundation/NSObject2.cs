@@ -35,8 +35,8 @@ using MonoMac.CoreGraphics;
 namespace MonoMac.Foundation {
 
 	public partial class NSObject {
-		static IntPtr selConformsToProtocol = Selector.GetHandle ("conformsToProtocol:");
-		static IntPtr selEncodeWithCoder = Selector.GetHandle ("encodeWithCoder:");
+		static readonly IntPtr selConformsToProtocol = Selector.GetHandle ("conformsToProtocol:");
+		static readonly IntPtr selEncodeWithCoder = Selector.GetHandle ("encodeWithCoder:");
 		
 		[Export ("encodeWithCoder:")]
 		public virtual void EncodeTo (NSCoder coder)
@@ -127,6 +127,11 @@ namespace MonoMac.Foundation {
 				else if (t == typeof (CATransform3D))
 					return NSValue.FromCATransform3D ((CATransform3D) obj);
 #endif
+				// last chance for types like CGPath, CGColor... that are not NSObject but are CFObject
+				// see https://bugzilla.xamarin.com/show_bug.cgi?id=8458
+				INativeObject native = (obj as INativeObject);
+				if (native != null)
+					return Runtime.GetNSObject (native.Handle);
 				return null;
 			}
 		}
@@ -147,5 +152,17 @@ namespace MonoMac.Foundation {
 		{
 			return Description ?? base.ToString ();
 		}
+
+                public virtual void Invoke (NSAction action, double delay)
+                {
+                        var d = new NSAsyncActionDispatcher (action);
+                        PerformSelector (NSActionDispatcher.Selector, d, delay);
+                }
+
+                public virtual void Invoke (NSAction action, TimeSpan delay)
+                {
+                        var d = new NSAsyncActionDispatcher (action);
+                        PerformSelector (NSActionDispatcher.Selector, d, delay.TotalSeconds);
+                }
 	}
 }

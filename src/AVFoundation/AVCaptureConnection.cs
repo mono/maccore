@@ -29,6 +29,7 @@
 
 using System;
 using MonoMac.ObjCRuntime;
+using MonoMac.Foundation;
 
 namespace MonoMac.AVFoundation {
 	public partial class AVCaptureConnection {
@@ -43,13 +44,15 @@ namespace MonoMac.AVFoundation {
 
 		public bool SupportsVideoMaxFrameDuration {
 			get {
+#if !MONOMAC
 				if (RespondsToSelector (new Selector ("isVideoMaxFrameDurationSupported")))
 					return _SupportsVideoMaxFrameDuration;
+#endif
 				return false;
 			}
 		}
 
-		[Obsolete ("Use InputPorts")]
+		[Advice ("Use InputPorts")]
 		public AVCaptureInputPort [] inputPorts { 
 			get { return InputPorts; }
 		}

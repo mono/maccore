@@ -72,7 +72,7 @@ namespace MonoMac.CoreImage {
 		internal static IntPtr CreateFilter (string name)
 		{
 			using (var nsname = new NSString (name))
-				return MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, selFilterWithName_, nsname.Handle);
+				return ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (class_ptr, selFilterWithName_, nsname.Handle);
 		}
 
 		// helper methods
@@ -137,7 +137,7 @@ namespace MonoMac.CoreImage {
 		// Calls the selName selector for cases where we do not have an instance created
 		static internal string GetFilterName (IntPtr filterHandle)
 		{
-			return NSString.FromHandle (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (filterHandle, CIFilter.selName));
+			return NSString.FromHandle (ObjCRuntime.Messaging.IntPtr_objc_msgSend (filterHandle, CIFilter.selName));
 		}
 		
 		internal static CIFilter FromName (string filterName, IntPtr handle)
@@ -235,8 +235,6 @@ namespace MonoMac.CoreImage {
 				return new CIToneCurve (handle);
 			case "CIVibrance":
 				return new CIVibrance (handle);
-			case "CIVignette":
-				return new CIVignette (handle);
 			case "CIWhitePointAdjust":
 				return new CIWhitePointAdjust (handle);
 			case "CIFaceBalance":
@@ -333,6 +331,8 @@ namespace MonoMac.CoreImage {
 			case "CIRippleTransition":
 				return new CIRippleTransition (handle);
 #else
+			case "CIVignette":
+				return new CIVignette (handle);
 			case "CILightTunnel":
 				return new CILightTunnel (handle);
 			case "CITriangleKaleidoscope":
@@ -1790,7 +1790,7 @@ namespace MonoMac.CoreImage {
 		}
 		
 	}
-	
+#if !MONOMAC
 	public class CIVignette : CIFilter {
 		public CIVignette () : base (CreateFilter ("CIVignette")) {}
 		public CIVignette (IntPtr handle) : base (handle) {}
@@ -1823,7 +1823,7 @@ namespace MonoMac.CoreImage {
 		}
 		
 	}
-	
+#endif
 	public class CIWhitePointAdjust : CIFilter {
 		public CIWhitePointAdjust () : base (CreateFilter ("CIWhitePointAdjust")) {}
 		public CIWhitePointAdjust (IntPtr handle) : base (handle) {}

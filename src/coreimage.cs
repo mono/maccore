@@ -143,7 +143,7 @@ namespace MonoMac.CoreImage {
 		SizeF OutputImageMaximumSize { get; }
 #endif
 
-		[Obsolete ("Use DrawImage (CIImage, RectangleF, RectangleF) instead")]
+		[Obsolete ("Deprecated in iOS 6.0. Use DrawImage (CIImage, RectangleF, RectangleF) instead")]
 		[Export ("drawImage:atPoint:fromRect:")]
 		void DrawImage (CIImage image, PointF atPoint, RectangleF fromRect);
 
@@ -157,10 +157,10 @@ namespace MonoMac.CoreImage {
 		[Export ("createCGImage:fromRect:format:colorSpace:")]
 		[return: Release ()]
 		CGImage CreateCGImage (CIImage image, RectangleF fromRect, int ciImageFormat, [NullAllowed] CGColorSpace colorSpace);
-
+#if MONOMAC
 		[Internal, Export ("createCGLayerWithSize:info:")]
 		CGLayer CreateCGLayer (SizeF size, [NullAllowed] NSDictionary info);
-
+#endif
 		[Export ("render:toBitmap:rowBytes:bounds:format:colorSpace:")]
 		void RenderToBitmap (CIImage image, IntPtr bitmapPtr, int bytesPerRow, RectangleF bounds, int bitmapFormat, CGColorSpace colorSpace);
 
@@ -272,11 +272,10 @@ namespace MonoMac.CoreImage {
 
 		[Field ("kCIInputImageKey", "+CoreImage")]
 		NSString Image  { get; }
-
+#if !MONOMAC
 		[Field ("kCIInputVersionKey", "+CoreImage")]
 		NSString Version { get; }
-
-#if MONOMAC
+#else
 		[Field ("kCIInputTimeKey", "+CoreImage")]
 		NSString Time  { get; }
 
@@ -603,6 +602,7 @@ namespace MonoMac.CoreImage {
 	[BaseType (typeof (NSObject))]
 	[DisableDefaultCtor]
 	public interface CIFilterShape {
+		[Static]
 		[Export ("shapeWithRect:")]
 		CIFilterShape FromRect (RectangleF rect);
 
@@ -625,7 +625,7 @@ namespace MonoMac.CoreImage {
 		CIFilterShape Intersect (CIFilterShape other);
 
 		[Export ("intersectWithRect:")]
-		CIFilterShape IntersectWithRect (Rectangle rectangle);
+		CIFilterShape IntersectWithRect (RectangleF rectangle);
 	}
 #endif
 	
@@ -639,7 +639,6 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithCGImage:options:")]
-		[Obsolete ("Use FromCGImage (CGImage, CIImageInitializationOptionsWithMetadata) overload")]
 		CIImage FromCGImage (CGImage image, [NullAllowed] NSDictionary d);
 
 		[Static]
@@ -674,7 +673,6 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithContentsOfURL:options:")]
-		[Obsolete ("Use FromUrl (NSUrl, CIImageInitializationOptions) overload")]
 		CIImage FromUrl (NSUrl url, [NullAllowed] NSDictionary d);
 
 		[Static]
@@ -687,7 +685,6 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithData:options:")]
-		[Obsolete ("Use FromData (NSData, CIImageInitializationOptionsWithMetadata) overload")]		
 		CIImage FromData (NSData data, [NullAllowed] NSDictionary d);
 
 		[Static]
@@ -709,7 +706,6 @@ namespace MonoMac.CoreImage {
 
 		[Static]
 		[Export ("imageWithCVPixelBuffer:options:")]
-		[Obsolete ("Use FromImageBuffer (CVPixelBuffer, CIImageInitializationOptions) overload")]		
 		CIImage FromImageBuffer (CVPixelBuffer buffer, [NullAllowed] NSDictionary dict);
 
 		[Static]
@@ -735,7 +731,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (CGImage image);
 
 		[Export ("initWithCGImage:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptionsWithMetadata")]
 		IntPtr Constructor (CGImage image, [NullAllowed] NSDictionary d);
 
 		[Wrap ("this (image, options == null ? null : options.Dictionary)")]
@@ -745,7 +740,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (CGLayer layer);
 
 		[Export ("initWithCGLayer:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptions")]
 		IntPtr Constructor (CGLayer layer, [NullAllowed] NSDictionary d);
 
 		[Wrap ("this (layer, options == null ? null : options.Dictionary)")]
@@ -755,7 +749,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (NSData data);
 
 		[Export ("initWithData:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptionsWithMetadata")]
 		IntPtr Constructor (NSData data, [NullAllowed] NSDictionary d);
 
 		[Wrap ("this (data, options == null ? null : options.Dictionary)")]
@@ -772,7 +765,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (NSUrl url);
 
 		[Export ("initWithContentsOfURL:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptions")]
 		IntPtr Constructor (NSUrl url, [NullAllowed] NSDictionary d);
 
 		[Wrap ("this (url, options == null ? null : options.Dictionary)")]
@@ -789,7 +781,6 @@ namespace MonoMac.CoreImage {
 		IntPtr Constructor (CVImageBuffer imageBuffer);
 
 		[Export ("initWithCVImageBuffer:options:")]
-		[Obsolete ("Use constructor with CIImageInitializationOptions")]
 		IntPtr Constructor (CVImageBuffer imageBuffer, [NullAllowed] NSDictionary dict);
 
 		[Wrap ("this (imageBuffer, options == null ? null : options.Dictionary)")]
@@ -866,20 +857,21 @@ namespace MonoMac.CoreImage {
 
 		[Since (5,0)]
 		[Export ("initWithImage:options")]
-		[Obsolete ("Use constructor with CIImageInitializationOptions")]
 		IntPtr Constructor (UIImage image, [NullAllowed] NSDictionary options);
 
 		[Since (5,0)]
 		[Wrap ("this (image, options == null ? null : options.Dictionary)")]
 		IntPtr Constructor (UIImage image, [NullAllowed] CIImageInitializationOptions options);
 #endif
-
+		[MountainLion]
 		[Field ("kCIImageAutoAdjustFeatures"), Internal]
 		NSString AutoAdjustFeaturesKey { get; }
 
+		[MountainLion]
 		[Field ("kCIImageAutoAdjustRedEye"), Internal]
 		NSString AutoAdjustRedEyeKey { get; }
 
+		[MountainLion]
 		[Field ("kCIImageAutoAdjustEnhance"), Internal]
 		NSString AutoAdjustEnhanceKey { get; }
 		
@@ -895,6 +887,7 @@ namespace MonoMac.CoreImage {
 		[Field ("kCIImageColorSpace"), Internal]
 		NSString CIImageColorSpaceKey { get; }
 
+		[MountainLion]
 		[Field ("kCIImageProperties"), Internal]
 		NSString CIImagePropertiesKey { get; }
 	}
@@ -902,6 +895,7 @@ namespace MonoMac.CoreImage {
 #if MONOMAC
 	[BaseType (typeof (NSObject))]
 	public interface CIImageAccumulator {
+		[Static]
 		[Export ("imageAccumulatorWithExtent:format:")]
 		CIImageAccumulator FromRectangle (RectangleF rect, int ciImageFormat);
 
@@ -926,6 +920,7 @@ namespace MonoMac.CoreImage {
 	}
 
 	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // avoid crashes
 	public interface CIKernel {
 		[Static, Export ("kernelsWithString:")]
 		CIKernel [] FromProgram (string coreImageShaderProgram);
@@ -1091,7 +1086,7 @@ namespace MonoMac.CoreImage {
 	[DisableDefaultCtor]
 	interface CIDetector {
 		[Static, Export ("detectorOfType:context:options:"), Internal]
-		CIDetector FromType (NSString detectorType, [NullAllowed] CIContext context, [NullAllowed] NSDictionary options);
+		CIDetector FromType ([NullAllowed] NSString detectorType, [NullAllowed] CIContext context, [NullAllowed] NSDictionary options);
 
 		[Export ("featuresInImage:")]
 		CIFeature [] FeaturesInImage (CIImage image);
@@ -1101,7 +1096,8 @@ namespace MonoMac.CoreImage {
 
 		[Field ("CIDetectorTypeFace"), Internal]
 		NSString TypeFace { get; }
-		
+
+		[MountainLion]
 		[Field ("CIDetectorImageOrientation"), Internal]
 		NSString ImageOrientation { get; }
 

@@ -246,21 +246,21 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static	void CGContextSetLineDash(IntPtr c, float phase, float [] lenghts, int count);
-		public void SetLineDash (float phase, float [] lenghts)
+		extern static	void CGContextSetLineDash(IntPtr c, float phase, float [] lengths, int count);
+		public void SetLineDash (float phase, float [] lengths)
 		{
-			if (lenghts == null)
-				throw new ArgumentNullException ("lenghts");
-			CGContextSetLineDash (handle, phase, lenghts, lenghts.Length);
+			if (lengths == null)
+				throw new ArgumentNullException ("lengths");
+			CGContextSetLineDash (handle, phase, lengths, lengths.Length);
 		}
 
-		public void SetLineDash (float phase, float [] lenghts, int n)
+		public void SetLineDash (float phase, float [] lengths, int n)
 		{
-			if (lenghts == null)
-				throw new ArgumentNullException ("lenghts");
-			if (n > lenghts.Length)
+			if (lengths == null)
+				throw new ArgumentNullException ("lengths");
+			if (n > lengths.Length)
 				throw new ArgumentNullException ("n");
-			CGContextSetLineDash (handle, phase, lenghts, n);
+			CGContextSetLineDash (handle, phase, lengths, n);
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -551,7 +551,7 @@ namespace MonoMac.CoreGraphics {
 			CGContextSetFillColorWithColor (handle, color.handle);
 		}
 		
-		[Obsolete ("Use SetFillColor() instead.")]
+		[Advice ("Use SetFillColor() instead.")]
 		public void SetFillColorWithColor (CGColor color)
 		{
 			CGContextSetFillColorWithColor (handle, color.handle);
@@ -564,7 +564,7 @@ namespace MonoMac.CoreGraphics {
 			CGContextSetStrokeColorWithColor (handle, color.handle);
 		}
 		
-		[Obsolete ("Use SetStrokeColor() instead.")]
+		[Advice ("Use SetStrokeColor() instead.")]
 		public void SetStrokeColorWithColor (CGColor color)
 		{
 			CGContextSetStrokeColorWithColor (handle, color.handle);
@@ -634,7 +634,7 @@ namespace MonoMac.CoreGraphics {
 			CGContextSetGrayFillColor (handle, gray, alpha);
 		}
 		
-		[Obsolete ("Use SetFillColor() instead.")]
+		[Advice ("Use SetFillColor() instead.")]
 		public void SetGrayFillColor (float gray, float alpha)
 		{
 			CGContextSetGrayFillColor (handle, gray, alpha);
@@ -647,7 +647,7 @@ namespace MonoMac.CoreGraphics {
 			CGContextSetGrayStrokeColor (handle, gray, alpha);
 		}
 		
-		[Obsolete ("Use SetStrokeColor() instead.")]
+		[Advice ("Use SetStrokeColor() instead.")]
 		public void SetGrayStrokeColor (float gray, float alpha)
 		{
 			CGContextSetGrayStrokeColor (handle, gray, alpha);
@@ -660,7 +660,7 @@ namespace MonoMac.CoreGraphics {
 			CGContextSetRGBFillColor (handle, red, green, blue, alpha);
 		}
 		
-		[Obsolete ("Use SetFillColor() instead.")]
+		[Advice ("Use SetFillColor() instead.")]
 		public void SetRGBFillColor (float red, float green, float blue, float alpha)
 		{
 			CGContextSetRGBFillColor (handle, red, green, blue, alpha);
@@ -673,7 +673,7 @@ namespace MonoMac.CoreGraphics {
 			CGContextSetRGBStrokeColor (handle, red, green, blue, alpha);
 		}
 		
-		[Obsolete ("Use SetStrokeColor() instead.")]
+		[Advice ("Use SetStrokeColor() instead.")]
 		public void SetRGBStrokeColor (float red, float green, float blue, float alpha)
 		{
 			CGContextSetRGBStrokeColor (handle, red, green, blue, alpha);
@@ -686,7 +686,7 @@ namespace MonoMac.CoreGraphics {
 			CGContextSetCMYKFillColor (handle, cyan, magenta, yellow, black, alpha);
 		}
 		
-		[Obsolete ("Use SetFillColor() instead.")]
+		[Advice ("Use SetFillColor() instead.")]
 		public void SetCMYKFillColor (float cyan, float magenta, float yellow, float black, float alpha)
 		{
 			CGContextSetCMYKFillColor (handle, cyan, magenta, yellow, black, alpha);
@@ -699,7 +699,7 @@ namespace MonoMac.CoreGraphics {
 			CGContextSetCMYKStrokeColor (handle, cyan, magenta, yellow, black, alpha);
 		}
 		
-		[Obsolete ("Use SetStrokeColor() instead.")]
+		[Advice ("Use SetStrokeColor() instead.")]
 		public void SetCMYKStrokeColor (float cyan, float magenta, float yellow, float black, float alpha)
 		{
 			CGContextSetCMYKStrokeColor (handle, cyan, magenta, yellow, black, alpha);

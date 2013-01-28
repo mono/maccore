@@ -70,9 +70,9 @@ namespace MonoMac.Foundation {
 	[Register ("NSString")]
 #endif
 	public partial class NSString : NSObject {
-		static IntPtr selUTF8String = Selector.sel_registerName ("UTF8String");
-		static IntPtr selInitWithUTF8String = Selector.sel_registerName ("initWithUTF8String:");
-		static IntPtr selInitWithCharactersLength = Selector.sel_registerName ("initWithCharacters:length:");
+		static IntPtr selUTF8String = Selector.GetHandle ("UTF8String");
+		static IntPtr selInitWithUTF8String = Selector.GetHandle ("initWithUTF8String:");
+		static IntPtr selInitWithCharactersLength = Selector.GetHandle ("initWithCharacters:length:");
 
 #if COREBUILD
 		static IntPtr class_ptr = Class.GetHandle ("NSString");
@@ -196,7 +196,7 @@ namespace MonoMac.Foundation {
 			return (int) this.Handle;
 		}
 #if !MONOMAC && !COREBUILD
-		[Obsolete ("Use the version with a `ref float actualFontSize`")]
+		[Advice ("Use the version with a `ref float actualFontSize`")]
 		public System.Drawing.SizeF DrawString (System.Drawing.PointF point, float width, MonoTouch.UIKit.UIFont font, float minFontSize, float actualFontSize, MonoTouch.UIKit.UILineBreakMode breakMode, MonoTouch.UIKit.UIBaselineAdjustment adjustment)
 		{
 			float temp = actualFontSize;

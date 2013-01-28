@@ -27,7 +27,7 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 	public partial class NSInputStream : NSStream {
-		static IntPtr selReadMaxLength = Selector.sel_registerName ("read:maxLength:");
+		static IntPtr selReadMaxLength = Selector.GetHandle ("read:maxLength:");
 
 		CFStreamEventType flags;
 		IntPtr callback;

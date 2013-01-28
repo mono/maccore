@@ -109,7 +109,7 @@ namespace macdoc
 				throw new ArgumentNullException ("options.MonodocArchive");
 			
 			if (string.IsNullOrEmpty (options.DocBase) || !Directory.Exists (options.DocBase))
-				throw new ArgumentException ("DocBase isn't valid", "options.DocBase");
+				throw new ArgumentException (string.Format ("DocBase '{0}' isn't valid", options.DocBase), "options.DocBase");
 			
 			var dbPath = Path.Combine (options.DocBase, "..", "..", "docSet.dsidx");
 			if (!File.Exists (dbPath))

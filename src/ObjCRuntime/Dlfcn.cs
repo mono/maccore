@@ -31,6 +31,7 @@
 using System;
 using System.Runtime.InteropServices;
 using MonoMac.Foundation;
+using MonoMac.CoreFoundation;
 using System.Drawing;
 
 namespace MonoMac.ObjCRuntime {
@@ -92,12 +93,76 @@ namespace MonoMac.ObjCRuntime {
 			return Marshal.ReadInt32 (indirect);
 		}
 
+		public static void SetInt32 (IntPtr handle, string symbol, int value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			Marshal.WriteInt32 (indirect, value);
+		}
+		
+		public static long GetInt64 (IntPtr handle, string symbol)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return 0;
+			return Marshal.ReadInt64 (indirect);
+		}
+		
+		public static void SetInt64 (IntPtr handle, string symbol, long value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			Marshal.WriteInt64 (indirect, value);
+		}
+
+		public static void SetString (IntPtr handle, string symbol, string value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			Marshal.WriteIntPtr (indirect, value == null ? IntPtr.Zero : NSString.CreateNative (value));
+		}
+#if !(GENERATOR || COREBUILD)
+
+		public static void SetString (IntPtr handle, string symbol, NSString value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			var strHandle = value == null ? IntPtr.Zero : value.Handle;
+			if (strHandle != IntPtr.Zero)
+				CFObject.CFRetain (strHandle);
+			Marshal.WriteIntPtr (indirect, strHandle);
+		}
+
+		public static void SetArray (IntPtr handle, string symbol, NSArray array)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			var arrayHandle = array == null ? IntPtr.Zero : array.Handle;
+			if (arrayHandle != IntPtr.Zero)
+				CFObject.CFRetain (arrayHandle);
+			Marshal.WriteIntPtr (indirect, arrayHandle);
+		}
+#endif
+
 		public static IntPtr GetIntPtr (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);
 			if (indirect == IntPtr.Zero)
 				return IntPtr.Zero;
 			return Marshal.ReadIntPtr (indirect);
+		}
+
+		public static void SetIntPtr (IntPtr handle, string symbol, IntPtr value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			Marshal.WriteIntPtr (indirect, value);
 		}
 
 		public static SizeF GetSizeF (IntPtr handle, string symbol)
@@ -108,6 +173,18 @@ namespace MonoMac.ObjCRuntime {
 			unsafe {
 				float *ptr = (float *) indirect;
 				return new SizeF (ptr [0], ptr [1]);
+			}
+		}
+
+		public static void SetSizeF (IntPtr handle, string symbol, SizeF value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			unsafe {
+				float *ptr = (float *) indirect;
+				ptr [0] = value.Width;
+				ptr [1] = value.Height;
 			}
 		}
 
@@ -123,6 +200,16 @@ namespace MonoMac.ObjCRuntime {
 			}
 		}
 
+		public static void SetDouble (IntPtr handle, string symbol, double value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			unsafe {
+				*(double *) indirect = value;
+			}
+		}
+
 		public static float GetFloat (IntPtr handle, string symbol)
 		{
 			var indirect = dlsym (handle, symbol);
@@ -134,6 +221,16 @@ namespace MonoMac.ObjCRuntime {
 				return *d;
 			}
 		}
+
+		public static void SetFloat (IntPtr handle, string symbol, float value)
+		{
+			var indirect = dlsym (handle, symbol);
+			if (indirect == IntPtr.Zero)
+				return;
+			unsafe {
+				*(float *) indirect = value;
+			}
+		}
 		
 		internal static int SlowGetInt32 (string lib, string symbol)
 		{
@@ -142,6 +239,18 @@ namespace MonoMac.ObjCRuntime {
 				return 0;
 			try {
 				return GetInt32 (handle, symbol);
+			} finally {
+				dlclose (handle);
+			}
+		}
+
+		internal static long SlowGetInt64 (string lib, string symbol)
+		{
+			var handle = dlopen (lib, 0);
+			if (handle == IntPtr.Zero)
+				return 0;
+			try {
+				return GetInt64 (handle, symbol);
 			} finally {
 				dlclose (handle);
 			}

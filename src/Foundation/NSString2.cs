@@ -34,16 +34,16 @@ namespace MonoMac.Foundation {
 
 	public partial class NSString {
 		//static Selector selDataUsingEncoding = new Selector ("dataUsingEncoding:");
-		static IntPtr selDataUsingEncodingAllow = Selector.sel_registerName ("dataUsingEncoding:allowLossyConversion:");
-		static IntPtr selInitWithDataEncoding = Selector.sel_registerName ("initWithData:encoding:");
+		static IntPtr selDataUsingEncodingAllow = Selector.GetHandle ("dataUsingEncoding:allowLossyConversion:");
+		static IntPtr selInitWithDataEncoding = Selector.GetHandle ("initWithData:encoding:");
 
-		[Obsolete("Use Encode instead")]
+		[Advice ("Use Encode instead")]
 		public NSData DataUsingEncoding (NSStringEncoding enc)
 		{
 			return new NSData (Messaging.IntPtr_objc_msgSend_int_int (Handle, selDataUsingEncodingAllow, (int) enc, 0));
 		}
 
-		[Obsolete("Use Encode instead")]
+		[Advice ("Use Encode instead")]
 		public NSData DataUsingEncoding (NSStringEncoding enc, bool allowLossyConversion)
 		{
 			return new NSData (Messaging.IntPtr_objc_msgSend_int_int (Handle, selDataUsingEncodingAllow, (int) enc, allowLossyConversion ? 1 : 0));

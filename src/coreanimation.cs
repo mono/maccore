@@ -134,6 +134,9 @@ namespace MonoMac.CoreAnimation {
 	
 		[Export ("frameInterval")]
 		int FrameInterval { get; set;  }
+
+		[Export ("duration")]
+		double Duration { get; }
 	}
 #endif
 
@@ -481,7 +484,7 @@ namespace MonoMac.CoreAnimation {
 		[Export ("autoresizingMask")]
 		CAAutoresizingMask AutoresizinMask { get; set; }
 
-		[Export ("resizeSublayersWithOldSize")]
+		[Export ("resizeSublayersWithOldSize:")]
 		void ResizeSublayers (SizeF oldSize);
 
 		[Export ("resizeWithOldSuperlayerSize:")]
@@ -860,6 +863,12 @@ namespace MonoMac.CoreAnimation {
 
 		[Field ("kCAAnimationRotateAutoReverse")]
 		NSString RotateModeAutoReverse { get; }
+
+#if MONOMAC
+		[MountainLion]
+		[Export ("usesSceneTimeBase")]
+		bool UsesSceneTimeBase { get; set; }
+#endif
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -916,8 +925,8 @@ namespace MonoMac.CoreAnimation {
 		[Export ("values", ArgumentSemantic.Copy)]
 		NSObject [] Values { get; set; }
 	
-		[Export ("path")][Internal]
-		IntPtr _Path { get; set; }
+		[Export ("path")]
+		CGPath Path { get; set; }
 	
 		[Export ("keyTimes", ArgumentSemantic.Copy)][NullAllowed]
 		NSNumber [] KeyTimes { get; set; }
@@ -1139,10 +1148,10 @@ namespace MonoMac.CoreAnimation {
 		bool Asynchronous { [Bind ("isAsynchronous")]get; set; }	
 
 		[Export ("canDrawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
-		bool CanDrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
+		bool CanDrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, ref CVTimeStamp timeStamp);
 
 		[Export ("drawInCGLContext:pixelFormat:forLayerTime:displayTime:")]
-		void DrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, CVTimeStamp timeStamp);
+		void DrawInCGLContext (CGLContext glContext, CGLPixelFormat pixelFormat, double timeInterval, ref CVTimeStamp timeStamp);
 
 		[Export ("copyCGLPixelFormatForDisplayMask:")]
 		CGLPixelFormat CopyCGLPixelFormatForDisplayMask (UInt32 mask);

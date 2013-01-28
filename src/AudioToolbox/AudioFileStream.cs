@@ -32,6 +32,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
+using MonoMac.Foundation;
 
 using OSStatus = System.Int32;
 using AudioFileStreamID = System.IntPtr;
@@ -354,21 +355,21 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		T GetProperty<T> (AudioFileStreamProperty property)
+		T? GetProperty<T> (AudioFileStreamProperty property) where T : struct
 		{
 			int size, writable;
 
 			if (AudioFileStreamGetPropertyInfo (handle, property, out size, out writable) != 0)
-				return default (T);
+				return null;
 			var buffer = Marshal.AllocHGlobal (size);
 			if (buffer == IntPtr.Zero)
-				return default(T);
+				return null;
 			try {
 				var r = AudioFileStreamGetProperty (handle, property, ref size, buffer);
 				if (r == 0)
 					return (T) Marshal.PtrToStructure (buffer, typeof (T));
 
-				return default(T);
+				return null;
 			} finally {
 				Marshal.FreeHGlobal (buffer);
 			}
@@ -401,14 +402,44 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		[Advice ("Use DataFormat")]
 		public AudioStreamBasicDescription StreamBasicDescription {
 			get {
-				return GetProperty<AudioStreamBasicDescription> (AudioFileStreamProperty.DataFormat);
+				return DataFormat;
 			}
 		}
 
-		// TODO: FormatList
-		// TODO: PacketTableInfo=0x706e666f,
+		public AudioStreamBasicDescription DataFormat {
+			get {
+				return GetProperty<AudioStreamBasicDescription> (AudioFileStreamProperty.DataFormat) ?? default (AudioStreamBasicDescription);
+			}
+		}
+
+		public unsafe AudioFormat [] FormatList {
+			get {
+				int size;
+				var r = GetProperty (AudioFileStreamProperty.FormatList, out size);
+				var records = (AudioFormat *) r;
+				if (r == IntPtr.Zero)
+					return null;
+
+				int itemSize = sizeof (AudioFormat);
+				int items = size/itemSize;
+				var ret = new AudioFormat [items];
+					
+				for (int i = 0; i < items; i++)
+					ret [i] = records [i];
+
+				Marshal.FreeHGlobal (r);
+				return ret;
+			}
+		}
+
+		public AudioFilePacketTableInfo? PacketTableInfo {
+			get {
+				return GetProperty<AudioFilePacketTableInfo> (AudioFileStreamProperty.PacketTableInfo);
+			}
+		}
 
 		public byte [] MagicCookie {
 			get {
@@ -504,7 +535,7 @@ namespace MonoMac.AudioToolbox {
 				AudioBytePacketTranslation *p = &buffer;
 				int size = Marshal.SizeOf (buffer);
 				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.PacketToByte, ref size, (IntPtr) p) == 0){
-					isEstimate = (buffer.Flags & 1) == 1;
+					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					return buffer.Byte;
 				}
 				isEstimate = false;
@@ -521,7 +552,7 @@ namespace MonoMac.AudioToolbox {
 				AudioBytePacketTranslation *p = &buffer;
 				int size = Marshal.SizeOf (buffer);
 				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.ByteToPacket, ref size, (IntPtr) p) == 0){
-					isEstimate = (buffer.Flags & 1) == 1;
+					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					byteOffsetInPacket = buffer.ByteOffsetInPacket;
 					return buffer.Packet;
 				}

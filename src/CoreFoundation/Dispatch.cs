@@ -3,9 +3,10 @@
 //
 // Authors:
 //   Miguel de Icaza (miguel@gnome.org)
+//   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2010 Novell, Inc.
-// Copyright 2011, 2012 Xamarin Inc
+// Copyright 2011-2013 Xamarin Inc
 //
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -29,6 +30,7 @@
 //
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
@@ -40,7 +42,7 @@ namespace MonoMac.CoreFoundation {
 		Low = -2,
 	}
 	
-	public class DispatchObject : INativeObject, IDisposable  {
+	public abstract class DispatchObject : INativeObject, IDisposable  {
 		internal IntPtr handle;
 
 		//
@@ -136,48 +138,11 @@ namespace MonoMac.CoreFoundation {
 			return (int) handle;
 		}
 
-		void Check ()
+		protected void Check ()
 		{
 			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("DispatchQueue");
-		}
-			
-		//
-		// Properties and methods
-		//
-		[DllImport ("libc")]
-		extern static void dispatch_suspend (IntPtr o);
-		public void Suspend ()
-		{
-			Check ();
-			dispatch_suspend (handle);
-		}
-
-		[DllImport ("libc")]
-		extern static void dispatch_resume (IntPtr o);
-		
-		public void Resume ()
-		{
-			Check ();
-			dispatch_resume (handle);
-		}
-
-		[DllImport ("libc")]
-		extern static IntPtr dispatch_get_context (IntPtr o);
-
-		[DllImport ("libc")]
-		extern static void dispatch_set_context (IntPtr o, IntPtr ctx);
-
-		public IntPtr Context {
-			get {
-				Check ();
-				return dispatch_get_context (handle);
-			}
-			set {
-				Check ();
-				dispatch_set_context (handle, value);
-			}
-		}
+				throw new ObjectDisposedException (GetType ().ToString ());
+		}			
 	}
 
 	public class DispatchQueue : DispatchObject  {
@@ -211,6 +176,41 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 
+		[DllImport ("libc")]
+		extern static void dispatch_suspend (IntPtr o);
+		public void Suspend ()
+		{
+			Check ();
+			dispatch_suspend (handle);
+		}
+
+		[DllImport ("libc")]
+		extern static void dispatch_resume (IntPtr o);
+		
+		public void Resume ()
+		{
+			Check ();
+			dispatch_resume (handle);
+		}
+
+		[DllImport ("libc")]
+		extern static IntPtr dispatch_get_context (IntPtr o);
+
+		[DllImport ("libc")]
+		extern static void dispatch_set_context (IntPtr o, IntPtr ctx);
+
+		public IntPtr Context {
+			get {
+				Check ();
+				return dispatch_get_context (handle);
+			}
+			set {
+				Check ();
+				dispatch_set_context (handle, value);
+			}
+		}
+	
+		[Obsolete ("Deprecated in iOS 6.0")]
 		public static DispatchQueue CurrentQueue {
 			get {
 				return new DispatchQueue (dispatch_get_current_queue (), false);
@@ -266,16 +266,37 @@ namespace MonoMac.CoreFoundation {
 		//
 		// Dispatching
 		//
-		delegate void dispatch_callback_t (IntPtr context);
-		static dispatch_callback_t static_dispatch = new dispatch_callback_t (static_dispatcher_to_managed);
+		internal delegate void dispatch_callback_t (IntPtr context);
+		internal static readonly dispatch_callback_t static_dispatch = static_dispatcher_to_managed;
 		
 		[MonoPInvokeCallback (typeof (dispatch_callback_t))]
 		static void static_dispatcher_to_managed (IntPtr context)
 		{
 			GCHandle gch = GCHandle.FromIntPtr (context);
-			var action = gch.Target as NSAction;
-			if (action != null)
-				action ();
+			var obj = gch.Target as Tuple<NSAction, DispatchQueue>;
+			if (obj != null) {
+				var sc = SynchronizationContext.Current;
+
+				// Set GCD synchronization context. Mainly used when await executes inside GCD to continue
+				// execution on same dispatch queue. Set the context only when there is no user context
+				// set, including UIKitSynchronizationContext
+				//
+				// This assumes that only 1 queue can run on thread at the same time
+				//
+				if (sc == null)
+					SynchronizationContext.SetSynchronizationContext (new DispatchQueueSynchronizationContext (obj.Item2));
+
+				try {
+					obj.Item1 ();
+				} catch {
+					gch.Free ();
+					throw;
+				} finally {
+					if (sc == null)
+						SynchronizationContext.SetSynchronizationContext (null);
+				}
+			}
+
 			gch.Free ();
 		}
 		
@@ -284,7 +305,7 @@ namespace MonoMac.CoreFoundation {
 			if (action == null)
 				throw new ArgumentNullException ("action");
 			
-			dispatch_async_f (handle, (IntPtr) GCHandle.Alloc (action), static_dispatch);
+			dispatch_async_f (handle, (IntPtr) GCHandle.Alloc (Tuple.Create (action, this)), static_dispatch);
 		}
 
 		public void DispatchSync (NSAction action)
@@ -292,8 +313,9 @@ namespace MonoMac.CoreFoundation {
 			if (action == null)
 				throw new ArgumentNullException ("action");
 			
-			dispatch_sync_f (handle, (IntPtr) GCHandle.Alloc (action), static_dispatch);
+			dispatch_sync_f (handle, (IntPtr) GCHandle.Alloc (Tuple.Create (action, this)), static_dispatch);
 		}
+
 		//
 		// Native methods
 		//
@@ -334,6 +356,117 @@ namespace MonoMac.CoreFoundation {
 			dispatch_main ();
 		}
 #endif
-	
+	}
+
+// FIXME: Remove when MONOMAC is more up-to-date
+#if MONOMAC
+	static class Tuple {
+		public static Tuple<T1, T2> Create<T1, T2>
+			(
+			 T1 item1,
+			 T2 item2) {
+			return new Tuple<T1, T2> (item1, item2);
+		}
+	}
+
+	class Tuple<T1, T2>
+	{
+		T1 item1;
+		T2 item2;
+
+		public Tuple (T1 item1, T2 item2)
+		{
+			 this.item1 = item1;
+			 this.item2 = item2;
+		}
+
+		public T1 Item1 {
+			get { return item1; }
+		}
+
+		public T2 Item2 {
+			get { return item2; }
+		}
+	}
+#endif
+
+	public struct DispatchTime
+	{
+		public static readonly DispatchTime Now = new DispatchTime ();
+		public static readonly DispatchTime Forever = new DispatchTime (ulong.MaxValue);
+
+		public DispatchTime (ulong nanoseconds)
+			: this ()
+		{
+			this.Nanoseconds = nanoseconds;
+		}
+
+		public ulong Nanoseconds { get; private set; }
+
+		// TODO: Bind more
+	}
+
+	public class DispatchGroup : DispatchObject
+	{
+		private DispatchGroup (IntPtr handle, bool owns)
+			: base (handle, owns)
+		{
+		}
+
+		public static DispatchGroup Create ()
+		{
+			var ptr = dispatch_group_create ();
+			if (ptr == IntPtr.Zero)
+				return null;
+
+			return new DispatchGroup (ptr, true);
+		}
+
+		public void DispatchAsync (DispatchQueue queue, NSAction action)
+		{
+			if (queue == null)
+				throw new ArgumentNullException ("queue");
+			if (action == null)
+				throw new ArgumentNullException ("action");
+
+			Check ();
+			dispatch_group_async_f (handle, queue.handle, (IntPtr) GCHandle.Alloc (Tuple.Create (action, queue)), DispatchQueue.static_dispatch);
+		}
+
+		public void Enter ()
+		{
+			Check ();			
+			dispatch_group_enter (handle);
+		}
+
+		public void Leave ()
+		{
+			Check ();
+			dispatch_group_leave (handle);
+		}
+
+		public bool Wait (DispatchTime timeout)
+		{
+			Check ();			
+			return dispatch_group_wait (handle, timeout.Nanoseconds) == IntPtr.Zero;
+		}
+
+		// TODO: dispatch_group_notify_f
+
+		[DllImport ("libc")]
+		extern static IntPtr dispatch_group_create ();
+
+		[DllImport ("libc")]
+		extern static void dispatch_group_async_f (IntPtr group, IntPtr queue, IntPtr context, DispatchQueue.dispatch_callback_t block);
+
+		[DllImport ("libc")]
+		extern static void dispatch_group_enter (IntPtr group);
+
+		[DllImport ("libc")]
+		extern static void dispatch_group_leave (IntPtr group);
+
+		[DllImport ("libc")]
+		// return IntPtr used for 32/64 bits
+		extern static IntPtr dispatch_group_wait (IntPtr group, ulong timeout);
 	}
 }

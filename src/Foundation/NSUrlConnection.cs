@@ -48,7 +48,7 @@ namespace MonoMac.Foundation {
 		}
 		
 		[Export ("scheduleInRunLoop:forMode:")]
-		[Obsolete ("Use Schedule (NSRunLoop, NSString) instead")]
+		[Advice ("Use Schedule (NSRunLoop, NSString) instead")]
 		public virtual void Schedule (NSRunLoop aRunLoop, string forMode)
 		{
 			if (aRunLoop == null)
@@ -66,7 +66,7 @@ namespace MonoMac.Foundation {
 		}
 		
 		[Export ("unscheduleFromRunLoop:forMode:")]
-		[Obsolete ("Use Unschedule (NSRunLoop, NSString) instead")]
+		[Advice ("Use Unschedule (NSRunLoop, NSString) instead")]
 		public virtual void Unschedule (NSRunLoop aRunLoop, string forMode)
 		{
 			if (aRunLoop == null)

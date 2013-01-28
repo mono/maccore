@@ -33,7 +33,7 @@ using MonoMac.Foundation;
 using MonoMac.CoreGraphics;
 using MonoMac.CoreMedia;
 
-namespace MonoTouch.Foundation {
+namespace MonoMac.Foundation {
 	public enum NSCalendarType {
 		Gregorian, Buddhist, Chinese, Hebrew, Islamic, IslamicCivil, Japanese, RepublicOfChina, Persian, Indian, ISO8601
 	}

@@ -99,10 +99,11 @@ namespace MonoMac.AddressBook {
 		IntPtr handle;
 		GCHandle sender;
 
+		[Obsolete ("Deprecated in iOS 6.0")]
 		[DllImport (Constants.AddressBookLibrary)]
 		internal extern static IntPtr ABAddressBookCreate ();
 
-		[Obsolete ("Use static Create method in iOS 6.0")]
+		[Obsolete ("Deprecated in iOS 6.0. Use static Create method instead")]
 		public ABAddressBook ()
 		{
 			this.handle = ABAddressBookCreate ();

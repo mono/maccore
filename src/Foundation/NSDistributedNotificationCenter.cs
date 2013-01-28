@@ -11,7 +11,7 @@ using MonoTouch.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 	public partial class NSDistributedNotificationCenter {
-		[Obsolete ("Use AddObserver (NSObject, Selector, string, NSObject) instead")]
+		[Advice ("Use AddObserver (NSObject, Selector, string, NSObject) instead")]
 		public void AddObserver (NSObject observer, Selector aSelector, string aName, string anObject)
 		{
 			using (var n = new NSString (anObject)){
@@ -19,7 +19,7 @@ namespace MonoMac.Foundation {
 			}
 		}
 
-		[Obsolete ("Use RemoveObserver (NSObject, string, NSObject) instead")]
+		[Advice ("Use RemoveObserver (NSObject, string, NSObject) instead")]
 		public void RemoveObserver (NSObject observer, string aName, string anObject)
 		{
 			using (var n = new NSString (anObject)){

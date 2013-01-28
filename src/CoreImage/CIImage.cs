@@ -28,6 +28,8 @@ using MonoMac.CoreFoundation;
 #if !MONOMAC
 using MonoTouch.UIKit;
 using MonoTouch.CoreGraphics;
+#else
+using MonoMac.CoreGraphics;
 #endif
 
 namespace MonoMac.CoreImage {
@@ -137,20 +139,35 @@ namespace MonoMac.CoreImage {
 		internal static int CIFormatToInt (CIFormat format)
 		{
 			switch (format) {
+#if MONOMAC
+			case CIFormat.ARGB8: return FormatARGB8;			
+			case CIFormat.RGBAh: return FormatRGBAh;
+			case CIFormat.RGBA16: return FormatRGBA16;
+			case CIFormat.RGBAf: return FormatRGBAf;
+#else
 			case CIFormat.ARGB8: return FormatARGB8;
 			case CIFormat.RGBAh: return FormatRGBAh;
 			case CIFormat.BGRA8: return FormatBGRA8;
 			case CIFormat.RGBA8: return FormatRGBA8;
+#endif
 			default:
 				throw new ArgumentOutOfRangeException ("format");
 			}
 		}
 	}
-	
+#if MONOMAC
+    public enum CIFormat {
+		ARGB8,
+		RGBAh,
+		RGBA16,
+		RGBAf
+	}
+#else
 	public enum CIFormat {
 		ARGB8,
 		RGBAh,
 		BGRA8,
 		RGBA8,
 	}
+#endif
 }

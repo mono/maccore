@@ -73,10 +73,11 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVMediaTypeMuxed")]
 		NSString Muxed { get; }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Field ("AVMediaTypeMetadata")]
 		NSString Metadata { get; }
+#endif
 	}
 
 	[Since (4,0)]
@@ -94,26 +95,34 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVMediaCharacteristicFrameBased")]
 		NSString FrameBased { get; }
 
+		[MountainLion]
 		[Field ("AVMediaCharacteristicIsMainProgramContent")]
 		NSString IsMainProgramContent { get; }
 
+		[MountainLion]
 		[Field ("AVMediaCharacteristicIsAuxiliaryContent")]
 		NSString IsAuxiliaryContent { get; }
 
+		[MountainLion]
 		[Field ("AVMediaCharacteristicContainsOnlyForcedSubtitles")]
 		NSString ContainsOnlyForcedSubtitles { get; }
 
+		[MountainLion]
 		[Field ("AVMediaCharacteristicTranscribesSpokenDialogForAccessibility")]
 		NSString TranscribesSpokenDialogForAccessibility { get; }
 
+		[MountainLion]
 		[Field ("AVMediaCharacteristicDescribesMusicAndSoundForAccessibility")]
 		NSString DescribesMusicAndSoundForAccessibility { get; }
 
+		[MountainLion]
 		[Field ("AVMediaCharacteristicDescribesVideoForAccessibility")]
 		NSString DescribesVideoForAccessibility { get;  }
-
+#if !MONOMAC
+		[Since (6,0)]
 		[Field ("AVMediaCharacteristicEasyToRead")]
 		NSString EasyToRead { get; }
+#endif
 	}
 
 	[Since (4,0)]
@@ -204,14 +213,14 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVVideoProfileLevelH264Baseline41")]
 		NSString ProfileLevelH264Baseline41 { get; }
 
-		[Since (5,0)]
+		[Since (5,0)][MountainLion]
 		[Field ("AVVideoProfileLevelH264Main32")]
 		NSString ProfileLevelH264Main32 { get; }
 
 		[Since (5,0)]
 		[Field ("AVVideoProfileLevelH264Main41")]
 		NSString ProfileLevelH264Main41 { get; }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Field ("AVVideoProfileLevelH264High40")]
 		NSString ProfileLevelH264High40 { get; }
@@ -219,7 +228,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Field ("AVVideoProfileLevelH264High41")]
 		NSString ProfileLevelH264High41 { get; }
-		
+#endif
 		[Field ("AVVideoPixelAspectRatioKey")]
 		NSString PixelAspectRatioKey { get; }
 		
@@ -329,6 +338,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("deviceCurrentTime")]
 		double DeviceCurrentTime { get;  }
 
+		[Since (4,0)]
 		[Export ("pan")]
 		float Pan { get; set; }
 
@@ -343,9 +353,18 @@ namespace MonoMac.AVFoundation {
 		[Wrap ("WeakSettings")]
 		AudioSettings SoundSetting { get; }
 
+		[Since (5,0)]
+		[Export ("enableRate")]
+		bool EnableRate { get; set; }
+
+		[Since (5,0)]
+		[Export ("rate")]
+		float Rate { get; set; }		
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("channelAssignments")]
 		AVAudioSessionChannelDescription [] ChannelAssignments { get; set; }
+#endif
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -357,6 +376,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioPlayerDecodeErrorDidOccur:error:")]
 		void DecoderError (AVAudioPlayer player, NSError  error);
 	
+#if !MONOMAC
 		[Export ("audioPlayerBeginInterruption:")]
 		void BeginInterruption (AVAudioPlayer  player);
 	
@@ -364,7 +384,7 @@ namespace MonoMac.AVFoundation {
 		[Obsolete ("Deprecated in iOS 6.0")]
 		void EndInterruption (AVAudioPlayer player);
 
-		// Obsolete in 6,0
+		// Deprecated in iOS 6.0 but we have same C# signature
 		[Since (4,0)]
 		[Export ("audioPlayerEndInterruption:withFlags:")]
 		void EndInterruption (AVAudioPlayer player, AVAudioSessionInterruptionFlags flags);
@@ -372,6 +392,7 @@ namespace MonoMac.AVFoundation {
 		//[Since (6,0)]
 		//[Export ("audioPlayerEndInterruption:withOptions:")]
 		//void EndInterruption (AVAudioPlayer player, AVAudioSessionInterruptionFlags flags);
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -403,7 +424,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("url")]
 		NSUrl Url { get;  }
 	
-		[Obsolete ("Use AudioSettings")]
+		[Advice ("Use AudioSettings")]
 		[Export ("settings")]
 		NSDictionary Settings { get;  }
 
@@ -430,22 +451,23 @@ namespace MonoMac.AVFoundation {
 	
 		[Export ("averagePowerForChannel:")]
 		float AveragePower (uint channelNumber);
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("channelAssignments")]
 		AVAudioSessionChannelDescription [] ChannelAssignments { get; set; }
 
 		[Since (6,0)]
 		[Export ("recordAtTime:")]
-		void RecordAt (double time);
+		bool RecordAt (double time);
 
 		[Since (6,0)]
 		[Export ("recordAtTime:forDuration:")]
-		void RecordAt (double time, float duration);
+		bool RecordAt (double time, double duration);
 
 		[Since (6,0)]
 		[Export ("deviceCurrentTime")]
 		double DeviceCurrentTime { get; }
+#endif
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -456,7 +478,8 @@ namespace MonoMac.AVFoundation {
 	
 		[Export ("audioRecorderEncodeErrorDidOccur:error:")]
 		void EncoderError (AVAudioRecorder recorder, NSError  error);
-	
+
+#if !MONOMAC	
 		[Export ("audioRecorderBeginInterruption:")]
 		void BeginInterruption (AVAudioRecorder  recorder);
 	
@@ -464,7 +487,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioRecorderEndInterruption:")]
 		void EndInterruption (AVAudioRecorder  recorder);
 
-		// Obsolete in 6,0
+		// Deprecated in iOS 6.0 but we have same C# signature
 		[Since (4,0)]
 		[Export ("audioRecorderEndInterruption:withFlags:")]
 		void EndInterruption (AVAudioRecorder recorder, AVAudioSessionInterruptionFlags flags);
@@ -472,8 +495,10 @@ namespace MonoMac.AVFoundation {
 		//[Since (6,0)]
 		//[Export ("audioRecorderEndInterruption:withOptions:")]
 		//void EndInterruption (AVAudioRecorder recorder, AVAudioSessionInterruptionFlags flags);
+#endif
 	}
-	
+
+#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	interface AVAudioSession {
 		[Export ("sharedInstance"), Static]
@@ -483,7 +508,7 @@ namespace MonoMac.AVFoundation {
 		NSObject WeakDelegate { get; set;  }
 
 		[Wrap ("WeakDelegate")]
-		[Obsolete ("AVAudioSession.Delegate is deprecated on iOS 6.0, use AVAudioSession.Notification.Observe* methods instead")]
+		[Obsolete ("Deprecated in iOS 6.0. Use AVAudioSession.Notification.Observe* methods instead")]
 		AVAudioSessionDelegate Delegate { get; set;  }
 	
 		[Export ("setActive:error:")]
@@ -491,13 +516,13 @@ namespace MonoMac.AVFoundation {
 
 		[Since (4,0)]
 		[Export ("setActive:withFlags:error:")]
-		[Obsolete ("Obsolete in iOS 6.0, use SetActive (bool, AVAudioSessionSetActiveOptions, out NSError) instead")]
+		[Obsolete ("Deprecated in iOS 6.0. Use SetActive (bool, AVAudioSessionSetActiveOptions, out NSError) instead")]
 		bool SetActive (bool beActive, AVAudioSessionFlags flags, out NSError outError);
 
 		[Export ("setCategory:error:")]
 		bool SetCategory (NSString theCategory, out NSError outError);
 	
-		[Obsolete ("Obsoleted in iOS 6.0, use SetPreferredSampleRate")]
+		[Obsolete ("Deprecated in iOS 6.0, use SetPreferredSampleRate")]
 		[Export ("setPreferredHardwareSampleRate:error:")]
 		bool SetPreferredHardwareSampleRate (double sampleRate, out NSError outError);
 	
@@ -826,7 +851,7 @@ namespace MonoMac.AVFoundation {
 		AVAudioSessionPortDescription [] Outputs { get;  }
 
 	}
-
+#endif
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** initialization method -init cannot be sent to an abstract object of class AVAsset: Create a concrete instance!
@@ -844,7 +869,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("preferredTransform")]
 		CGAffineTransform PreferredTransform { get;  }
 
-		[Export ("naturalSize"), Obsolete ("Instead use NaturalSize/PreferredTransform as appropriate on the video track")]
+		[Export ("naturalSize"), Obsolete ("Deprecated in iOS 5.0. Use NaturalSize/PreferredTransform as appropriate on the video track")]
 		SizeF NaturalSize { get;  }
 
 		[Export ("providesPreciseDurationAndTiming")]
@@ -909,7 +934,7 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Static, Export ("assetWithURL:")]
 		AVAsset FromUrl (NSUrl url);
-
+#if !MONOMAC
 		[Since (5,0)]
 		[Export ("availableMediaCharacteristicsWithMediaSelectionOptions")]
 		string [] AvailableMediaCharacteristicsWithMediaSelectionOptions { get; }
@@ -921,28 +946,25 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("creationDate")]
 		AVMetadataItem CreationDate { get; }
-
+#endif
 		[Since (5,0)]
 		[Export ("referenceRestrictions")]
 		AVAssetReferenceRestrictions ReferenceRestrictions { get; }
-
+#if !MONOMAC
 		[Since (5,0)]
 		[Export ("mediaSelectionGroupForMediaCharacteristic:")]
 		AVMediaSelectionGroup MediaSelectionGroupForMediaCharacteristic (string avMediaCharacteristic);
-
+#endif
 		[Export ("statusOfValueForKey:error:")]
 		AVKeyValueStatus StatusOfValue (string key, out NSError error);
 
 		[Export ("loadValuesAsynchronouslyForKeys:completionHandler:")]
 		void LoadValuesAsynchronously (string [] keys, NSAction handler);
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("chapterMetadataGroupsBestMatchingPreferredLanguages:")]
 		AVTimedMetadataGroup [] GetChapterMetadataGroupsBestMatchingPreferredLanguages (string [] languages);
-
-		[Since (6,0)]
-		[Export ("resourceLoader")]
-		AVAssetResourceLoader ResourceLoader { get; }
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -995,10 +1017,11 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("requestedTimeToleranceAfter")]
 		CMTime RequestedTimeToleranceAfter { get; set;  }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("asset")]
 		AVAsset Asset { get; }
+#endif
 	}
 	
 	[Since (4,1)]
@@ -1063,7 +1086,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("track")]
 		AVAssetTrack Track { get;  }
 
-		[Obsolete ("Use Create method")]
+		[Advice ("Use Create method")]
 		[Static, Export ("assetReaderTrackOutputWithTrack:outputSettings:")]
 		AVAssetReaderTrackOutput FromTrack (AVAssetTrack track, [NullAllowed] NSDictionary outputSettings);
 
@@ -1097,7 +1120,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("audioMix", ArgumentSemantic.Copy)]
 		AVAudioMix AudioMix { get; set;  }
 
-		[Obsolete ("Use Create method")]
+		[Advice ("Use Create method")]
 		[Static, Export ("assetReaderAudioMixOutputWithAudioTracks:audioSettings:")]
 		AVAssetReaderAudioMixOutput FromTracks (AVAssetTrack [] audioTracks, [NullAllowed] NSDictionary audioSettings);
 
@@ -1110,7 +1133,7 @@ namespace MonoMac.AVFoundation {
 		[Wrap ("this (audioTracks, settings == null ? null : settings.Dictionary)")]
 		IntPtr Constructor (AVAssetTrack [] audioTracks, [NullAllowed] AudioSettings settings);
 
-		[Obsolete ("Use Settings property")]
+		[Advice ("Use Settings property")]
 		[Export ("audioSettings")]
 		NSDictionary AudioSettings { get; }
 
@@ -1129,11 +1152,13 @@ namespace MonoMac.AVFoundation {
 		[Export ("videoComposition", ArgumentSemantic.Copy)]
 		AVVideoComposition VideoComposition { get; set;  }
 
-		[Obsolete ("Use Create method")]
+		[Advice ("Use Create method")]
+		[Static]
 		[Export ("assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:")]
 		AVAssetReaderVideoCompositionOutput WeakFromTracks (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
 
 		[Wrap ("WeakFromTracks (videoTracks, settings == null ? null : settings.Dictionary)")]
+		[Static]
 		AVAssetReaderVideoCompositionOutput Create (AVAssetTrack [] videoTracks, [NullAllowed] CVPixelBufferAttributes settings);
 
 		[Export ("initWithVideoTracks:videoSettings:")]
@@ -1148,7 +1173,7 @@ namespace MonoMac.AVFoundation {
 		[Wrap ("WeakVideoSettings")]
 		CVPixelBufferAttributes UncompressedVideoSettings { get; }
 	}
-
+#if !MONOMAC
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVAssetResourceLoader {
@@ -1189,7 +1214,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("streamingContentKeyRequestDataForApp:contentIdentifier:options:error:")]
 		NSData GetStreamingContentKey (NSData appIdentifier, NSData contentIdentifier, [NullAllowed] NSDictionary options, out NSError error);
 	}
-	
+#endif
 	[Since (4,1)]
 	[BaseType (typeof (NSObject))]
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[AVAssetWriter initWithURL:fileType:error:] invalid parameter not satisfying: outputURL != ((void*)0)
@@ -1253,13 +1278,13 @@ namespace MonoMac.AVFoundation {
 		void CancelWriting ();
 
 		[Export ("finishWriting")]
-		[Obsolete ("This is a synchronous methods, use the asynchronous FinishWriting(NSAction completionHandler) instead")]
+		[Obsolete ("Deprecated in iOS 6.0. Use the asynchronous FinishWriting(NSAction completionHandler) instead")]
 		bool FinishWriting ();
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("finishWritingWithCompletionHandler:")]
 		void FinishWriting (NSAction completionHandler);
-
+#endif
 		[Export ("movieTimeScale")]
 		int MovieTimeScale { get; set; }
 	}
@@ -1317,7 +1342,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("expectsMediaDataInRealTime")]
 		bool ExpectsMediaDataInRealTime { get; set;  }
 
-		[Obsolete ("Use constructor or Create method")]
+		[Advice ("Use constructor or Create method")]
 		[Static, Export ("assetWriterInputWithMediaType:outputSettings:")]
 		AVAssetWriterInput FromType (string mediaType, [NullAllowed] NSDictionary outputSettings);
 
@@ -1373,7 +1398,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("pixelBufferPool")]
 		CVPixelBufferPool PixelBufferPool { get;  }
 
-		[Obsolete ("Use Create method")]
+		[Advice ("Use Create method")]
 		[Static, Export ("assetWriterInputPixelBufferAdaptorWithAssetWriterInput:sourcePixelBufferAttributes:")]
 		AVAssetWriterInputPixelBufferAdaptor FromInput (AVAssetWriterInput input, [NullAllowed] NSDictionary sourcePixelBufferAttributes);
 
@@ -1398,7 +1423,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("URL", ArgumentSemantic.Copy)]
 		NSUrl Url { get;  }
 
-		[Obsolete ("Use Create or constructor")]
+		[Advice ("Use Create or constructor")]
 		[Static, Export ("URLAssetWithURL:options:")]
 		AVUrlAsset FromUrl (NSUrl URL, [NullAllowed] NSDictionary options);
 
@@ -1432,10 +1457,11 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Static, Export ("isPlayableExtendedMIMEType:")]
 		bool IsPlayable (string extendedMimeType);
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("resourceLoader")]
 		AVAssetResourceLoader ResourceLoader { get;  }
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1451,9 +1477,12 @@ namespace MonoMac.AVFoundation {
 		[Export ("mediaType")]
 		string MediaType { get;  }
 
-		// TODO: CMFormatDescriptions
+		// Weak version
 		[Export ("formatDescriptions")]
 		NSObject [] FormatDescriptionsAsObjects { get;  }
+
+		[Wrap ("Array.ConvertAll (FormatDescriptionsAsObjects, l => CMFormatDescription.Create (l.Handle, false))")]
+		CMFormatDescription[] FormatDescriptions { get; }
 
 		[Export ("enabled")]
 		bool Enabled { [Bind ("isEnabled")] get;  }
@@ -1515,7 +1544,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("isPlayable")]
 		bool Playable { get; }
 	}
-
+#if !MONOMAC
 	[BaseType (typeof (NSObject))]
 	interface AVMediaSelectionGroup {
 		[Export ("options")]
@@ -1576,7 +1605,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("propertyList")]
 		NSObject PropertyList { get; }
 	}
-
+#endif
 	[Static]
 	interface AVMetadata {
 		[Field ("AVMetadataKeySpaceCommon")]
@@ -1767,7 +1796,8 @@ namespace MonoMac.AVFoundation {
 		
 		[Field ("AVMetadataQuickTimeUserDataKeyPhonogramRights")]
 		NSString QuickTimeUserDataKeyPhonogramRights { get; }
-		
+
+		[MountainLion]
 		[Field ("AVMetadataQuickTimeUserDataKeyTaggedCharacteristic")]
 		NSString QuickTimeUserDataKeyTaggedCharacteristic { get; }
 		
@@ -2415,7 +2445,7 @@ namespace MonoMac.AVFoundation {
 		[Static, Export ("metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:")]
 		AVMetadataItem [] FilterFromPreferredLanguages (AVMetadataItem [] metadataItems, string [] preferredLanguages);
 	}
-
+#if !MONOMAC
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	// Objective-C exception thrown.  Name: NSGenericException Reason: Cannot instantiate AVMetadataObject because it is an abstract superclass.
@@ -2455,7 +2485,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("faceID")]
 		int FaceID { get; }
 	}
-	
+#endif
 	[Since (4,0)]
 	[BaseType (typeof (AVMetadataItem))]
 	interface AVMutableMetadataItem {
@@ -2478,11 +2508,11 @@ namespace MonoMac.AVFoundation {
 		NSDictionary ExtraAttributes { get; set;  }
 
 		[Export ("key", ArgumentSemantic.Copy)]
-		NSObject Key { get; }
+		NSObject Key { get; set; }
 		
 		[Since (4,2)]
 		[Export ("duration")]
-		CMTime Duration { get; }
+		CMTime Duration { get; set; }
 	}
 
 	[Since (4,0)]
@@ -2555,10 +2585,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("tracks")]
 		AVCompositionTrack [] Tracks { get; }
 
-		[Obsolete ("Deprecated in iOS5")]
+		[Obsolete ("Deprecated in iOS 5.0 and OSX 10.8")]
 		[Export ("naturalSize")]
-		SizeF NaturalSize { get; }
-
+		SizeF NaturalSize { get; [NotImplemented] set; }
 	}
 
 	[Since (4,0)]
@@ -2587,6 +2616,11 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("mutableTrackCompatibleWithTrack:")]
 		AVMutableCompositionTrack CreateMutableTrack (AVAssetTrack referenceTrack);
+
+		[Obsolete ("Deprecated in iOS 5.0 and OSX 10.8")]
+		[Export ("naturalSize")]
+		[Override]
+		SizeF NaturalSize { get; set; }
 	}
 	
 	[Since (4,0)]
@@ -2678,7 +2712,7 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("error")]
 		NSError Error { get; }
-
+#if !MONOMAC
 		[Field ("AVAssetExportPresetLowQuality")]
 		NSString PresetLowQuality { get; }
 
@@ -2687,7 +2721,7 @@ namespace MonoMac.AVFoundation {
 
 		[Field ("AVAssetExportPresetHighestQuality")]
 		NSString PresetHighestQuality { get; }
-
+#endif
 		[Field ("AVAssetExportPreset640x480")]
 		NSString Preset640x480 { get; }
 
@@ -2709,7 +2743,7 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("estimatedOutputFileLength")]
 		long EstimatedOutputFileLength { get; }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Static, Export ("determineCompatibilityOfExportPreset:withAsset:outputFileType:completionHandler:")]
 		void DetermineCompatibilityOfExportPreset (string presetName, AVAsset asset, string outputFileType, Action<bool> isCompatibleResult);
@@ -2717,6 +2751,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("determineCompatibleFileTypesWithCompletionHandler:")]
 		void DetermineCompatibleFileTypes (Action<string []> compatibleFileTypesHandler);
+#endif
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -2743,7 +2778,7 @@ namespace MonoMac.AVFoundation {
 		int TrackID { get;  }
 
 		[Export ("getVolumeRampForTime:startVolume:endVolume:timeRange:")]
-		bool GetVolumeRamp (CMTime forTime, float startVolume, float endVolume, CMTimeRange timeRange);
+		bool GetVolumeRamp (CMTime forTime, ref float startVolume, ref float endVolume, ref CMTimeRange timeRange);
 
 #if !MONOMAC
 		[Since (6,0)]
@@ -2793,17 +2828,18 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("animationTool", ArgumentSemantic.Retain)]
 		AVVideoCompositionCoreAnimationTool AnimationTool { get;  }
-
+#if !MONOMAC
 		[Export ("renderScale")]
 		float RenderScale { get; set; }
-
+#endif
 		[Since (5,0)]
 		[Export ("isValidForAsset:timeRange:validationDelegate:")]
                 bool IsValidForAsset (AVAsset asset, CMTimeRange timeRange, AVVideoCompositionValidationHandling validationDelegate);
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Static, Export ("videoCompositionWithPropertiesOfAsset:")]
 		AVVideoComposition FromAssetProperties (AVAsset asset);
+#endif
 	}
 
 	[Since (5,0)]
@@ -2839,10 +2875,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("animationTool")]
 		AVVideoCompositionCoreAnimationTool AnimationTool { get; set;  }
-
+#if !MONOMAC
 		[Export ("renderScale")]
-		float RenderScale { get; }
-
+		float RenderScale { get; set; }
+#endif
 		[Static, Export ("videoComposition")]
 		AVMutableVideoComposition Create ();
 	}
@@ -2889,10 +2925,10 @@ namespace MonoMac.AVFoundation {
 		int TrackID { get;  }
 
 		[Export ("getTransformRampForTime:startTransform:endTransform:timeRange:")]
-		bool GetTransformRamp (CMTime time, CGAffineTransform startTransform, CGAffineTransform endTransform, CMTimeRange timeRange);
+		bool GetTransformRamp (CMTime time, ref CGAffineTransform startTransform, ref CGAffineTransform endTransform, ref CMTimeRange timeRange);
 
 		[Export ("getOpacityRampForTime:startOpacity:endOpacity:timeRange:")]
-		bool GetOpacityRamp (CMTime time, float startOpacity, float endOpacity, CMTimeRange timeRange);
+		bool GetOpacityRamp (CMTime time, ref float startOpacity, ref float endOpacity, ref CMTimeRange timeRange);
 	}
 
 	[Since (4,0)]
@@ -2953,10 +2989,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("running")]
 		bool Running { [Bind ("isRunning")] get;  }
-
+#if !MONOMAC
 		[Export ("interrupted")]
 		bool Interrupted { [Bind ("isInterrupted")] get;  }
-
+#endif
 		[Export ("canSetSessionPreset:")]
 		bool CanSetSessionPreset (NSString preset);
 
@@ -3031,7 +3067,7 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVCaptureSessionDidStopRunningNotification")]
 		[Notification]
 		NSString DidStopRunningNotification { get; }
-		
+#if !MONOMAC
 		[Field ("AVCaptureSessionWasInterruptedNotification")]
 		[Notification]
 		NSString WasInterruptedNotification { get; }
@@ -3039,6 +3075,7 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVCaptureSessionInterruptionEndedNotification")]
 		[Notification]
 		NSString InterruptionEndedNotification { get; }
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -3076,7 +3113,7 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("videoMinFrameDuration")]
 		CMTime VideoMinFrameDuration { get; set;  }
-
+#if !MONOMAC
 		[Export ("supportsVideoMaxFrameDuration"), Internal]
 		bool _SupportsVideoMaxFrameDuration { [Bind ("isVideoMaxFrameDurationSupported")] get;  }
 
@@ -3088,7 +3125,7 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("videoScaleAndCropFactor")]
 		float VideoScaleAndCropFactor { get; set;  }
-
+#endif
 		[Since (6,0)]
 		[Export ("videoPreviewLayer")]
 		AVCaptureVideoPreviewLayer VideoPreviewLayer { get;  }
@@ -3096,7 +3133,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("automaticallyAdjustsVideoMirroring")]
 		bool AutomaticallyAdjustsVideoMirroring { get; set;  }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("supportsVideoStabilization")]
 		bool SupportsVideoStabilization { [Bind ("isVideoStabilizationSupported")] get;  }
@@ -3108,6 +3145,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("enablesVideoStabilizationWhenAvailable")]
 		bool EnablesVideoStabilizationWhenAvailable { get; set;  }
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -3175,9 +3213,10 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("connectionWithMediaType:")]
                 AVCaptureConnection ConnectionFromMediaType (NSString avMediaType);
-
+#if !MONOMAC
 		[Export ("transformedMetadataObjectForMetadataObject:connection:")]
 		AVMetadataObject GetTransformedMetadataObject (AVMetadataObject metadataObject, AVCaptureConnection connection);
+#endif
 	}
 
 	[Since (4,0)]
@@ -3185,7 +3224,11 @@ namespace MonoMac.AVFoundation {
         interface AVCaptureVideoPreviewLayer {
                 [Export ("session")]
                 AVCaptureSession Session { get; set;  }
-
+#if MONOMAC
+		[Lion]
+		[Export ("setSessionWithNoConnection:")]
+		void SetSessionWithNoConnection (AVCaptureSession session);
+#else
                 [Export ("orientation")]
 		[Obsolete ("Deprecated in iOS 6.0")]
                 AVCaptureVideoOrientation Orientation { get; set;  }
@@ -3206,13 +3249,13 @@ namespace MonoMac.AVFoundation {
 		[Obsolete ("Deprecated in iOS 6.0")]
 		bool OrientationSupported { get; }
 
-		[Obsolete ("Use LayerVideoGravity")]
+		[Advice ("Use LayerVideoGravity")]
 		[Export ("videoGravity")]
 		string VideoGravity { get; set; }
 
 		[Export ("videoGravity")][Protected]
 		NSString WeakVideoGravity { get; set; }
-
+#endif
                 [Static, Export ("layerWithSession:")]
                 AVCaptureVideoPreviewLayer FromSession (AVCaptureSession session);
 
@@ -3222,7 +3265,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("connection")]
 		AVCaptureConnection Connection { get; }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("captureDevicePointOfInterestForPoint:")]
 		PointF CaptureDevicePointOfInterestForPoint (PointF pointInLayer);
@@ -3232,8 +3275,9 @@ namespace MonoMac.AVFoundation {
 		PointF PointForCaptureDevicePointOfInterest (PointF captureDevicePointOfInterest);
 
 		[Since (6,0)]
-		[Export ("rectForMetadataObject:")]
+		[Export ("transformedMetadataObjectForMetadataObject:")]
 		AVMetadataObject GetTransformedMetadataObject (AVMetadataObject metadataObject);
+#endif
         }
 	
 	[Since (4,0)]
@@ -3255,7 +3299,7 @@ namespace MonoMac.AVFoundation {
 		AVVideoSettingsCompressed CompressedVideoSetting { get; set; }
 
 		[Export ("minFrameDuration")]
-		[Obsolete ("On iOS 5.0 and later, you can use AVCaptureConnection's MinVideoFrameDuration")]
+		[Obsolete ("Deprecated in iOS 5.0. Use AVCaptureConnection's MinVideoFrameDuration")]
 		CMTime MinFrameDuration { get; set;  }
 
 		[Export ("alwaysDiscardsLateVideoFrames")]
@@ -3264,7 +3308,7 @@ namespace MonoMac.AVFoundation {
 		[Export ("setSampleBufferDelegate:queue:")]
 		[PostGet ("SampleBufferDelegate")]
 		[PostGet ("SampleBufferCallbackQueue")]
-		void SetSampleBufferDelegate ([NullAllowed] AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, IntPtr sampleBufferCallbackQueue);
+		void SetSampleBufferDelegate ([NullAllowed] AVCaptureVideoDataOutputSampleBufferDelegate sampleBufferDelegate, [NullAllowed] DispatchQueue sampleBufferCallbackQueue);
 
 		// 5.0 APIs
 		[Export ("availableVideoCVPixelFormatTypes")]
@@ -3389,7 +3433,7 @@ namespace MonoMac.AVFoundation {
 		AVMetadataItem [] Metadata { get; set;  }
 
 		[Export ("movieFragmentInterval")]
-		CMTime MovieFragmentInterval { get; }
+		CMTime MovieFragmentInterval { get; set; }
 	}
 
 	[Since (4,0)]
@@ -3526,7 +3570,7 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVCaptureDeviceWasDisconnectedNotification")]
 		[Notification]
 		NSString WasDisconnectedNotification { get; }
-
+#if !MONOMAC
 		[Field ("AVCaptureDeviceSubjectAreaDidChangeNotification")]
 		[Notification]
 		NSString SubjectAreaDidChangeNotification { get; }
@@ -3572,6 +3616,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("automaticallyEnablesLowLightBoostWhenAvailable")]
 		bool AutomaticallyEnablesLowLightBoostWhenAvailable { get; set; }
+#endif
 	}
 
 	public delegate void AVCompletionHandler ();
@@ -3638,23 +3683,23 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("status")]
 		AVPlayerStatus Status { get; }
-
+#if !MONOMAC
 		// 5.0
 		[Since (5,0)]
-		[Obsolete ("Obsoleted in iOS6, use AllowsExternalPlayback")]
+		[Obsolete ("Deprecated in iOS 6.0. Use AllowsExternalPlayback instead")]
 		[Export ("allowsAirPlayVideo")]
 		bool AllowsAirPlayVideo { get; set;  }
 
 		[Since (5,0)]
-		[Obsolete ("Obsoleted in iOS6, use ExternalPlaybackActive")]
+		[Obsolete ("Deprecated in iOS 6.0. Use ExternalPlaybackActive instead")]
 		[Export ("airPlayVideoActive")]
 		bool AirPlayVideoActive { [Bind ("isAirPlayVideoActive")] get;  }
 
 		[Since (5,0)]
-		[Obsolete ("Obsoleted in iOS6, use UsesExternalPlaybackWhileExternalScreenIsActive")]
+		[Obsolete ("Deprecated in iOS 6.0. Use UsesExternalPlaybackWhileExternalScreenIsActive instead")]
 		[Export ("usesAirPlayVideoWhileAirPlayScreenIsActive")]
 		bool UsesAirPlayVideoWhileAirPlayScreenIsActive { get; set;  }
-
+#endif
 		[Since (5,0)]
 		[Export ("seekToTime:completionHandler:")]
 		void Seek (CMTime time, AVCompletion completion);
@@ -3662,7 +3707,7 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("seekToTime:toleranceBefore:toleranceAfter:completionHandler:")]
 		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletion completion);
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("seekToDate:")]
 		void Seek (NSDate date);
@@ -3670,7 +3715,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("seekToDate:completionHandler:")]
 		void Seek (NSDate date, AVCompletion onComplete);
-
+#endif
 		[Since (6,0)]
 		[Export ("setRate:time:atHostTime:")]
 		void SetRate (float rate, CMTime itemTime, CMTime hostClockTime);
@@ -3682,15 +3727,15 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("cancelPendingPrerolls")]
 		void CancelPendingPrerolls ();
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("outputObscuredDueToInsufficientExternalProtection")]
 		bool OutputObscuredDueToInsufficientExternalProtection { get; }
-
+#endif
 		[Since (6,0)]
 		[Export ("masterClock")]
-		CMClock MasterClock { get; }
-
+		CMClock MasterClock { get; set; }
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("allowsExternalPlayback")]
 		bool AllowsExternalPlayback { get; set;  }
@@ -3706,8 +3751,9 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)][Protected]
 		[Export ("externalPlaybackVideoGravity")]
 		NSString WeakExternalPlaybackVideoGravity { get; set; }
+#endif
 	}
-
+#if !MONOMAC
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	interface AVTextStyleRule {
@@ -3758,15 +3804,15 @@ namespace MonoMac.AVFoundation {
 		[Wrap ("this (attributes == null ? null : attributes.Dictionary, textSelector)")]
 		IntPtr Constructor (CMTextMarkupAttributes attributes, string textSelector);
 	}
-
+#endif
 	[BaseType (typeof (NSObject))]
 	[Since (4,3)]
 	interface AVTimedMetadataGroup {
 		[Export ("timeRange")]
-		CMTimeRange TimeRange { get;  }
+		CMTimeRange TimeRange { get; [NotImplemented] set; }
 
 		[Export ("items")]
-		AVMetadataItem [] Items { get;  }
+		AVMetadataItem [] Items { get; [NotImplemented] set; }
 
 		[Export ("initWithItems:timeRange:")]
 		IntPtr Constructor (AVMetadataItem [] items, CMTimeRange timeRange);
@@ -3775,10 +3821,12 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (AVTimedMetadataGroup))]
 	interface AVMutableTimedMetadataGroup {
 		[Export ("items")]
+		[Override]
 		AVMetadataItem [] Items { get; set;  }
 
 		[Export ("timeRange")]
-		CMTimeRange Timerange { get; set; }
+		[Override]
+		CMTimeRange TimeRange { get; set; }
 	}
 
 	delegate void AVTimeHandler (CMTime time);
@@ -3858,10 +3906,10 @@ namespace MonoMac.AVFoundation {
 		bool Seek (NSDate date);
 
 		[Export ("seekToTime:")]
-		bool Seek (CMTime time);
+		void Seek (CMTime time);
 		
-		[Export ("seekToDate:")]
-		bool SeekToDate (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter);
+		[Export ("seekToTime:toleranceBefore:toleranceAfter:")]
+		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter);
 
 		[Export ("error")]
 		NSError Error { get; }
@@ -3919,14 +3967,14 @@ namespace MonoMac.AVFoundation {
 		[Since (5,0)]
 		[Export ("seekToTime:toleranceBefore:toleranceAfter:completionHandler:")]
 		void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletion completion);
-
+#if !MONOMAC
 		[Since (5,0)]
 		[Export ("selectMediaOption:inMediaSelectionGroup:")]
 		void SelectMediaOption (AVMediaSelectionOption mediaSelectionOption, AVMediaSelectionGroup mediaSelectionGroup);
 
 		[Export ("selectedMediaOptionInMediaSelectionGroup:")]
 		AVMediaSelectionOption SelectedMediaOption (AVMediaSelectionGroup inMediaSelectionGroup);
-
+#endif
 		[Since (6,0)]
 		[Export ("canPlaySlowForward")]
 		bool CanPlaySlowForward { get;  }
@@ -3964,7 +4012,7 @@ namespace MonoMac.AVFoundation {
 		[Since (6,0)]
 		[Export ("timebase")]
 		CMTimebase Timebase { get;  }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("seekToDate:completionHandler:")]
 		bool Seek (NSDate date, AVCompletion completion);
@@ -3988,6 +4036,7 @@ namespace MonoMac.AVFoundation {
 		[Field ("AVPlayerItemNewErrorLogEntryNotification")]
 		[Notification]
 		NSString NewErrorLogEntryNotification { get; }
+#endif
 	}
 
 	[Since (6,0)]
@@ -4118,10 +4167,11 @@ namespace MonoMac.AVFoundation {
 
 		[Export ("numberOfDroppedVideoFrames")]
 		int DroppedVideoFrameCount { get; }
-
+#if !MONOMAC
 		[Since (6,0)]
 		[Export ("numberOfMediaRequests")]
 		int NumberOfMediaRequests { get; }
+#endif
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -4158,7 +4208,7 @@ namespace MonoMac.AVFoundation {
 		[Static, Export ("playerLayerWithPlayer:")]
 		AVPlayerLayer FromPlayer (AVPlayer player);
 
-		[Obsolete ("Use LayerVideoGravity")]
+		[Advice ("Use LayerVideoGravity")]
 		[Export ("videoGravity")]
 		string VideoGravity { get; set; }
 

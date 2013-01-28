@@ -3,6 +3,7 @@
 //
 // Authors:
 //    Miguel de Icaza (miguel@xamarin.com)
+//    Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2009 Novell, Inc
 // Copyright 2011, 2012 Xamarin Inc.
@@ -52,13 +53,14 @@ namespace MonoMac.AudioToolbox {
 		AAC_ADTS = 0x61647473, // adts
 		MPEG4 = 0x6d703466, // mp4f
 		M4A = 0x6d346166, // m4af
+		M4B = 0x6d346266, // m4bf
 		CAF = 0x63616666, // caff
 		ThreeGP = 0x33677070, // 3gpp
 		ThreeGP2 = 0x33677032, // 3gp2
 		AMR = 0x616d7266, // amrf
 	}
 
-	enum AudioFileError {
+	public enum AudioFileError {
 		Unspecified = 0x7768743f, // wht?
 		UnsupportedFileType = 0x7479703f, // typ?
 		UnsupportedDataFormat = 0x666d743f, // fmt?
@@ -130,6 +132,29 @@ namespace MonoMac.AudioToolbox {
 		Backward = 3
 	}
 
+	public enum AudioFileChunkType : uint
+	{
+		CAFStreamDescription	= 0x64657363,	// 'desc'
+		CAFAudioData			= 0x64617461,	// 'data'
+		CAFChannelLayout		= 0x6368616e,	// 'chan'
+		CAFFiller				= 0x66726565,	// 'free'
+		CAFMarker				= 0x6d61726b,	// 'mark'
+		CAFRegion				= 0x7265676e,	// 'regn'
+		CAFInstrument			= 0x696e7374,	// 'inst'
+		CAFMagicCookieID		= 0x6b756b69,	// 'kuki'
+		CAFInfoStrings			= 0x696e666f,	// 'info'
+		CAFEditComments			= 0x65646374,	// 'edct'
+		CAFPacketTable			= 0x70616b74,	// 'pakt'
+		CAFStrings				= 0x73747267,	// 'strg'
+		CAFUUID					= 0x75756964,	// 'uuid'
+		CAFPeak					= 0x7065616b,	// 'peak'
+		CAFOverview				= 0x6f767677,	// 'ovvw'
+		CAFMIDI					= 0x6d696469,	// 'midi'
+		CAFUMID					= 0x756d6964,	// 'umid'
+		CAFFormatListID			= 0x6c647363,	// 'ldsc'
+		CAFiXML					= 0x69584d4c,	// 'iXML'
+	}
+
 	[StructLayout(LayoutKind.Sequential)]
 	struct AudioFramePacketTranslation {
 		public long Frame;
@@ -142,11 +167,17 @@ namespace MonoMac.AudioToolbox {
 		public long Byte;
 		public long Packet;
 		public int ByteOffsetInPacket;
-		public uint Flags;
-	};
+		public BytePacketTranslationFlags Flags;
+	}
+
+	[Flags]
+	enum BytePacketTranslationFlags : uint
+	{
+		IsEstimate = 1
+	}
 	
 	[StructLayout(LayoutKind.Sequential)]
-	struct AudioFileSmpteTime {
+	public struct AudioFileSmpteTime {
 		public sbyte Hours;
 		public byte  Minutes;
 		public byte  Seconds;
@@ -155,13 +186,13 @@ namespace MonoMac.AudioToolbox {
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	struct AudioFileMarker
+	public struct AudioFileMarker
 	{
 		public double FramePosition;
-		public IntPtr Name_cfstringref;
+		internal IntPtr Name_cfstringref;
 		public int    MarkerID;
 		public AudioFileSmpteTime SmpteTime;
-		public uint Type;
+		public AudioFileMarkerType Type;
 		public ushort Reserved;
 		public ushort Channel;
 
@@ -172,44 +203,262 @@ namespace MonoMac.AudioToolbox {
 		}
 	}
 
-	[StructLayout(LayoutKind.Sequential)]
-	struct AudioFileMarkerList {
-		public uint SmpteTimeType;
-		public uint NumberMarkers;
-		public AudioFileMarker Markers; // this is a variable length array of mNumberMarkers elements
+	public enum AudioFileMarkerType : uint
+	{
+		Generic = 0,
 
-		public static int RecordsThatFitIn (int n)
+		CAFProgramStart				= 0x70626567,	// 'pbeg'
+		CAFProgramEnd				= 0x70656e64,	// 'pend'
+		CAFTrackStart				= 0x74626567,	// 'tbeg'
+		CAFTrackEnd					= 0x74656e54,	// 'tend'
+		CAFIndex					= 0x696e6478,	// 'indx'
+		CAFRegionStart				= 0x72626567,	// 'rbeg'
+		CAFRegionEnd				= 0x72626567,	// 'rend'
+		CAFRegionSyncPoint			= 0x72737963,	// 'rsyc'
+		CAFSelectionStart			= 0x73626567,	// 'sbeg'
+		CAFSelectionEnd				= 0x73626567,	// 'send'
+		CAFEditSourceBegin			= 0x63626567,	// 'cbeg'
+		CAFEditSourceEnd			= 0x63626567,	// 'cend'
+		CAFEditDestinationBegin		= 0x64626567,	// 'dbeg'
+		CAFEditDestinationEnd		= 0x64626567,	// 'dend'
+		CAFSustainLoopStart			= 0x736c6267,	// 'slbg'
+		CAFSustainLoopEnd			= 0x736c6265,	// 'slen'
+		CAFReleaseLoopStart			= 0x726c6267,	// 'rlbg'
+		CAFReleaseLoopEnd			= 0x726c6265,	// 'rlen'
+		CAFSavedPlayPosition		= 0x73706c79,	// 'sply'
+		CAFTempo					= 0x746d706f,	// 'tmpo'
+		CAFTimeSignature			= 0x74736967,	// 'tsig'
+		CAFKeySignature				= 0x6b736967,	// 'ksig'
+	}
+
+	public class AudioFileMarkerList : IDisposable
+	{
+		IntPtr ptr;
+		readonly bool owns;
+
+		public AudioFileMarkerList (IntPtr ptr, bool owns)
 		{
-			unsafe {
-				if (n <= sizeof (AudioFileMarker))
-					return 0;
-				n -= 8;
-				return n / sizeof (AudioFileMarker);
+			this.ptr = ptr;
+			this.owns = owns;
+		}
+
+		~AudioFileMarkerList ()
+		{
+			Dispose (false);
+			GC.SuppressFinalize (this);
+		}
+
+		public SmpteTimeType SmpteTimeType {
+			get {
+				return (SmpteTimeType) Marshal.ReadInt32 (ptr);
 			}
 		}
 
-		public static int SizeForMarkers (int markers)
-		{
-			unsafe {
-				return 8 + markers * sizeof (AudioFileMarker);
+		public uint Count {
+			get {
+				return (uint) Marshal.ReadInt32 (ptr, 4);
 			}
+		}
+
+		public AudioFileMarker this [int index] {
+			get {
+				if (index >= Count || index < 0)
+					throw new ArgumentOutOfRangeException ("index");
+
+				//
+				// Decodes
+				//
+				// struct AudioFileMarkerList
+				// {
+				//	UInt32				mSMPTE_TimeType;
+				//	UInt32				mNumberMarkers;
+				//	AudioFileMarker		mMarkers[1]; // this is a variable length array of mNumberMarkers elements
+				// }
+				//
+				unsafe {
+					var ptr = (byte *) this.ptr + 2 * sizeof (int) + index * Marshal.SizeOf (typeof (AudioFileMarker));
+					return (AudioFileMarker) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioFileMarker));
+				}
+			}
+		}
+
+		public void Dispose ()
+		{
+			Dispose (true);
+		}
+
+		protected virtual void Dispose (bool disposing)
+		{
+			if (!owns || ptr == IntPtr.Zero)
+				return;
+
+			for (int i = 0; i < Count; ++i) {
+				CFObject.CFRelease (this [i].Name_cfstringref);
+			}
+
+			Marshal.FreeHGlobal (ptr);
+			ptr = IntPtr.Zero;
 		}
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	struct AudioFileRegion {
-		public uint RegionID;
-		public IntPtr Name_cfstringref;
-		public uint Flags;
-		public int Count;
-		public AudioFileMarker Markers; // this is a variable length array of mNumberMarkers elements
+	public struct AudioFilePacketTableInfo
+	{
+		public long ValidFrames;
+		public int PrimingFrames;
+		public int RemainderFrames;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]
-	struct AudioFileRegionList {
-		public uint SmpteTimeType;
-		public int Count;
-		public AudioFileRegion Regions; // this is a variable length array of mNumberRegions elements
+	public struct AudioFileRegion {
+		readonly IntPtr ptr;
+		//
+		// Wraps
+		//
+		// struct AudioFileRegion
+		// {
+		//	UInt32				mRegionID;
+		//	CFStringRef			mName;
+		//	UInt32				mFlags;
+		//	UInt32				mNumberMarkers;
+		//	AudioFileMarker		mMarkers[1]; // this is a variable length array of mNumberMarkers elements
+		// }
+
+		public AudioFileRegion (IntPtr ptr)
+		{
+			this.ptr = ptr;
+		}
+
+		public uint RegionID {
+			get {
+				return (uint) Marshal.ReadInt32 (ptr);
+			}
+		}
+
+		public string Name {
+			get {
+				return CFString.FetchString (NameWeak);
+			}
+		}
+
+		internal IntPtr NameWeak {
+			get {
+				return Marshal.ReadIntPtr (ptr, sizeof (uint));				
+			}
+		}
+
+		public AudioFileRegionFlags Flags {
+			get {
+				return (AudioFileRegionFlags) Marshal.ReadInt32 (ptr, sizeof (uint) + Marshal.SizeOf (typeof (IntPtr)));
+			}
+		}
+
+		public int Count {
+			get {
+				return Marshal.ReadInt32 (ptr, 2 * sizeof (uint) + Marshal.SizeOf (typeof (IntPtr)));
+			}
+		}
+
+		public AudioFileMarker this [int index] {
+			get {
+				if (index >= Count || index < 0)
+					throw new ArgumentOutOfRangeException ("index");
+
+				unsafe {
+					var ptr = (byte *) this.ptr + 3 * sizeof (int) + Marshal.SizeOf (typeof (IntPtr)) + index * Marshal.SizeOf (typeof (AudioFileMarker));
+					return (AudioFileMarker) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioFileMarker));
+				}
+			}
+		}
+
+		internal int TotalSize {
+			get {
+				return Count * Marshal.SizeOf (typeof (AudioFileMarker));
+			}
+		}
+	}
+
+	[Flags]
+	public enum AudioFileRegionFlags : uint
+	{
+		LoopEnable = 1,
+		PlayForward = 2,
+		PlayBackward = 4
+	}
+
+	public class AudioFileRegionList : IDisposable
+	{
+		IntPtr ptr;
+		readonly bool owns;
+
+		public AudioFileRegionList (IntPtr ptr, bool owns)
+		{
+			this.ptr = ptr;
+			this.owns = owns;
+		}
+
+		~AudioFileRegionList ()
+		{
+			Dispose (false);
+			GC.SuppressFinalize (this);
+		}
+
+		public SmpteTimeType SmpteTimeType {
+			get {
+				return (SmpteTimeType) Marshal.ReadInt32 (ptr);
+			}
+		}
+
+		public uint Count {
+			get {
+				return (uint) Marshal.ReadInt32 (ptr, sizeof (uint));
+			}
+		}
+
+		public AudioFileRegion this [int index] {
+			get {
+				if (index >= Count || index < 0)
+					throw new ArgumentOutOfRangeException ("index");
+
+				//
+				// Decodes
+				//
+				// struct AudioFileRegionList
+				// {
+				//	UInt32				mSMPTE_TimeType;
+				//	UInt32				mNumberRegions;
+				//	AudioFileRegion		mRegions[1]; // this is a variable length array of mNumberRegions elements
+				// }
+				//
+				unsafe {
+					var ptr = (byte *) this.ptr + 2 * sizeof (uint);
+					for (int i = 0; i < index; ++i) {
+						var region = new AudioFileRegion ((IntPtr) ptr);
+						ptr += region.TotalSize;
+					}
+
+					return new AudioFileRegion ((IntPtr) ptr);
+				}
+			}
+		}
+
+		public void Dispose ()
+		{
+			Dispose (true);
+		}
+
+		protected virtual void Dispose (bool disposing)
+		{
+			if (!owns || ptr == IntPtr.Zero)
+				return;
+
+			for (int i = 0; i < Count; ++i) {
+				CFObject.CFRelease (this [i].NameWeak);
+			}
+
+			Marshal.FreeHGlobal (ptr);
+			ptr = IntPtr.Zero;
+		}
 	}
 
 	public class AudioFile : IDisposable {
@@ -297,22 +546,22 @@ namespace MonoMac.AudioToolbox {
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static OSStatus AudioFileOpenURL  (IntPtr cfurlref_infile, byte permissions, AudioFileType fileTypeHint, out IntPtr file_id);
 
-		public static AudioFile OpenRead (string url, AudioFileType fileTypeHint)
+		public static AudioFile OpenRead (string url, AudioFileType fileTypeHint = 0)
 		{
 			return Open (url, AudioFilePermission.Read, fileTypeHint);
 		}
 		
-		public static AudioFile OpenRead (CFUrl url, AudioFileType fileTypeHint)
+		public static AudioFile OpenRead (CFUrl url, AudioFileType fileTypeHint = 0)
 		{
 			return Open (url, AudioFilePermission.Read, fileTypeHint);
 		}
 
-		public static AudioFile OpenRead (NSUrl url, AudioFileType fileTypeHint)
+		public static AudioFile OpenRead (NSUrl url, AudioFileType fileTypeHint = 0)
 		{
 			return Open (url, AudioFilePermission.Read, fileTypeHint);
 		}
 		
-		public static AudioFile Open (string url, AudioFilePermission permissions, AudioFileType fileTypeHint)
+		public static AudioFile Open (string url, AudioFilePermission permissions, AudioFileType fileTypeHint = 0)
 		{
 			if (url == null)
 				throw new ArgumentNullException ("url");
@@ -321,7 +570,7 @@ namespace MonoMac.AudioToolbox {
 				return Open (cfurl, permissions, fileTypeHint);
 		}
 
-		public static AudioFile Open (CFUrl url, AudioFilePermission permissions, AudioFileType fileTypeHint)
+		public static AudioFile Open (CFUrl url, AudioFilePermission permissions, AudioFileType fileTypeHint = 0)
 		{
 			if (url == null)
 				throw new ArgumentNullException ("url");
@@ -332,7 +581,7 @@ namespace MonoMac.AudioToolbox {
 			return null;
 		}
 
-		public static AudioFile Open (NSUrl url, AudioFilePermission permissions, AudioFileType fileTypeHint)
+		public static AudioFile Open (NSUrl url, AudioFilePermission permissions, AudioFileType fileTypeHint = 0)
 		{
 			if (url == null)
 				throw new ArgumentNullException ("url");
@@ -444,6 +693,19 @@ namespace MonoMac.AudioToolbox {
 			return ReadPacketData (useCache, inStartingPacket, ref nPackets, buffer, offset, ref count);
 		}
 
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioFileError AudioFileReadPackets (IntPtr inAudioFile, bool inUseCache, out int numBytes,
+			[MarshalAs (UnmanagedType.LPArray)] AudioStreamPacketDescription[] packetDescriptions, long startingPacket, ref int numPackets, IntPtr buffer);
+
+		public AudioFileError ReadPackets (bool useCache, out int numBytes,
+			AudioStreamPacketDescription[] packetDescriptions, long startingPacket, ref int numPackets, IntPtr buffer)
+		{
+			if (buffer == IntPtr.Zero)
+				throw new ArgumentException ("buffer");
+
+			return AudioFileReadPackets (handle, useCache, out numBytes, packetDescriptions, startingPacket, ref numPackets, buffer);
+		}
+
 		static internal AudioStreamPacketDescription [] PacketDescriptionFrom (int nPackets, IntPtr b)
 		{
 			if (b == IntPtr.Zero)
@@ -549,29 +811,29 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioFileWritePackets (
+		extern static AudioFileError AudioFileWritePackets (
 			AudioFileID audioFile, bool useCache, int inNumBytes, AudioStreamPacketDescription [] inPacketDescriptions,
                         long inStartingPacket, ref int numPackets, IntPtr buffer);
 
-		public int WritePackets (bool useCache, long inStartingPacket, int numPackets, IntPtr buffer, int count)
+		public int WritePackets (bool useCache, long startingPacket, int numPackets, IntPtr buffer, int count)
 		{
 			if (buffer == IntPtr.Zero)
 				throw new ArgumentNullException ("buffer");
 
-			if (AudioFileWritePackets (handle, useCache, count, null, inStartingPacket, ref numPackets, buffer) == 0)
+			if (AudioFileWritePackets (handle, useCache, count, null, startingPacket, ref numPackets, buffer) == 0)
 				return numPackets;
 
 			return -1;
 		}
 
-		unsafe public int WritePackets (bool useCache, long inStartingPacket, AudioStreamPacketDescription [] inPacketDescriptions, IntPtr buffer, int count)
+		public int WritePackets (bool useCache, long startingPacket, AudioStreamPacketDescription [] packetDescriptions, IntPtr buffer, int count)
 		{
-			if (inPacketDescriptions == null)
-				throw new ArgumentNullException ("inPacketDescriptions");
+			if (packetDescriptions == null)
+				throw new ArgumentNullException ("packetDescriptions");
 			if (buffer == IntPtr.Zero)
 				throw new ArgumentNullException ("buffer");
-			int nPackets = inPacketDescriptions.Length;
-			if (AudioFileWritePackets (handle, useCache, count, inPacketDescriptions, inStartingPacket, ref nPackets, buffer) == 0)
+			int nPackets = packetDescriptions.Length;
+			if (AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, buffer) == 0)
 				return nPackets;
 			return -1;
 		}
@@ -597,15 +859,15 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		unsafe public int WritePackets (bool useCache, long inStartingPacket, AudioStreamPacketDescription [] inPacketDescriptions, IntPtr buffer, int count, out int errorCode)
+		public int WritePackets (bool useCache, long startingPacket, AudioStreamPacketDescription [] packetDescriptions, IntPtr buffer, int count, out int errorCode)
 		{
-			if (inPacketDescriptions == null)
-				throw new ArgumentNullException ("inPacketDescriptions");
+			if (packetDescriptions == null)
+				throw new ArgumentNullException ("packetDescriptions");
 			if (buffer == IntPtr.Zero)
-				throw new ArgumentNullException ("buffer");
-			int nPackets = inPacketDescriptions.Length;
+				throw new ArgumentException ("buffer");
+			int nPackets = packetDescriptions.Length;
 			
-			errorCode = AudioFileWritePackets (handle, useCache, count, inPacketDescriptions, inStartingPacket, ref nPackets, buffer);
+			errorCode = (int) AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, buffer);
 			if (errorCode == 0)
 				return nPackets;
 			return -1;
@@ -626,11 +888,19 @@ namespace MonoMac.AudioToolbox {
 
 			int nPackets = packetDescriptions.Length;
 			fixed (byte *bop = &buffer [offset]){
-				errorCode = AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, (IntPtr) bop);
+				errorCode = (int) AudioFileWritePackets (handle, useCache, count, packetDescriptions, startingPacket, ref nPackets, (IntPtr) bop);
 				if (errorCode == 0)
 					return nPackets;
 				return -1;
 			}
+		}
+
+		public AudioFileError WritePackets (bool useCache, int numBytes, AudioStreamPacketDescription[] packetDescriptions, long startingPacket, ref int numPackets, IntPtr buffer)
+		{
+			if (buffer == IntPtr.Zero)
+				throw new ArgumentException ("buffer");
+			
+			return AudioFileWritePackets (handle, useCache, numBytes, packetDescriptions, startingPacket, ref numPackets, buffer);
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -686,6 +956,13 @@ namespace MonoMac.AudioToolbox {
 		{
 			return AudioFileGetPropertyInfo (handle, property, out size, out writable) == 0;
 		}
+
+		public bool IsPropertyWritable (AudioFileProperty property)
+		{
+			int writable;
+			int size;
+			return AudioFileGetPropertyInfo (handle, property, out size, out writable) == 0 && writable != 0;
+		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
 		extern static OSStatus AudioFileGetProperty (AudioFileID audioFile, AudioFileProperty property, ref int dataSize, IntPtr outdata);
@@ -714,21 +991,21 @@ namespace MonoMac.AudioToolbox {
 			return IntPtr.Zero;
 		}
 
-		T GetProperty<T> (AudioFileProperty property)
+		T? GetProperty<T> (AudioFileProperty property) where T : struct
 		{
 			int size, writable;
 
 			if (AudioFileGetPropertyInfo (handle, property, out size, out writable) != 0)
-				return default (T);
+				return null;
 			var buffer = Marshal.AllocHGlobal (size);
 			if (buffer == IntPtr.Zero)
-				return default(T);
+				return null;
 			try {
 				var r = AudioFileGetProperty (handle, property, ref size, buffer);
 				if (r == 0)
 					return (T) Marshal.PtrToStructure (buffer, typeof (T));
 
-				return default(T);
+				return null;
 			} finally {
 				Marshal.FreeHGlobal (buffer);
 			}
@@ -779,7 +1056,10 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioFileSetProperty (AudioFileID audioFile, AudioFileProperty property, int dataSize, IntPtr propertyData);
+		extern static AudioFileError AudioFileSetProperty (AudioFileID audioFile, AudioFileProperty property, int dataSize, IntPtr propertyData);
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		extern static AudioFileError AudioFileSetProperty (AudioFileID audioFile, AudioFileProperty property, int dataSize, ref AudioFilePacketTableInfo propertyData);
 
 		public bool SetProperty (AudioFileProperty property, int dataSize, IntPtr propertyData)
 		{
@@ -792,6 +1072,11 @@ namespace MonoMac.AudioToolbox {
 				AudioFileSetProperty (handle, property, 4, (IntPtr) (&value));
 			}
 		}
+
+		unsafe AudioFileError SetDouble (AudioFileProperty property, double value)
+		{
+			return AudioFileSetProperty (handle, property, sizeof (double), (IntPtr) (&value));
+		}
 		
 		public AudioFileType FileType {
 			get {
@@ -799,7 +1084,14 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		[Advice ("Use DataFormat instead")]
 		public AudioStreamBasicDescription StreamBasicDescription {
+			get {
+				return GetProperty<AudioStreamBasicDescription> (AudioFileProperty.DataFormat) ?? default (AudioStreamBasicDescription);
+			}
+		}
+
+		public AudioStreamBasicDescription? DataFormat {
 			get {
 				return GetProperty<AudioStreamBasicDescription> (AudioFileProperty.DataFormat);
 			}
@@ -924,6 +1216,109 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		public double ReserveDuration {
+			get {
+				return GetDouble (AudioFileProperty.ReserveDuration);
+			}
+		}
+
+		public AudioFileMarkerList MarkerList {
+			get {
+				int size;
+				int writable;
+				var res = GetPropertyInfo (AudioFileProperty.MarkerList, out size, out writable);
+				if (size == 0)
+					return null;
+
+				IntPtr ptr = Marshal.AllocHGlobal (size);
+				if (AudioFileGetProperty (handle, AudioFileProperty.MarkerList, ref size, (IntPtr) ptr) != 0) {
+					Marshal.FreeHGlobal (ptr);
+					return null;
+				}
+
+				return new AudioFileMarkerList (ptr, true);
+			}
+		}
+
+		public AudioFileRegionList RegionList {
+			get {
+				int size;
+				int writable;
+				var res = GetPropertyInfo (AudioFileProperty.RegionList, out size, out writable);
+				if (size == 0)
+					return null;
+
+				IntPtr ptr = Marshal.AllocHGlobal (size);
+				if (AudioFileGetProperty (handle, AudioFileProperty.RegionList, ref size, (IntPtr) ptr) != 0) {
+					Marshal.FreeHGlobal (ptr);
+					return null;
+				}
+
+				return new AudioFileRegionList (ptr, true);
+			}
+		}
+
+		public AudioFilePacketTableInfo? PacketTableInfo {
+			get {
+				return GetProperty<AudioFilePacketTableInfo> (AudioFileProperty.PacketTableInfo);
+			}
+			set {
+				if (value == null)
+					throw new ArgumentNullException ("value");
+
+				AudioFilePacketTableInfo afpti = value.Value;
+				var res = AudioFileSetProperty (handle, AudioFileProperty.PacketTableInfo, Marshal.SizeOf (typeof (AudioFilePacketTableInfo)), ref afpti);
+				if (res != 0)
+					throw new ArgumentException (res.ToString ());
+			}
+		}
+
+		public unsafe AudioFileChunkType[] ChunkIDs {
+			get {
+				int size;
+				int writable;
+				var res = GetPropertyInfo (AudioFileProperty.ChunkIDs, out size, out writable);
+				if (size == 0)
+					return null;
+
+				var data = new AudioFileChunkType[size / sizeof (AudioFileChunkType)];
+				fixed (AudioFileChunkType* ptr = data) {
+					if (AudioFileGetProperty (handle, AudioFileProperty.ChunkIDs, ref size, (IntPtr) ptr) != 0)
+						return null;
+
+					return data;
+				}
+			}
+		}
+
+		public unsafe byte[] ID3Tag {
+			get {
+				int size;
+				int writable;
+				var res = GetPropertyInfo (AudioFileProperty.ID3Tag, out size, out writable);
+				if (size == 0)
+					return null;
+
+				var data = new byte[size];
+				fixed (byte* ptr = data) {
+					if (AudioFileGetProperty (handle, AudioFileProperty.ID3Tag, ref size, (IntPtr) ptr) != 0)
+						return null;
+
+					return data;
+				}
+			}
+		}
+
+		public AudioFileInfoDictionary InfoDictionary {
+			get {
+				var ptr = GetIntPtr (AudioFileProperty.InfoDictionary);
+				if (ptr == IntPtr.Zero)
+					return null;
+
+				return new AudioFileInfoDictionary(new NSMutableDictionary (ptr, true));
+			}
+		}		
+
 		public long PacketToFrame (long packet)
 		{
 			AudioFramePacketTranslation buffer;
@@ -964,7 +1359,7 @@ namespace MonoMac.AudioToolbox {
 				AudioBytePacketTranslation *p = &buffer;
 				int size = Marshal.SizeOf (buffer);
 				if (AudioFileGetProperty (handle, AudioFileProperty.PacketToByte, ref size, (IntPtr) p) == 0){
-					isEstimate = (buffer.Flags & 1) == 1;
+					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					return buffer.Byte;
 				}
 				isEstimate = false;
@@ -981,7 +1376,7 @@ namespace MonoMac.AudioToolbox {
 				AudioBytePacketTranslation *p = &buffer;
 				int size = Marshal.SizeOf (buffer);
 				if (AudioFileGetProperty (handle, AudioFileProperty.ByteToPacket, ref size, (IntPtr) p) == 0){
-					isEstimate = (buffer.Flags & 1) == 1;
+					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					byteOffsetInPacket = buffer.ByteOffsetInPacket;
 					return buffer.Packet;
 				}
@@ -990,17 +1385,146 @@ namespace MonoMac.AudioToolbox {
 				return -1;
 			}
 		}
-		
-//		MarkerList = 0x6d6b6c73,
-//		RegionList = 0x72676c73,
-//		ChunkIDs = 0x63686964,
-//		InfoDictionary = 0x696e666f,
-//		PacketTableInfo = 0x706e666f,
-//		FormatList = 0x666c7374,
-//		ReserveDuration = 0x72737276,
-//		EstimatedDuration = 0x65647572,
-//		ID3Tag = 0x69643374,
-//		
+	}
+
+	public class AudioFileInfoDictionary : DictionaryContainer
+	{
+		internal AudioFileInfoDictionary (NSDictionary dict)
+			: base (dict)
+		{
+		}
+
+		public string Album {
+			get {
+				return GetStringValue ("album");
+			}
+		}
+
+		public string ApproximateDurationInSeconds {
+			get {
+				return GetStringValue ("approximate duration in seconds");
+			}
+		}
+
+		public string Artist {
+			get {
+				return GetStringValue ("artist");
+			}
+		}
+
+		public string ChannelLayout	 {
+			get {
+				return GetStringValue ("channel layout");				
+			}
+		}
+
+		public string Composer {
+			get {
+				return GetStringValue ("composer");
+			}
+		}
+
+		public string Comments {
+			get {
+				return GetStringValue ("comments");
+			}
+		}
+
+		public string Copyright {
+			get {
+				return GetStringValue ("copyright");
+			}
+		}
+
+		public string EncodingApplication {
+			get {
+				return GetStringValue ("encoding application");
+			}
+		}
+
+		public string Genre {
+			get {
+				return GetStringValue ("genre");
+			}
+		}
+
+		public string ISRC {
+			get {
+				return GetStringValue ("ISRC");
+			}
+		}
+
+		public string KeySignature {
+			get {
+				return GetStringValue ("key signature");
+			}
+		}
+
+		public string Lyricist {
+			get {
+				return GetStringValue ("lyricist");
+			}
+		}
+
+		public string NominalBitRate {
+			get {
+				return GetStringValue ("nominal bit rate");				
+			}
+		}
+
+		public string RecordedDate {
+			get {
+				return GetStringValue ("recorded date");
+			}
+		}
+
+		public string SourceBitDepth {
+			get {
+				return GetStringValue ("source bit depth");
+			}
+		}
+
+		public string SourceEncoder {
+			get {
+				return GetStringValue ("source encoder");
+			}
+		}
+
+		public string SubTitle {
+			get {
+				return GetStringValue ("subtitle");
+			}
+		}
+
+		public string Tempo {
+			get {
+				return GetStringValue ("tempo");
+			}
+		}
+
+		public string TimeSignature {
+			get {
+				return GetStringValue ("time signature");
+			}
+		}
+
+		public string Title {
+			get {
+				return GetStringValue ("title");
+			}
+		}
+
+		public string TrackNumber {
+			get {
+				return GetStringValue ("track number");
+			}
+		}
+
+		public string Year {
+			get {
+				return GetStringValue ("year");
+			}
+		}
 	}
 
 	delegate int ReadProc (IntPtr clientData, long position, int requestCount, IntPtr buffer, out int actualCount);

@@ -106,7 +106,6 @@ namespace MonoMac.CoreVideo {
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static IntPtr CVPixelBufferPoolGetAttributes (IntPtr pool);
 
-		[Obsolete ("Use Settings")]
 		public NSDictionary Attributes {
 			get {
 				return (NSDictionary) Runtime.GetNSObject (CVPixelBufferPoolGetAttributes (handle));
@@ -153,7 +152,7 @@ namespace MonoMac.CoreVideo {
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static CVReturn CVPixelBufferPoolCreate (IntPtr allocator, IntPtr poolAttributes, IntPtr pixelBufferAttributes, IntPtr poolOut);
 
-		[Obsolete ("Use overload with CVPixelBufferPoolSettings")]
+		[Advice ("Use overload with CVPixelBufferPoolSettings")]
 		public CVPixelBufferPool (NSDictionary poolAttributes, NSDictionary pixelBufferAttributes)
 		{
 			if (pixelBufferAttributes == null)

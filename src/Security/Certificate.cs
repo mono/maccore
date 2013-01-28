@@ -227,13 +227,13 @@ namespace MonoMac.Security {
 		internal IntPtr handle;
 		
 		// invoked by marshallers
-		internal SecKey (IntPtr handle)
+		public SecKey (IntPtr handle)
 			: this (handle, false)
 		{
 		}
 		
 		[Preserve (Conditional = true)]
-		internal SecKey (IntPtr handle, bool owns)
+		public SecKey (IntPtr handle, bool owns)
 		{
 			this.handle = handle;
 			if (!owns)

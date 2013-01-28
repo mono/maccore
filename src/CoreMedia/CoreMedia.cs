@@ -23,7 +23,7 @@ namespace MonoMac.CoreMedia {
 		ClosedCaption = 1668047728, // 'clcp'
 		Subtitle      = 1935832172, // 'sbtl'
 		TimeCode      = 1953325924, // 'tmcd'
-		[Obsolete ("Use Metadata instead")]
+//		[Obsolete ("Use Metadata instead")]
 		TimedMetadata = 1953326452, // 'tmet'
 		Metadata      = TimedMetadata,
 	}
@@ -91,8 +91,8 @@ namespace MonoMac.CoreMedia {
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct CMTimeMapping {
-		public CMTime Source;
-		public CMTime Target;
+		public CMTimeRange Source;
+		public CMTimeRange Target;
 	}
 
 	[StructLayout(LayoutKind.Sequential)]

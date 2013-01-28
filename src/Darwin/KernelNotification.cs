@@ -1,5 +1,5 @@
 //
-// SystemLog.cs: Bindings to the asl(3) API from Apple
+// SystemLog.cs: Bindings to the kqueue(3) API from Apple
 //
 // Authors:
 //  Miguel de Icaza (miguel@xamarin.com)
