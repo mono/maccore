@@ -2376,12 +2376,31 @@ namespace MonoMac.Foundation
 
 		/* These methods come from NURL_AppKitAdditions */
 
-		[Export ("URLFromPasteboard:")][Static]
+		[Export ("URLFromPasteboard:")]
+		[Static]
 		NSUrl FromPasteboard (NSPasteboard pasteboard);
 
 		[Export ("writeToPasteboard:")]
 		void WriteToPasteboard (NSPasteboard pasteboard);
 		
+		[Export("bookmarkDataWithContentsOfURL:error:")]
+		[Static]
+		NSData BookmarkDataWithContentsOfURL( NSUrl bookmarkFileUrl, out NSError error );		
+
+		[Export("URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:")]
+		[Static]
+		NSUrl URLByResolvingBookmarkData( NSData data, NSUrlBookmarkResolutionOptions options, [NullAllowed] NSUrl relativeToUrl, bool isStale, out NSError error );
+
+		[Export("writeBookmarkData:toURL:options:error:")]
+		[Static]
+		bool WriteBookmarkDataToUrl( NSData data, NSUrl bookmarkFileUrl, NSUrlBookmarkCreationOptions options, out NSError error );
+
+		[Export("startAccessingSecurityScopedResource")]
+		bool StartAccessingSecurityScopedResource();
+
+		[Export("stopAccessingSecurityScopedResource")]
+		bool StopAccessingSecurityScopedResource();
+
 #endif
 
 		[Export ("getResourceValue:forKey:error:"), Internal]
@@ -2710,11 +2729,11 @@ namespace MonoMac.Foundation
 		[Field ("NSURLIsExcludedFromBackupKey")]
 		NSString IsExcludedFromBackupKey { get; }
 
-		[Export ("bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:")]
-		NSData CreateBookmarkData (NSUrlBookmarkCreationOptions options, string [] resourceValues, NSUrl relativeUrl, out NSError error);
+		[Export ("bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:")]		
+		NSData CreateBookmarkData (NSUrlBookmarkCreationOptions options, string [] resourceValues, [NullAllowed] NSUrl relativeUrl, out NSError error);
 
 		[Export ("initByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:")]
-		IntPtr Constructor (NSData bookmarkData, NSUrlBookmarkResolutionOptions resolutionOptions, NSUrl relativeUrl, out bool bookmarkIsStale, out NSError error);
+		IntPtr Constructor (NSData bookmarkData, NSUrlBookmarkResolutionOptions resolutionOptions, [NullAllowed] NSUrl relativeUrl, out bool bookmarkIsStale, out NSError error);
 
 		[Field ("NSURLPathKey")]
 		[Since (6,0)]
@@ -3803,6 +3822,30 @@ namespace MonoMac.Foundation
 		string DebugDescription { get; }
 	}
 	
+	[BaseType (typeof (NSObject)), Bind ("NSObject")]
+	public interface NSObjectTransformations {
+
+		
+
+– boolValue
+– charValue
+– decimalValue
+– doubleValue
+– floatValue
+– intValue
+– integerValue
+– longLongValue
+– longValue
+– shortValue
+– unsignedCharValue
+– unsignedIntegerValue
+– unsignedIntValue
+– unsignedLongLongValue
+– unsignedLongValue
+– unsignedShortValue
+
+	}
+
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
 	public interface NSOperation {
