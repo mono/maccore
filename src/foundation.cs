@@ -2397,8 +2397,6 @@ namespace MonoMac.Foundation
 		
 		[Export("bookmarkDataWithContentsOfURL:error:")]
 		[Static]
-		NSData BookmarkDataWithContentsOfURL( NSUrl bookmarkFileUrl, out NSError error );		
-
 		NSData GetBookmarkData (NSUrl bookmarkFileUrl, out NSError error);
 
 		[Export("URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:")]
