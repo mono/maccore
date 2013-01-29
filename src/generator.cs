@@ -2038,6 +2038,7 @@ public class Generator {
 		"System.Diagnostics",
 		"System.ComponentModel",
 #if MONOMAC
+		"MonoMac",
 		"MonoMac.CoreFoundation",
 		"MonoMac.Foundation",
 		"MonoMac.ObjCRuntime",
