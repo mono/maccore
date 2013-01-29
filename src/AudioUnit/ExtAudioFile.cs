@@ -303,6 +303,13 @@ namespace MonoMac.AudioUnit
             return ExtAudioFileWrite (_extAudioFile, numberFrames, (IntPtr) audioBufferList);
         }
 
+        public ExtAudioFileError SynchronizeAudioConverter ()
+        {
+            IntPtr value = IntPtr.Zero;
+            return ExtAudioFileSetProperty (_extAudioFile, PropertyIDType.ConverterConfig,
+                Marshal.SizeOf (value), value);
+        }
+
         public void Dispose ()
         {
             Dispose (true);
@@ -381,12 +388,8 @@ namespace MonoMac.AudioUnit
         [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
         static extern ExtAudioFileError ExtAudioFileGetProperty (IntPtr inExtAudioFile, PropertyIDType inPropertyID, ref uint ioPropertyDataSize, out uint outPropertyData);
 
-        [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileSetProperty")]
-        static extern int ExtAudioFileSetProperty(
-            IntPtr inExtAudioFile,
-            PropertyIDType inPropertyID,
-            uint ioPropertyDataSize,
-            IntPtr outPropertyData);
+        [DllImport(MonoMac.Constants.AudioToolboxLibrary)]
+        static extern ExtAudioFileError ExtAudioFileSetProperty (IntPtr inExtAudioFile, PropertyIDType inPropertyID, int ioPropertyDataSize, IntPtr outPropertyData);
 
         [DllImport(MonoMac.Constants.AudioToolboxLibrary, EntryPoint = "ExtAudioFileSetProperty")]
         static extern int ExtAudioFileSetProperty(
@@ -411,7 +414,7 @@ namespace MonoMac.AudioUnit
 	        FileLengthFrames		= 0x2366726d,      // '#frm'
 	
 	        // writable:
-	        //kExtAudioFileProperty_ConverterConfig		= 'accf',   // CFPropertyListRef
+	        ConverterConfig         = 0x61636366,      // 'accf'
 	        //kExtAudioFileProperty_IOBufferSizeBytes		= 'iobs',	// UInt32
 	        //kExtAudioFileProperty_IOBuffer				= 'iobf',	// void *
 	        //kExtAudioFileProperty_PacketTable			= 'xpti'	// AudioFilePacketTableInfo             
