@@ -1,4 +1,4 @@
-// Copyright 2011, 2012 Xamarin Inc
+// Copyright 2011 - 2013 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -145,7 +145,6 @@ namespace MonoMac.Foundation {
 			} else {
 				MonoMac.ObjCRuntime.Messaging.void_objc_msgSendSuper_IntPtr_IntPtr (this.SuperHandle, selSetValueForKeyPath_, handle, keyPath.Handle);
 			}
-			
 		}
 
 		public override string ToString ()
@@ -153,16 +152,16 @@ namespace MonoMac.Foundation {
 			return Description ?? base.ToString ();
 		}
 
-                public virtual void Invoke (NSAction action, double delay)
-                {
-                        var d = new NSAsyncActionDispatcher (action);
-                        PerformSelector (NSActionDispatcher.Selector, d, delay);
-                }
+		public virtual void Invoke (NSAction action, double delay)
+		{
+			var d = new NSAsyncActionDispatcher (action);
+			PerformSelector (NSActionDispatcher.Selector, d, delay);
+		}
 
-                public virtual void Invoke (NSAction action, TimeSpan delay)
-                {
-                        var d = new NSAsyncActionDispatcher (action);
-                        PerformSelector (NSActionDispatcher.Selector, d, delay.TotalSeconds);
-                }
+		public virtual void Invoke (NSAction action, TimeSpan delay)
+		{
+			var d = new NSAsyncActionDispatcher (action);
+			PerformSelector (NSActionDispatcher.Selector, d, delay.TotalSeconds);
+		}
 	}
 }
