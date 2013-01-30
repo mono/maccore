@@ -87,7 +87,7 @@ namespace MonoMac.Foundation
 
 	[Since (3,2)]
 	[BaseType (typeof (NSObject))]
-	public interface NSAttributedString {
+	public partial interface NSAttributedString {
 		[Export ("string")]
 		string Value { get; }
 
