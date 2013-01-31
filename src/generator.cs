@@ -3951,14 +3951,10 @@ public class Generator {
 
 	string GetDelegateName (MethodInfo mi)
 	{
-		
 		var a = GetAttribute (mi, typeof (DelegateNameAttribute));
 		if (a != null)
 			return ((DelegateNameAttribute) a).Name;
 
-		a = GetAttribute (mi, typeof (DelegateNameAttribute));
-		if (a != null)
-			return ((DelegateNameAttribute) a).Name;
 		a = GetAttribute (mi, typeof (EventArgsAttribute));
 		if (a == null)
 			throw new BindingException (1006, true, "The delegate method {0}.{1} is missing the [DelegateName] attribute (or EventArgs)", mi.DeclaringType.FullName, mi.Name);
