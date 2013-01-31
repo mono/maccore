@@ -346,10 +346,18 @@ namespace MonoMac.Foundation
 		//- (NSRange)rangeOfUnit:(NSCalendarUnit)smaller inUnit:(NSCalendarUnit)larger forDate:(NSDate *)date;
 		//- (NSUInteger)ordinalityOfUnit:(NSCalendarUnit)smaller inUnit:(NSCalendarUnit)larger forDate:(NSDate *)date;
 		//- (BOOL)rangeOfUnit:(NSCalendarUnit)unit startDate:(NSDate **)datep interval:(NSTimeInterval *)tip forDate:(NSDate *)date AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
-		//- (NSDate *)dateFromComponents:(NSDateComponents *)comps;
-		//- (NSDateComponents *)components:(NSUInteger)unitFlags fromDate:(NSDate *)date;
-		//- (NSDate *)dateByAddingComponents:(NSDateComponents *)comps toDate:(NSDate *)date options:(NSUInteger)opts;
-		//- (NSDateComponents *)components:(NSUInteger)unitFlags fromDate:(NSDate *)startingDate toDate:(NSDate *)resultDate options:(NSUInteger)opts;
+
+		[Export ("components:fromDate:")]
+		NSDateComponents Components (NSCalendarUnit unitFlags, NSDate fromDate);
+
+		[Export ("components:fromDate:toDate:options:")]
+		NSDateComponents Components (NSCalendarUnit unitFlags, NSDate fromDate, NSDate toDate, NSDateComponentsWrappingBehavior opts);
+
+		[Export ("dateByAddingComponents:toDate:options:")]
+		NSDate DateByAddingComponents (NSDateComponents comps, NSDate date, NSDateComponentsWrappingBehavior opts);
+
+		[Export ("dateFromComponents:")]
+		NSDate DateFromComponents (NSDateComponents comps);
 
 		[Field ("NSGregorianCalendar"), Internal]
 		NSString NSGregorianCalendar { get; }

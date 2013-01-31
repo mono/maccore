@@ -605,4 +605,8 @@ namespace MonoMac.Foundation  {
 		None, Default, All 
 	}
 	
+	public enum NSDateComponentsWrappingBehavior {
+		None = 0,
+		WrapCalendarComponents = 1 << 0,
+	}
 }
