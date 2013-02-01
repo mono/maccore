@@ -47,6 +47,7 @@ namespace MonoMac.Foundation {
 		
 		IntPtr handle;
 		IntPtr super;
+		bool disposed;
 
 		protected bool IsDirectBinding;
 
@@ -378,6 +379,75 @@ namespace MonoMac.Foundation {
 		{
 			var d = new NSAsyncActionDispatcher (action);
 			PerformSelector (NSActionDispatcher.Selector, d, delay.TotalSeconds);
+		}
+		
+		internal void ClearHandle ()
+		{
+			handle = IntPtr.Zero;
+		}
+		
+		protected virtual void Dispose (bool disposing) {
+			if (disposed)
+				return;
+			disposed = true;
+			
+			if (handle != IntPtr.Zero) {
+				if (disposing) {
+					ReleaseManagedRef ();
+				} else {
+					NSObject_Disposer.Add (this);
+				}
+			}
+			if (super != IntPtr.Zero) {
+				Marshal.FreeHGlobal (super);
+				super = IntPtr.Zero;
+			}
+		}
+
+		[Register ("__NSObject_Disposer")]
+		[Preserve (AllMembers=true)]
+		internal class NSObject_Disposer : NSObject {
+			static readonly List <NSObject> drainList1 = new List<NSObject> ();
+			static readonly List <NSObject> drainList2 = new List<NSObject> ();
+			static List <NSObject> handles = drainList1;
+			static readonly IntPtr selDrain = Selector.GetHandle ("drain:");
+			
+			static readonly IntPtr class_ptr = Class.GetHandle ("__NSObject_Disposer");
+			
+			static readonly object lock_obj = new object ();
+			
+			private NSObject_Disposer ()
+			{
+				// Disable default ctor, there should be no instances of this class.
+			}
+			
+			static internal void Add (NSObject handle) {
+				bool call_drain;
+				lock (lock_obj) {
+					handles.Add (handle);
+					call_drain = handles.Count == 1;
+				}
+				if (!call_drain)
+					return;
+				Messaging.void_objc_msgSend_intptr_intptr_bool (class_ptr, Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone, selDrain, IntPtr.Zero, false);
+			}
+			
+			[Export ("drain:")]
+			static  void Drain (NSObject ctx) {
+				List<NSObject> drainList;
+				
+				lock (lock_obj) {
+					drainList = handles;
+					if (handles == drainList1)
+						handles = drainList2;
+					else
+						handles = drainList1;
+				}
+				
+				foreach (NSObject x in drainList)
+					x.ReleaseManagedRef ();
+				drainList.Clear();
+			}
 		}
 	}
 }
