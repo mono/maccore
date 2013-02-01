@@ -82,6 +82,7 @@ namespace TouchUnit.Bindings {
 			}
 			catch (Exception e) {
 				Console.WriteLine ("[FAIL] Exception on '{0}' : {1}", p, e);
+				name = p.DeclaringType.FullName + "." + p.Name;
 				return false;
 			}
 		}

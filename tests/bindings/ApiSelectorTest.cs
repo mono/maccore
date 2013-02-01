@@ -109,7 +109,7 @@ namespace TouchUnit.Bindings {
 					}
 				}
 			}
-			Assert.AreEqual (0, Errors, "{0} errors found in {1} static selector validated", Errors, n);
+			Assert.AreEqual (0, Errors, "{0} errors found in {1} instance selector validated", Errors, n);
 		}
 		
 		protected virtual void Dispose (NSObject obj, Type type)
