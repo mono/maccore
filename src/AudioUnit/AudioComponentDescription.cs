@@ -145,7 +145,13 @@ namespace MonoMac.AudioUnit
     {
 		Apple = 0x6170706c // little endian 0x6c707061 //'appl'
     }
-	
+
+	[Flags]
+	public enum AudioComponentFlag
+	{
+		Unsearchable = 1
+	}
+
 	// Why is this a class ??
 	[StructLayout(LayoutKind.Sequential)]
 	public class AudioComponentDescription
@@ -159,7 +165,7 @@ namespace MonoMac.AudioUnit
 		[MarshalAs(UnmanagedType.U4)] 
 		public AudioComponentManufacturerType ComponentManufacturer;
 
-		public int ComponentFlags;
+		public AudioComponentFlag ComponentFlags;
 		public int ComponentFlagsMask;
 
 		public AudioComponentDescription () {}
