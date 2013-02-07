@@ -270,6 +270,10 @@ namespace MonoMac.AudioToolbox {
 
 		[DllImport (Constants.AudioToolboxLibrary)]
 		public unsafe extern static AudioFormatError AudioFormatGetProperty (AudioFormatProperty propertyID, int inSpecifierSize, IntPtr inSpecifier,
+			ref int ioDataSize, IntPtr outPropertyData);
+
+		[DllImport (Constants.AudioToolboxLibrary)]
+		public unsafe extern static AudioFormatError AudioFormatGetProperty (AudioFormatProperty propertyID, int inSpecifierSize, IntPtr inSpecifier,
 			ref int ioDataSize, out IntPtr outPropertyData);
 
 		[DllImport (Constants.AudioToolboxLibrary)]
@@ -330,8 +334,8 @@ namespace MonoMac.AudioToolbox {
 	{
 		FormatInfo					= 0x666d7469,	// 'fmti'
 		FormatName					= 0x666e616d,	// 'fnam'
-		EncodeFormatIDs				= 0x61636f66,	// 'acof'	// TODO: Add to Converter
-		DecodeFormatIDs				= 0x61636966,	// 'acif'	// TODO: Add to Converter
+		EncodeFormatIDs				= 0x61636f66,	// 'acof'
+		DecodeFormatIDs				= 0x61636966,	// 'acif'
 		FormatList					= 0x666c7374,	// 'flst'
 		ASBDFromESDS 				= 0x65737364,	// 'essd'	// TODO: FromElementaryStreamDescriptor
 		ChannelLayoutFromESDS 		= 0x6573636c,	// 'escl'	// TODO:

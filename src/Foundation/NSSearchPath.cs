@@ -1,8 +1,10 @@
 //
-// Author:
-//   AKIHIRO Uehara (u-akihiro@reinforce-lab.com)
+// NSSearchPath.cs
 //
-// Copyright 2010 Reinforce Lab.
+// Authors:
+//   Marek Safar (marek.safar@gmail.com)
+//
+// Copyright 2013 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -23,33 +25,20 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using MonoMac.AudioToolbox;
+using System.Runtime.InteropServices;
 
-namespace MonoMac.AudioUnitWrapper
+namespace MonoMac.Foundation
 {
-    [Obsolete ("Use AudioConverter")]
-    public class _AudioConverterEventArgs : EventArgs
-    {
-        #region Variables
-        public uint NumberDataPackets;
-        public readonly AudioBufferList Data;
-        public readonly MonoMac.AudioToolbox.AudioStreamPacketDescription[] DataPacketDescription;
-        #endregion
+	public static class NSSearchPath
+	{
+		public static string[] GetDirectories (NSSearchPathDirectory directory, NSSearchPathDomain domainMask, bool expandTilde = true)
+		{
+			return NSArray.StringArrayFromHandle (NSSearchPathForDirectoriesInDomains (directory, domainMask, expandTilde));
+		}
 
-        #region Constructor
-        public _AudioConverterEventArgs(
-            uint _NumberDataPackets,
-            AudioBufferList _Data,
-            MonoMac.AudioToolbox.AudioStreamPacketDescription[] _DataPacketDescription)
-        {
-            NumberDataPackets = _NumberDataPackets;
-            Data = _Data;
-            DataPacketDescription = _DataPacketDescription;
-        }
-        #endregion
-    }
+		[DllImport (Constants.FoundationLibrary)]
+		static extern IntPtr NSSearchPathForDirectoriesInDomains (NSSearchPathDirectory directory, NSSearchPathDomain domainMask, bool expandTilde);
+	}
 }

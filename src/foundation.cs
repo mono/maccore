@@ -87,7 +87,7 @@ namespace MonoMac.Foundation
 
 	[Since (3,2)]
 	[BaseType (typeof (NSObject))]
-	public interface NSAttributedString {
+	public partial interface NSAttributedString {
 		[Export ("string")]
 		string Value { get; }
 
@@ -346,10 +346,18 @@ namespace MonoMac.Foundation
 		//- (NSRange)rangeOfUnit:(NSCalendarUnit)smaller inUnit:(NSCalendarUnit)larger forDate:(NSDate *)date;
 		//- (NSUInteger)ordinalityOfUnit:(NSCalendarUnit)smaller inUnit:(NSCalendarUnit)larger forDate:(NSDate *)date;
 		//- (BOOL)rangeOfUnit:(NSCalendarUnit)unit startDate:(NSDate **)datep interval:(NSTimeInterval *)tip forDate:(NSDate *)date AVAILABLE_MAC_OS_X_VERSION_10_5_AND_LATER;
-		//- (NSDate *)dateFromComponents:(NSDateComponents *)comps;
-		//- (NSDateComponents *)components:(NSUInteger)unitFlags fromDate:(NSDate *)date;
-		//- (NSDate *)dateByAddingComponents:(NSDateComponents *)comps toDate:(NSDate *)date options:(NSUInteger)opts;
-		//- (NSDateComponents *)components:(NSUInteger)unitFlags fromDate:(NSDate *)startingDate toDate:(NSDate *)resultDate options:(NSUInteger)opts;
+
+		[Export ("components:fromDate:")]
+		NSDateComponents Components (NSCalendarUnit unitFlags, NSDate fromDate);
+
+		[Export ("components:fromDate:toDate:options:")]
+		NSDateComponents Components (NSCalendarUnit unitFlags, NSDate fromDate, NSDate toDate, NSDateComponentsWrappingBehavior opts);
+
+		[Export ("dateByAddingComponents:toDate:options:")]
+		NSDate DateByAddingComponents (NSDateComponents comps, NSDate date, NSDateComponentsWrappingBehavior opts);
+
+		[Export ("dateFromComponents:")]
+		NSDate DateFromComponents (NSDateComponents comps);
 
 		[Field ("NSGregorianCalendar"), Internal]
 		NSString NSGregorianCalendar { get; }
@@ -852,7 +860,173 @@ namespace MonoMac.Foundation
 		[Export ("gregorianStartDate")]
 		NSDate GregorianStartDate { get; set; }
 	}
+
+	public delegate void NSFileHandleUpdateHandler (NSFileHandle handle);
+
+	public interface NSFileHandleReadEventArgs {
+		[Export ("NSFileHandleNotificationDataItem")]
+		NSData AvailableData { get; }
+
+		[Export ("NSFileHandleError", ArgumentSemantic.Assign)]
+		int UnixErrorCode { get; }
+	}
+
+	public interface NSFileHandleConnectionAcceptedEventArgs {
+		[Export ("NSFileHandleNotificationFileHandleItem")]
+		NSFileHandle NearSocketConnection { get; }
+		
+		[Export ("NSFileHandleError", ArgumentSemantic.Assign)]
+		int UnixErrorCode { get; }
+	}
 	
+	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // return invalid handle
+	public interface NSFileHandle 
+	{
+		[Export ("availableData")]
+		NSData AvailableData ();
+		
+		[Export ("readDataToEndOfFile")]
+		NSData ReadDataToEndOfFile ();
+
+		[Export ("readDataOfLength:")]
+		NSData ReadDataOfLength (uint length);
+
+		[Export ("writeData:")]
+		void WriteData (NSData data);
+
+		[Export ("offsetInFile")]
+		ulong OffsetInFile ();
+
+		[Export ("seekToEndOfFile")]
+		ulong SeekToEndOfFile ();
+
+		[Export ("seekToFileOffset:")]
+		void SeekToFileOffset (ulong offset);
+
+		[Export ("truncateFileAtOffset:")]
+		void TruncateFileAtOffset (ulong offset);
+
+		[Export ("synchronizeFile")]
+		void SynchronizeFile ();
+
+		[Export ("closeFile")]
+		void CloseFile ();
+		
+		[Static]
+		[Export ("fileHandleWithStandardInput")]
+		NSFileHandle FromStandardInput ();
+		
+		[Static]
+		[Export ("fileHandleWithStandardOutput")]
+		NSFileHandle FromStandardOutput ();
+
+		[Static]
+		[Export ("fileHandleWithStandardError")]
+		NSFileHandle FromStandardError ();
+
+		[Static]
+		[Export ("fileHandleWithNullDevice")]
+		NSFileHandle FromNullDevice ();
+
+		[Static]
+		[Export ("fileHandleForReadingAtPath:")]
+		NSFileHandle OpenRead (string path);
+
+		[Static]
+		[Export ("fileHandleForWritingAtPath:")]
+		NSFileHandle OpenWrite (string path);
+
+		[Static]
+		[Export ("fileHandleForUpdatingAtPath:")]
+		NSFileHandle OpenUpdate (string path);
+
+		[Static]
+		[Export ("fileHandleForReadingFromURL:error:")]
+		NSFileHandle OpenReadUrl (NSUrl url, out NSError error);
+
+		[Static]
+		[Export ("fileHandleForWritingToURL:error:")]
+		NSFileHandle OpenWriteUrl (NSUrl url, out NSError error);
+
+		[Static]
+		[Export ("fileHandleForUpdatingURL:error:")]
+		NSFileHandle OpenUpdateUrl (NSUrl url, out NSError error);
+		
+		[Export ("readInBackgroundAndNotifyForModes:")]
+		void ReadInBackground (NSString [] notifyRunLoopModes);
+		
+		[Export ("readInBackgroundAndNotify")]
+		void ReadInBackground ();
+
+		[Export ("readToEndOfFileInBackgroundAndNotifyForModes:")]
+		void ReadToEndOfFileInBackground (NSString [] notifyRunLoopModes);
+
+		[Export ("readToEndOfFileInBackgroundAndNotify")]
+		void ReadToEndOfFileInBackground ();
+
+		[Export ("acceptConnectionInBackgroundAndNotifyForModes:")]
+		void AcceptConnectionInBackground (NSString [] notifyRunLoopModes);
+
+		[Export ("acceptConnectionInBackgroundAndNotify")]
+		void AcceptConnectionInBackground ();
+
+		[Export ("waitForDataInBackgroundAndNotifyForModes:")]
+		void WaitForDataInBackground (NSString [] notifyRunLoopModes);
+
+		[Export ("waitForDataInBackgroundAndNotify")]
+		void WaitForDataInBackground ();
+		
+		[Export ("initWithFileDescriptor:closeOnDealloc:")]
+		IntPtr Constructor (int fd, bool closeOnDealloc);
+		
+		[Export ("initWithFileDescriptor:")]
+		IntPtr Constructor (int fd);
+
+		[Export ("fileDescriptor")]
+		int FileDescriptor { get; }
+
+		[Export ("setReadabilityHandler:")]
+		void SetReadabilityHandler ([NullAllowed] NSFileHandleUpdateHandler readCallback);
+
+		[Export ("writeabilityHandler:")]
+		void SetWriteabilityHandle ([NullAllowed] NSFileHandleUpdateHandler writeCallback);
+
+		[Field ("NSFileHandleOperationException")]
+		NSString OperationException { get; }
+
+		[Field ("NSFileHandleReadCompletionNotification")]
+		[Notification (typeof (NSFileHandleReadEventArgs))]
+		NSString ReadCompletionNotification { get; }
+		
+		[Field ("NSFileHandleReadToEndOfFileCompletionNotification")]
+		[Notification (typeof (NSFileHandleReadEventArgs))]
+		NSString ReadToEndOfFileCompletionNotification { get; }
+		
+		[Field ("NSFileHandleConnectionAcceptedNotification")]
+		[Notification (typeof (NSFileHandleConnectionAcceptedEventArgs))]
+		NSString ConnectionAcceptedNotification { get; }
+
+		
+		[Field ("NSFileHandleDataAvailableNotification")]
+		[Notification]
+		NSString DataAvailableNotification { get; }
+	}
+	
+	[BaseType (typeof (NSObject))]
+	public interface NSPipe {
+		
+		[Export ("fileHandleForReading")]
+		NSFileHandle ReadHandle { get; }
+		
+		[Export ("fileHandleForWriting")]
+		NSFileHandle WriteHandle { get; }
+
+		[Static]
+		[Export ("pipe")]
+		NSPipe Create ();
+	}
+
 	//@interface NSFormatter : NSObject <NSCopying, NSCoding>
 	[BaseType (typeof (NSObject))]
 	public interface NSFormatter {
@@ -3639,7 +3813,7 @@ namespace MonoMac.Foundation
 	}
 #endif
 	[BaseType (typeof (NSStream))]
-	[DisableDefaultCtor] // crash when used
+	[DefaultCtorVisibility (Visibility.Protected)]
 	public interface NSInputStream {
 		[Export ("hasBytesAvailable")]
 		bool HasBytesAvailable ();
@@ -4195,7 +4369,7 @@ namespace MonoMac.Foundation
 #else
 		// http://developer.apple.com/library/ios/#documentation/uikit/reference/NSBundle_UIKitAdditions/Introduction/Introduction.html
 		[Export ("loadNibNamed:owner:options:")]
-		NSArray LoadNib (string nibName, NSObject owner, [NullAllowed] NSDictionary options);
+		NSArray LoadNib (string nibName, [NullAllowed] NSObject owner, [NullAllowed] NSDictionary options);
 #endif
 		[Export ("bundleURL")]
 		[Since (4,0)]
@@ -4676,7 +4850,7 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	// init returns NIL
 	[DisableDefaultCtor]
-	public interface NSValue {
+	public partial interface NSValue {
 		[Export ("getValue:")]
 		void StoreValueAtAddress (IntPtr value);
 
@@ -4745,18 +4919,6 @@ namespace MonoMac.Foundation
 
 		[Export ("rangeValue")]
 		NSRange RangeValue { get; }
-
-		[Static, Export ("valueWithSCNVector3:")]
-		NSValue FromVector (MonoMac.OpenGL.Vector3 vector);
-		
-		[Static, Export ("valueWithSCNVector4:")]
-		NSValue FromVector (MonoMac.OpenGL.Vector4 vector);
-
-		[Export ("SCNVector3Value")]
-		MonoMac.OpenGL.Vector3 Vector3Value { get; }
-
-		[Export ("SCNVector4Value")]
-		MonoMac.OpenGL.Vector4 Vector4Value { get; }
 #else
 		[Static, Export ("valueWithCMTime:"), Since (4,0)]
 		NSValue FromCMTime (CMTime time);
@@ -6170,7 +6332,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSUrlRequest request, [NullAllowed] NSCachedUrlResponse cachedResponse, NSUrlProtocolClient client);
 
 		[Export ("client")]
-		NSObject WeakClient { get; set; }
+		NSObject WeakClient { get; }
 
 		[Export ("request")]
 		NSUrlRequest Request { get; }

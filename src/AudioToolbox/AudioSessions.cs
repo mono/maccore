@@ -85,7 +85,7 @@ namespace MonoMac.AudioToolbox {
 	public enum AudioSessionProperty {
 		PreferredHardwareSampleRate = 0x68777372,
 		PreferredHardwareIOBufferDuration = 0x696f6264,
-		AudioCategory = 0x61636174,
+		AudioCategory = 0x61636174, // 'acat'
 		[Obsolete ("Deprecated in iOS 5.0")]
 		AudioRoute = 0x726f7574,
 		AudioRouteChange = 0x726f6368,
@@ -104,7 +104,7 @@ namespace MonoMac.AudioToolbox {
 		OverrideCategoryMixWithOthers = 0x636d6978,
 		OverrideCategoryDefaultToSpeaker = 0x6373706b, //'cspk'
 		OverrideCategoryEnableBluetoothInput = 0x63626c75, //'cblu'
-		InterruptionType = 0x2172736d,
+		InterruptionType                      = 0x74797065,		// 'type'
 		Mode = 0x6d6f6465,
 		InputSources                          = 0x73726373,		// 'srcs'
 		OutputDestinations                    = 0x64737473,		// 'dsts'

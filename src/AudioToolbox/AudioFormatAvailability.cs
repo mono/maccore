@@ -67,6 +67,7 @@ namespace MonoMac.AudioToolbox {
 				if (res != 0)
 					return null;
 
+				Array.Resize (ref data, (int) size / Marshal.SizeOf (typeof (T)));
 				return data;
 			}
 		}

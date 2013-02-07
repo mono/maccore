@@ -32,6 +32,7 @@ using MonoMac.AudioToolbox;
 
 namespace MonoMac.AudioUnitWrapper
 {
+    [Obsolete ("Use AudioConverter")]
     public class _AudioConverter : IDisposable
     {
         #region Variables
