@@ -900,7 +900,7 @@ public class Generator {
 	string [] UINamespaces = new string [] {
 		"MonoMac.AppKit"
 	};
-	static bool ThreadProtection = false;
+	static bool ThreadProtection = true;
 #else
 	public Type MessagingType = typeof (MonoTouch.ObjCRuntime.Messaging);
 	public Type SampleBufferType = typeof (MonoTouch.CoreMedia.CMSampleBuffer);
@@ -2348,7 +2348,11 @@ public class Generator {
 		indent++;
 
 		if (needs_thread_check)
+#if MONOMAC
+			print ("global::MonoMac.AppKit.NSApplication.EnsureUIThread ();");
+#else
 			print ("global::MonoTouch.UIKit.UIApplication.EnsureUIThread ();");
+#endif
 		
 		Inject (mi, typeof (PrologueSnippetAttribute));
 
