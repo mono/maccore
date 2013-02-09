@@ -900,7 +900,8 @@ public class Generator {
 	string [] UINamespaces = new string [] {
 		"MonoMac.AppKit"
 	};
-	static bool ThreadProtection = false;
+	string thread_check_call = "global::MonoMac.AppKit.NSApplication.EnsureUIThread ();";
+
 #else
 	public Type MessagingType = typeof (MonoTouch.ObjCRuntime.Messaging);
 	public Type SampleBufferType = typeof (MonoTouch.CoreMedia.CMSampleBuffer);
@@ -919,7 +920,7 @@ public class Generator {
 		"MonoTouch.MapKit",
 		"MonoTouch.MessageUI",
 	};
-	static bool ThreadProtection = true;
+	string thread_check_call = "global::MonoTouch.UIKit.UIApplication.EnsureUIThread ();";
 #endif
 
 	//
@@ -2338,7 +2339,7 @@ public class Generator {
 	{
 		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
 		
-		bool needs_thread_check = ThreadProtection && type_needs_thread_checks && threadCheck == ThreadCheck.On;
+		bool needs_thread_check = type_needs_thread_checks && threadCheck == ThreadCheck.On;
 		string selector = SelectorField (sel);
 		var args = new StringBuilder ();
 		var convs = new StringBuilder ();
@@ -2348,7 +2349,7 @@ public class Generator {
 		indent++;
 
 		if (needs_thread_check)
-			print ("global::MonoTouch.UIKit.UIApplication.EnsureUIThread ();");
+			print (thread_check_call);
 		
 		Inject (mi, typeof (PrologueSnippetAttribute));
 
