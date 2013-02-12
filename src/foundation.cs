@@ -989,7 +989,7 @@ namespace MonoMac.Foundation
 		[Export ("setReadabilityHandler:")]
 		void SetReadabilityHandler ([NullAllowed] NSFileHandleUpdateHandler readCallback);
 
-		[Export ("writeabilityHandler:")]
+		[Export ("setWriteabilityHandler:")]
 		void SetWriteabilityHandle ([NullAllowed] NSFileHandleUpdateHandler writeCallback);
 
 		[Field ("NSFileHandleOperationException")]
