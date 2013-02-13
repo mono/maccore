@@ -333,7 +333,7 @@ class DocumentGeneratedCode {
 			handler.Value = "Method to invoke when the notification is posted.";
 			summary.Value = "Registers a method to be notified when the " + notification.Item2 + " notification is posted.";
 			returns.RemoveAll ();
-			returns.Add (XElement.Parse ("<para>The returned NSObject represents the registered notification.   Either call Dispose on the object to stop receiving notifications, or pass it to <see cref=\"M:MonoTouch.Foundation.NSNotification.RemoveObserver\"/></para>"));
+			returns.Add (XElement.Parse ("<para>The returned NSObject represents the registered notification.   Either call Dispose on the object to stop receiving notifications, or pass it to <see cref=\"M:MonoTouch.Foundation.NSNotificationCenter.RemoveObserver\"/></para>"));
 			remarks.RemoveAll ();
 			remarks.Add (XElement.Parse ("<para>The following example shows how you can use this method in your code</para>"));
 
