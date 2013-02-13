@@ -1868,11 +1868,9 @@ public class Generator {
 	// only generate those for monotouch now since we can ensure they will be linked away before reaching the devices
 	public void GeneratedCode (StreamWriter sw, int tabs)
 	{
-#if !MONOMAC
 		for (int i=0; i < tabs; i++)
 			sw.Write ('\t');
 		sw.WriteLine ("[CompilerGenerated]");
-#endif
 	}
 	
 	public void print_generated_code ()
