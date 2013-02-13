@@ -221,7 +221,7 @@ class DocumentGeneratedCode {
 			return;
 		}
 		var name = pi.Name;
-		var mname = name.Substring (0, name.Length-("Notification".Length));
+		var mname = name.EndsWith ("Notification") ? name.Substring (0, name.Length-("Notification".Length)) : name;
 		
 		var returnType = field.XPathSelectElement ("ReturnValue/ReturnType");
 		var summary = field.XPathSelectElement ("Docs/summary");
@@ -237,9 +237,11 @@ class DocumentGeneratedCode {
 			}
 		}
 
+		var evengArgsType = DocumentNotificationNestedType (t, pi, body.ToString ());
+
 		remarks.RemoveAll ();
 		remarks.Add (XElement.Parse ("<para id='tool-remark'>This constant can be used with the <see cref=\"T:MonoTouch.Foundation.NSNotificationCenter\"/> to register a listener for this notification.   This is an NSString instead of a string, because these values can be used as tokens in some native libraries instead of being used purely for their actual string content.    The 'notification' parameter to the callback contains extra information that is specific to the notification type.</para>"));
-		remarks.Add (XElement.Parse (String.Format ("<para id='tool-remark'>If you want to subscribe to this notification, you can use the convenience <see cref='T:{0}+Notifications'/>.<see cref='M:{0}+Notifications.Observe{1}'/> method which offers strongly typed access to the parameters of the notification.</para>", t.Name, mname)));
+		remarks.Add (XElement.Parse (String.Format ("<para id='tool-remark'>If you want to subscribe to this notification, you can use the convenience <see cref='T:{0}+Notifications'/>.<see cref='M:{0}+Notifications.Observe{1}'/> method which offers strongly typed access to the parameters of the notification.</para>", t.Name, name)));
 		remarks.Add (XElement.Parse ("<para>The following example shows how to use the strongly typed Notifications class, to take the guesswork out of the available properties in the notification:</para>"));
 		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
 							    "//\n// Lambda style\n//\n\n// listening\n" +
@@ -247,12 +249,12 @@ class DocumentGeneratedCode {
 							    "// To stop listening:\n" +
 							    "notification.Dispose ();\n\n" +
 							    "//\n// Method style\n//\nNSObject notification;\n" +
-							    "void Callback (object sender, {1} args)\n"+
+							    "void Callback (object sender, {3} args)\n"+
 							    "{{\n    // Access strongly typed args\n{2}\n}}\n\n" +
 							    "void Setup ()\n{{\n" +
 							    "    notification = {0}.Notifications.Observe{1} (Callback);\n}}\n\n" +
 							    "void Teardown ()\n{{\n" +
-							    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body)));
+							    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body, evengArgsType)));
 		remarks.Add (XElement.Parse ("<para>The following example shows how to use the notification with the DefaultCenter API:</para>"));
 		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
 						      "// Lambda style\n" +
@@ -274,18 +276,17 @@ class DocumentGeneratedCode {
 			list.Add (notification_event_args);
 			event_args_to_notification_uses [notification_event_args] = list;
 		}
-		DocumentNotificationNestedType (t, pi, body.ToString ());
 	}
 
-	public static void DocumentNotificationNestedType (Type t, PropertyInfo pi, string body)
+	public static string DocumentNotificationNestedType (Type t, PropertyInfo pi, string body)
 	{
-		var class_doc = GetDoc (t, true);
+		string handlerType = null;
+		var class_doc = GetDoc (t, notification: true);
 
 		if (class_doc == null){
 			Console.WriteLine ("Error, can not find Notification class for type {0}", t);
-			return;
+			Environment.Exit (1);
 		}
-
 		var class_summary = class_doc.XPathSelectElement ("Type/Docs/summary");
 		var class_remarks = class_doc.XPathSelectElement ("Type/Docs/remarks");
 
@@ -306,11 +307,24 @@ class DocumentGeneratedCode {
 			let convertedName = propName.EndsWith ("Notification") ? propName.Substring (0, propLen-("Notification".Length)) : propName
 			select new Tuple<string,string> (convertedName, ((FieldAttribute) fieldAttrs [0]).SymbolName) ;
 
+		// So the code below actually only executes once.
+		if (notifications.Count() > 1){
+			Console.WriteLine ("WHOA!   DocumentNotificationNestedType got more than 1 notification");
+		}
+		
 		foreach (var notification in notifications){
 			var mname = "Observe" + notification.Item1;
 			var method = class_doc.XPathSelectElement ("Type/Members/Member[@MemberName='" + mname + "']");
 
 			var handler = method.XPathSelectElement ("Docs/param");
+
+			handlerType = (string) method.XPathSelectElement ("Parameters/Parameter").Attribute ("Type");
+			if (handlerType.StartsWith ("System.EventHandler<"))
+				handlerType = handlerType.Substring (20, handlerType.Length-21);
+
+			// Turn System.EventHandler<Foo> into EventHandler<Foo>, looks prettier
+			if (handlerType.StartsWith ("System."))
+				handlerType = handlerType.Substring (7);
 			var summary = method.XPathSelectElement ("Docs/summary");
 			var remarks = method.XPathSelectElement ("Docs/remarks");
 			var returns = method.XPathSelectElement ("Docs/returns");
@@ -325,20 +339,20 @@ class DocumentGeneratedCode {
 
 			remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
 								    "//\n// Lambda style\n//\n\n// listening\n" +
-								    "notification = {0}.Notifications.Observe{1} ((sender, args) => {{\n    /* Access strongly typed args */\n{2}\n}});\n\n" +
+								    "notification = {0}.Notifications.{1} ((sender, args) => {{\n    /* Access strongly typed args */\n{2}\n}});\n\n" +
 								    "// To stop listening:\n" +
 								    "notification.Dispose ();\n\n" +
 								    "//\n//Method style\n//\nNSObject notification;\n" +
-								    "void Callback (object sender, {1} args)\n"+
+								    "void Callback (object sender, {3} args)\n"+
 								    "{{\n    // Access strongly typed args\n{2}\n}}\n\n" +
 								    "void Setup ()\n{{\n" +
-								    "    notification = {0}.Notifications.Observe{1} (Callback);\n}}\n\n" +
+								    "    notification = {0}.Notifications.{1} (Callback);\n}}\n\n" +
 								    "void Teardown ()\n{{\n" +
-								    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body)));
+								    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body, handlerType)));
 		
 		}
 		Save (GetMdocPath (t, true), class_doc);
-		
+		return handlerType;
 	}
 
 	public static void PopulateEvents (XDocument xmldoc, BaseTypeAttribute bta, Type t)
@@ -415,7 +429,7 @@ class DocumentGeneratedCode {
 			var kbd = false;
 			if (pi.GetCustomAttributes (typeof (InternalAttribute), true).Length > 0)
 				continue;
-			
+
 			if (pi.GetCustomAttributes (typeof (FieldAttribute), true).Length > 0){
 				bool is_notification = pi.GetCustomAttributes (typeof (NotificationAttribute), true).Length != 0;
 				ProcessField (t, xmldoc, pi, is_notification);
