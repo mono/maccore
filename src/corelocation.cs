@@ -269,8 +269,8 @@ namespace MonoMac.CoreLocation {
 		void MonitoringFailed (CLLocationManager manager, CLRegion region, NSError error);
 
 		[Since(5,0)]
-		[Export ("locationManager:didStartMonitoringForRegion:")]
-		void DidStartMonitoringForRegion (CLRegion region);
+		[Export ("locationManager:didStartMonitoringForRegion:"), EventArgs ("CLRegion")]
+		void DidStartMonitoringForRegion (CLLocationManager manager, CLRegion region);
 #endif
 
 		[Since (4,2)]
