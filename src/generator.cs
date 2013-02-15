@@ -2549,7 +2549,7 @@ public class Generator {
 		}
 		
 		if (release_return)
-			print ("Messaging.void_objc_msgSend (ret.Handle, Selector.Release);");
+			print ("Messaging.void_objc_msgSend (ret.Handle, Selector.GetHandle (Selector.Release));");
 		
 		Inject (mi, typeof (PostSnippetAttribute));
 
@@ -3157,7 +3157,7 @@ public class Generator {
 						if (!disable_default_ctor) {
 							GeneratedCode (sw, 2);
 							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]");
-							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.Init);\n\t\t\t\n\t\t}}\n",
+							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.GetHandle (\"init\"));\n\t\t\t\n\t\t}}\n",
 							      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix, ctor_visibility);
 						}
 					} else {
@@ -3172,9 +3172,9 @@ public class Generator {
 							if (debug)
 								sw.WriteLine ("\t\t\tConsole.WriteLine (\"{0}.ctor ()\");", TypeName);
 							sw.WriteLine ("\t\t\tif (IsDirectBinding) {");
-							sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, {0});", InlineSelectors ? "Selector.GetHandle (\"init\")" : "Selector.Init");
+							sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.GetHandle (\"init\"));");
 							sw.WriteLine ("\t\t\t} else {");
-							sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, {0});", InlineSelectors ? "Selector.GetHandle (\"init\")" : "Selector.Init");
+							sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper (this.SuperHandle, Selector.GetHandle (\"init\"));");
 							sw.WriteLine ("\t\t\t}");
 							sw.WriteLine ("\t\t}");
 							sw.WriteLine ();
@@ -3189,9 +3189,9 @@ public class Generator {
 						if (debug)
 							sw.WriteLine ("\t\t\tConsole.WriteLine (\"{0}.ctor (NSCoder)\");", TypeName);
 						sw.WriteLine ("\t\t\tif (IsDirectBinding) {");
-						sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, {0}, coder.Handle);", InlineSelectors ? "Selector.GetHandle (\"initWithCoder:\")" : "Selector.InitWithCoder");
+						sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.GetHandle (\"initWithCoder:\"), coder.Handle);");
 						sw.WriteLine ("\t\t\t} else {");
-						sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, {0}, coder.Handle);", InlineSelectors ? "Selector.GetHandle (\"initWithCoder:\")" : "Selector.InitWithCoder");
+						sw.WriteLine ("\t\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.GetHandle (\"initWithCoder:\"), coder.Handle);");
 						sw.WriteLine ("\t\t\t}");
 						sw.WriteLine ("\t\t}");
 						sw.WriteLine ();

@@ -37,9 +37,9 @@ namespace MonoMac.Foundation {
 		public NSAutoreleasePool () : base (NSObjectFlag.Empty)
 		{
 			if (IsDirectBinding) {
-				Handle = Messaging.intptr_objc_msgSend (this.Handle, Selector.Init);
+				Handle = Messaging.intptr_objc_msgSend (this.Handle, Selector.GetHandle ("init"));
 			} else {
-				Handle = Messaging.intptr_objc_msgSendSuper (this.SuperHandle, Selector.Init);
+				Handle = Messaging.intptr_objc_msgSendSuper (this.SuperHandle, Selector.GetHandle ("init"));
 			}
 		}
 

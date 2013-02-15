@@ -90,7 +90,7 @@ namespace MonoMac.Foundation {
 			
 			unsafe {
 				fixed (char *ptrFirstChar = str){
-					var handle = Messaging.intptr_objc_msgSend (class_ptr, Selector.Alloc);
+					var handle = Messaging.intptr_objc_msgSend (class_ptr, Selector.GetHandle (Selector.Alloc));
 					handle = Messaging.intptr_objc_msgsend_intptr_int (handle, Selector.GetHandle (selInitWithCharactersLength), (IntPtr) ptrFirstChar, str.Length);
 					return handle;
 				}
@@ -101,7 +101,7 @@ namespace MonoMac.Foundation {
 		{
 			if (handle == IntPtr.Zero)
 				return;
-			Messaging.void_objc_msgSend (handle, Selector.Release);
+			Messaging.void_objc_msgSend (handle, Selector.GetHandle (Selector.Release));
 		}
 
 	

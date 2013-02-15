@@ -136,15 +136,15 @@ namespace MonoMac.Foundation {
 		
 		[Export ("doesNotRecognizeSelector:")]
 		public virtual void DoesNotRecognizeSelector (Selector sel) {
-			Messaging.void_objc_msgSendSuper_intptr (SuperHandle, Selector.DoesNotRecognizeSelector, sel.Handle);
+			Messaging.void_objc_msgSendSuper_intptr (SuperHandle, Selector.GetHandle (Selector.DoesNotRecognizeSelector), sel.Handle);
 		}
 		
 		internal void Release () {
-			Messaging.void_objc_msgSend (handle, Selector.Release);
+			Messaging.void_objc_msgSend (handle, Selector.GetHandle (Selector.Release));
 		}
 		
 		internal void Retain () {
-			Messaging.void_objc_msgSend (handle, Selector.Retain);
+			Messaging.void_objc_msgSend (handle, Selector.GetHandle (Selector.Retain));
 		}
 		
 		public IntPtr SuperHandle {
@@ -179,7 +179,7 @@ namespace MonoMac.Foundation {
 		
 		private bool AllocIfNeeded () {
 			if (handle == IntPtr.Zero) {
-				handle = Messaging.intptr_objc_msgSend (Class.GetHandle (this.GetType ()), Selector.Alloc);
+				handle = Messaging.intptr_objc_msgSend (Class.GetHandle (this.GetType ()), Selector.GetHandle (Selector.Alloc));
 				return true;
 			}
 			return false;
@@ -228,9 +228,9 @@ namespace MonoMac.Foundation {
 			if (sel == null)
 				throw new ArgumentNullException ("sel");
 			if (IsDirectBinding) {
-				Messaging.void_objc_msgSend_intptr_intptr_double (this.Handle, Selector.PerformSelectorWithObjectAfterDelay, sel.Handle, obj == null ? IntPtr.Zero : obj.Handle, delay);
+				Messaging.void_objc_msgSend_intptr_intptr_double (this.Handle, Selector.GetHandle (Selector.PerformSelectorWithObjectAfterDelay), sel.Handle, obj == null ? IntPtr.Zero : obj.Handle, delay);
 			} else {
-				Messaging.void_objc_msgSendSuper_intptr_intptr_double (this.SuperHandle, Selector.PerformSelectorWithObjectAfterDelay, sel.Handle, obj == null ? IntPtr.Zero : obj.Handle, delay);
+				Messaging.void_objc_msgSendSuper_intptr_intptr_double (this.SuperHandle, Selector.GetHandle (Selector.PerformSelectorWithObjectAfterDelay), sel.Handle, obj == null ? IntPtr.Zero : obj.Handle, delay);
 			}
 		}
 		
@@ -246,7 +246,7 @@ namespace MonoMac.Foundation {
 		
 		private void InvokeOnMainThread (Selector sel, NSObject obj, bool wait)
 		{
-			Messaging.void_objc_msgSend_intptr_intptr_bool (this.Handle, Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone, sel.Handle, obj == null ? IntPtr.Zero : obj.Handle, wait);
+			Messaging.void_objc_msgSend_intptr_intptr_bool (this.Handle, Selector.GetHandle (Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone), sel.Handle, obj == null ? IntPtr.Zero : obj.Handle, wait);
 		}
 		
 		public void BeginInvokeOnMainThread (Selector sel, NSObject obj)
@@ -262,15 +262,15 @@ namespace MonoMac.Foundation {
 		public void BeginInvokeOnMainThread (NSAction action)
 		{
 			var d = new NSAsyncActionDispatcher (action);
-			Messaging.void_objc_msgSend_intptr_intptr_bool (d.Handle, Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone, 
-			                                                NSActionDispatcher.Selector.Handle, d.Handle, false);
+			Messaging.void_objc_msgSend_intptr_intptr_bool (d.Handle, Selector.GetHandle (Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone), 
+			                                                Selector.GetHandle (NSActionDispatcher.SelectorName), d.Handle, false);
 		}
 		
 		public void InvokeOnMainThread (NSAction action)
 		{
 			using (var d = new NSActionDispatcher (action)) {
-				Messaging.void_objc_msgSend_intptr_intptr_bool (d.Handle, Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone, 
-				                                                NSActionDispatcher.Selector.Handle, d.Handle, true);
+				Messaging.void_objc_msgSend_intptr_intptr_bool (d.Handle, Selector.GetHandle (Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone), 
+				                                                Selector.GetHandle (NSActionDispatcher.SelectorName), d.Handle, true);
 			}
 		}
 		
@@ -426,7 +426,7 @@ namespace MonoMac.Foundation {
 				}
 				if (!call_drain)
 					return;
-				Messaging.void_objc_msgSend_intptr_intptr_bool (class_ptr, Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone, Selector.GetHandle ("drain:"), IntPtr.Zero, false);
+				Messaging.void_objc_msgSend_intptr_intptr_bool (class_ptr, Selector.GetHandle (Selector.PerformSelectorOnMainThreadWithObjectWaitUntilDone), Selector.GetHandle ("drain:"), IntPtr.Zero, false);
 			}
 			
 			[Export ("drain:")]

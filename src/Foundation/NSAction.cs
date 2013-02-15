@@ -33,8 +33,8 @@ namespace MonoMac.Foundation {
 	// Use this for synchronous operations
 	[Register ("__MonoMac_NSActionDispatcher")]
 	internal sealed class NSActionDispatcher : NSObject {
-
-		public static readonly Selector Selector = new Selector ("apply");
+		public const string SelectorName = "apply";
+		public static readonly Selector Selector = new Selector (SelectorName);
 
 		readonly NSAction action;
 

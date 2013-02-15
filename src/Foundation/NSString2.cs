@@ -61,7 +61,7 @@ namespace MonoMac.Foundation {
 		public static NSString FromData (NSData data, NSStringEncoding encoding)
 		{
 			// Allocate a string, do not init
-			IntPtr h = Messaging.IntPtr_objc_msgSend (Class.GetHandle ("NSString"), Selector.Alloc);
+			IntPtr h = Messaging.IntPtr_objc_msgSend (Class.GetHandle ("NSString"), Selector.GetHandle (Selector.Alloc));
 			h = Messaging.IntPtr_objc_msgSend_IntPtr_int (h, Selector.GetHandle (selInitWithDataEncoding), data.Handle, (int)encoding);
 			return new NSString (h);
 		}
