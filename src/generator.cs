@@ -2807,13 +2807,11 @@ public class Generator {
 			var getter = pi.GetGetMethod ();
 			var ba = GetBindAttribute (getter);
 			string sel = ba != null ? ba.Selector : export.Selector;
-
-			if (!is_sealed) {
-				if (export.ArgumentSemantic != ArgumentSemantic.None)
-					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
-				else
-					print ("[Export (\"{0}\")]", sel);
-			}
+					
+			if (export.ArgumentSemantic != ArgumentSemantic.None)
+				print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
+			else
+				print ("[Export (\"{0}\")]", sel);
 			if (is_abstract){
 				print ("get; ");
 			} else {
@@ -2851,7 +2849,7 @@ public class Generator {
 				sel = ba.Selector;
 			}
 
-			if (!not_implemented && !is_sealed){
+			if (!not_implemented){
 				if (export.ArgumentSemantic != ArgumentSemantic.None)
 					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
 				else
@@ -2898,8 +2896,7 @@ public class Generator {
 				print ("{0} __mt_{1}_{2};", pi.ParameterType, mi.Name, pi.Name);
 				print ("#pragma warning restore 168");
 			}
-		
-		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
+
 		string selector = null;
 		bool virtual_method = false;
 		string wrap_method = null;
@@ -2917,7 +2914,7 @@ public class Generator {
 				selector = ba.Selector;
 				virtual_method = ba.Virtual;
 			}
-		} else if (!is_sealed) {
+		} else {
 			ExportAttribute ea = (ExportAttribute) attr [0];
 			selector = ea.Selector;
 					
@@ -2951,6 +2948,7 @@ public class Generator {
 		bool is_internal = HasAttribute (mi, typeof (InternalAttribute));
 		bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
 		bool is_new = HasAttribute (mi, typeof (NewAttribute));
+		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
 		bool is_unsafe = false;
 		bool is_autorelease = HasAttribute (mi, typeof (AutoreleaseAttribute));
 
