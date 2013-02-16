@@ -46,8 +46,7 @@ namespace MonoMac.Foundation {
 			
 			return (NSData) Runtime.GetNSObject (res);
 		}
-		
-		[Export ("scheduleInRunLoop:forMode:")]
+
 		[Advice ("Use Schedule (NSRunLoop, NSString) instead")]
 		public virtual void Schedule (NSRunLoop aRunLoop, string forMode)
 		{
@@ -64,8 +63,7 @@ namespace MonoMac.Foundation {
 			}
 			NSString.ReleaseNative (nsforMode);
 		}
-		
-		[Export ("unscheduleFromRunLoop:forMode:")]
+
 		[Advice ("Use Unschedule (NSRunLoop, NSString) instead")]
 		public virtual void Unschedule (NSRunLoop aRunLoop, string forMode)
 		{

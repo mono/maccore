@@ -1242,8 +1242,9 @@ namespace MonoMac.CoreAnimation {
 		[Export ("contents")]
 		NSObject WeakContents { get; set;  }
 
+		[Internal][Sealed]
 		[Export ("contents")]
-		CGImage Contents { get; set;  }
+		IntPtr _Contents { get; set; }
 
 		[Export ("contentsRect")]
 		RectangleF ContentsRect { get; set;  }

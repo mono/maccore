@@ -88,9 +88,6 @@ namespace MonoMac.CoreData
 		[Export ("defaultValue")]
 		NSObject DefaultValue { get; set; }
 
-		[Export ("setDefaultValue:")]
-		void SetDefaultValue (NSObject value);
-
 		[Export ("versionHash")]
 		NSData VersionHash { get; }
 
@@ -693,9 +690,6 @@ namespace MonoMac.CoreData
 
 		[Static, Export ("modelByMergingModels:")]
 		NSManagedObjectModel ModelByMergingModels (NSManagedObjectModel[] models);
-
-		[Export ("init")]
-		IntPtr Init { get; }
 
 		[Export ("initWithContentsOfURL:")]
 		IntPtr Constructor (NSUrl url);

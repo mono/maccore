@@ -3250,7 +3250,7 @@ namespace MonoMac.AVFoundation {
 		bool OrientationSupported { get; }
 
 		[Advice ("Use LayerVideoGravity")]
-		[Export ("videoGravity")]
+		[Export ("videoGravity")][Sealed]
 		string VideoGravity { get; set; }
 
 		[Export ("videoGravity")][Protected]
@@ -4209,7 +4209,7 @@ namespace MonoMac.AVFoundation {
 		AVPlayerLayer FromPlayer (AVPlayer player);
 
 		[Advice ("Use LayerVideoGravity")]
-		[Export ("videoGravity")]
+		[Export ("videoGravity")][Sealed]
 		string VideoGravity { get; set; }
 
 		[Export ("videoGravity")][Protected]
