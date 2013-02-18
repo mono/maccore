@@ -419,7 +419,11 @@ namespace MonoMac.Foundation {
 
 		public IntPtr LowlevelObjectForKey (IntPtr key)
 		{
+#if MONOMAC
+			return MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, selObjectForKey_Handle, key);
+#else
 			return MonoMac.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.GetHandle (selObjectForKey_), key);
+#endif
 		}
 	}
 }

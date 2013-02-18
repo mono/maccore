@@ -74,6 +74,12 @@ namespace MonoMac.Foundation {
 		const string selInitWithUTF8String = "initWithUTF8String:";
 		const string selInitWithCharactersLength = "initWithCharacters:length:";
 
+#if MONOMAC
+		static IntPtr selUTF8StringHandle = Selector.GetHandle (selUTF8String);
+		static IntPtr selInitWithUTF8StringHandle = Selector.GetHandle (selInitWithUTF8String);
+		static IntPtr selInitWithCharactersLengthHandle = Selector.GetHandle (selInitWithCharactersLength);
+#endif
+
 #if COREBUILD
 		static IntPtr class_ptr = Class.GetHandle ("NSString");
 #endif
@@ -90,8 +96,13 @@ namespace MonoMac.Foundation {
 			
 			unsafe {
 				fixed (char *ptrFirstChar = str){
+#if MONOMAC
+					var handle = Messaging.intptr_objc_msgSend (class_ptr, Selector.AllocHandle);
+					handle = Messaging.intptr_objc_msgsend_intptr_int (handle, selInitWithCharactersLengthHandle, (IntPtr) ptrFirstChar, str.Length);
+					#else
 					var handle = Messaging.intptr_objc_msgSend (class_ptr, Selector.GetHandle (Selector.Alloc));
 					handle = Messaging.intptr_objc_msgsend_intptr_int (handle, Selector.GetHandle (selInitWithCharactersLength), (IntPtr) ptrFirstChar, str.Length);
+#endif
 					return handle;
 				}
 			}
@@ -101,7 +112,11 @@ namespace MonoMac.Foundation {
 		{
 			if (handle == IntPtr.Zero)
 				return;
+#if MONOMAC
+			Messaging.void_objc_msgSend (handle, Selector.ReleaseHandle);
+#else
 			Messaging.void_objc_msgSend (handle, Selector.GetHandle (Selector.Release));
+#endif
 		}
 
 	
@@ -124,7 +139,11 @@ namespace MonoMac.Foundation {
 
 			unsafe {
 				fixed (char *ptrFirstChar = str){
+#if MONOMAC
+					Handle = Messaging.intptr_objc_msgsend_intptr_int (Handle, selInitWithCharactersLengthHandle, (IntPtr) ptrFirstChar, str.Length);
+#else
 					Handle = Messaging.intptr_objc_msgsend_intptr_int (Handle, Selector.GetHandle (selInitWithCharactersLength), (IntPtr) ptrFirstChar, str.Length);
+#endif
 				}
 			}
 		}
@@ -155,8 +174,12 @@ namespace MonoMac.Foundation {
 		{
 			if (usrhandle == IntPtr.Zero)
 				return null;
-			
+
+#if MONOMAC
+			return Marshal.PtrToStringAuto (Messaging.intptr_objc_msgSend (usrhandle, selUTF8StringHandle));
+#else
 			return Marshal.PtrToStringAuto (Messaging.intptr_objc_msgSend (usrhandle, Selector.GetHandle (selUTF8String)));
+#endif
 		}
 
 		public static bool Equals (NSString a, NSString b)
