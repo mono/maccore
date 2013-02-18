@@ -3157,8 +3157,14 @@ public class Generator {
 						if (!disable_default_ctor) {
 							GeneratedCode (sw, 2);
 							sw.WriteLine ("\t\t[EditorBrowsable (EditorBrowsableState.Advanced)]");
-							sw.WriteLine ("\t\t[Export (\"init\")]\n\t\t{3} {0} () : base (NSObjectFlag.Empty)\n\t\t{{\n\t\t\t{1}Handle = {2}.ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.GetHandle (\"init\"));\n\t\t\t\n\t\t}}\n",
-							      TypeName, debug ? String.Format ("Console.WriteLine (\"{0}.ctor ()\");", TypeName) : "", MainPrefix, ctor_visibility);
+							sw.WriteLine ("\t\t[Export (\"init\")]");
+							sw.WriteLine ("\t\t{1} {0} () : base (NSObjectFlag.Empty)", TypeName, ctor_visibility);
+							sw.WriteLine ("\t\t{");
+							if (debug)
+								sw.WriteLine ("\t\t\tConsole.WriteLine (\"{0}.ctor ()\");", TypeName);
+							sw.WriteLine ("\t\t\tHandle = " + MainPrefix + ".ObjCRuntime.Messaging.IntPtr_objc_msgSend (this.Handle, Selector.GetHandle (\"init\"));");
+							sw.WriteLine ("\t\t\t");
+							sw.WriteLine ("\t\t}");
 						}
 					} else {
 						if (!disable_default_ctor) {
