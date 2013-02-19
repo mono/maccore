@@ -69,10 +69,14 @@ namespace MonoMac.CoreAnimation {
 
 #if !MONOMAC
 	public partial class CADisplayLink {
+		NSActionDispatcher dispatcher;
+
 		public static CADisplayLink Create (NSAction action)
 		{
-			var d = new NSActionDispatcher (action);
-			return Create (d, NSActionDispatcher.Selector);
+			var dispatcher = new NSActionDispatcher (action);
+			var rv = Create (dispatcher, NSActionDispatcher.Selector);
+			rv.dispatcher = dispatcher;
+			return rv;
 		}
 	}
 #endif
