@@ -770,14 +770,14 @@ namespace MonoMac.CoreGraphics {
 			CGContextDrawRadialGradient (handle, gradient.handle, startCenter, startRadius, endCenter, endRadius, options);
 		}
 		
-
-		//[DllImport (Constants.CoreGraphicsLibrary)]
-		//extern static void CGContextDrawShading(IntPtr context, IntPtr shading);
-		//public void DrawShading (CGShading shading)
-		//{
-		//	CGContextDrawShading (handle, shading.handle);
-		//}
-		
+#if !COREBUILD
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static void CGContextDrawShading(IntPtr context, IntPtr shading);
+		public void DrawShading (CGShading shading)
+		{
+			CGContextDrawShading (handle, shading.handle);
+		}
+#endif		
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static void CGContextSetCharacterSpacing(IntPtr context, float spacing);
