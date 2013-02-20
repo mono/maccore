@@ -2910,11 +2910,12 @@ namespace MonoMac.Foundation
 		[Obsolete ("Deprecated in iOS 6.0. Use NSMetadataQuery.NSMetadataUbiquitousItemPercentUploadedKey on NSMetadataItem")]
 		[Field ("NSURLUbiquitousItemPercentUploadedKey")]
 		NSString UbiquitousItemPercentUploadedKey { get; }
-#if !MONOMAC
+
 		[Since (5,1)]
+		[MountainLion]
 		[Field ("NSURLIsExcludedFromBackupKey")]
 		NSString IsExcludedFromBackupKey { get; }
-#endif
+
 		[Export ("bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:")]
 		NSData CreateBookmarkData (NSUrlBookmarkCreationOptions options, string [] resourceValues, [NullAllowed] NSUrl relativeUrl, out NSError error);
 
@@ -5582,12 +5583,13 @@ namespace MonoMac.Foundation
 		void Cancel ();
 
 		[Since (6,0)]
+		[MountainLion]
 		[Export ("itemAtURL:willMoveToURL:")]
 		void WillMove (NSUrl oldUrl, NSUrl newUrl);
 	}
 	
 	[BaseType (typeof (NSObject))]
-	public interface NSFileManager {
+	public partial interface NSFileManager {
 		[Field("NSFileType")]
 		NSString NSFileType { get; }
 
@@ -5881,14 +5883,15 @@ namespace MonoMac.Foundation
                 NSUrl GetUrlForPublishingUbiquitousItem (NSUrl url, out NSDate expirationDate, out NSError error);
 
 		[Since (6,0)]
+		[MountainLion]
 		[Export ("ubiquityIdentityToken")]
 		NSObject UbiquityIdentityToken { get; }
-#if !MONOMAC
+
 		[Since (6,0)]
+		[MountainLion]
 		[Field ("NSUbiquityIdentityDidChangeNotification")]
 		[Notification]
 		NSString UbiquityIdentityDidChangeNotification { get; }
-#endif
 	}
 
 	[BaseType(typeof(NSObject))]
@@ -5957,7 +5960,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
-	interface NSFilePresenter {
+	partial interface NSFilePresenter {
 		[Abstract]
 		[Export ("presentedItemURL")]
 		NSUrl PresentedItemURL { get; }
