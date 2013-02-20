@@ -2687,12 +2687,15 @@ public class Generator {
 			var targ = da.Type != null ? string.Format (", Type = \"{0}\"", da.Type) : string.Empty;
 			print ("[DebuggerDisplay (\"{0}\"{1}{2})]", da.Value, narg, targ);
 		}
+
+		foreach (MountainLionAttribute mla in pi.GetCustomAttributes (typeof (MountainLionAttribute), false))
+			print ("[MountainLion]");
+
 		foreach (SinceAttribute sa in pi.GetCustomAttributes (typeof (SinceAttribute), false)) 
 			print ("[Since ({0},{1})]", sa.Major, sa.Minor);
 
 		foreach (ThreadSafeAttribute sa in pi.GetCustomAttributes (typeof (ThreadSafeAttribute), false)) 
 			print ("[ThreadSafe]");
-
 	}
 
 	void GenerateProperty (Type type, PropertyInfo pi, List<string> instance_fields_to_clear_on_dispose, bool is_model)
@@ -2940,6 +2943,9 @@ public class Generator {
 			}
 		}
 
+		foreach (MountainLionAttribute mla in mi.GetCustomAttributes (typeof (MountainLionAttribute), false))
+			print ("[MountainLion]");
+
 		bool is_static = HasAttribute (mi, typeof (StaticAttribute));
 		if (is_static || category_extension_type != null)
 			virtual_method = false;
@@ -3095,6 +3101,9 @@ public class Generator {
 					ErrorHelper.Show (new BindingException (1022, true, "Category classes can not use the [Model] attribute"));
 				print ("[Model]");
 			}
+
+			foreach (MountainLionAttribute mla in type.GetCustomAttributes (typeof (MountainLionAttribute), false))
+				print ("[MountainLion]");
 
 			print ("public unsafe {0}partial class {1} {2} {{",
 			       class_mod,
