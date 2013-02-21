@@ -1911,7 +1911,16 @@ public class Generator {
 		foreach (var a in e)
 			w.WriteLine (a);
 	}
-	
+
+	public void PrintPlatformAttributes (MemberInfo mi)
+	{
+		if (mi == null)
+			return;
+
+		if (mi.GetCustomAttributes (typeof (MountainLionAttribute), false).Length > 0)
+			print ("[MountainLion]");
+	}
+
 	public string SelectorField (string s, bool ignore_inline_directive = false)
 	{
 		string name;
@@ -2688,8 +2697,7 @@ public class Generator {
 			print ("[DebuggerDisplay (\"{0}\"{1}{2})]", da.Value, narg, targ);
 		}
 
-		foreach (MountainLionAttribute mla in pi.GetCustomAttributes (typeof (MountainLionAttribute), false))
-			print ("[MountainLion]");
+		PrintPlatformAttributes (pi);
 
 		foreach (SinceAttribute sa in pi.GetCustomAttributes (typeof (SinceAttribute), false)) 
 			print ("[Since ({0},{1})]", sa.Major, sa.Minor);
@@ -2732,6 +2740,7 @@ public class Generator {
 			       pi.Name);
 			indent++;
 			if (pi.CanRead) {
+				PrintPlatformAttributes (pi);
 				print ("get {");
 				indent++;
 
@@ -2745,6 +2754,7 @@ public class Generator {
 				print ("}");
 			}
 			if (pi.CanWrite) {
+				PrintPlatformAttributes (pi);
 				print ("set {");
 				indent++;
 
@@ -2798,10 +2808,14 @@ public class Generator {
 		indent++;
 
 		if (wrap != null) {
-			if (pi.CanRead)
+			if (pi.CanRead) {
+				PrintPlatformAttributes (pi);
 				print ("get {{ return {0} as {1}; }}", wrap, FormatType (pi.DeclaringType, pi.PropertyType));
-			if (pi.CanWrite)
+			}
+			if (pi.CanWrite) {
+				PrintPlatformAttributes (pi);
 				print ("set {{ {0} = value; }}", wrap);
+			}
 			indent--;
 			print ("}\n");
 			return;			
@@ -2812,7 +2826,9 @@ public class Generator {
 			var getter = pi.GetGetMethod ();
 			var ba = GetBindAttribute (getter);
 			string sel = ba != null ? ba.Selector : export.Selector;
-					
+
+			PrintPlatformAttributes (pi);
+
 			if (export.ArgumentSemantic != ArgumentSemantic.None)
 				print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
 			else
@@ -2853,6 +2869,8 @@ public class Generator {
 			} else {
 				sel = ba.Selector;
 			}
+
+			PrintPlatformAttributes (pi);
 
 			if (!not_implemented){
 				if (export.ArgumentSemantic != ArgumentSemantic.None)
@@ -2943,8 +2961,7 @@ public class Generator {
 			}
 		}
 
-		foreach (MountainLionAttribute mla in mi.GetCustomAttributes (typeof (MountainLionAttribute), false))
-			print ("[MountainLion]");
+		PrintPlatformAttributes (mi);
 
 		bool is_static = HasAttribute (mi, typeof (StaticAttribute));
 		if (is_static || category_extension_type != null)
@@ -3102,8 +3119,7 @@ public class Generator {
 				print ("[Model]");
 			}
 
-			foreach (MountainLionAttribute mla in type.GetCustomAttributes (typeof (MountainLionAttribute), false))
-				print ("[MountainLion]");
+			PrintPlatformAttributes (type);
 
 			print ("public unsafe {0}partial class {1} {2} {{",
 			       class_mod,
@@ -3319,8 +3335,11 @@ public class Generator {
 						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
 					}
 
+					PrintPlatformAttributes (field_pi);
 					print ("{0} static {1} {2} {{", HasAttribute (field_pi, typeof (InternalAttribute)) ? "internal" : "public", fieldTypeName, field_pi.Name);
 					indent++;
+
+					PrintPlatformAttributes (field_pi);
 					print ("get {");
 					indent++;
 					if (field_pi.PropertyType == typeof (NSString)){
@@ -3358,6 +3377,7 @@ public class Generator {
 					print ("}");
 
 					if (field_pi.CanWrite) {
+						PrintPlatformAttributes (field_pi);
 						print ("set {");
 						indent++;
 						if (field_pi.PropertyType == typeof (int)) {
