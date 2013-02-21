@@ -69,7 +69,7 @@ namespace TouchUnit.Bindings {
 			if (!g.IsStatic)
 				return true;
 
-			if (Skip (p))
+			if (Skip (p) || SkipDueToAttribute (p))
 				return true;
 			
 			try {
@@ -93,7 +93,7 @@ namespace TouchUnit.Bindings {
 			Errors = 0;
 			int c = 0, n = 0;
 			foreach (Type t in Assembly.GetTypes ()) {
-				if (Skip (t))
+				if (Skip (t) || SkipDueToAttribute (t))
 					continue;
 
 				if (LogProgress)

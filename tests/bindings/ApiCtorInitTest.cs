@@ -109,7 +109,7 @@ namespace TouchUnit.Bindings {
 				if (t.IsAbstract || !NSObjectType.IsAssignableFrom (t))
 					continue;
 				
-				if (Skip (t))
+				if (Skip (t) || SkipDueToAttribute (t))
 					continue;
 				
 				var ctor = t.GetConstructor (Type.EmptyTypes);

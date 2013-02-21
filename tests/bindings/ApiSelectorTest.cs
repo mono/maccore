@@ -53,11 +53,6 @@ namespace TouchUnit.Bindings {
 		{
 			return false;
 		}
-		
-		protected virtual bool Skip (Attribute attribute)
-		{
-			return false;
-		}
 
 		protected virtual bool CheckResponse (bool value, Type actualType, Type declaredType, ref string name)
 		{
@@ -65,19 +60,6 @@ namespace TouchUnit.Bindings {
 				return true;
 			
 			name = actualType.FullName + " : " + name;
-			return false;
-		}
-
-		bool SkipDueToAttribute (MemberInfo member)
-		{
-			if (member == null)
-				return false;
-
-			foreach (Attribute attr in member.GetCustomAttributes (true)) {
-				if (Skip (attr))
-					return true;
-			}
-
 			return false;
 		}
 		
@@ -102,7 +84,7 @@ namespace TouchUnit.Bindings {
 
 				foreach (var m in t.GetMethods (BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)) {
 					
-					if (m.DeclaringType != t || SkipDueToAttribute (t))
+					if (m.DeclaringType != t || SkipDueToAttribute (m))
 						continue;
 
 					foreach (object ca in m.GetCustomAttributes (true)) {
@@ -223,6 +205,9 @@ namespace TouchUnit.Bindings {
 					var mg = p.GetGetMethod ();
 					var ms = p.GetSetMethod ();
 					if (HasNoSetter (p) || (mg == null) || (ms != null))
+						continue;
+
+					if (SkipDueToAttribute (mg) || SkipDueToAttribute (ms))
 						continue;
 
 					foreach (object ca in mg.GetCustomAttributes (true)) {

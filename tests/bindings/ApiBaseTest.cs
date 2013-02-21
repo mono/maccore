@@ -49,7 +49,25 @@ namespace TouchUnit.Bindings {
 		public bool LogProgress { get; set; }
 		
 		static protected Type NSObjectType = typeof (NSObject);
-		
+
+		protected virtual bool Skip (Attribute attribute)
+		{
+			return false;
+		}
+
+		protected bool SkipDueToAttribute (MemberInfo member)
+		{
+			if (member == null)
+				return false;
+
+			foreach (Attribute attr in member.GetCustomAttributes (true)) {
+				if (Skip (attr))
+					return true;
+			}
+
+			return false;
+		}
+
 		/// <summary>
 		/// Gets the assembly on which the test fixture will reflect the NSObject-derived types.
 		/// The default implementation returns the assembly where NSObject is defined, e.g.
