@@ -558,9 +558,12 @@ namespace MonoMac.Foundation  {
 		LongestEffectiveRangeNotRequired = 1 << 20
 	}
 
+#if !MONOMAC
+	// MonoMac AppKit redefines this with more values
 	public enum NSUnderlineStyle {
 		None, Single
 	}
+#endif
 
 	public enum NSWritingDirection {
 		Natural = -1, LeftToRight = 0, RightToLeft = -1
