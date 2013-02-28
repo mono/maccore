@@ -25,19 +25,19 @@ using System;
 using System.Runtime.InteropServices;
 
 namespace MonoMac.Foundation {
-  [StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Sequential)]
 	public struct NSRect {
-    public NSRect(System.Drawing.RectangleF rect)
-    {
-      Left = rect.Left;
-      Top = rect.Top;
-      Width = rect.Width;
-      Height = rect.Height;
-    }
+		public NSRect(System.Drawing.RectangleF rect)
+		{
+			Left = rect.Left;
+			Top = rect.Top;
+			Width = rect.Width;
+			Height = rect.Height;
+		}
 
-    public double Left;
-    public double Top;
-    public double Width;
-    public double Height;
+		public double Left;
+		public double Top;
+		public double Width;
+		public double Height;
 	}
 }
