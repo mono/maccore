@@ -316,8 +316,12 @@ namespace MonoMac.Foundation  {
 		ErrorOccurred = 1 << 3,
 		EndEncountered = 1 << 4
 	}
-	
+
+#if MAC64
+	public enum NSComparisonPredicateModifier : ulong {
+#else
 	public enum NSComparisonPredicateModifier {
+#endif
 		Direct,
 		All,
 		Any
@@ -341,7 +345,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSComparisonPredicateOptions : ulong {
+#else
 	public enum NSComparisonPredicateOptions {
+#endif
 		CaseInsensitive=0x01,
 		DiacriticInsensitive=0x02
 	}	
