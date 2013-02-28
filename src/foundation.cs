@@ -2586,6 +2586,12 @@ namespace MonoMac.Foundation
 
 		[Export("stopAccessingSecurityScopedResource")]
 		void StopAccessingSecurityScopedResource();
+	
+		[Export("filePathURL")]
+		NSUrl FilePathUrl { get; }
+
+		[Export("fileReferenceURL")]
+		NSUrl FileReferenceUrl { get; }		
 
 #endif
 
@@ -4367,6 +4373,10 @@ namespace MonoMac.Foundation
 
 		[Export ("pathForSoundResource:")]
 		string PathForSoundResource (string resource);
+
+		[Export("appStoreReceiptURL")]
+		NSUrl AppStoreReceiptUrl { get; }
+
 #else
 		// http://developer.apple.com/library/ios/#documentation/uikit/reference/NSBundle_UIKitAdditions/Introduction/Introduction.html
 		[Export ("loadNibNamed:owner:options:")]
