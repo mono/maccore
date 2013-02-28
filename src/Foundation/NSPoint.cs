@@ -24,29 +24,23 @@
 using System;
 using System.Runtime.InteropServices;
 
-// For now, only support MAC64 for NSRect in order to make sure
+// For now, only support MAC64 for NSPoint in order to make sure
 // we didn't mess up the 32 bit build
 #if MAC64
 namespace MonoMac.Foundation {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct NSRect {
-		public NSRect(System.Drawing.RectangleF rect)
+	public struct NSPoint {
+		public NSPoint(System.Drawing.PointF point)
 		{
-			Origin.X = rect.Left;
-			Origin.Y = rect.Top;
-			Size.Width = rect.Width;
-			Size.Height = rect.Height;
+			X = point.X;
+			Y = point.Y;
 		}
-
-		public NSPoint Origin;
-		public NSSize Size;
-
 #if MAC64
-		public double Width { get { return Size.Width; } }
-		public double Height { get { return Size.Height; } }
+		public double X;
+		public double Y;
 #else
-		public float Width { get { return Size.Width; } }
-		public float Height { get { return Size.Height; } }
+		public float X;
+		public float Y;
 #endif
 	}
 }

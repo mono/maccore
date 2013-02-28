@@ -24,29 +24,24 @@
 using System;
 using System.Runtime.InteropServices;
 
-// For now, only support MAC64 for NSRect in order to make sure
+// For now, only support MAC64 for NSSize in order to make sure
 // we didn't mess up the 32 bit build
 #if MAC64
 namespace MonoMac.Foundation {
 	[StructLayout(LayoutKind.Sequential)]
-	public struct NSRect {
-		public NSRect(System.Drawing.RectangleF rect)
+	public struct NSSize {
+		public NSSize(System.Drawing.SizeF size)
 		{
-			Origin.X = rect.Left;
-			Origin.Y = rect.Top;
-			Size.Width = rect.Width;
-			Size.Height = rect.Height;
+			Width = size.Width;
+			Height = size.Height;
 		}
 
-		public NSPoint Origin;
-		public NSSize Size;
-
 #if MAC64
-		public double Width { get { return Size.Width; } }
-		public double Height { get { return Size.Height; } }
+		public double Width;
+		public double Height;
 #else
-		public float Width { get { return Size.Width; } }
-		public float Height { get { return Size.Height; } }
+		public float Width;
+		public float Height;
 #endif
 	}
 }
