@@ -3829,7 +3829,7 @@ namespace MonoMac.Foundation
  		[Export("stringByResolvingSymlinksInPath")]
  		NSString ResolveSymlinksInPath();
 
- 		[Export("stringsByAppendingPaths")]
+		[Export("stringsByAppendingPaths:")]
  		string[] AppendPaths( string[] paths );
 
 		// end methods from NSStringPathExtensions category
