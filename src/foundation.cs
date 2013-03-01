@@ -3821,7 +3821,7 @@ namespace MonoMac.Foundation
  		NSString AbbreviateTildeInPath();
 
  		[Export("stringByExpandingTildeInPath")]
- 		NSString ExpandTildeInpath();
+ 		NSString ExpandTildeInPath();
  
  		[Export("stringByStandardizingPath")]
  		NSString StandarizePath();
