@@ -36,7 +36,10 @@ namespace MonoMac.AudioToolbox
 	[Obsolete ("Use AudioBuffers")]
 	[StructLayout(LayoutKind.Sequential)]
 	public class AudioBufferList {
-		[Preserve (Conditional=true)]
+		// Preserve is support, but Conditional is not, on fields and will mark the type (not optimal)
+		// we can workaround this by pmaking sure the field can't be linked out if the type is marked
+		// e.g. by using it inside ToString
+		// [Preserve (Conditional=true)]
 		internal int bufferCount;
 		// mBuffers array size is variable. But here we uses fixed size of 2, because iPhone phone terminal two (L/R) channels.        
 		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
@@ -57,7 +60,7 @@ namespace MonoMac.AudioToolbox
 
 		public override string ToString ()
 		{
-			if (buffers != null && buffers.Length > 0)
+			if (buffers != null && bufferCount > 0)
 				return string.Format ("[buffers={0},bufferSize={1}]", buffers [0], buffers [0].DataByteSize);
 			
 			return "[empty]";
