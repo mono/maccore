@@ -5591,6 +5591,24 @@ namespace MonoMac.Foundation
 		
 		[Export ("activeProcessorCount")]
 		int ActiveProcessorCount { get; }
+
+		[Export ("systemUptime")]
+		double SystemUptime { get; }
+
+		[Export ("enableSuddenTermination")]
+		void EnableSuddenTermination  ();
+	
+		[Export ("disableSuddenTermination")]
+		void DisableSuddenTermination ();
+
+		[Export ("enableAutomaticTermination:")]
+		void EnableAutomaticTermination (string reason);
+
+		[Export ("disableAutomaticTermination:")]
+		void DisableAutomaticTermination (string reason);
+
+		[Export ("automaticTerminationSupportEnabled")]
+		bool AutomaticTerminationSupportEnabled { get; set; }
 	}
 
 	[BaseType (typeof (NSMutableData))]
