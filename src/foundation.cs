@@ -3437,6 +3437,12 @@ namespace MonoMac.Foundation
 		[Export ("mainDocumentURL")]
 		NSUrl MainDocumentURL { get; }
 
+		[Export ("networkServiceType")]
+		NSUrlRequestNetworkServiceType NetworkServiceType { get; }
+
+		[Export ("allowsCellularAccess")]
+		bool AllowsCellularAccess { get; }
+		
 		[Export ("HTTPMethod")]
 		string HttpMethod { get; }
 
@@ -3571,7 +3577,10 @@ namespace MonoMac.Foundation
 		[New][Export ("HTTPShouldHandleCookies")]
 		bool ShouldHandleCookies { get; set; }
 
-		[Export ("allowsCellularAccess")]
+		[Export ("networkServiceType")]
+		NSUrlRequestNetworkServiceType NetworkServiceType { set; get; }
+		
+		[New] [Export ("allowsCellularAccess")]
 		bool AllowsCellularAccess { get; set; }
 	}
 	

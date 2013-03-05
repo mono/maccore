@@ -613,4 +613,12 @@ namespace MonoMac.Foundation  {
 		None = 0,
 		WrapCalendarComponents = 1 << 0,
 	}
+
+	public enum NSUrlRequestNetworkServiceType {
+		Default,
+		VoIP,
+		Video,
+		Background,
+		Voice
+	}
 }
