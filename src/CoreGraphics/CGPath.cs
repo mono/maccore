@@ -589,7 +589,9 @@ namespace MonoMac.CoreGraphics {
 			CGPathElement element = new CGPathElement (Marshal.ReadInt32 (element_ptr, 0));
 			ApplierFunction func = (ApplierFunction) gch.Target;
 
+#if MAC64
 			NSPoint pt;
+#endif
 			IntPtr ptr = Marshal.ReadIntPtr (element_ptr, 4);
 			int ptsize = Marshal.SizeOf (typeof (NSPoint));
 
