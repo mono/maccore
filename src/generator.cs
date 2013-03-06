@@ -3778,9 +3778,9 @@ public class Generator {
 				print ("get {{ return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (class_ptr, UIAppearance.SelectorAppearance)); }}", appearance_type_name);
 				indent--;
 				print ("}\n");
-				print ("public static {0}{1} GetAppearanceForSubclass (Type subclass) {{", parent_implements_appearance ? "new " : "", appearance_type_name);
+				print ("public static {0}{1} GetAppearance<T> () {{", parent_implements_appearance ? "new " : "", appearance_type_name);
 				indent++;
-				print ("return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (Class.GetHandle (subclass), UIAppearance.SelectorAppearance));", appearance_type_name);
+				print ("return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (Class.GetHandle (typeof (T)), UIAppearance.SelectorAppearance));", appearance_type_name);
 				indent--;
 				print ("}\n");
 				print ("public static {0}{1} AppearanceWhenContainedIn (params Type [] containers)", parent_implements_appearance ? "new " : "", appearance_type_name);
