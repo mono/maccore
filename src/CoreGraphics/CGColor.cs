@@ -31,6 +31,20 @@ using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.CoreGraphics {
 
 	public class CGColor : INativeObject, IDisposable {
@@ -70,7 +84,7 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGColorCreate(IntPtr space, float [] components);
+		extern static IntPtr CGColorCreate(IntPtr space, CGFloat [] components);
 
 		public CGColor (CGColorSpace colorspace, float [] components)
 		{
@@ -80,19 +94,20 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentNullException ("colorspace");
 			if (colorspace.handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("colorspace");
-			
-			handle = CGColorCreate (colorspace.handle, components);
+			CGFloat[] _components = new CGFloat[components.Length];
+			Array.Copy (components, _components, components.Length);
+			handle = CGColorCreate (colorspace.handle, _components);
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGColorCreateGenericGray(float gray, float alpha);
+		extern static IntPtr CGColorCreateGenericGray(CGFloat gray, CGFloat alpha);
 		public CGColor (float gray, float alpha)
 		{
 			handle = CGColorCreateGenericGray (gray, alpha);
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGColorCreateGenericRGB (float red, float green, float blue, float alpha);
+		extern static IntPtr CGColorCreateGenericRGB (CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
 		public CGColor (float red, float green, float blue, float alpha)
 		{
 			handle = CGColorCreateGenericRGB (red, green, blue, alpha);
@@ -118,7 +133,7 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGColorCreateWithPattern(IntPtr space, IntPtr pattern, float [] components);
+		extern static IntPtr CGColorCreateWithPattern(IntPtr space, IntPtr pattern, CGFloat [] components);
 		public CGColor (CGColorSpace colorspace, CGPattern pattern, float [] components)
 		{
 			if (colorspace == null)
@@ -130,13 +145,15 @@ namespace MonoMac.CoreGraphics {
 			if (components == null)
 				throw new ArgumentNullException ("components");
 
-			handle = CGColorCreateWithPattern (colorspace.handle, pattern.handle, components);
+			CGFloat[] _components = new CGFloat[components.Length];
+			Array.Copy (components, _components, components.Length);
+			handle = CGColorCreateWithPattern (colorspace.handle, pattern.handle, _components);
 			if (handle == IntPtr.Zero)
 				throw new ArgumentException ();
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGColorCreateCopyWithAlpha(IntPtr color, float alpha);
+		extern static IntPtr CGColorCreateCopyWithAlpha(IntPtr color, CGFloat alpha);
 		public CGColor (CGColor source, float alpha)
 		{
 			if (source == null)
@@ -183,16 +200,16 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static unsafe float *CGColorGetComponents(IntPtr color);
+		extern static unsafe CGFloat *CGColorGetComponents(IntPtr color);
 		public float [] Components {
 			get {
 				int n = NumberOfComponents;
-				float [] result = new float [n];
+				float [] result = new float[n];
 				unsafe {
-					float *cptr = CGColorGetComponents (handle);
+					CGFloat *cptr = CGColorGetComponents (handle);
 
 					for (int i = 0; i < n; i++){
-						result [i] = cptr [i];
+						result [i] = (float)cptr [i];
 					}
 				}
 				return result;
@@ -200,10 +217,10 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static float CGColorGetAlpha(IntPtr color);
+		extern static CGFloat CGColorGetAlpha(IntPtr color);
 		public float Alpha {
 			get {
-				return CGColorGetAlpha (handle);
+				return (float)CGColorGetAlpha (handle);
 			}
 		}
 		

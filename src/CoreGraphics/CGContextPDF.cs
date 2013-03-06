@@ -34,6 +34,19 @@ using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
 	public class CGPDFPageInfo {
 		static IntPtr kCGPDFContextMediaBox;
@@ -187,7 +200,7 @@ namespace MonoMac.CoreGraphics {
 		bool closed;
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPDFContextCreateWithURL (IntPtr url, ref RectangleF rect, IntPtr dictionary);
+		extern static IntPtr CGPDFContextCreateWithURL (IntPtr url, ref NSRect rect, IntPtr dictionary);
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGPDFContextCreateWithURL (IntPtr url, IntPtr rect, IntPtr dictionary);
@@ -196,14 +209,24 @@ namespace MonoMac.CoreGraphics {
 		{
 			if (url == null)
 				throw new ArgumentNullException ("url");
+#if MAC64
+			NSRect _mediaBox = new NSRect(mediaBox);
+			handle = CGPDFContextCreateWithURL (url.Handle, ref _mediaBox, info == null ? IntPtr.Zero : info.ToDictionary ().Handle);
+#else
 			handle = CGPDFContextCreateWithURL (url.Handle, ref mediaBox, info == null ? IntPtr.Zero : info.ToDictionary ().Handle);
+#endif
 		}
 
 		public CGContextPDF (NSUrl url, RectangleF mediaBox)
 		{
 			if (url == null)
 				throw new ArgumentNullException ("url");
+#if MAC64
+			NSRect _mediaBox = new NSRect(mediaBox);
+			handle = CGPDFContextCreateWithURL (url.Handle, ref _mediaBox, IntPtr.Zero);
+#else
 			handle = CGPDFContextCreateWithURL (url.Handle, ref mediaBox, IntPtr.Zero);
+#endif
 		}
 
 		public CGContextPDF (NSUrl url, CGPDFInfo info)
@@ -255,30 +278,42 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPDFContextSetURLForRect (IntPtr handle, IntPtr urlh, RectangleF rect);
+		extern static void CGPDFContextSetURLForRect (IntPtr handle, IntPtr urlh, NSRect rect);
 		public void SetUrl (NSUrl url, RectangleF region)
 		{
 			if (url == null)
 				throw new ArgumentNullException ("url");
+#if MAC64
+			CGPDFContextSetURLForRect (handle, url.Handle, new NSRect(region));
+#else
 			CGPDFContextSetURLForRect (handle, url.Handle, region);
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPDFContextAddDestinationAtPoint (IntPtr handle, IntPtr cfstring, PointF point);
+		extern static void CGPDFContextAddDestinationAtPoint (IntPtr handle, IntPtr cfstring, NSPoint point);
 		public void AddDestination (string name, PointF point)
 		{
 			if (name == null)
 				throw new ArgumentNullException ("name");
+#if MAC64
+			CGPDFContextAddDestinationAtPoint (handle, new NSString (name).Handle, new NSPoint(point));
+#else
 			CGPDFContextAddDestinationAtPoint (handle, new NSString (name).Handle, point);
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPDFContextSetDestinationForRect (IntPtr handle, IntPtr cfstr, RectangleF rect);
+		extern static void CGPDFContextSetDestinationForRect (IntPtr handle, IntPtr cfstr, NSRect rect);
 		public void SetDestination (string name, RectangleF rect)
 		{
 			if (name == null)
 				throw new ArgumentNullException ("name");
+#if MAC64
+			CGPDFContextSetDestinationForRect (handle, new NSString (name).Handle, new NSRect(rect));
+#else
 			CGPDFContextSetDestinationForRect (handle, new NSString (name).Handle, rect);
+#endif
 		}
 		
 		protected override void Dispose (bool disposing)

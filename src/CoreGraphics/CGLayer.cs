@@ -33,6 +33,19 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
 
 	public class CGLayer : INativeObject, IDisposable {
@@ -86,11 +99,16 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static SizeF CGLayerGetSize (IntPtr layer);
+		extern static NSSize CGLayerGetSize (IntPtr layer);
 
 		public SizeF Size {
 			get {
+#if MAC64
+				NSSize rc = CGLayerGetSize (handle);
+				return new SizeF((float)rc.Width, (float)rc.Height);
+#else
 				return CGLayerGetSize (handle);
+#endif
 			}
 		}
 		
@@ -104,10 +122,14 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGLayerCreateWithContext (IntPtr context, SizeF size, IntPtr dictionary);
+		extern static IntPtr CGLayerCreateWithContext (IntPtr context, NSSize size, IntPtr dictionary);
 
 		public static CGLayer Create (CGContext context, SizeF size) {
+#if MAC64
+			return new CGLayer (CGLayerCreateWithContext (context.Handle, new NSSize(size), IntPtr.Zero), true);
+#else
 			return new CGLayer (CGLayerCreateWithContext (context.Handle, size, IntPtr.Zero), true);
+#endif
 		}
 
 	}

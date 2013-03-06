@@ -32,6 +32,19 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
 	public enum CGPathElementType {
 		MoveToPoint,
@@ -455,17 +468,25 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static bool CGPathContainsPoint(IntPtr path, ref CGAffineTransform m, PointF point, bool eoFill);
+		extern static bool CGPathContainsPoint(IntPtr path, ref CGAffineTransform m, NSPoint point, bool eoFill);
 		public bool ContainsPoint (CGAffineTransform m, PointF point, bool eoFill)
 		{
+#if MAC64
+			return CGPathContainsPoint (handle, ref m, new NSPoint(point), eoFill);
+#else
 			return CGPathContainsPoint (handle, ref m, point, eoFill);
+#endif
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static bool CGPathContainsPoint(IntPtr path, IntPtr zero, PointF point, bool eoFill);
+		extern static bool CGPathContainsPoint(IntPtr path, IntPtr zero, NSPoint point, bool eoFill);
 		public bool ContainsPoint (PointF point, bool eoFill)
 		{
+#if MAC64
+			return CGPathContainsPoint (handle, IntPtr.Zero, new NSPoint(point), eoFill);
+#else
 			return CGPathContainsPoint (handle, IntPtr.Zero, point, eoFill);
+#endif
 		}
 
 		//typedef void (*CGPathApplierFunction)(void *info, const CGPathElement *element);
@@ -481,13 +502,36 @@ namespace MonoMac.CoreGraphics {
 			CGPathElement element = new CGPathElement (Marshal.ReadInt32 (element_ptr, 0));
 			ApplierFunction func = (ApplierFunction) gch.Target;
 
+			NSPoint pt;
 			IntPtr ptr = Marshal.ReadIntPtr (element_ptr, 4);
-			int ptsize = Marshal.SizeOf (typeof (PointF));
+			int ptsize = Marshal.SizeOf (typeof (NSPoint));
 
 			switch (element.Type){
 			case CGPathElementType.CloseSubpath:
 				break;
-
+#if MAC64
+			case CGPathElementType.MoveToPoint:
+			case CGPathElementType.AddLineToPoint:
+				pt = (NSPoint) Marshal.PtrToStructure (ptr, typeof (NSPoint));
+				element.Point1 = new PointF((float)pt.X, (float)pt.Y);
+				break;
+				
+			case CGPathElementType.AddQuadCurveToPoint:
+				pt = (NSPoint) Marshal.PtrToStructure (ptr, typeof (NSPoint));
+				element.Point1 = new PointF((float)pt.X, (float)pt.Y);
+				pt = (NSPoint) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + ptsize)), typeof (NSPoint));
+				element.Point2 = new PointF((float)pt.X, (float)pt.Y);
+				break;
+				
+			case CGPathElementType.AddCurveToPoint:
+				pt = (NSPoint) Marshal.PtrToStructure (ptr, typeof (NSPoint));
+				element.Point1 = new PointF((float)pt.X, (float)pt.Y);
+				pt = (NSPoint) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + ptsize)), typeof (NSPoint));
+				element.Point2 = new PointF((float)pt.X, (float)pt.Y);
+				pt = (NSPoint) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + (2*ptsize))), typeof (NSPoint));
+				element.Point3 = new PointF((float)pt.X, (float)pt.Y);
+				break;
+#else
 			case CGPathElementType.MoveToPoint:
 			case CGPathElementType.AddLineToPoint:
 				element.Point1 = (PointF) Marshal.PtrToStructure (ptr, typeof (PointF));
@@ -503,8 +547,8 @@ namespace MonoMac.CoreGraphics {
 				element.Point2 = (PointF) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + ptsize)), typeof (PointF));
 				element.Point3 = (PointF) Marshal.PtrToStructure (((IntPtr) (((long)ptr) + (2*ptsize))), typeof (PointF));
 				break;
+#endif
 			}
-
 			func (element);
 		}
 
@@ -528,25 +572,45 @@ namespace MonoMac.CoreGraphics {
 
 #if !MONOMAC
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPathCreateCopyByDashingPath (IntPtr handle, ref CGAffineTransform transform, float [] phase, int count);
+		extern static IntPtr CGPathCreateCopyByDashingPath (IntPtr handle, ref CGAffineTransform transform, CGFloat [] phase, IntPtr count);
 
 		[Since(5,0)]
 		public CGPath CopyByDashingPath (CGAffineTransform transform, float [] phase)
 		{
-			return MakeMutable (CGPathCreateCopyByDashingPath (handle, ref transform, phase, phase == null ? 0 : phase.Length));
+#if MAC64
+			CGFloat[] _phase = null;
+			if( phase!=null )
+			{
+				_phase = new CGFloat[phase.Length];
+				Array.Copy(phase, _phase, phase.Length);
+			}
+			return MakeMutable (CGPathCreateCopyByDashingPath (handle, ref transform, _phase, phase == null ? IntPtr.Zero : new IntPtr(phase.Length)));
+#else
+			return MakeMutable (CGPathCreateCopyByDashingPath (handle, ref transform, phase, phase == null ? IntPtr.Zero : new IntPtr(phase.Length)));
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPathCreateCopyByDashingPath (IntPtr handle, IntPtr transform, float [] phase, int count);
+		extern static IntPtr CGPathCreateCopyByDashingPath (IntPtr handle, IntPtr transform, CGFloat [] phase, IntPtr count);
 
 		[Since(5,0)]
 		public CGPath CopyByDashingPath (float [] phase)
 		{
-			return MakeMutable (CGPathCreateCopyByDashingPath (handle, IntPtr.Zero, phase, phase == null ? 0 : phase.Length));
+#if MAC64
+			CGFloat[] _phase = null;
+			if( phase!=null )
+			{
+				_phase = new CGFloat[phase.Length];
+				Array.Copy(phase, _phase, phase.Length);
+			}
+			return MakeMutable (CGPathCreateCopyByDashingPath (handle, IntPtr.Zero, _phase, phase == null ? IntPtr.Zero : new IntPtr(phase.Length)));
+#else
+			return MakeMutable (CGPathCreateCopyByDashingPath (handle, IntPtr.Zero, phase, phase == null ? IntPtr.Zero : new IntPtr(phase.Length)));
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPathCreateCopyByStrokingPath (IntPtr handle, ref CGAffineTransform transform, float lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, float miterLimit);
+		extern static IntPtr CGPathCreateCopyByStrokingPath (IntPtr handle, ref CGAffineTransform transform, CGFloat lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, CGFloat miterLimit);
 
 		[Since(5,0)]
 		public CGPath CopyByStrokingPath (CGAffineTransform transform, float lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, float miterLimit)
@@ -555,7 +619,7 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPathCreateCopyByStrokingPath (IntPtr handle, IntPtr zero, float lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, float miterLimit);
+		extern static IntPtr CGPathCreateCopyByStrokingPath (IntPtr handle, IntPtr zero, CGFloat lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, CGFloat miterLimit);
 
 		[Since(5,0)]
 		public CGPath CopyByStrokingPath (float lineWidth, CGLineCap lineCap, CGLineJoin lineJoin, float miterLimit)
@@ -567,29 +631,41 @@ namespace MonoMac.CoreGraphics {
 		extern static IntPtr CGPathCreateMutableCopyByTransformingPath (IntPtr handle, ref CGAffineTransform transform);
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPathCreateWithEllipse (RectangleF boundingRect, ref CGAffineTransform transform);
+		extern static IntPtr CGPathCreateWithEllipse (NSRect boundingRect, ref CGAffineTransform transform);
 
 		[Since (5,0)]
 		static public CGPath EllipseFromRect (RectangleF boundingRect, CGAffineTransform transform)
 		{
+#if MAC64
+			return MakeMutable (CGPathCreateWithEllipse (new NSRect(boundingRect), ref transform));
+#else
 			return MakeMutable (CGPathCreateWithEllipse (boundingRect, ref transform));
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPathCreateWithRect (RectangleF boundingRect, ref CGAffineTransform transform);
+		extern static IntPtr CGPathCreateWithRect (NSRect boundingRect, ref CGAffineTransform transform);
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPathCreateWithRect (RectangleF boundingRect, IntPtr transform);
+		extern static IntPtr CGPathCreateWithRect (NSRect boundingRect, IntPtr transform);
 		
 		[Since (5,0)]
 		static public CGPath FromRect (RectangleF rectangle, CGAffineTransform transform)
 		{
+#if MAC64
+			return MakeMutable (CGPathCreateWithRect (new NSRect(rectangle), ref transform));
+#else
 			return MakeMutable (CGPathCreateWithRect (rectangle, ref transform));
+#endif
 		}
 
 		[Since (5,0)]
 		static public CGPath FromRect (RectangleF rectangle)
 		{
+#if MAC64
+			return MakeMutable (CGPathCreateWithRect (new NSRect(rectangle), IntPtr.Zero));
+#else
 			return MakeMutable (CGPathCreateWithRect (rectangle, IntPtr.Zero));
+#endif
 		}
 #endif
 	}

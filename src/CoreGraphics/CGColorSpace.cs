@@ -32,6 +32,20 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.CoreGraphics {
 
 	public enum CGColorRenderingIntent {
@@ -128,7 +142,7 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGColorSpaceCreateCalibratedGray (float [] whitepoint, float [] blackpoint, float gamma);
+		extern static IntPtr CGColorSpaceCreateCalibratedGray (CGFloat [] whitepoint, CGFloat [] blackpoint, CGFloat gamma);
 
 		public static CGColorSpace CreateCalibratedGray (float [] whitepoint, float [] blackpoint, float gamma)
 		{
@@ -136,13 +150,16 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentException ("Must have 3 values", "whitepoint");
 			if (blackpoint.Length != 3)
 				throw new ArgumentException ("Must have 3 values", "blackpoint");
-			
-			return new CGColorSpace (CGColorSpaceCreateCalibratedGray (whitepoint, blackpoint, gamma), true);
+			CGFloat[] _whitepoint = new CGFloat[3];
+			Array.Copy (whitepoint, _whitepoint, 3);
+			CGFloat[] _blackpoint = new CGFloat[3];
+			Array.Copy (blackpoint, _blackpoint, 3);
+			return new CGColorSpace (CGColorSpaceCreateCalibratedGray (_whitepoint, _blackpoint, gamma), true);
 		}
 		
 		// 3, 3, 3, 9
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGColorSpaceCreateCalibratedRGB (float [] whitePoint, float [] blackPoint, float [] gamma, float [] matrix);
+		extern static IntPtr CGColorSpaceCreateCalibratedRGB (CGFloat [] whitePoint, CGFloat [] blackPoint, CGFloat [] gamma, CGFloat [] matrix);
 		public static CGColorSpace CreateCalibratedRGB (float [] whitepoint, float [] blackpoint, float [] gamma, float [] matrix)
 		{
 			if (whitepoint.Length != 3)
@@ -153,18 +170,26 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentException ("Must have 3 values", "gamma");
 			if (matrix.Length != 9)
 				throw new ArgumentException ("Must have 9 values", "matrix");
-			
-			return new CGColorSpace (CGColorSpaceCreateCalibratedRGB (whitepoint, blackpoint, gamma, matrix), true);
+			CGFloat[] _whitepoint = new CGFloat[3];
+			Array.Copy (whitepoint, _whitepoint, 3);
+			CGFloat[] _blackpoint = new CGFloat[3];
+			Array.Copy (blackpoint, _blackpoint, 3);
+			CGFloat[] _gamma = new CGFloat[3];
+			Array.Copy (gamma, _gamma, 3);
+			CGFloat[] _matrix = new CGFloat[9];
+			Array.Copy (matrix, _matrix, 9);
+
+			return new CGColorSpace (CGColorSpaceCreateCalibratedRGB (_whitepoint, _blackpoint, _gamma, _matrix), true);
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGColorSpaceCreateIndexed (IntPtr baseSpace,
-								int lastIndex,
+								IntPtr lastIndex,
 								byte[] colorTable);
 
 		public static CGColorSpace CreateIndexed (CGColorSpace baseSpace, int lastIndex, byte[] colorTable)
 		{
-			return new CGColorSpace (CGColorSpaceCreateIndexed (baseSpace == null ? IntPtr.Zero : baseSpace.handle, lastIndex, colorTable), true);
+			return new CGColorSpace (CGColorSpaceCreateIndexed (baseSpace == null ? IntPtr.Zero : baseSpace.handle, new IntPtr(lastIndex), colorTable), true);
 		}
 
 			

@@ -112,16 +112,16 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGDataProviderCreateWithData (IntPtr info, IntPtr data, int size, IntPtr releaseData);
+		extern static IntPtr CGDataProviderCreateWithData (IntPtr info, IntPtr data, IntPtr size, IntPtr releaseData);
 
 		public CGDataProvider (IntPtr memoryBlock, int size)
 		{
-			handle = CGDataProviderCreateWithData (IntPtr.Zero, memoryBlock, size, IntPtr.Zero);
+			handle = CGDataProviderCreateWithData (IntPtr.Zero, memoryBlock, new IntPtr(size), IntPtr.Zero);
 		}
 
 		public CGDataProvider (IntPtr memoryBlock, int size, bool ownBuffer)
 		{
-			handle = CGDataProviderCreateWithData (IntPtr.Zero, memoryBlock, size, IntPtr.Zero);
+			handle = CGDataProviderCreateWithData (IntPtr.Zero, memoryBlock, new IntPtr(size), IntPtr.Zero);
 			if (ownBuffer)
 				buffer = memoryBlock;
 		}
@@ -139,7 +139,7 @@ namespace MonoMac.CoreGraphics {
 			reference = buffer;
 			unsafe {
 				fixed (byte *p = &buffer [offset]){
-					handle = CGDataProviderCreateWithData (IntPtr.Zero, (IntPtr) p, count, IntPtr.Zero);
+					handle = CGDataProviderCreateWithData (IntPtr.Zero, (IntPtr) p, new IntPtr(count), IntPtr.Zero);
 				}
 			}
 		}

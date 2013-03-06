@@ -32,6 +32,19 @@ using MonoMac.ObjCRuntime;
 using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
 
 
@@ -82,7 +95,7 @@ namespace MonoMac.CoreGraphics {
 
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGGradientCreateWithColorComponents (IntPtr colorspace, float [] components, float [] locations, int size_t_count);
+		extern static IntPtr CGGradientCreateWithColorComponents (IntPtr colorspace, CGFloat [] components, CGFloat [] locations, IntPtr size_t_count);
 		public CGGradient (CGColorSpace colorspace, float [] components, float [] locations)
 		{
 			if (colorspace == null)
@@ -90,7 +103,15 @@ namespace MonoMac.CoreGraphics {
 			if (components == null)
 				throw new ArgumentNullException ("components");
 
-			handle = CGGradientCreateWithColorComponents (colorspace.handle, components, locations, components.Length / (colorspace.Components+1));
+#if MAC64
+			CGFloat[] _components = new CGFloat[components.Length];
+			Array.Copy(components, _components, components.Length);
+			CGFloat[] _locations = new CGFloat[locations.Length];
+			Array.Copy(locations, _locations, locations.Length);
+			handle = CGGradientCreateWithColorComponents (colorspace.handle, _components, _locations, new IntPtr(components.Length / (colorspace.Components+1)));
+#else
+			handle = CGGradientCreateWithColorComponents (colorspace.handle, components, locations, new IntPtr(components.Length / (colorspace.Components+1)));
+#endif
 		}
 
 		public CGGradient (CGColorSpace colorspace, float [] components)
@@ -99,12 +120,17 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentNullException ("colorspace");
 			if (components == null)
 				throw new ArgumentNullException ("components");
-
-			handle = CGGradientCreateWithColorComponents (colorspace.handle, components, null, components.Length / (colorspace.Components+1));
+#if MAC64
+			CGFloat[] _components = new CGFloat[components.Length];
+			Array.Copy(components, _components, components.Length);
+			handle = CGGradientCreateWithColorComponents (colorspace.handle, _components, null, new IntPtr(components.Length / (colorspace.Components+1)));
+#else
+			handle = CGGradientCreateWithColorComponents (colorspace.handle, components, null, new IntPtr(components.Length / (colorspace.Components+1)));
+#endif
 		}
 #if !COREBUILD
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGGradientCreateWithColors (/* CGColorSpaceRef */ IntPtr colorspace, /* CFArrayRef */ IntPtr colors, float [] locations);
+		extern static IntPtr CGGradientCreateWithColors (/* CGColorSpaceRef */ IntPtr colorspace, /* CFArrayRef */ IntPtr colors, CGFloat [] locations);
 
 		public CGGradient (CGColorSpace colorspace, CGColor [] colors, float [] locations)
 		{
@@ -112,8 +138,15 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentNullException ("colors");
 			
 			IntPtr csh = colorspace == null ? IntPtr.Zero : colorspace.handle;
+#if MAC64
+			CGFloat[] _locations = new CGFloat[locations.Length];
+			Array.Copy(locations, _locations, locations.Length);
+			using (var array = CFArray.FromNativeObjects (colors))
+				handle = CGGradientCreateWithColors (csh, array.Handle, _locations);
+#else
 			using (var array = CFArray.FromNativeObjects (colors))
 				handle = CGGradientCreateWithColors (csh, array.Handle, locations);
+#endif
 		}
 
 		public CGGradient (CGColorSpace colorspace, CGColor [] colors)
