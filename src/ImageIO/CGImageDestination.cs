@@ -42,10 +42,9 @@ namespace MonoMac.ImageIO {
 			if (kLossyCompressionQuality != IntPtr.Zero)
 				return;
 			
-			IntPtr lib = Dlfcn.dlopen (Constants.ImageIOLibrary, 0);
+			IntPtr lib = Libraries.ImageIO.Handle;
 			kLossyCompressionQuality = Dlfcn.GetIntPtr (lib, "kCGImageDestinationLossyCompressionQuality");
 			kBackgroundColor = Dlfcn.GetIntPtr (lib, "kCGImageDestinationBackgroundColor");
-			Dlfcn.dlclose (lib);
 		}
 
 		public float? LossyCompressionQuality { get; set; }

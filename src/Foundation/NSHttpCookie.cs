@@ -41,27 +41,23 @@ namespace MonoMac.Foundation {
 
 		static NSHttpCookie ()
 		{
-			var handle = Dlfcn.dlopen (Constants.FoundationLibrary, 0);
+			var handle = Libraries.Foundation.Handle;
 			if (handle == IntPtr.Zero)
 				return;
 
-			try {
-				KeyName = Dlfcn.GetStringConstant (handle, "NSHTTPCookieName");
-				KeyValue = Dlfcn.GetStringConstant (handle, "NSHTTPCookieValue");
-				KeyOriginURL = Dlfcn.GetStringConstant (handle, "NSHTTPCookieOriginURL");
-				KeyVersion = Dlfcn.GetStringConstant (handle, "NSHTTPCookieVersion");
-				KeyDomain = Dlfcn.GetStringConstant (handle, "NSHTTPCookieDomain");
-				KeyPath = Dlfcn.GetStringConstant (handle, "NSHTTPCookiePath");
-				KeySecure = Dlfcn.GetStringConstant (handle, "NSHTTPCookieSecure");
-				KeyExpires = Dlfcn.GetStringConstant (handle, "NSHTTPCookieExpires");
-				KeyComment = Dlfcn.GetStringConstant (handle, "NSHTTPCookieComment");
-				KeyCommentURL = Dlfcn.GetStringConstant (handle, "NSHTTPCookieCommentURL");
-				KeyDiscard = Dlfcn.GetStringConstant (handle, "NSHTTPCookieDiscard");
-				KeyMaximumAge = Dlfcn.GetStringConstant (handle, "NSHTTPCookieMaximumAge");
-				KeyPort = Dlfcn.GetStringConstant (handle, "NSHTTPCookiePort");
-			} finally {
-				Dlfcn.dlclose (handle);
-			}
+			KeyName = Dlfcn.GetStringConstant (handle, "NSHTTPCookieName");
+			KeyValue = Dlfcn.GetStringConstant (handle, "NSHTTPCookieValue");
+			KeyOriginURL = Dlfcn.GetStringConstant (handle, "NSHTTPCookieOriginURL");
+			KeyVersion = Dlfcn.GetStringConstant (handle, "NSHTTPCookieVersion");
+			KeyDomain = Dlfcn.GetStringConstant (handle, "NSHTTPCookieDomain");
+			KeyPath = Dlfcn.GetStringConstant (handle, "NSHTTPCookiePath");
+			KeySecure = Dlfcn.GetStringConstant (handle, "NSHTTPCookieSecure");
+			KeyExpires = Dlfcn.GetStringConstant (handle, "NSHTTPCookieExpires");
+			KeyComment = Dlfcn.GetStringConstant (handle, "NSHTTPCookieComment");
+			KeyCommentURL = Dlfcn.GetStringConstant (handle, "NSHTTPCookieCommentURL");
+			KeyDiscard = Dlfcn.GetStringConstant (handle, "NSHTTPCookieDiscard");
+			KeyMaximumAge = Dlfcn.GetStringConstant (handle, "NSHTTPCookieMaximumAge");
+			KeyPort = Dlfcn.GetStringConstant (handle, "NSHTTPCookiePort");
 		}
 		
 		// same order as System.Net.Cookie
