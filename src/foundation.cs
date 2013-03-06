@@ -4946,6 +4946,9 @@ namespace MonoMac.Foundation
 	
 		[Export ("isEqualToValue:")]
 		bool IsEqualTo (NSValue value);
+		
+		[Export ("valueWithRange:")][Static]
+		NSValue FromRange(NSRange range);
 	
 #if MONOMAC
 		[Static, Export ("valueWithCMTime:"), Lion]
