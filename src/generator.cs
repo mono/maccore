@@ -829,6 +829,7 @@ public class Generator {
 	Dictionary<Type,int> trampolines_generic_versions = new Dictionary<Type,int> ();
 	Dictionary<Type,Type> delegates_emitted = new Dictionary<Type, Type> ();
 	Dictionary<Type,Type> notification_event_arg_types = new Dictionary<Type,Type> ();
+	List <string> libraries = new List <string> ();
 
 	//
 	// This contains delegates that are referenced in the source and need to be generated.
@@ -1717,6 +1718,9 @@ public class Generator {
 
 		if (delegate_types.Count > 0)
 			GenerateIndirectDelegateFile ();
+
+		if (libraries.Count > 0)
+			GenerateLibraryHandles ();
 	}
 
 	static string GenerateNSValue (string propertyToCall)
@@ -1736,6 +1740,34 @@ public class Generator {
 		sw = new StreamWriter (support_delegate_file);
 		Header (sw);
 		RenderDelegates (delegate_types);
+		sw.Close ();
+	}
+
+	void GenerateLibraryHandles ()
+	{
+		var library_file = Path.Combine (basedir, "ObjCRuntime/Libraries.g.cs");
+		GeneratedFiles.Add (library_file);
+		sw = new StreamWriter (library_file);
+		
+		Header (sw);
+#if MONOMAC
+		print ("namespace MonoMac {"); indent++;
+#else
+		print ("namespace MonoTouch {"); indent++;
+#endif
+		print ("[CompilerGenerated]");
+		print ("static class Libraries {"); indent++;
+		foreach (string library_name in libraries) {
+			if (BindThirdPartyLibrary && library_name == "__Internal") {
+				print ("static public readonly IntPtr Internal_Handle = Dlfcn.dlopen (null, 0);");
+			} else {
+				print ("static public class {0} {{", library_name); indent++;
+				print ("static public readonly IntPtr Handle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
+				indent--; print ("}");
+			}
+		}
+		indent--; print ("}");
+		indent--; print ("}");
 		sw.Close ();
 	}
 
@@ -3295,8 +3327,6 @@ public class Generator {
 			}
 			
 			if (field_exports.Count != 0){
-				List <string> libraries = new List <string> ();
-
 				foreach (var field_pi in field_exports){
 					var fieldAttr = (FieldAttribute) field_pi.GetCustomAttributes (typeof (FieldAttribute), true) [0];
 					string library_name; 
@@ -3319,12 +3349,6 @@ public class Generator {
 					}
 
 					if (!libraries.Contains (library_name)) {
-						print ("[CompilerGenerated]");
-						if (BindThirdPartyLibrary && library_name == "__Internal") {
-							print ("static readonly IntPtr __Internal_libraryHandle = Dlfcn.dlopen (null, 0);");
-						} else {
-							print ("static readonly IntPtr {0}_libraryHandle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
-						}
 						libraries.Add (library_name);
 					}
 
@@ -3345,27 +3369,27 @@ public class Generator {
 					if (field_pi.PropertyType == typeof (NSString)){
 						print ("if (_{0} == null)", field_pi.Name);
 						indent++;
-						print ("_{0} = Dlfcn.GetStringConstant ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+						print ("_{0} = Dlfcn.GetStringConstant (Libraries.{2}.Handle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 						indent--;
 						print ("return _{0};", field_pi.Name);
 					} else if (field_pi.PropertyType.Name == "NSArray"){
 						print ("if (_{0} == null)", field_pi.Name);
 						indent++;
-						print ("_{0} = new NSArray (Dlfcn.GetIndirect ({2}_libraryHandle, \"{1}\"));", field_pi.Name, fieldAttr.SymbolName, library_name);
+						print ("_{0} = new NSArray (Dlfcn.GetIndirect (Libraries.{2}.Handle, \"{1}\"));", field_pi.Name, fieldAttr.SymbolName, library_name);
 						indent--;
 						print ("return _{0};", field_pi.Name);
 					} else if (field_pi.PropertyType == typeof (int)){
-						print ("return Dlfcn.GetInt32 ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+						print ("return Dlfcn.GetInt32 (Libraries.{2}.Handle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else if (field_pi.PropertyType == typeof (double)){
-						print ("return Dlfcn.GetDouble ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+						print ("return Dlfcn.GetDouble (Libraries.{2}.Handle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else if (field_pi.PropertyType == typeof (float)){
-						print ("return Dlfcn.GetFloat ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+						print ("return Dlfcn.GetFloat (Libraries.{2}.Handle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else if (field_pi.PropertyType == typeof (IntPtr)){
-						print ("return Dlfcn.GetIntPtr ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+						print ("return Dlfcn.GetIntPtr (Libraries.{2}.Handle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else if (field_pi.PropertyType == typeof (SizeF)){
-						print ("return Dlfcn.GetSizeF ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+						print ("return Dlfcn.GetSizeF (Libraries.{2}.Handle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else if (field_pi.PropertyType == typeof (long)){
-						print ("return Dlfcn.GetInt64 ({2}_libraryHandle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
+						print ("return Dlfcn.GetInt64 (Libraries.{2}.Handle, \"{1}\");", field_pi.Name, fieldAttr.SymbolName, library_name);
 					} else {
 						if (field_pi.PropertyType == typeof (string))
 							throw new BindingException (1013, true, "Unsupported type for Fields (string), you probably meant NSString");
@@ -3381,21 +3405,21 @@ public class Generator {
 						print ("set {");
 						indent++;
 						if (field_pi.PropertyType == typeof (int)) {
-							print ("Dlfcn.SetInt32 ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+							print ("Dlfcn.SetInt32 (Libraries.{2}.Handle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else if (field_pi.PropertyType == typeof (double)) {
-							print ("Dlfcn.SetDouble ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+							print ("Dlfcn.SetDouble (Libraries.{2}.Handle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else if (field_pi.PropertyType == typeof (float)) {
-							print ("Dlfcn.SetFloat ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+							print ("Dlfcn.SetFloat (Libraries.{2}.Handle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else if (field_pi.PropertyType == typeof (IntPtr)) {
-							print ("Dlfcn.SetIntPtr ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+							print ("Dlfcn.SetIntPtr (Libraries.{2}.Handle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else if (field_pi.PropertyType == typeof (SizeF)) {
-							print ("Dlfcn.SetSizeF ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+							print ("Dlfcn.SetSizeF (Libraries.{2}.Handle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else if (field_pi.PropertyType == typeof (long)) {
-							print ("Dlfcn.SetInt64 ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+							print ("Dlfcn.SetInt64 (Libraries.{2}.Handle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else if (field_pi.PropertyType == typeof (NSString)){
-							print ("Dlfcn.SetString ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+							print ("Dlfcn.SetString (Libraries.{2}.Handle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else if (field_pi.PropertyType.Name == "NSArray"){
-							print ("Dlfcn.SetArray ({2}_libraryHandle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
+							print ("Dlfcn.SetArray (Libraries.{2}.Handle, \"{1}\", value);", field_pi.Name, fieldAttr.SymbolName, library_name);
 						} else
 							throw new BindingException (1021, true, "Unsupported type for read/write Fields: {0} for {1}.{2}", fieldTypeName, field_pi.DeclaringType.FullName, field_pi.Name);
 						indent--;
