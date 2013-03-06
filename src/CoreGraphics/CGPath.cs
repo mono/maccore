@@ -177,9 +177,9 @@ namespace MonoMac.CoreGraphics {
 		}
        
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathMoveToPoint(IntPtr path, ref CGAffineTransform m, float x, float y);
+		extern static void CGPathMoveToPoint(IntPtr path, ref CGAffineTransform m, CGFloat x, CGFloat y);
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathMoveToPoint(IntPtr path, IntPtr zero, float x, float y);
+		extern static void CGPathMoveToPoint(IntPtr path, IntPtr zero, CGFloat x, CGFloat y);
 		public void MoveToPoint (float x, float y)
 		{
 			CGPathMoveToPoint (handle, IntPtr.Zero, x, y);
@@ -202,9 +202,9 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddLineToPoint(IntPtr path, ref CGAffineTransform m, float x, float y);
+		extern static void CGPathAddLineToPoint(IntPtr path, ref CGAffineTransform m, CGFloat x, CGFloat y);
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddLineToPoint(IntPtr path, IntPtr m, float x, float y);
+		extern static void CGPathAddLineToPoint(IntPtr path, IntPtr m, CGFloat x, CGFloat y);
 
 		[Advice ("Use AddLineToPoint instead")] // Bad name
 		public void CGPathAddLineToPoint (float x, float y)
@@ -239,9 +239,9 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddQuadCurveToPoint(IntPtr path, ref CGAffineTransform m, float cpx, float cpy, float x, float y);
+		extern static void CGPathAddQuadCurveToPoint(IntPtr path, ref CGAffineTransform m, CGFloat cpx, CGFloat cpy, CGFloat x, CGFloat y);
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddQuadCurveToPoint(IntPtr path, IntPtr zero, float cpx, float cpy, float x, float y);
+		extern static void CGPathAddQuadCurveToPoint(IntPtr path, IntPtr zero, CGFloat cpx, CGFloat cpy, CGFloat x, CGFloat y);
 		public void AddQuadCurveToPoint (float cpx, float cpy, float x, float y)
 		{
 			CGPathAddQuadCurveToPoint (handle, IntPtr.Zero, cpx, cpy, x, y);
@@ -253,7 +253,7 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddCurveToPoint(IntPtr path, ref CGAffineTransform m, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
+		extern static void CGPathAddCurveToPoint(IntPtr path, ref CGAffineTransform m, CGFloat cp1x, CGFloat cp1y, CGFloat cp2x, CGFloat cp2y, CGFloat x, CGFloat y);
 		public void AddCurveToPoint (CGAffineTransform transform, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y)
 		{
 			CGPathAddCurveToPoint (handle, ref transform, cp1x, cp1y, cp2x, cp2y, x, y);
@@ -265,7 +265,7 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddCurveToPoint(IntPtr path, IntPtr zero, float cp1x, float cp1y, float cp2x, float cp2y, float x, float y);
+		extern static void CGPathAddCurveToPoint(IntPtr path, IntPtr zero, CGFloat cp1x, CGFloat cp1y, CGFloat cp2x, CGFloat cp2y, CGFloat x, CGFloat y);
 		public void AddCurveToPoint (float cp1x, float cp1y, float cp2x, float cp2y, float x, float y)
 		{
 			CGPathAddCurveToPoint (handle, IntPtr.Zero, cp1x, cp1y, cp2x, cp2y, x, y);
@@ -284,127 +284,192 @@ namespace MonoMac.CoreGraphics {
 		}
 			
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddRect(IntPtr path, ref CGAffineTransform m, RectangleF rect);
+		extern static void CGPathAddRect(IntPtr path, ref CGAffineTransform m, NSRect rect);
 		public void AddRect (CGAffineTransform transform, RectangleF rect)
 		{
+#if MAC64
+			CGPathAddRect (handle, ref transform, new NSRect(rect));
+#else
 			CGPathAddRect (handle, ref transform, rect);
+#endif
 		}
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddRect(IntPtr path, IntPtr zero, RectangleF rect);
+		extern static void CGPathAddRect(IntPtr path, IntPtr zero, NSRect rect);
 		public void AddRect (RectangleF rect)
 		{
+#if MAC64
+			CGPathAddRect (handle, IntPtr.Zero, new NSRect(rect));
+#else
 			CGPathAddRect (handle, IntPtr.Zero, rect);
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddRects(IntPtr path, ref CGAffineTransform m, RectangleF [] rects, int size_t_count);
+		extern static void CGPathAddRects(IntPtr path, ref CGAffineTransform m, NSRect [] rects, IntPtr size_t_count);
 		public void AddRects (CGAffineTransform m, RectangleF [] rects)
 		{
-			CGPathAddRects (handle, ref m, rects, rects.Length);
+#if MAC64
+			NSRect[] _rects = new NSRect[rects.Length];
+			for( int i=0; i<rects.Length; i++ )
+				_rects[i] = new NSRect(rects[i]);
+			CGPathAddRects (handle, ref m, _rects, new IntPtr(rects.Length));
+#else
+			CGPathAddRects (handle, ref m, rects, new IntPtr(rects.Length));
+#endif
 		}
 		public void AddRects (CGAffineTransform m, RectangleF [] rects, int count)
 		{
 			if (count > rects.Length)
 				throw new ArgumentException ("counts");
-			CGPathAddRects (handle, ref m, rects, count);
+#if MAC64
+			NSRect[] _rects = new NSRect[rects.Length];
+			for( int i=0; i<rects.Length; i++ )
+				_rects[i] = new NSRect(rects[i]);
+			CGPathAddRects (handle, ref m, _rects, new IntPtr(rects.Length));
+#else
+			CGPathAddRects (handle, ref m, rects, new IntPtr(count));
+#endif
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddRects(IntPtr path, IntPtr Zero, RectangleF [] rects, int size_t_count);
+		extern static void CGPathAddRects(IntPtr path, IntPtr Zero, NSRect [] rects, IntPtr size_t_count);
 		public void AddRects (RectangleF [] rects)
 		{
-			CGPathAddRects (handle, IntPtr.Zero, rects, rects.Length);
+#if MAC64
+			NSRect[] _rects = new NSRect[rects.Length];
+			for( int i=0; i<rects.Length; i++ )
+				_rects[i] = new NSRect(rects[i]);
+			CGPathAddRects (handle, IntPtr.Zero, _rects, new IntPtr(rects.Length));
+#else
+			CGPathAddRects (handle, IntPtr.Zero, rects, new IntPtr(rects.Length));
+#endif
 		}
 		public void AddRects (RectangleF [] rects, int count)
 		{
 			if (count > rects.Length)
 				throw new ArgumentException ("count");
-			CGPathAddRects (handle, IntPtr.Zero, rects, count);
+#if MAC64
+			NSRect[] _rects = new NSRect[rects.Length];
+			for( int i=0; i<rects.Length; i++ )
+				_rects[i] = new NSRect(rects[i]);
+			CGPathAddRects (handle, IntPtr.Zero, _rects, new IntPtr(count));
+#else
+			CGPathAddRects (handle, IntPtr.Zero, rects, new IntPtr(count));
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddLines(IntPtr path, ref CGAffineTransform m, PointF [] points, int size_t_count);
+		extern static void CGPathAddLines(IntPtr path, ref CGAffineTransform m, NSPoint [] points, IntPtr size_t_count);
 		public void AddLines (CGAffineTransform m, PointF [] points)
 		{
-			CGPathAddLines (handle, ref m, points, points.Length);
+#if MAC64
+			NSPoint[] _points = new NSPoint[points.Length];
+			for( int i=0; i<points.Length; i++ )
+				_points[i] = new NSPoint(points[i]);
+			CGPathAddLines (handle, ref m, _points, new IntPtr(points.Length));
+#else
+			CGPathAddLines (handle, ref m, points, new IntPtr(points.Length));
+#endif
 		}
-		public void AddRects (CGAffineTransform m, PointF [] points, int count)
+		public void AddLines (CGAffineTransform m, PointF [] points, int count)
 		{
 			if (count > points.Length)
 				throw new ArgumentException ("count");
-			CGPathAddLines (handle, ref m, points, count);
+#if MAC64
+			NSPoint[] _points = new NSPoint[points.Length];
+			for( int i=0; i<points.Length; i++ )
+				_points[i] = new NSPoint(points[i]);
+			CGPathAddLines (handle, ref m, _points, new IntPtr(count));
+#else
+			CGPathAddLines (handle, ref m, points, new IntPtr(count));
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddLines(IntPtr path, IntPtr zero, PointF [] points, int size_t_count);
+		extern static void CGPathAddLines(IntPtr path, IntPtr zero, NSPoint [] points, IntPtr size_t_count);
 		public void AddLines (PointF [] points)
 		{
-			CGPathAddLines (handle, IntPtr.Zero, points, points.Length);
+			AddLines (points, points.Length);
 		}
-		public void AddRects (PointF [] points, int count)
+		public void AddLines (PointF [] points, int count)
 		{
 			if (count > points.Length)
 				throw new ArgumentException ("count");
-			CGPathAddLines (handle, IntPtr.Zero, points, count);
+#if MAC64
+			NSPoint[] _points = new NSPoint[points.Length];
+			for( int i=0; i<points.Length; i++ )
+				_points[i] = new NSPoint(points[i]);
+			CGPathAddLines (handle, IntPtr.Zero, _points, new IntPtr(count));
+#else
+			CGPathAddLines (handle, IntPtr.Zero, points, new IntPtr(count));
+#endif
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddEllipseInRect(IntPtr path, ref CGAffineTransform m, RectangleF rect);
+		extern static void CGPathAddEllipseInRect(IntPtr path, ref CGAffineTransform m, NSRect rect);
 		public void AddEllipseInRect (CGAffineTransform m, RectangleF rect)
 		{
+#if MAC64
+			CGPathAddEllipseInRect (handle, ref m, new NSRect(rect));
+#else
 			CGPathAddEllipseInRect (handle, ref m, rect);
+#endif
 		}
 		
 		[Obsolete ("Use AddEllipseInRect instead")]
 		public void AddElipseInRect (CGAffineTransform m, RectangleF rect)
 		{
-			CGPathAddEllipseInRect (handle, ref m, rect);
+			AddEllipseInRect (m, rect);
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddEllipseInRect(IntPtr path, IntPtr zero, RectangleF rect);
+		extern static void CGPathAddEllipseInRect(IntPtr path, IntPtr zero, NSRect rect);
 		public void AddElipseInRect (RectangleF rect)
 		{
+#if MAC64
+			CGPathAddEllipseInRect (handle, IntPtr.Zero, new NSRect(rect));
+#else
 			CGPathAddEllipseInRect (handle, IntPtr.Zero, rect);
+#endif
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddArc(IntPtr path, ref CGAffineTransform m, float x, float y, float radius, float startAngle, float endAngle, bool clockwise);
+		extern static void CGPathAddArc(IntPtr path, ref CGAffineTransform m, CGFloat x, CGFloat y, CGFloat radius, CGFloat startAngle, CGFloat endAngle, bool clockwise);
 		public void AddArc (CGAffineTransform m, float x, float y, float radius, float startAngle, float endAngle, bool clockwise)
 		{
 			CGPathAddArc (handle, ref m, x, y, radius, startAngle, endAngle, clockwise);
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddArc(IntPtr path, IntPtr zero, float x, float y, float radius, float startAngle, float endAngle, bool clockwise);
+		extern static void CGPathAddArc(IntPtr path, IntPtr zero, CGFloat x, CGFloat y, CGFloat radius, CGFloat startAngle, CGFloat endAngle, bool clockwise);
 		public void AddArc (float x, float y, float radius, float startAngle, float endAngle, bool clockwise)
 		{
 			CGPathAddArc (handle, IntPtr.Zero, x, y, radius, startAngle, endAngle, clockwise);
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddArcToPoint(IntPtr path, ref CGAffineTransform m, float x1, float y1, float x2, float y2, float radius);
+		extern static void CGPathAddArcToPoint(IntPtr path, ref CGAffineTransform m, CGFloat x1, CGFloat y1, CGFloat x2, CGFloat y2, CGFloat radius);
 		public void AddArcToPoint (CGAffineTransform m, float x1, float y1, float x2, float y2, float radius)
 		{
 			CGPathAddArcToPoint (handle, ref m, x1, y1, x2, y2, radius);
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddArcToPoint(IntPtr path, IntPtr zero, float x1, float y1, float x2, float y2, float radius);
+		extern static void CGPathAddArcToPoint(IntPtr path, IntPtr zero, CGFloat x1, CGFloat y1, CGFloat x2, CGFloat y2, CGFloat radius);
 		public void AddArcToPoint (float x1, float y1, float x2, float y2, float radius)
 		{
 			CGPathAddArcToPoint (handle, IntPtr.Zero, x1, y1, x2, y2, radius);
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddRelativeArc(IntPtr path, ref CGAffineTransform m, float x, float y, float radius, float startAngle, float delta);
+		extern static void CGPathAddRelativeArc(IntPtr path, ref CGAffineTransform m, CGFloat x, CGFloat y, CGFloat radius, CGFloat startAngle, CGFloat delta);
 		public void AddRelativeArc (CGAffineTransform m, float x, float y, float radius, float startAngle, float delta)
 		{
 			CGPathAddRelativeArc (handle, ref m, x, y, radius, startAngle, delta);
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static void CGPathAddRelativeArc(IntPtr path, IntPtr zero, float x, float y, float radius, float startAngle, float delta);
+		extern static void CGPathAddRelativeArc(IntPtr path, IntPtr zero, CGFloat x, CGFloat y, CGFloat radius, CGFloat startAngle, CGFloat delta);
 		public void AddRelativeArc (float x, float y, float radius, float startAngle, float delta)
 		{
 			CGPathAddRelativeArc (handle, IntPtr.Zero, x, y, radius, startAngle, delta);
@@ -437,33 +502,55 @@ namespace MonoMac.CoreGraphics {
 		}
 			
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static int CGPathIsRect(IntPtr path, out RectangleF rect);
+		extern static int CGPathIsRect(IntPtr path, out NSRect rect);
 		public bool IsRect (out RectangleF rect)
 		{
+#if MAC64
+			NSRect _rect;
+			bool rc = CGPathIsRect (handle, out _rect) != 0;
+			rect = new RectangleF((float)_rect.Origin.X, (float)_rect.Origin.Y, (float)_rect.Width, (float)_rect.Height);
+			return rc;
+#else
 			return CGPathIsRect (handle, out rect) != 0;
+#endif
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static PointF CGPathGetCurrentPoint(IntPtr path);
+		extern static NSPoint CGPathGetCurrentPoint(IntPtr path);
 		public PointF CurrentPoint {
 			get {
+#if MAC64
+				NSPoint rc = CGPathGetCurrentPoint (handle);
+				return new PointF((float)rc.X, (float)rc.Y);
+#else
 				return CGPathGetCurrentPoint (handle);
+#endif
 			}
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static RectangleF CGPathGetBoundingBox(IntPtr path);
+		extern static NSRect CGPathGetBoundingBox(IntPtr path);
 		public RectangleF BoundingBox {
 			get {
+#if MAC64
+				NSRect rc = CGPathGetBoundingBox (handle);
+				return new RectangleF((float)rc.Origin.X, (float)rc.Origin.Y, (float)rc.Width, (float)rc.Height);
+#else
 				return CGPathGetBoundingBox (handle);
+#endif
 			}
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static RectangleF CGPathGetPathBoundingBox(IntPtr path);
+		extern static NSRect CGPathGetPathBoundingBox(IntPtr path);
 		public RectangleF PathBoundingBox {
 			get {
+#if MAC64
+				NSRect rc = CGPathGetPathBoundingBox (handle);
+				return new RectangleF((float)rc.Origin.X, (float)rc.Origin.Y, (float)rc.Width, (float)rc.Height);
+#else
 				return CGPathGetPathBoundingBox (handle);
+#endif
 			}
 		}
 		

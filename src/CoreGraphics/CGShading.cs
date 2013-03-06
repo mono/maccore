@@ -32,6 +32,20 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.CoreGraphics {
 
 	public class CGShading : INativeObject, IDisposable {
@@ -54,7 +68,7 @@ namespace MonoMac.CoreGraphics {
 		
 
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGShadingCreateAxial(IntPtr space, PointF start, PointF end, IntPtr functionHandle, bool extendStart, bool extendEnd);
+		extern static IntPtr CGShadingCreateAxial(IntPtr space, NSPoint start, NSPoint end, IntPtr functionHandle, bool extendStart, bool extendEnd);
 
 		public static CGShading CreateAxial (CGColorSpace colorspace, PointF start, PointF end, CGFunction function, bool extendStart, bool extendEnd)
 		{
@@ -67,11 +81,15 @@ namespace MonoMac.CoreGraphics {
 			if (function.Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("function");
 
+#if MAC64
+			return new CGShading (CGShadingCreateAxial (colorspace.Handle, new NSPoint(start), new NSPoint(end), function.Handle, extendStart, extendEnd), true);
+#else
 			return new CGShading (CGShadingCreateAxial (colorspace.Handle, start, end, function.Handle, extendStart, extendEnd), true);
+#endif
 		}
 		
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGShadingCreateRadial(IntPtr space, PointF start, float startRadius, PointF end, float endRadius,
+		extern static IntPtr CGShadingCreateRadial(IntPtr space, NSPoint start, CGFloat startRadius, NSPoint end, CGFloat endRadius,
 							   IntPtr function, bool extendStart, bool extendEnd);
 
 		public static CGShading CreateRadial (CGColorSpace colorspace, PointF start, float startRadius, PointF end, float endRadius,
@@ -86,8 +104,13 @@ namespace MonoMac.CoreGraphics {
 			if (function.Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("function");
 
+#if MAC64
+			return new CGShading (CGShadingCreateRadial (colorspace.Handle, new NSPoint(start), startRadius, new NSPoint(end), endRadius,
+			                                             function.Handle, extendStart, extendEnd), true);
+#else
 			return new CGShading (CGShadingCreateRadial (colorspace.Handle, start, startRadius, end, endRadius,
 								     function.Handle, extendStart, extendEnd), true);
+#endif
 		}
 
 		~CGShading ()
