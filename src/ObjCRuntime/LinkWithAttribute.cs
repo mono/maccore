@@ -87,5 +87,9 @@ namespace MonoMac.ObjCRuntime {
 		public bool IsCxx {
 			get; set; 
 		}
+
+		public bool SmartLink {
+			get; set;
+		}
 	}
 }

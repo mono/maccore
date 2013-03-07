@@ -4,7 +4,7 @@
 // Authors:
 //   Marek Safar (marek.safar@gmail.com)
 //
-// Copyright 2012, Xamarin, Inc
+// Copyright 2012-2013, Xamarin, Inc
 //
 // The class can be either constructed from a string (from user code)
 // or from a handle (from iphone-sharp.dll internal calls).  This
@@ -30,6 +30,9 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+
+#if !COREBUILD
+
 using System;
 using MonoMac.ObjCRuntime;
 
@@ -44,7 +47,7 @@ namespace MonoMac.CoreLocation {
 		public static double MaxDistance {
 			get {
 				if (max_distance == null)
-					max_distance = GetConstant ("CLLocationDistanceMax");
+					max_distance = Dlfcn.GetDouble (Libraries.CoreLocation.Handle, "CLLocationDistanceMax");
 				return max_distance.Value; 
 			}
 		}
@@ -52,20 +55,11 @@ namespace MonoMac.CoreLocation {
 		public static double FilterNone {
 			get {
 				if (filter_none == null)
-					filter_none = GetConstant ("kCLDistanceFilterNone");
+					filter_none = Dlfcn.GetDouble (Libraries.CoreLocation.Handle, "kCLDistanceFilterNone");
 				return filter_none.Value;
-			}
-		}
-
-		static double GetConstant (string constantName)
-		{ 
-			var handle = Dlfcn.dlopen (Constants.CoreLocationLibrary, 0);
-
-			try {
-				return Dlfcn.GetDouble (handle, constantName);
-			} finally {
-				Dlfcn.dlclose (handle);
 			}
 		}
 	}
 }
+
+#endif

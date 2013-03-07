@@ -2586,6 +2586,12 @@ namespace MonoMac.Foundation
 
 		[Export("stopAccessingSecurityScopedResource")]
 		void StopAccessingSecurityScopedResource();
+	
+		[Export("filePathURL")]
+		NSUrl FilePathUrl { get; }
+
+		[Export("fileReferenceURL")]
+		NSUrl FileReferenceUrl { get; }		
 
 #endif
 
@@ -3431,6 +3437,12 @@ namespace MonoMac.Foundation
 		[Export ("mainDocumentURL")]
 		NSUrl MainDocumentURL { get; }
 
+		[Export ("networkServiceType")]
+		NSUrlRequestNetworkServiceType NetworkServiceType { get; }
+
+		[Export ("allowsCellularAccess")]
+		bool AllowsCellularAccess { get; }
+		
 		[Export ("HTTPMethod")]
 		string HttpMethod { get; }
 
@@ -3565,7 +3577,10 @@ namespace MonoMac.Foundation
 		[New][Export ("HTTPShouldHandleCookies")]
 		bool ShouldHandleCookies { get; set; }
 
-		[Export ("allowsCellularAccess")]
+		[Export ("networkServiceType")]
+		NSUrlRequestNetworkServiceType NetworkServiceType { set; get; }
+		
+		[New] [Export ("allowsCellularAccess")]
 		bool AllowsCellularAccess { get; set; }
 	}
 	
@@ -3780,6 +3795,53 @@ namespace MonoMac.Foundation
 		
 		[Export ("stringByReplacingCharactersInRange:withString:")]
 		NSString Replace (NSRange range, NSString replacement);
+
+		// start methods from NSStringPathExtensions category
+
+		[Static]
+		[Export("pathWithComponents:")]
+		string[] PathWithComponents( string[] components );
+
+		[Export("pathComponents")]
+		string[] PathComponents { get; }
+
+		[Export("isAbsolutePath")]
+		bool IsAbsolutePath { get; }
+
+		[Export("lastPathComponent")]
+		NSString LastPathComponent { get; }
+
+		[Export("stringByDeletingLastPathComponent")]
+		NSString DeleteLastPathComponent();
+ 
+ 		[Export("stringByAppendingPathComponent:")]
+ 		NSString AppendPathComponent( NSString str );
+
+ 		[Export("pathExtension")]
+ 		NSString PathExtension { get; }
+
+ 		[Export("stringByDeletingPathExtension")]
+ 		NSString DeletePathExtension();
+
+ 		[Export("stringByAppendingPathExtension:")]
+ 		NSString AppendPathExtension( NSString str );
+ 
+ 		[Export("stringByAbbreviatingWithTildeInPath")]
+ 		NSString AbbreviateTildeInPath();
+
+ 		[Export("stringByExpandingTildeInPath")]
+ 		NSString ExpandTildeInPath();
+ 
+ 		[Export("stringByStandardizingPath")]
+ 		NSString StandarizePath();
+
+ 		[Export("stringByResolvingSymlinksInPath")]
+ 		NSString ResolveSymlinksInPath();
+
+		[Export("stringsByAppendingPaths:")]
+ 		string[] AppendPaths( string[] paths );
+
+		// end methods from NSStringPathExtensions category
 
 		[Since (6,0)]
 		[Export ("capitalizedStringWithLocale:")]
@@ -4367,6 +4429,10 @@ namespace MonoMac.Foundation
 
 		[Export ("pathForSoundResource:")]
 		string PathForSoundResource (string resource);
+
+		[Export("appStoreReceiptURL")]
+		NSUrl AppStoreReceiptUrl { get; }
+
 #else
 		// http://developer.apple.com/library/ios/#documentation/uikit/reference/NSBundle_UIKitAdditions/Introduction/Introduction.html
 		[Export ("loadNibNamed:owner:options:")]
@@ -4880,6 +4946,9 @@ namespace MonoMac.Foundation
 	
 		[Export ("isEqualToValue:")]
 		bool IsEqualTo (NSValue value);
+		
+		[Export ("valueWithRange:")][Static]
+		NSValue FromRange(NSRange range);
 	
 #if MONOMAC
 		[Static, Export ("valueWithCMTime:"), Lion]
@@ -5534,6 +5603,24 @@ namespace MonoMac.Foundation
 		
 		[Export ("activeProcessorCount")]
 		int ActiveProcessorCount { get; }
+
+		[Export ("systemUptime")]
+		double SystemUptime { get; }
+
+		[Export ("enableSuddenTermination")]
+		void EnableSuddenTermination  ();
+	
+		[Export ("disableSuddenTermination")]
+		void DisableSuddenTermination ();
+
+		[Export ("enableAutomaticTermination:")]
+		void EnableAutomaticTermination (string reason);
+
+		[Export ("disableAutomaticTermination:")]
+		void DisableAutomaticTermination (string reason);
+
+		[Export ("automaticTerminationSupportEnabled")]
+		bool AutomaticTerminationSupportEnabled { get; set; }
 	}
 
 	[BaseType (typeof (NSMutableData))]

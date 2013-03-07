@@ -169,8 +169,7 @@ namespace MonoMac.CoreMidi {
 	}
 	
 	public class MidiObject : INativeObject, IDisposable {
-                internal static IntPtr midiLibrary = Dlfcn.dlopen (Constants.CoreMidiLibrary, 0);
-                internal IntPtr handle;
+		internal IntPtr handle;
 		internal bool owns;
 
 #if !COREBUILD
@@ -221,6 +220,11 @@ namespace MonoMac.CoreMidi {
 
 		static MidiObject ()
 		{
+#if MONOMAC
+			var midiLibrary = Dlfcn.dlopen (Constants.CoreMidiLibrary, 0);
+#else
+			var midiLibrary = Libraries.CoreMidi.Handle;
+#endif
 			kMIDIPropertyAdvanceScheduleTimeMuSec = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyAdvanceScheduleTimeMuSec");
 			kMIDIPropertyCanRoute = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyCanRoute");
 			kMIDIPropertyConnectionUniqueID = Dlfcn.GetIntPtr (midiLibrary, "kMIDIPropertyConnectionUniqueID");

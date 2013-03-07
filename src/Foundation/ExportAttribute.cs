@@ -71,7 +71,7 @@ namespace MonoMac.Foundation {
 		public ExportAttribute ToSetter (PropertyInfo prop) {
 			if (string.IsNullOrEmpty (Selector))
 				Selector = prop.Name;
-			return new ExportAttribute (string.Format ("set{0}{1}:", char.ToUpper (selector [0], CultureInfo.InvariantCulture), selector.Substring (1)), semantic); 
+			return new ExportAttribute (string.Format ("set{0}{1}:", char.ToUpperInvariant (selector [0]), selector.Substring (1)), semantic); 
 		}
 //#endif
 	}

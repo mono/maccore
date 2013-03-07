@@ -8,16 +8,12 @@ namespace MonoMac.Foundation {
 
 		static NSHttpCookieStorage ()
 		{
-			var handle = Dlfcn.dlopen (Constants.FoundationLibrary, 0);
+			var handle = Libraries.Foundation.Handle;
 			if (handle == IntPtr.Zero)
 				return;
 
-			try {
-				CookiesChangedNotification = Dlfcn.GetStringConstant (handle, "NSHTTPCookieManagerAcceptPolicyChangedNotification");
-				AcceptPolicyChangedNotification = Dlfcn.GetStringConstant (handle, "NSHTTPCookieManagerCookiesChangedNotification");
-			} finally {
-				Dlfcn.dlclose (handle);
-			}
+			CookiesChangedNotification = Dlfcn.GetStringConstant (handle, "NSHTTPCookieManagerAcceptPolicyChangedNotification");
+			AcceptPolicyChangedNotification = Dlfcn.GetStringConstant (handle, "NSHTTPCookieManagerCookiesChangedNotification");
 		}
 	}
 }

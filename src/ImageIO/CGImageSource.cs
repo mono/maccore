@@ -53,11 +53,10 @@ namespace MonoMac.ImageIO {
 			if (kTypeIdentifierHint != IntPtr.Zero)
 				return;
 			
-			IntPtr lib = Dlfcn.dlopen (Constants.ImageIOLibrary, 0);
+			IntPtr lib = Libraries.ImageIO.Handle;
 			kTypeIdentifierHint = Dlfcn.GetIntPtr (lib, "kCGImageSourceTypeIdentifierHint");
 			kShouldCache = Dlfcn.GetIntPtr (lib, "kCGImageSourceShouldCache");
 			kShouldAllowFloat = Dlfcn.GetIntPtr (lib, "kCGImageSourceShouldAllowFloat");
-			Dlfcn.dlclose (lib);
 		}
 
 		public CGImageOptions ()
@@ -97,14 +96,11 @@ namespace MonoMac.ImageIO {
 			if (kCreateThumbnailWithTransform != IntPtr.Zero)
 				return;
 			
-			IntPtr lib = Dlfcn.dlopen (Constants.ImageIOLibrary, 0);
-
+			IntPtr lib = Libraries.ImageIO.Handle;
 			kCreateThumbnailFromImageIfAbsent = Dlfcn.GetIntPtr (lib, "kCGImageSourceCreateThumbnailFromImageIfAbsent");
 			kCreateThumbnailFromImageAlways = Dlfcn.GetIntPtr (lib, "kCGImageSourceCreateThumbnailFromImageAlways");
 			kThumbnailMaxPixelSize = Dlfcn.GetIntPtr (lib, "kCGImageSourceThumbnailMaxPixelSize");
 			kCreateThumbnailWithTransform = Dlfcn.GetIntPtr (lib, "kCGImageSourceCreateThumbnailWithTransform");
-
-			Dlfcn.dlclose (lib);
 		}
 
 		public bool CreateThumbnailFromImageIfAbsent { get; set; }
