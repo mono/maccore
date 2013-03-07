@@ -754,7 +754,7 @@ public class TrampolineInfo {
 
 	public string StaticName {
 		get {
-			return "static_" + DelegateName;
+			return "S" + DelegateName;
 		}
 	}
 }
@@ -1167,8 +1167,8 @@ public class Generator {
 		}
 
 		var ti = new TrampolineInfo (FormatType (null, t),
-					     "Inner" + trampoline_name,
-					     "Trampoline" + trampoline_name,
+					     "D" + trampoline_name,
+					     "T" + trampoline_name,
 					     pars.ToString (), invoke.ToString (),
 					     returntype,
 					     mi.ReturnType.ToString (),
@@ -1719,6 +1719,9 @@ public class Generator {
 		if (delegate_types.Count > 0)
 			GenerateIndirectDelegateFile ();
 
+		if (trampolines.Count > 0)
+			GenerateTrampolines ();
+
 		if (libraries.Count > 0)
 			GenerateLibraryHandles ();
 	}
@@ -1743,6 +1746,62 @@ public class Generator {
 		sw.Close ();
 	}
 
+	void GenerateTrampolines ()
+	{
+		var library_file = Path.Combine (basedir, "ObjCRuntime/Trampolines.g.cs");
+		GeneratedFiles.Add (library_file);
+		sw = new StreamWriter (library_file);
+		
+		Header (sw);
+#if MONOMAC
+		print ("namespace MonoMac {"); indent++;
+#else
+		print ("namespace MonoTouch {"); indent++;
+#endif
+		print ("");
+		print ("[CompilerGenerated]");
+		print ("static class Trampolines {"); indent++;
+		foreach (var ti in trampolines.Values) {
+			print ("");
+			print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
+			print ("");
+			print ("static internal class {0} {{", ti.StaticName); indent++;
+			print ("");
+			print ("static internal readonly {0} Handler = {1};", ti.DelegateName, ti.TrampolineName);
+			print ("");
+			print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
+			print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
+			indent++;
+			print ("var descriptor = (BlockLiteral *) block;");
+			print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
+			bool is_void = ti.ReturnType == "void";
+			// FIXME: right now we only support 'null' when the delegate does not return a value
+			// otherwise we will need to know the default value to be returned (likely uncommon)
+			if (is_void) {
+				print ("if (del != null)");
+				indent++;
+				print ("del ({0});", ti.Invoke);
+				indent--;
+				if (ti.Clear.Length > 0){
+					print ("else");
+					indent++;
+					print (ti.Clear);
+					indent--;
+				}
+			} else {
+				print ("{0} retval = del ({1});", ti.DelegateReturnType, ti.Invoke);
+				print (ti.ReturnFormat, "retval");
+			}
+			indent--;
+			print ("}"); 
+			indent--;
+			print ("}");
+		}
+		indent--; print ("}");
+		indent--; print ("}");
+		sw.Close ();
+	}
+	
 	void GenerateLibraryHandles ()
 	{
 		var library_file = Path.Combine (basedir, "ObjCRuntime/Libraries.g.cs");
@@ -2446,7 +2505,7 @@ public class Generator {
 				}
 				convs.AppendFormat (extra + "block_{0} = new BlockLiteral ();\n", pi.Name);
 				convs.AppendFormat (extra + "block_ptr_{0} = &block_{0};\n", pi.Name);
-				convs.AppendFormat (extra + "block_{0}.SetupBlock ({1}, {0});\n", pi.Name, trampoline_name);
+				convs.AppendFormat (extra + "block_{0}.SetupBlock (Trampolines.{1}.Handler, {0});\n", pi.Name, trampoline_name);
 				if (null_allowed)
 					convs.AppendFormat ("}}");
 
@@ -3672,42 +3731,6 @@ public class Generator {
 			}
 
 			//
-			// Now the trampolines
-			//
-			foreach (var ti in trampolines.Values){
-				print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
-				print ("[CompilerGenerated]");
-				print ("static readonly {0} {1} = {2};", ti.DelegateName, ti.StaticName, ti.TrampolineName);
-				print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
-				print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
-				indent++;
-				print ("var descriptor = (BlockLiteral *) block;");
-				print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
-				bool is_void = ti.ReturnType == "void";
-				// FIXME: right now we only support 'null' when the delegate does not return a value
-				// otherwise we will need to know the default value to be returned (likely uncommon)
-				if (is_void) {
-					print ("if (del != null)");
-					indent++;
-					print ("del ({0});", ti.Invoke);
-					indent--;
-					if (ti.Clear.Length > 0){
-						print ("else");
-						indent++;
-						print (ti.Clear);
-						indent--;
-					}
-
-				} else {
-					print ("{0} retval = del ({1});", ti.DelegateReturnType, ti.Invoke);
-					print (ti.ReturnFormat, "retval");
-				}
-				indent--;
-				print ("}");
-				print ("");
-			}
-
-			//
 			// Do we need a dispose method?
 			//
 			if (!is_static_class){
@@ -3867,9 +3890,7 @@ public class Generator {
 				del.Append (");");
 				print (del.ToString ());
 			}
-			trampolines.Clear ();
 
-			
 			if (eventArgTypes.Count > 0){
 				print ("\n");
 				print ("//");
