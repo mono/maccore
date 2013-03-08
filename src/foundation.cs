@@ -288,6 +288,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	public interface NSCacheDelegate {
 		[Export ("cache:willEvictObject:"), EventArgs ("NSObject")]
 		void WillEvictObject (NSCache cache, NSObject obj);
@@ -1041,6 +1042,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	public interface NSKeyedArchiverDelegate {
 		[Export ("archiver:didEncodeObject:"), EventArgs ("NSObject")]
 		void EncodedObject (NSKeyedArchiver archiver, NSObject obj);
@@ -1060,6 +1062,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	public interface NSKeyedUnarchiverDelegate {
 		[Export ("unarchiver:didDecodeObject:"), DelegateName ("NSDecoderCallback"), DefaultValue (null)]
 		NSObject DecodedObject (NSKeyedUnarchiver unarchiver, NSObject obj);
@@ -1303,6 +1306,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	public interface NSMetadataQueryDelegate {
 		[Export ("metadataQuery:replacementObjectForResultObject:"), DelegateName ("NSMetadataQueryObject"), DefaultValue(null)]
 		NSObject ReplacementObjectForResultObject (NSMetadataQuery query, NSMetadataItem result);
@@ -3068,6 +3072,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject), Name="NSURLConnectionDelegate")]
 	[Model]
+	[Protocol]
 	public interface NSUrlConnectionDelegate {
 		[Export ("connection:willSendRequest:redirectResponse:")]
 		NSUrlRequest WillSendRequest (NSUrlConnection connection, NSUrlRequest request, NSUrlResponse response);
@@ -3108,6 +3113,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSUrlConnectionDelegate), Name="NSUrlConnectionDownloadDelegate")]
 	[Model]
+	[Protocol]
 	public interface NSUrlConnectionDownloadDelegate {
 		[Export ("connection:didWriteData:totalBytesWritten:expectedTotalBytes:")]
 		void WroteData (NSUrlConnection connection, long bytesWritten, long totalBytesWritten, long expectedTotalBytes);
@@ -3710,6 +3716,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	public interface NSStreamDelegate {
 		[Export ("stream:handleEvent:"), EventArgs ("NSStream"), EventName ("OnEvent")]
 		void HandleEvent (NSStream theStream, NSStreamEvent streamEvent);
@@ -4725,6 +4732,7 @@ namespace MonoMac.Foundation
 	}
 
 	[Model, BaseType (typeof (NSObject))]
+	[Protocol]
 	public interface NSNetServiceDelegate {
 		[Export ("netServiceWillPublish:")]
 		void WillPublish (NSNetService sender);
@@ -4782,6 +4790,7 @@ namespace MonoMac.Foundation
 	}
 
 	[Model, BaseType (typeof (NSObject))]
+	[Protocol]
 	public interface NSNetServiceBrowserDelegate {
 		[Export ("netServiceBrowserWillSearch:")]
 		void SearchStarted (NSNetServiceBrowser sender);
@@ -5983,6 +5992,7 @@ namespace MonoMac.Foundation
 
 	[BaseType(typeof(NSObject))]
 	[Model]
+	[Protocol]
 	public interface NSFileManagerDelegate {
 		[Export("fileManager:shouldCopyItemAtPath:toPath:")]
 		bool ShouldCopyItemAtPath(NSFileManager fm, NSString srcPath, NSString dstPath);
@@ -6047,6 +6057,7 @@ namespace MonoMac.Foundation
 
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	partial interface NSFilePresenter {
 		[Abstract]
 		[Export ("presentedItemURL")]

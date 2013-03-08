@@ -76,6 +76,7 @@ namespace MonoMac.QuickLook {
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface QLPreviewControllerDataSource {
 		[Abstract]
 		[Export ("numberOfPreviewItemsInPreviewController:")]
@@ -89,6 +90,7 @@ namespace MonoMac.QuickLook {
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface QLPreviewControllerDelegate {
 		[Export ("previewControllerWillDismiss:")]
 		void WillDismiss (QLPreviewController controller);
@@ -115,6 +117,7 @@ namespace MonoMac.QuickLook {
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface QLPreviewItem {
 		[Abstract]
 		[Export ("previewItemURL")]

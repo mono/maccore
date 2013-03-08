@@ -8,7 +8,7 @@
 //   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2009-2010, Novell, Inc.
-// Copyright 2011-2012 Xamarin, Inc.
+// Copyright 2011-2013 Xamarin, Inc.
 //
 //
 // This generator produces various */*.g.cs files based on the
@@ -194,6 +194,11 @@ public static class ReflectionExtensions {
 
 		return methods;
 	}
+}
+
+// Used to mark if a type is not a wrapper type.
+public class SyntheticAttribute : Attribute {
+	public SyntheticAttribute () { }
 }
 
 public class NeedsAuditAttribute : Attribute {
@@ -2809,6 +2814,7 @@ public class Generator {
 		bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType,  type);
 		bool is_new = HasAttribute (pi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
+		bool is_wrapper = !HasAttribute (pi.DeclaringType, typeof(SyntheticAttribute));
 		bool is_unsafe = false;
 		
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
@@ -2920,10 +2926,12 @@ public class Generator {
 
 			PrintPlatformAttributes (pi);
 
-			if (export.ArgumentSemantic != ArgumentSemantic.None)
-				print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
-			else
-				print ("[Export (\"{0}\")]", sel);
+			if (!is_sealed || !is_wrapper) {
+				if (export.ArgumentSemantic != ArgumentSemantic.None)
+					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
+				else
+					print ("[Export (\"{0}\")]", sel);
+			}
 			if (is_abstract){
 				print ("get; ");
 			} else {
@@ -2963,7 +2971,7 @@ public class Generator {
 
 			PrintPlatformAttributes (pi);
 
-			if (!not_implemented){
+			if (!not_implemented && (!is_sealed || !is_wrapper)){
 				if (export.ArgumentSemantic != ArgumentSemantic.None)
 					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
 				else
@@ -3011,6 +3019,8 @@ public class Generator {
 				print ("#pragma warning restore 168");
 			}
 
+		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
+		bool is_wrapper = !HasAttribute (type, typeof(SyntheticAttribute));
 		string selector = null;
 		bool virtual_method = false;
 		string wrap_method = null;
@@ -3032,8 +3042,11 @@ public class Generator {
 			ExportAttribute ea = (ExportAttribute) attr [0];
 			selector = ea.Selector;
 					
-			print ("[Export (\"{0}\")]", ea.Selector);
-			virtual_method = mi.Name != "Constructor";
+			if (!is_sealed || !is_wrapper) {
+				var is_variadic = ea.IsVariadic ? ", IsVariadic = true" : string.Empty;
+				print ("[Export (\"{0}\"{1})]", ea.Selector, is_variadic);
+				virtual_method = mi.Name != "Constructor";
+			}
 		}
 
 		foreach (ObsoleteAttribute oa in mi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
@@ -3064,7 +3077,6 @@ public class Generator {
 		bool is_internal = HasAttribute (mi, typeof (InternalAttribute));
 		bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
 		bool is_new = HasAttribute (mi, typeof (NewAttribute));
-		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
 		bool is_unsafe = false;
 		bool is_autorelease = HasAttribute (mi, typeof (AutoreleaseAttribute));
 
@@ -3184,6 +3196,7 @@ public class Generator {
 			bool is_category_class = category_attribute.Length > 0;
 			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0 || is_category_class;
 			bool is_model = type.GetCustomAttributes (typeof (ModelAttribute), true).Length > 0;
+			bool is_protocol = HasAttribute (type, typeof (ProtocolAttribute));
 			var default_ctor_visibility = GetAttribute<DefaultCtorVisibilityAttribute> (type);
 			object [] btype = type.GetCustomAttributes (typeof (BaseTypeAttribute), true);
 			BaseTypeAttribute bta = btype.Length > 0 ? ((BaseTypeAttribute) btype [0]) : null;
@@ -3199,7 +3212,9 @@ public class Generator {
 				base_type = typeof (object);
 				class_mod = "static ";
 			} else {
-				print ("[Register(\"{0}\", true)]", objc_type_name);
+				if (is_protocol)
+					print ("[Protocol]");
+				print ("[Register(\"{0}\", {1})]", objc_type_name, HasAttribute (type, typeof (SyntheticAttribute)) ? "false" : "true");
 				if (need_abstract.ContainsKey (type))
 					class_mod = "abstract ";
 			} 
