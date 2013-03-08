@@ -369,6 +369,7 @@ namespace MonoMac.AVFoundation {
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface AVAudioPlayerDelegate {
 		[Export ("audioPlayerDidFinishPlaying:successfully:"), CheckDisposed]
 		void FinishedPlaying (AVAudioPlayer player, bool flag);
@@ -472,6 +473,7 @@ namespace MonoMac.AVFoundation {
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface AVAudioRecorderDelegate {
 		[Export ("audioRecorderDidFinishRecording:successfully:"), CheckDisposed]
 		void FinishedRecording (AVAudioRecorder recorder, bool flag);
@@ -797,6 +799,7 @@ namespace MonoMac.AVFoundation {
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface AVAudioSessionDelegate {
 		[Export ("beginInterruption")]
 		void BeginInterruption ();
@@ -1190,6 +1193,7 @@ namespace MonoMac.AVFoundation {
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface AVAssetResourceLoaderDelegate {
 		[Abstract]
 		[Export ("resourceLoader:shouldWaitForLoadingOfRequestedResource:")]
@@ -2845,7 +2849,7 @@ namespace MonoMac.AVFoundation {
 	[Since (5,0)]
 	[BaseType (typeof (NSObject))]
         [Model]
-	// Protocol
+	[Protocol]
 	[DisableDefaultCtor]
         interface AVVideoCompositionValidationHandling {
                 [Export ("videoComposition:shouldContinueValidatingAfterFindingInvalidValueForKey:")]
@@ -3323,6 +3327,7 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (NSObject))]
 	[Since (4,0)]
 	[Model]
+	[Protocol]
 	interface AVCaptureVideoDataOutputSampleBufferDelegate {
 		[Export ("captureOutput:didOutputSampleBuffer:fromConnection:")]
 		// CMSampleBufferRef		
@@ -3345,6 +3350,7 @@ namespace MonoMac.AVFoundation {
 	[Since (4,0)]
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface AVCaptureAudioDataOutputSampleBufferDelegate {
 		[Export ("captureOutput:didOutputSampleBuffer:fromConnection:")]
 		void DidOutputSampleBuffer (AVCaptureOutput captureOutput, CMSampleBuffer sampleBuffer, AVCaptureConnection connection);
@@ -3389,6 +3395,7 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (NSObject))]
 	[Model]
 	[Since (4,0)]
+	[Protocol]
 	interface AVCaptureFileOutputRecordingDelegate {
 		[Export ("captureOutput:didStartRecordingToOutputFileAtURL:fromConnections:")]
 		void DidStartRecording (AVCaptureFileOutput captureOutput, NSUrl outputFileUrl, NSObject [] connections);
@@ -3420,6 +3427,7 @@ namespace MonoMac.AVFoundation {
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface AVCaptureMetadataOutputObjectsDelegate {
 		[Export ("captureOutput:didOutputMetadataObjects:fromConnection:")]
 		void DidOutputMetadataObjects (AVCaptureMetadataOutput captureOutput, AVMetadataObject [] metadataObjects, AVCaptureConnection connection);
@@ -4089,6 +4097,7 @@ namespace MonoMac.AVFoundation {
 	[Since (6,0)]
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Protocol]
 	interface AVPlayerItemOutputPullDelegate {
 		[Export ("outputMediaDataWillChange:")]
 		void OutputMediaDataWillChange (AVPlayerItemOutput sender);
@@ -4242,6 +4251,7 @@ namespace MonoMac.AVFoundation {
 	[BaseType (typeof (NSObject))]
 	[Model]
 	[Since (4,0)]
+	[Protocol]
 	interface AVAsynchronousKeyValueLoading {
 		[Abstract]
 		[Export ("statusOfValueForKey:error:")]

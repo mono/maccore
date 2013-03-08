@@ -29,4 +29,10 @@ namespace MonoMac.Foundation {
 
 		public ModelAttribute () {}
 	}
+	
+	[AttributeUsage (AttributeTargets.Class | AttributeTargets.Interface)]
+	public sealed class ProtocolAttribute : Attribute {
+		
+		public ProtocolAttribute () {}
+	}
 }

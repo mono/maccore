@@ -238,6 +238,7 @@ namespace MonoMac.CoreLocation {
 	
 	[BaseType (typeof (NSObject))]
 	[Model]
+	[Synthetic]
 	partial interface CLLocationManagerDelegate
 	{
 		[Obsolete ("Deprecated in iOS 6.0")]
