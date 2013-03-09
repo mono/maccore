@@ -132,7 +132,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSCalendarUnit : ulong {
+#else
 	public enum NSCalendarUnit {
+#endif
 		Era = 2, 
 		Year = 4,
 		Month = 8,
@@ -159,7 +163,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSDataReadingOptions: ulong {
+#else
 	public enum NSDataReadingOptions: uint {
+#endif
 		   Mapped =   1 << 0,
 		   Uncached = 1 << 1,
 
@@ -209,7 +217,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSDataSearchOptions : ulong {
+#else
 	public enum NSDataSearchOptions {
+#endif
 		SearchBackwards = 1,
 		SearchAnchored = 2
 	}
@@ -327,7 +339,11 @@ namespace MonoMac.Foundation  {
 		Any
 	}
 
+#if MAC64
+	public enum NSPredicateOperatorType : ulong {
+#else
 	public enum NSPredicateOperatorType {
+#endif
 		LessThan,
 		LessThanOrEqualTo,
 		GreaterThan,
@@ -617,7 +633,11 @@ namespace MonoMac.Foundation  {
 		None, Default, All 
 	}
 	
+#if MAC64
+	public enum NSDateComponentsWrappingBehavior : ulong {
+#else
 	public enum NSDateComponentsWrappingBehavior {
+#endif
 		None = 0,
 		WrapCalendarComponents = 1 << 0,
 	}

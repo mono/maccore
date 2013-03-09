@@ -272,7 +272,7 @@ namespace MonoMac.Foundation
 		void SetObjectforKey (NSObject obj, NSObject key);
 
 		[Export ("setObject:forKey:cost:")]
-		void SetCost (NSObject obj, NSObject key, uint cost);
+		void SetCost (NSObject obj, NSObject key, NSUInteger cost);
 
 		[Export ("removeObjectForKey:")]
 		void RemoveObjectForKey (NSObject key);
@@ -291,10 +291,10 @@ namespace MonoMac.Foundation
 		NSCacheDelegate Delegate { get; set; }
 
 		[Export ("totalCostLimit")]
-		uint TotalCostLimit { get; set; }
+		NSUInteger TotalCostLimit { get; set; }
 
 		[Export ("countLimit")]
-		uint CountLimit { get; set; }
+		NSUInteger CountLimit { get; set; }
 
 		[Export ("evictsObjectsWithDiscardedContent")]
 		bool EvictsObjectsWithDiscardedContent { get; set; }
@@ -350,10 +350,10 @@ namespace MonoMac.Foundation
 		NSTimeZone TimeZone { get; set; } 
 
 		[Export ("firstWeekday")]
-		uint FirstWeekDay { get; set; } 
+		NSUInteger FirstWeekDay { get; set; } 
 
 		[Export ("minimumDaysInFirstWeek")]
-		uint MinimumDaysInFirstWeek { get; set; }
+		NSUInteger MinimumDaysInFirstWeek { get; set; }
 
 		//- (NSRange)minimumRangeOfUnit:(NSCalendarUnit)unit;
 		//- (NSRange)maximumRangeOfUnit:(NSCalendarUnit)unit;
@@ -646,19 +646,19 @@ namespace MonoMac.Foundation
 		NSData FromData (NSData source);
 
 		[Export ("dataWithBytes:length:"), Static]
-		NSData FromBytes (IntPtr bytes, uint size);
+		NSData FromBytes (IntPtr bytes, NSUInteger size);
 
 		[Export ("bytes")]
 		IntPtr Bytes { get; }
 
 		[Export ("length")]
-		uint Length { get; [NotImplemented] set; }
+		NSUInteger Length { get; [NotImplemented] set; }
 
 		[Export ("writeToFile:options:error:")]
-		bool _Save (string file, int options, IntPtr addr);
+		bool _Save (string file, NSUInteger options, IntPtr addr);
 		
 		[Export ("writeToURL:options:error:")]
-		bool _Save (NSUrl url, int options, IntPtr addr);
+		bool _Save (NSUrl url, NSUInteger options, IntPtr addr);
 
 		[Export ("rangeOfData:options:range:")]
 		[Since (4,0)]
@@ -1460,16 +1460,16 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSData))]
 	public interface NSMutableData {
 		[Static, Export ("dataWithCapacity:")]
-		NSMutableData FromCapacity (int capacity);
+		NSMutableData FromCapacity (NSUInteger capacity);
 
 		[Static, Export ("dataWithLength:")]
-		NSMutableData FromLength (int length);
+		NSMutableData FromLength (NSUInteger length);
 		
 		[Static, Export ("data")]
 		NSMutableData Create ();
 		
 		[Export ("setLength:")]
-		void SetLength (uint len);
+		void SetLength (NSUInteger len);
 
 		[Export ("mutableBytes")]
 		IntPtr MutableBytes { get; }
@@ -1481,14 +1481,14 @@ namespace MonoMac.Foundation
 		void AppendData (NSData other);
 
 		[Export ("appendBytes:length:")]
-		void AppendBytes (IntPtr bytes, uint len);
+		void AppendBytes (IntPtr bytes, NSUInteger len);
 
 		[Export ("setData:")]
 		void SetData (NSData data);
 
 		[Export ("length")]
 		[Override]
-		uint Length { get; set; }
+		NSUInteger Length { get; set; }
 	}
 
 	[BaseType (typeof (NSObject))]

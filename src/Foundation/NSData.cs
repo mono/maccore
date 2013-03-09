@@ -33,6 +33,20 @@ using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Generic;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.Foundation {
 	public partial class NSData : IEnumerable, IEnumerable<byte> {
 		
@@ -100,7 +114,7 @@ namespace MonoMac.Foundation {
 			} catch {
 				len = 8192;
 			}
-			ret = NSMutableData.FromCapacity ((int)len);
+			ret = NSMutableData.FromCapacity ((NSUInteger)len);
 			byte [] buffer = new byte [32*1024];
 			int n;
 			try {
@@ -122,7 +136,7 @@ namespace MonoMac.Foundation {
 		unsafe class UnmanagedMemoryStreamWithRef : UnmanagedMemoryStream {
 			NSData source;
 			
-			public UnmanagedMemoryStreamWithRef (NSData source) : base ((byte *)source.Bytes, source.Length)
+			public UnmanagedMemoryStreamWithRef (NSData source) : base ((byte *)source.Bytes, (long)source.Length)
 			{
 				this.source = source;
 			}
@@ -226,7 +240,7 @@ namespace MonoMac.Foundation {
 				IntPtr val;
 				IntPtr val_addr = (IntPtr) ((IntPtr *) &val);
 
-				bool ret = _Save (file, auxiliaryFile ? 1 : 0, val_addr);
+				bool ret = _Save (file, (NSUInteger)(auxiliaryFile ? 1 : 0), val_addr);
 				error = (NSError) Runtime.GetNSObject (val);
 				
 				return ret;
@@ -239,7 +253,7 @@ namespace MonoMac.Foundation {
 				IntPtr val;
 				IntPtr val_addr = (IntPtr) ((IntPtr *) &val);
 
-				bool ret = _Save (file, (int) options, val_addr);
+				bool ret = _Save (file, (NSUInteger) options, val_addr);
 				error = (NSError) Runtime.GetNSObject (val);
 				
 				return ret;
@@ -252,7 +266,7 @@ namespace MonoMac.Foundation {
 				IntPtr val;
 				IntPtr val_addr = (IntPtr) ((IntPtr *) &val);
 
-				bool ret = _Save (url, auxiliaryFile ? 1 : 0, val_addr);
+				bool ret = _Save (url, (NSUInteger)(auxiliaryFile ? 1 : 0), val_addr);
 				error = (NSError) Runtime.GetNSObject (val);
 				
 				return ret;
