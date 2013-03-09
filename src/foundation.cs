@@ -677,7 +677,7 @@ namespace MonoMac.Foundation
 
 		[Export ("quarter")]
 		[Since (4,0)]
-		int Quarter { get; set; }
+		NSInteger Quarter { get; set; }
 
 		[Export ("date")]
 		[Since (4,0)]
@@ -685,46 +685,46 @@ namespace MonoMac.Foundation
 
 		//Detected properties
 		[Export ("era")]
-		int Era { get; set; }
+		NSInteger Era { get; set; }
 
 		[Export ("year")]
-		int Year { get; set; }
+		NSInteger Year { get; set; }
 
 		[Export ("month")]
-		int Month { get; set; }
+		NSInteger Month { get; set; }
 
 		[Export ("day")]
-		int Day { get; set; }
+		NSInteger Day { get; set; }
 
 		[Export ("hour")]
-		int Hour { get; set; }
+		NSInteger Hour { get; set; }
 
 		[Export ("minute")]
-		int Minute { get; set; }
+		NSInteger Minute { get; set; }
 
 		[Export ("second")]
-		int Second { get; set; }
+		NSInteger Second { get; set; }
 
 		[Export ("week")]
-		int Week { get; set; }
+		NSInteger Week { get; set; }
 
 		[Export ("weekday")]
-		int Weekday { get; set; }
+		NSInteger Weekday { get; set; }
 
 		[Export ("weekdayOrdinal")]
-		int WeekdayOrdinal { get; set; }
+		NSInteger WeekdayOrdinal { get; set; }
 
 		[Since (5,0)]
 		[Export ("weekOfMonth")]
-		int WeekOfMonth { get; set; }
+		NSInteger WeekOfMonth { get; set; }
 
 		[Since (5,0)]
 		[Export ("weekOfYear")]
-		int WeekOfYear { get; set; }
+		NSInteger WeekOfYear { get; set; }
 		
 		[Since (5,0)]
 		[Export ("yearForWeekOfYear")]
-		int YearForWeekOfYear { get; set; }
+		NSInteger YearForWeekOfYear { get; set; }
 
 		[Since (6,0)]
 		[Export ("leapMonth")]
@@ -904,7 +904,7 @@ namespace MonoMac.Foundation
 		NSData ReadDataToEndOfFile ();
 
 		[Export ("readDataOfLength:")]
-		NSData ReadDataOfLength (uint length);
+		NSData ReadDataOfLength (NSUInteger length);
 
 		[Export ("writeData:")]
 		void WriteData (NSData data);
@@ -1185,16 +1185,16 @@ namespace MonoMac.Foundation
 		void EnableUpdates ();
 
 		[Export ("resultCount")]
-		int ResultCount { get; }
+		NSUInteger ResultCount { get; }
 
 		[Export ("resultAtIndex:")]
-		NSObject ResultAtIndex (int idx);
+		NSObject ResultAtIndex (NSUInteger idx);
 
 		[Export ("results")]
 		NSMetadataItem[] Results { get; }
 
 		[Export ("indexOfResult:")]
-		int IndexOfResult (NSObject result);
+		NSUInteger IndexOfResult (NSObject result);
 
 		[Export ("valueLists")]
 		NSDictionary ValueLists { get; }
@@ -1203,7 +1203,7 @@ namespace MonoMac.Foundation
 		NSObject [] GroupedResults { get; }
 
 		[Export ("valueOfAttribute:forResultAtIndex:")]
-		NSObject ValueOfAttribute (string attribyteName, int atIndex);
+		NSObject ValueOfAttribute (string attribyteName, NSUInteger atIndex);
 
 		[Export ("delegate", ArgumentSemantic.Assign), NullAllowed]
 		NSMetadataQueryDelegate WeakDelegate { get; set; }
@@ -1346,7 +1346,7 @@ namespace MonoMac.Foundation
 		NSObject Value { get; }
 
 		[Export ("count")]
-		int Count { get; }
+		NSUInteger Count { get; }
 	}
 
 	[BaseType (typeof (NSObject))]

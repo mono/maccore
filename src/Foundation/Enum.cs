@@ -73,7 +73,11 @@ namespace MonoMac.Foundation  {
 		Error = 7
 	}
 
+#if MAC64
+	public enum NSPropertyListFormat : ulong {
+#else
 	public enum NSPropertyListFormat {
+#endif
 		OpenStep = 1,
 		Xml = 100,
 		Binary = 200
@@ -595,7 +599,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSByteCountFormatterUnits : ulong {
+#else
 	public enum NSByteCountFormatterUnits {
+#endif
 		UseDefault      = 0,
 		UseBytes        = 1 << 0,
 		UseKB           = 1 << 1,
@@ -609,7 +617,11 @@ namespace MonoMac.Foundation  {
 		UseAll          = 0x0FFFF
 	}
 
+#if MAC64
+	public enum NSByteCountFormatterCountStyle : long {
+#else
 	public enum NSByteCountFormatterCountStyle {
+#endif
 		File, Memory, Decimal, Binary
 	}
 
