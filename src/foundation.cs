@@ -47,9 +47,23 @@ using System;
 using System.Drawing;
 using System.ComponentModel;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.Foundation
 {
-	public delegate int NSComparator (NSObject obj1, NSObject obj2);
+	public delegate NSInteger NSComparator (NSObject obj1, NSObject obj2);
 	public delegate void NSAttributedRangeCallback (NSDictionary attrs, NSRange range, ref bool stop);
 	public delegate void NSAttributedStringCallback (NSObject value, NSRange range, ref bool stop);
 
@@ -58,13 +72,13 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	public interface NSArray {
 		[Export ("count")]
-		uint Count { get; }
+		NSUInteger Count { get; }
 
 		[Export ("objectAtIndex:")]
-		IntPtr ValueAt (uint idx);
+		IntPtr ValueAt (NSUInteger idx);
 
 		[Export ("arrayWithObjects:count:")][Static][Internal]
-		NSArray FromObjects (IntPtr array, int count);
+		NSArray FromObjects (IntPtr array, NSUInteger count);
 
 		[Export ("valueForKey:")]
 		NSObject ValueForKey (NSString key);
@@ -92,23 +106,23 @@ namespace MonoMac.Foundation
 		string Value { get; }
 
 		[Export ("attributesAtIndex:effectiveRange:")]
-		NSDictionary GetAttributes (int location, out NSRange effectiveRange);
+		NSDictionary GetAttributes (NSUInteger location, out NSRange effectiveRange);
 
 		[Export ("length")]
-		int Length { get; }
+		NSUInteger Length { get; }
 
 		// TODO: figure out the type, this deserves to be strongly typed if possble
 		[Export ("attribute:atIndex:effectiveRange:")]
-		NSObject GetAttribute (string attribute, int location, out NSRange effectiveRange);
+		NSObject GetAttribute (string attribute, NSUInteger location, out NSRange effectiveRange);
 
 		[Export ("attributedSubstringFromRange:"), Internal]
 		NSAttributedString Substring (NSRange range);
 
 		[Export ("attributesAtIndex:longestEffectiveRange:inRange:")]
-		NSDictionary GetAttributes (int location, out NSRange longestEffectiveRange, NSRange rangeLimit);
+		NSDictionary GetAttributes (NSUInteger location, out NSRange longestEffectiveRange, NSRange rangeLimit);
 
 		[Export ("attribute:atIndex:longestEffectiveRange:inRange:")]
-		NSObject GetAttribute (string attribute, int location, out NSRange longestEffectiveRange, NSRange rangeLimit);
+		NSObject GetAttribute (string attribute, NSUInteger location, out NSRange longestEffectiveRange, NSRange rangeLimit);
 
 		[Export ("isEqualToAttributedString:")]
 		bool IsEqual (NSAttributedString other);
@@ -131,7 +145,7 @@ namespace MonoMac.Foundation
 
 #if MONOMAC
 		[Export("size")]
-		SizeF Size { get; }
+		NSSize Size { get; }
 
 		[Field ("NSFontAttributeName", "AppKit")]
 		NSString FontAttributeName { get; }
@@ -215,34 +229,34 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSData htmlData, NSUrl baseUrl, out NSDictionary docAttributes);
 		
 		[Export ("drawAtPoint:")]
-		void DrawString (PointF point);
+		void DrawString (NSPoint point);
 		
 		[Export ("drawInRect:")]
-		void DrawString (RectangleF rect);
+		void DrawString (NSRect rect);
 		
 		[Export ("drawWithRect:options:")]
-		void DrawString (RectangleF rect, NSStringDrawingOptions options);
+		void DrawString (NSRect rect, NSStringDrawingOptions options);
 		
 #else
 		[Since (6,0)]
 		[Export ("size")]
-		SizeF Size { get; }
+		NSSize Size { get; }
 
 		[Since (6,0)]
 		[Export ("drawAtPoint:")]
-		void DrawString (PointF point);
+		void DrawString (NSPoint point);
 
 		[Since (6,0)]
 		[Export ("drawInRect:")]
-		void DrawString (RectangleF rect);
+		void DrawString (NSRect rect);
 
 		[Since (6,0)]
 		[Export ("drawWithRect:options:context:")]
-		void DrawString (RectangleF rect, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
+		void DrawString (NSRect rect, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
 
 		[Since (6,0)]
 		[Export ("boundingRectWithSize:options:context:")]
-		RectangleF GetBoundingRect (SizeF size, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
+		NSRect GetBoundingRect (NSSize size, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
 #endif
 	}
 

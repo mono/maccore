@@ -29,6 +29,20 @@ using System.Runtime.InteropServices;
 
 using MonoMac.ObjCRuntime;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.Foundation {
 
 	public partial class NSArray {
@@ -196,9 +210,9 @@ namespace MonoMac.Foundation {
 			if (weakArray == null || weakArray.Handle == IntPtr.Zero)
 				return null;
 			try {
-				uint n = weakArray.Count;
+				NSUInteger n = weakArray.Count;
 				T [] ret = new T [n];
-				for (uint i = 0; i < n; i++){
+				for (NSUInteger i = 0; i < n; i++){
 					ret [i] = (T) Runtime.GetNSObject (weakArray.ValueAt (i));
 				}
 				return ret;
