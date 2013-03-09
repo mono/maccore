@@ -1361,10 +1361,10 @@ namespace MonoMac.Foundation
 		NSObject [] Subgroups { get; }
 
 		[Export ("resultCount")]
-		int ResultCount { get; }
+		NSUInteger ResultCount { get; }
 
 		[Export ("resultAtIndex:")]
-		NSObject ResultAtIndex (uint idx);
+		NSObject ResultAtIndex (NSUInteger idx);
 
 		[Export ("results")]
 		NSObject [] Results { get; }
@@ -1378,22 +1378,22 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSArray))]
 	public interface NSMutableArray {
 		[Export ("initWithCapacity:")]
-		IntPtr Constructor (int capacity);
+		IntPtr Constructor (NSUInteger capacity);
 		
 		[Export ("addObject:")]
 		void Add (NSObject obj);
 
 		[Export ("insertObject:atIndex:")]
-		void Insert (NSObject obj, int index);
+		void Insert (NSObject obj, NSUInteger index);
 
 		[Export ("removeLastObject")]
 		void RemoveLastObject ();
 
 		[Export ("removeObjectAtIndex:")]
-		void RemoveObject (int index);
+		void RemoveObject (NSUInteger index);
 
 		[Export ("replaceObjectAtIndex:withObject:")]
-		void ReplaceObject (int index, NSObject withObject);
+		void ReplaceObject (NSUInteger index, NSObject withObject);
 
 		[Export ("removeAllObjects")]
 		void RemoveAllObjects ();
@@ -1439,7 +1439,7 @@ namespace MonoMac.Foundation
 		void Replace (NSRange range, NSAttributedString value);
 		
 		[Export ("insertAttributedString:atIndex:")]
-		void Insert (NSAttributedString attrString, int location);
+		void Insert (NSAttributedString attrString, NSUInteger location);
 
 		[Export ("appendAttributedString:")]
 		void Append (NSAttributedString attrString);
@@ -1475,7 +1475,7 @@ namespace MonoMac.Foundation
 		IntPtr MutableBytes { get; }
 
 		[Export ("initWithCapacity:")]
-		IntPtr Constructor (uint len);
+		IntPtr Constructor (NSUInteger len);
 
 		[Export ("appendData:")]
 		void AppendData (NSData other);
@@ -1543,7 +1543,7 @@ namespace MonoMac.Foundation
 
 		[Export ("dictionaryWithObjects:forKeys:count:")]
 		[Static, Internal]
-		NSDictionary FromObjectsAndKeysInternal ([NullAllowed] NSArray objects, [NullAllowed] NSArray keys, int count);
+		NSDictionary FromObjectsAndKeysInternal ([NullAllowed] NSArray objects, [NullAllowed] NSArray keys, NSUInteger count);
 
 		[Export ("dictionaryWithObjects:forKeys:")]
 		[Static, Internal]
@@ -1562,7 +1562,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSUrl url);
 		
 		[Export ("count")]
-		uint Count { get; }
+		NSUInteger Count { get; }
 
 		[Export ("objectForKey:")]
 		NSObject ObjectForKey (NSObject key);
@@ -1611,16 +1611,16 @@ namespace MonoMac.Foundation
 	[DisableDefaultCtor]
 	public interface NSError {
 		[Static, Export ("errorWithDomain:code:userInfo:")]
-		NSError FromDomain (NSString domain, int code, [NullAllowed] NSDictionary userInfo);
+		NSError FromDomain (NSString domain, NSInteger code, [NullAllowed] NSDictionary userInfo);
 
 		[Export ("initWithDomain:code:userInfo:")]
-		IntPtr Constructor (NSString domain, int code, [NullAllowed] NSDictionary userInfo);
+		IntPtr Constructor (NSString domain, NSInteger code, [NullAllowed] NSDictionary userInfo);
 		
 		[Export ("domain")]
 		string Domain { get; }
 
 		[Export ("code")]
-		int Code { get; }
+		NSInteger Code { get; }
 
 		[Export ("userInfo")]
 		NSDictionary UserInfo { get; }
