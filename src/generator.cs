@@ -1822,13 +1822,13 @@ public class Generator {
 		print ("[CompilerGenerated]");
 		print ("static class Libraries {"); indent++;
 		foreach (string library_name in libraries) {
+			print ("static public class {0} {{", library_name); indent++;
 			if (BindThirdPartyLibrary && library_name == "__Internal") {
-				print ("static public readonly IntPtr Internal_Handle = Dlfcn.dlopen (null, 0);");
+				print ("static public readonly IntPtr Handle = Dlfcn.dlopen (null, 0);");
 			} else {
-				print ("static public class {0} {{", library_name); indent++;
 				print ("static public readonly IntPtr Handle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
-				indent--; print ("}");
 			}
+			indent--; print ("}");
 		}
 		indent--; print ("}");
 		indent--; print ("}");
