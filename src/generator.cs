@@ -249,18 +249,6 @@ public class PostGetAttribute : Attribute {
 	public string MethodName { get; set; }
 }
 
-public class FieldAttribute : Attribute {
-	public FieldAttribute (string symbolName) {
-		SymbolName = symbolName;
-	}
-	public FieldAttribute (string symbolName, string libraryName) {
-		SymbolName = symbolName;
-		LibraryName = libraryName;
-	}
-	public string SymbolName { get; set; }
-	public string LibraryName { get; set; }
-}
-
 public class BaseTypeAttribute : Attribute {
 	public BaseTypeAttribute (Type t)
 	{
@@ -3433,6 +3421,7 @@ public class Generator {
 						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
 					}
 
+					print ("[Field (\"{0}\",  \"{1}\")]", fieldAttr.SymbolName, library_name);
 					PrintPlatformAttributes (field_pi);
 					print ("{0} static {1} {2} {{", HasAttribute (field_pi, typeof (InternalAttribute)) ? "internal" : "public", fieldTypeName, field_pi.Name);
 					indent++;
