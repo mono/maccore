@@ -4982,7 +4982,26 @@ namespace MonoMac.Foundation
 		
 		[Export ("CMTimeRangeValue"), Lion]
 		CMTimeRange CMTimeRangeValue { get; }
+
+#if MAC64
+		[Export ("valueWithRect:"), Static]
+		NSValue FromRectangle (NSRect rect);
 		
+		[Export ("valueWithSize:")][Static]
+		NSValue FromSize (NSSize size);
+		
+		[Export ("valueWithPoint:")][Static]
+		NSValue FromPoint (NSPoint point);
+		
+		[Export ("rectValue")]
+		NSRect RectangleValue { get; }
+		
+		[Export ("sizeValue")]
+		NSSize SizeValue { get; }
+		
+		[Export ("pointValue")]
+		NSPoint PointValue { get; }
+#else
 		[Export ("valueWithRect:"), Static]
 		NSValue FromRectangleF (System.Drawing.RectangleF rect);
 
@@ -5000,6 +5019,7 @@ namespace MonoMac.Foundation
 
 		[Export ("pointValue")]
 		System.Drawing.PointF PointFValue { get; }
+#endif
 
 		[Export ("rangeValue")]
 		NSRange RangeValue { get; }
@@ -5125,10 +5145,10 @@ namespace MonoMac.Foundation
 		bool BoolValue { get; }
 	
 		[Export ("integerValue")]
-		int IntValue { get; }
+		NSInteger IntValue { get; }
 	
 		[Export ("unsignedIntegerValue")]
-		uint UnsignedIntegerValue { get; }
+		NSUInteger UnsignedIntegerValue { get; }
 	
 		[Export ("stringValue")]
 		string StringValue { get; }
@@ -5369,7 +5389,7 @@ namespace MonoMac.Foundation
 		NSNumber Multiplier { get; set; }
 
 		[Export ("formatWidth")]
-		uint FormatWidth { get; set; }
+		NSUInteger FormatWidth { get; set; }
 
 		[Export ("paddingCharacter")]
 		string PaddingCharacter { get; set; }
@@ -5384,16 +5404,16 @@ namespace MonoMac.Foundation
 		NSNumber RoundingIncrement { get; set; }
 
 		[Export ("minimumIntegerDigits")]
-		int MinimumIntegerDigits { get; set; }
+		NSUInteger MinimumIntegerDigits { get; set; }
 
 		[Export ("maximumIntegerDigits")]
-		int MaximumIntegerDigits { get; set; }
+		NSUInteger MaximumIntegerDigits { get; set; }
 
 		[Export ("minimumFractionDigits")]
-		int MinimumFractionDigits { get; set; }
+		NSUInteger MinimumFractionDigits { get; set; }
 
 		[Export ("maximumFractionDigits")]
-		int MaximumFractionDigits { get; set; }
+		NSUInteger MaximumFractionDigits { get; set; }
 
 		[Export ("minimum")]
 		NSNumber Minimum { get; set; }
@@ -5411,10 +5431,10 @@ namespace MonoMac.Foundation
 		bool UsesSignificantDigits { get; set; }
 
 		[Export ("minimumSignificantDigits")]
-		uint MinimumSignificantDigits { get; set; }
+		NSUInteger MinimumSignificantDigits { get; set; }
 
 		[Export ("maximumSignificantDigits")]
-		uint MaximumSignificantDigits { get; set; }
+		NSUInteger MaximumSignificantDigits { get; set; }
 
 		[Export ("partialStringValidationEnabled")]
 		bool PartialStringValidationEnabled { [Bind ("isPartialStringValidationEnabled")]get; set; }
@@ -5484,10 +5504,10 @@ namespace MonoMac.Foundation
 		NSDecimalNumber Divide (NSDecimalNumber d, NSObject Behavior);
 
 		[Export ("decimalNumberByRaisingToPower:")]
-		NSDecimalNumber RaiseTo (uint power);
+		NSDecimalNumber RaiseTo (NSUInteger power);
 
 		[Export ("decimalNumberByRaisingToPower:withBehavior:")]
-		NSDecimalNumber RaiseTo (uint power, NSObject Behavior);
+		NSDecimalNumber RaiseTo (NSUInteger power, NSObject Behavior);
 		
 		[Export ("decimalNumberByMultiplyingByPowerOf10:")]
 		NSDecimalNumber MultiplyPowerOf10 (short power);
@@ -5499,7 +5519,7 @@ namespace MonoMac.Foundation
 		NSDecimalNumber Rounding (NSObject behavior);
 
 		[Export ("compare:")]
-		int Compare (NSNumber other);
+		NSInteger Compare (NSNumber other);
 
 		[Export ("defaultBehavior")][Static]
 		NSObject DefaultBehavior { get; set; }
@@ -5541,7 +5561,7 @@ namespace MonoMac.Foundation
 		string Name { get; set; }
 
 		[Export ("stackSize")]
-		uint StackSize { get; set; }
+		NSUInteger StackSize { get; set; }
 
 		[Export ("isMainThread")]
 		bool IsMainThread { get; }
@@ -5601,7 +5621,7 @@ namespace MonoMac.Foundation
 		string HostName { get; }
 
 		[Export ("operatingSystem")]
-		int OperatingSystem { get; }
+		NSUInteger OperatingSystem { get; }
 
 		[Export ("operatingSystemName")]
 		string OperatingSystemName { get; }
@@ -5613,10 +5633,10 @@ namespace MonoMac.Foundation
 		ulong PhysicalMemory { get; }
 		
 		[Export ("processorCount")]
-		int ProcessorCount { get; }
+		NSUInteger ProcessorCount { get; }
 		
 		[Export ("activeProcessorCount")]
-		int ActiveProcessorCount { get; }
+		NSUInteger ActiveProcessorCount { get; }
 
 		[Export ("systemUptime")]
 		double SystemUptime { get; }
@@ -6293,10 +6313,10 @@ namespace MonoMac.Foundation
 		string FileGroupOwnerAccountName ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileSystemNumber")]
-		int FileSystemNumber ([Target] NSDictionary fileAttributes);
+		NSInteger FileSystemNumber ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileSystemFileNumber")]
-		uint FileSystemFileNumber ([Target] NSDictionary fileAttributes);
+		NSUInteger FileSystemFileNumber ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileExtensionHidden")]
 		bool FileExtensionHidden ([Target] NSDictionary fileAttributes);

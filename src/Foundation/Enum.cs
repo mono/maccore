@@ -326,7 +326,11 @@ namespace MonoMac.Foundation  {
 	}
     
 	[Flags]
+#if MAC64
+	public enum NSNotificationFlags : ulong {
+#else
 	public enum NSNotificationFlags {
+#endif
 		DeliverImmediately = (1 << 0),
 		PostToAllSessions = (1 << 1),
 	}
@@ -476,7 +480,11 @@ namespace MonoMac.Foundation  {
 		TruncatesLastVisibleLine = (1 << 5)
 	}		
 
+#if MAC64
+	public enum NSNumberFormatterStyle : ulong {
+#else
 	public enum NSNumberFormatterStyle {
+#endif	
 		None = 0,
 		Decimal = 1,
 		Currency = 2,
@@ -485,17 +493,29 @@ namespace MonoMac.Foundation  {
 		SpellOut = 5
 	}
 
+#if MAC64
+	public enum NSNumberFormatterBehavior : ulong {
+#else
 	public enum NSNumberFormatterBehavior {
+#endif
 		Default = 0,
 		Version_10_0 = 1000,
 		Version_10_4 = 1040
 	}
 
+#if MAC64
+	public enum NSNumberFormatterPadPosition : ulong {
+#else
 	public enum NSNumberFormatterPadPosition {
+#endif
 		BeforePrefix, AfterPrefix, BeforeSuffix, AfterSuffix
 	}
 
+#if MAC64
+	public enum NSNumberFormatterRoundingMode : ulong {
+#else
 	public enum NSNumberFormatterRoundingMode {
+#endif
 		Ceiling, Floor, Down, Up, HalfEven, HalfDown, HalfUp
 	}
 
@@ -509,12 +529,20 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSFileCoordinatorReadingOptions : ulong {
+#else
 	public enum NSFileCoordinatorReadingOptions {
+#endif
 		WithoutChanges = 1
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSFileCoordinatorWritingOptions : ulong {
+#else
 	public enum NSFileCoordinatorWritingOptions {
+#endif
 		ForDeleting = 1,
 		ForMoving = 2,
 		ForMerging = 4,

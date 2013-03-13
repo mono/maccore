@@ -32,6 +32,20 @@ using MonoTouch.CoreAnimation;
 #endif
 using MonoMac.CoreGraphics;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.Foundation {
 	public class NSObjectFlag {
 		public static readonly NSObjectFlag Empty;
@@ -411,13 +425,21 @@ namespace MonoMac.Foundation {
 			default:
 				if (t == typeof (IntPtr))
 					return NSValue.ValueFromPointer ((IntPtr) obj);
-
+#if MAC64
+				if (t == typeof (NSSize))
+					return NSValue.FromSize ((NSSize) obj);
+				else if (t == typeof (NSRect))
+					return NSValue.FromRectangle ((NSRect) obj);
+				else if (t == typeof (NSPoint))
+					return NSValue.FromPoint ((NSPoint) obj);
+#else
 				if (t == typeof (SizeF))
 					return NSValue.FromSizeF ((SizeF) obj);
 				else if (t == typeof (RectangleF))
 					return NSValue.FromRectangleF ((RectangleF) obj);
 				else if (t == typeof (PointF))
 					return NSValue.FromPointF ((PointF) obj);
+#endif
 #if !MONOMAC
 				if (t == typeof (CGAffineTransform))
 					return NSValue.FromCGAffineTransform ((CGAffineTransform) obj);
