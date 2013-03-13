@@ -31,6 +31,19 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
 
 	public enum CGPatternTiling {
@@ -71,8 +84,8 @@ namespace MonoMac.CoreGraphics {
 		public delegate void DrawPattern (CGContext ctx);
 		DrawPattern draw_pattern;
 		[DllImport(Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPatternCreate(IntPtr info, RectangleF bounds, CGAffineTransform matrix,
-						     float xStep, float yStep,
+		extern static IntPtr CGPatternCreate(IntPtr info, NSRect bounds, CGAffineTransform matrix,
+						     CGFloat xStep, CGFloat yStep,
 						     CGPatternTiling tiling, bool isColored,
 						     ref CGPatternCallbacks callbacks);
 
@@ -90,7 +103,11 @@ namespace MonoMac.CoreGraphics {
 			this.draw_pattern = drawPattern;
 
 			gch = GCHandle.Alloc (this);
+#if MAC64
+			handle = CGPatternCreate (GCHandle.ToIntPtr (gch) , new NSRect(bounds), matrix, xStep, yStep, tiling, isColored, ref callbacks);
+#else
 			handle = CGPatternCreate (GCHandle.ToIntPtr (gch) , bounds, matrix, xStep, yStep, tiling, isColored, ref callbacks);
+#endif
 		}
 
 		IntPtr last_cgcontext_ptr;

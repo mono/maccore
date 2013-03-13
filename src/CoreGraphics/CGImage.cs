@@ -32,6 +32,19 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
 
 #if MONOMAC
@@ -134,12 +147,12 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGImageCreate(int size_t_width, int size_t_height, int size_t_bitsPerComponent,
-						   int size_t_bitsPerPixel, int size_t_bytesPerRow,
+		extern static IntPtr CGImageCreate(IntPtr size_t_width, IntPtr size_t_height, IntPtr size_t_bitsPerComponent,
+						   IntPtr size_t_bitsPerPixel, IntPtr size_t_bytesPerRow,
 						   IntPtr /* CGColorSpaceRef */ space,
 						   CGBitmapFlags bitmapInfo,
 						   IntPtr /* CGDataProviderRef */ provider,
-						   float [] decode,
+						   CGFloat [] decode,
 						   bool shouldInterpolate,
 						   CGColorRenderingIntent intent);
 
@@ -160,10 +173,25 @@ namespace MonoMac.CoreGraphics {
 			if (bytesPerRow < 0)
 				throw new ArgumentException ("bytesPerRow");
 
-			handle = CGImageCreate (width, height, bitsPerComponent, bitsPerPixel, bytesPerRow,
+#if MAC64
+			CGFloat[] _decode = null;
+			if( decode!=null )
+			{
+				_decode = new CGFloat[decode.Length];
+				Array.Copy(decode, _decode, decode.Length);
+			}
+			handle = CGImageCreate (new IntPtr(width), new IntPtr(height), new IntPtr(bitsPerComponent),
+			                        new IntPtr(bitsPerPixel), new IntPtr(bytesPerRow),
+			                        colorSpace.Handle, bitmapFlags, provider == null ? IntPtr.Zero : provider.Handle,
+			                        _decode,
+			                        shouldInterpolate, intent);
+#else
+			handle = CGImageCreate (new IntPtr(width), new IntPtr(height), new IntPtr(bitsPerComponent),
+			                        new IntPtr(bitsPerPixel), new IntPtr(bytesPerRow),
 						colorSpace.Handle, bitmapFlags, provider == null ? IntPtr.Zero : provider.Handle,
 						decode,
 						shouldInterpolate, intent);
+#endif
 		}
 
 		public CGImage (int width, int height, int bitsPerComponent, int bitsPerPixel, int bytesPerRow,
@@ -183,20 +211,40 @@ namespace MonoMac.CoreGraphics {
 			if (bytesPerRow < 0)
 				throw new ArgumentException ("bytesPerRow");
 
-			handle = CGImageCreate (width, height, bitsPerComponent, bitsPerPixel, bytesPerRow,
+#if MAC64
+			CGFloat[] _decode = null;
+			if( decode!=null )
+			{
+				_decode = new CGFloat[decode.Length];
+				Array.Copy(decode, _decode, decode.Length);
+			}
+			handle = CGImageCreate (new IntPtr(width), new IntPtr(height), new IntPtr(bitsPerComponent),
+			                        new IntPtr(bitsPerPixel), new IntPtr(bytesPerRow),
+			                        colorSpace.Handle, (CGBitmapFlags) alphaInfo, provider == null ? IntPtr.Zero : provider.Handle,
+			                        _decode,
+			                        shouldInterpolate, intent);
+#else
+			handle = CGImageCreate (new IntPtr(width), new IntPtr(height), new IntPtr(bitsPerComponent),
+			                        new IntPtr(bitsPerPixel), new IntPtr(bytesPerRow),
 						colorSpace.Handle, (CGBitmapFlags) alphaInfo, provider == null ? IntPtr.Zero : provider.Handle,
 						decode,
 						shouldInterpolate, intent);
+#endif
 		}
 
 #if MONOMAC
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		static extern IntPtr CGWindowListCreateImage(RectangleF screenBounds, CGWindowListOption windowOption, uint windowID, CGWindowImageOption imageOption);
+		static extern IntPtr CGWindowListCreateImage(NSRect screenBounds, CGWindowListOption windowOption, uint windowID, CGWindowImageOption imageOption);
         
 		public static CGImage ScreenImage (int windownumber, RectangleF bounds)
-		{                    
+		{
+#if MAC64
+			IntPtr imageRef = CGWindowListCreateImage(new NSRect(bounds), CGWindowListOption.IncludingWindow, (uint)windownumber,
+			                                          CGWindowImageOption.Default);
+#else
 			IntPtr imageRef = CGWindowListCreateImage(bounds, CGWindowListOption.IncludingWindow, (uint)windownumber,
 								  CGWindowImageOption.Default);
+#endif
 			return new CGImage(imageRef, true);                              
 		}
 #else
@@ -212,7 +260,7 @@ namespace MonoMac.CoreGraphics {
 	
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGImageCreateWithJPEGDataProvider(IntPtr /* CGDataProviderRef */ source,
-								       float [] decode,
+								       CGFloat [] decode,
 								       bool shouldInterpolate,
 								       CGColorRenderingIntent intent);
 
@@ -221,7 +269,17 @@ namespace MonoMac.CoreGraphics {
 			if (provider == null)
 				throw new ArgumentNullException ("provider");
 			
+#if MAC64
+			CGFloat[] _decode = null;
+			if( decode!=null )
+			{
+				_decode = new CGFloat[decode.Length];
+				Array.Copy(decode, _decode, decode.Length);
+			}
+			var handle = CGImageCreateWithJPEGDataProvider (provider.Handle, _decode, shouldInterpolate, intent);
+#else
 			var handle = CGImageCreateWithJPEGDataProvider (provider.Handle, decode, shouldInterpolate, intent);
+#endif
 			if (handle == IntPtr.Zero)
 				return null;
 
@@ -230,7 +288,7 @@ namespace MonoMac.CoreGraphics {
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGImageCreateWithPNGDataProvider(IntPtr /*CGDataProviderRef*/ source,
-								      float [] decode, bool shouldInterpolate,
+								      CGFloat [] decode, bool shouldInterpolate,
 								      CGColorRenderingIntent intent);
 
 		public static CGImage FromPNG (CGDataProvider provider, float [] decode, bool shouldInterpolate, CGColorRenderingIntent intent)
@@ -238,7 +296,17 @@ namespace MonoMac.CoreGraphics {
 			if (provider == null)
 				throw new ArgumentNullException ("provider");
 			
+#if MAC64
+			CGFloat[] _decode = null;
+			if( decode!=null )
+			{
+				_decode = new CGFloat[decode.Length];
+				Array.Copy(decode, _decode, decode.Length);
+			}
+			var handle = CGImageCreateWithPNGDataProvider (provider.Handle, _decode, shouldInterpolate, intent);
+#else
 			var handle = CGImageCreateWithPNGDataProvider (provider.Handle, decode, shouldInterpolate, intent);
+#endif
 			if (handle == IntPtr.Zero)
 				return null;
 
@@ -246,8 +314,8 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGImageMaskCreate (int size_t_width, int size_t_height, int size_t_bitsPerComponent, int size_t_bitsPerPixel,
-							int size_t_bytesPerRow, IntPtr /* CGDataProviderRef */ provider, float [] decode, bool shouldInterpolate);
+		extern static IntPtr CGImageMaskCreate (IntPtr size_t_width, IntPtr size_t_height, IntPtr size_t_bitsPerComponent, IntPtr size_t_bitsPerPixel,
+							IntPtr size_t_bytesPerRow, IntPtr /* CGDataProviderRef */ provider, CGFloat [] decode, bool shouldInterpolate);
 
 		public static CGImage CreateMask (int width, int height, int bitsPerComponent, int bitsPerPixel, int bytesPerRow, CGDataProvider provider, float [] decode, bool shouldInterpolate)
 		{
@@ -262,7 +330,19 @@ namespace MonoMac.CoreGraphics {
 			if (provider == null)
 				throw new ArgumentNullException ("provider");
 
-			var handle = CGImageMaskCreate (width, height, bitsPerComponent, bitsPerPixel, bytesPerRow, provider.Handle, decode, shouldInterpolate);
+#if MAC64
+			CGFloat[] _decode = null;
+			if( decode!=null )
+			{
+				_decode = new CGFloat[decode.Length];
+				Array.Copy(decode, _decode, decode.Length);
+			}
+			var handle = CGImageMaskCreate (new IntPtr(width), new IntPtr(height), new IntPtr(bitsPerComponent),
+			                                new IntPtr(bitsPerPixel), new IntPtr(bytesPerRow), provider.Handle, _decode, shouldInterpolate);
+#else
+			var handle = CGImageMaskCreate (new IntPtr(width), new IntPtr(height), new IntPtr(bitsPerComponent),
+			                                new IntPtr(bitsPerPixel), new IntPtr(bytesPerRow), provider.Handle, decode, shouldInterpolate);
+#endif
 			if (handle == IntPtr.Zero)
 				return null;
 
@@ -270,7 +350,7 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGImageCreateWithMaskingColors(IntPtr image, float [] components);
+		extern static IntPtr CGImageCreateWithMaskingColors(IntPtr image, CGFloat [] components);
 		public CGImage WithMaskingColors (float[] components)
 		{
 			int N = 2*ColorSpace.Components;
@@ -278,7 +358,13 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentNullException ("components");
 			if (components.Length != N)
 				throw new ArgumentException ("The argument 'components' must have 2N values, where N is the number of components in the color space of the image.", "components");
+#if MAC64
+			CGFloat[] _components = new CGFloat[components.Length];
+			Array.Copy(components, _components, components.Length);
+			return new CGImage (CGImageCreateWithMaskingColors (Handle, _components), true);
+#else
 			return new CGImage (CGImageCreateWithMaskingColors (Handle, components), true);
+#endif
 		}
 	
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -296,10 +382,14 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGImageCreateWithImageInRect(IntPtr image, RectangleF rect);
+		extern static IntPtr CGImageCreateWithImageInRect(IntPtr image, NSRect rect);
 		public CGImage WithImageInRect (RectangleF rect)
 		{
+#if MAC64
+			return new CGImage (CGImageCreateWithImageInRect (handle, new NSRect(rect)), true);
+#else
 			return new CGImage (CGImageCreateWithImageInRect (handle, rect), true);
+#endif
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
@@ -317,43 +407,43 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static int CGImageGetWidth(IntPtr image);
+		extern static IntPtr CGImageGetWidth(IntPtr image);
 		public int Width {
 			get {
-				return CGImageGetWidth (handle);
+				return CGImageGetWidth (handle).ToInt32();
 			}
 		}
 		
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static int CGImageGetHeight(IntPtr image);
+		extern static IntPtr CGImageGetHeight(IntPtr image);
 		public int Height {
 			get {
-				return CGImageGetHeight (handle);
+				return CGImageGetHeight (handle).ToInt32();
 			}
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static int CGImageGetBitsPerComponent(IntPtr image);
+		extern static IntPtr CGImageGetBitsPerComponent(IntPtr image);
 		public int BitsPerComponent {
 			get {
-				return CGImageGetBitsPerComponent (handle);
+				return CGImageGetBitsPerComponent (handle).ToInt32();
 			}
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static int CGImageGetBitsPerPixel(IntPtr image);
+		extern static IntPtr CGImageGetBitsPerPixel(IntPtr image);
 		public int BitsPerPixel {
 			get {
-				return CGImageGetBitsPerPixel (handle);
+				return CGImageGetBitsPerPixel (handle).ToInt32();
 			}
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static int CGImageGetBytesPerRow(IntPtr image);
+		extern static IntPtr CGImageGetBytesPerRow(IntPtr image);
 		public int BytesPerRow {
 			get {
-				return CGImageGetBytesPerRow (handle);
+				return CGImageGetBytesPerRow (handle).ToInt32();
 			}
 		}
 
@@ -383,8 +473,8 @@ namespace MonoMac.CoreGraphics {
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		unsafe extern static float * CGImageGetDecode(IntPtr image);
-		public unsafe float *Decode {
+		unsafe extern static CGFloat * CGImageGetDecode(IntPtr image);
+		public unsafe CGFloat *Decode {
 			get {
 				return CGImageGetDecode (handle);
 			}

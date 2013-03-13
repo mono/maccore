@@ -25,6 +25,20 @@ using System.Collections;
 using System.Collections.Generic;
 using MonoMac.ObjCRuntime;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.Foundation {
 
 	public partial class NSMutableDictionary : IDictionary, IDictionary<NSObject, NSObject> {
@@ -117,7 +131,7 @@ namespace MonoMac.Foundation {
 			// we want no exception for index==array.Length && Count == 0
 			if (index > array.Length)
 				throw new ArgumentException ("index larger than largest valid index of array");
-			if (array.Length - index < Count)
+			if (array.Length - index < (int)Count)
 				throw new ArgumentException ("Destination array cannot hold the requested elements!");
 
 			var e = GetEnumerator ();

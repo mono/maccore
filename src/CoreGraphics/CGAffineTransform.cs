@@ -32,28 +32,61 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
 
 	[StructLayout(LayoutKind.Sequential)]
 	public struct CGAffineTransform {
-                public float xx;   // a
-                public float yx;   // b 
-                public float xy;   // c
-                public float yy;   // d
-                public float x0;   // tx
-                public float y0;   // ty
+		CGFloat a,b,c,d,tx,ty;
+
+		public float xx {
+			get { return (float)a; }
+			set { a = value; }
+		}
+		public float yx {
+			get { return (float)b; }
+			set { b = value; }
+		}
+		public float xy {
+			get { return (float)c; }
+			set { c = value; }
+		}
+		public float yy {
+			get { return (float)d; }
+			set { d = value; }
+		}
+		public float x0 {
+			get { return (float)tx; }
+			set { tx = value; }
+		}
+		public float y0 {
+			get { return (float)ty; }
+			set { ty = value; }
+		}
 
 		//
 		// Constructors
 		//
 		public CGAffineTransform (float xx, float yx, float xy, float yy, float x0, float y0)
 		{
-			this.xx = xx;
-			this.yx = yx;
-			this.xy = xy;
-			this.yy = yy;
-			this.x0 = x0;
-			this.y0 = y0;
+			this.a = xx;
+			this.b = yx;
+			this.c = xy;
+			this.d = yy;
+			this.tx = x0;
+			this.ty = y0;
 		}
 		
 		// Identity
@@ -85,12 +118,12 @@ namespace MonoMac.CoreGraphics {
 		//
 		public static CGAffineTransform Multiply (CGAffineTransform a, CGAffineTransform b)
 		{
-			return new CGAffineTransform (a.xx * b.xx + a.yx * b.xy,
-						      a.xx * b.yx + a.yx * b.yy,
-						      a.xy * b.xx + a.yy * b.xy,
-						      a.xy * b.yx + a.yy * b.yy,
-						      a.x0 * b.xx + a.y0 * b.xy + b.x0,
-						      a.x0 * b.yx + a.y0 * b.yy + b.y0);
+			return new CGAffineTransform ((float)(a.xx * b.xx + a.yx * b.xy),
+						      (float)(a.xx * b.yx + a.yx * b.yy),
+						      (float)(a.xy * b.xx + a.yy * b.xy),
+						      (float)(a.xy * b.yx + a.yy * b.yy),
+						      (float)(a.x0 * b.xx + a.y0 * b.xy + b.x0),
+						      (float)(a.x0 * b.yx + a.y0 * b.yy + b.y0));
 		}
 
 		public void Multiply (CGAffineTransform b)
@@ -145,12 +178,12 @@ namespace MonoMac.CoreGraphics {
 
 		public static CGAffineTransform operator * (CGAffineTransform a, CGAffineTransform b)
 		{
-			return new CGAffineTransform (a.xx * b.xx + a.yx * b.xy,
-						      a.xx * b.yx + a.yx * b.yy,
-						      a.xy * b.xx + a.yy * b.xy,
-						      a.xy * b.yx + a.yy * b.yy,
-						      a.x0 * b.xx + a.y0 * b.xy + b.x0,
-						      a.x0 * b.yx + a.y0 * b.yy + b.y0);
+			return new CGAffineTransform ((float)(a.xx * b.xx + a.yx * b.xy),
+						      (float)(a.xx * b.yx + a.yx * b.yy),
+						      (float)(a.xy * b.xx + a.yy * b.xy),
+						      (float)(a.xy * b.yx + a.yy * b.yy),
+						      (float)(a.x0 * b.xx + a.y0 * b.xy + b.x0),
+						      (float)(a.x0 * b.yx + a.y0 * b.yy + b.y0));
 		}
                 
                 public override bool Equals(object o)
@@ -170,14 +203,14 @@ namespace MonoMac.CoreGraphics {
                 
 		public PointF TransformPoint (PointF point)
 		{
-			return new PointF (xx * point.X + xy * point.Y + x0,
-					    yx * point.X + yy * point.Y + y0);
+			return new PointF ((float)(xx * point.X + xy * point.Y + x0),
+					   (float)(yx * point.X + yy * point.Y + y0));
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		public extern static RectangleF CGRectApplyAffineTransform (RectangleF rect, CGAffineTransform t);
+		public extern static NSRect CGRectApplyAffineTransform (NSRect rect, CGAffineTransform t);
 
-		public RectangleF TransformRect (RectangleF rect)
+		public NSRect TransformRect (NSRect rect)
 		{
 			return CGRectApplyAffineTransform (rect, this);
 		}

@@ -32,6 +32,7 @@ namespace MonoMac.CoreData {
 		Transform = 0x06
         }
 
+	//TODO: figure out size for 64 bit
 	public enum NSAttributeType : uint {
 		Undefined = 0,
 		Integer16 = 100,

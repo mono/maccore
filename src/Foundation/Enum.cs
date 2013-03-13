@@ -40,13 +40,21 @@ namespace MonoMac.Foundation  {
 		PPC64  = 0x01000012
 	}
 
+#if MAC64
+	public enum NSComparisonResult : long {
+#else
 	public enum NSComparisonResult {
+#endif
 		Ascending = -1,
 		Same,
 		Descending
 	}
 
+#if MAC64
+	public enum NSUrlRequestCachePolicy : ulong {
+#else
 	public enum NSUrlRequestCachePolicy {
+#endif
 		UseProtocolCachePolicy = 0,
 		ReloadIgnoringLocalCacheData = 1,
 		ReloadIgnoringLocalAndRemoteCacheData = 4, // Unimplemented
@@ -73,7 +81,11 @@ namespace MonoMac.Foundation  {
 		Error = 7
 	}
 
+#if MAC64
+	public enum NSPropertyListFormat : ulong {
+#else
 	public enum NSPropertyListFormat {
+#endif
 		OpenStep = 1,
 		Xml = 100,
 		Binary = 200
@@ -132,7 +144,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSCalendarUnit : ulong {
+#else
 	public enum NSCalendarUnit {
+#endif
 		Era = 2, 
 		Year = 4,
 		Month = 8,
@@ -159,7 +175,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSDataReadingOptions: ulong {
+#else
 	public enum NSDataReadingOptions: uint {
+#endif
 		   Mapped =   1 << 0,
 		   Uncached = 1 << 1,
 
@@ -209,7 +229,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSDataSearchOptions : ulong {
+#else
 	public enum NSDataSearchOptions {
+#endif
 		SearchBackwards = 1,
 		SearchAnchored = 2
 	}
@@ -302,7 +326,11 @@ namespace MonoMac.Foundation  {
 	}
     
 	[Flags]
+#if MAC64
+	public enum NSNotificationFlags : ulong {
+#else
 	public enum NSNotificationFlags {
+#endif
 		DeliverImmediately = (1 << 0),
 		PostToAllSessions = (1 << 1),
 	}
@@ -316,14 +344,22 @@ namespace MonoMac.Foundation  {
 		ErrorOccurred = 1 << 3,
 		EndEncountered = 1 << 4
 	}
-	
+
+#if MAC64
+	public enum NSComparisonPredicateModifier : ulong {
+#else
 	public enum NSComparisonPredicateModifier {
+#endif
 		Direct,
 		All,
 		Any
 	}
 
+#if MAC64
+	public enum NSPredicateOperatorType : ulong {
+#else
 	public enum NSPredicateOperatorType {
+#endif
 		LessThan,
 		LessThanOrEqualTo,
 		GreaterThan,
@@ -341,7 +377,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSComparisonPredicateOptions : ulong {
+#else
 	public enum NSComparisonPredicateOptions {
+#endif
 		None=0x00,
 		CaseInsensitive=0x01,
 		DiacriticInsensitive=0x02
@@ -427,7 +467,11 @@ namespace MonoMac.Foundation  {
 		None, PrecisionLoss, Underflow, Overflow, DivideByZero
 	}
 	
+#if MAC64
+	public enum NSStringDrawingOptions : long {
+#else
 	public enum NSStringDrawingOptions : uint {
+#endif
 		UsesLineFragmentOrigin = (1 << 0),
 		UsesFontLeading = (1 << 1),
 		DisableScreenFontSubstitution = (1 << 2),
@@ -436,7 +480,11 @@ namespace MonoMac.Foundation  {
 		TruncatesLastVisibleLine = (1 << 5)
 	}		
 
+#if MAC64
+	public enum NSNumberFormatterStyle : ulong {
+#else
 	public enum NSNumberFormatterStyle {
+#endif	
 		None = 0,
 		Decimal = 1,
 		Currency = 2,
@@ -445,17 +493,29 @@ namespace MonoMac.Foundation  {
 		SpellOut = 5
 	}
 
+#if MAC64
+	public enum NSNumberFormatterBehavior : ulong {
+#else
 	public enum NSNumberFormatterBehavior {
+#endif
 		Default = 0,
 		Version_10_0 = 1000,
 		Version_10_4 = 1040
 	}
 
+#if MAC64
+	public enum NSNumberFormatterPadPosition : ulong {
+#else
 	public enum NSNumberFormatterPadPosition {
+#endif
 		BeforePrefix, AfterPrefix, BeforeSuffix, AfterSuffix
 	}
 
+#if MAC64
+	public enum NSNumberFormatterRoundingMode : ulong {
+#else
 	public enum NSNumberFormatterRoundingMode {
+#endif
 		Ceiling, Floor, Down, Up, HalfEven, HalfDown, HalfUp
 	}
 
@@ -469,12 +529,20 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSFileCoordinatorReadingOptions : ulong {
+#else
 	public enum NSFileCoordinatorReadingOptions {
+#endif
 		WithoutChanges = 1
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSFileCoordinatorWritingOptions : ulong {
+#else
 	public enum NSFileCoordinatorWritingOptions {
+#endif
 		ForDeleting = 1,
 		ForMoving = 2,
 		ForMerging = 4,
@@ -482,7 +550,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSLinguisticTaggerOptions : ulong {
+#else
 	public enum NSLinguisticTaggerOptions {
+#endif
 		OmitWords = 1,
 		OmitPunctuation = 2,
 		OmitWhitespace = 4,
@@ -495,18 +567,30 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSJsonReadingOptions : ulong {
+#else
 	public enum NSJsonReadingOptions {
+#endif	
 		MutableContainers = 1,
 		MutableLeaves = 2,
 		AllowFragments = 4
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSJsonWritingOptions : ulong {
+#else
 	public enum NSJsonWritingOptions {
+#endif
 		PrettyPrinted = 1
 	}
 
+#if MAC64
+	public enum NSLocaleLanguageDirection : ulong {
+#else
 	public enum NSLocaleLanguageDirection {
+#endif
 		Unknown, LeftToRight, RightToLeft, TopToBottom, BottomToTop,
 	}
 
@@ -571,7 +655,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSByteCountFormatterUnits : ulong {
+#else
 	public enum NSByteCountFormatterUnits {
+#endif
 		UseDefault      = 0,
 		UseBytes        = 1 << 0,
 		UseKB           = 1 << 1,
@@ -585,7 +673,11 @@ namespace MonoMac.Foundation  {
 		UseAll          = 0x0FFFF
 	}
 
+#if MAC64
+	public enum NSByteCountFormatterCountStyle : long {
+#else
 	public enum NSByteCountFormatterCountStyle {
+#endif
 		File, Memory, Decimal, Binary
 	}
 
@@ -609,12 +701,20 @@ namespace MonoMac.Foundation  {
 		None, Default, All 
 	}
 	
+#if MAC64
+	public enum NSDateComponentsWrappingBehavior : ulong {
+#else
 	public enum NSDateComponentsWrappingBehavior {
+#endif
 		None = 0,
 		WrapCalendarComponents = 1 << 0,
 	}
 
+#if MAC64
+	public enum NSUrlRequestNetworkServiceType : ulong {
+#else
 	public enum NSUrlRequestNetworkServiceType {
+#endif
 		Default,
 		VoIP,
 		Video,

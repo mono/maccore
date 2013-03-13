@@ -36,6 +36,19 @@ using MonoMac.CoreFoundation;
 using MonoMac.CoreText;
 #endif
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
 
 	public class CGFont : INativeObject, IDisposable {
@@ -183,26 +196,39 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static RectangleF CGFontGetFontBBox(IntPtr font);
+		extern static NSRect CGFontGetFontBBox(IntPtr font);
 		public RectangleF FontBBox {
 			get {
+#if MAC64
+				NSRect rc = CGFontGetFontBBox (handle);
+				return new RectangleF((float)rc.Origin.X, (float)rc.Origin.Y, (float)rc.Width, (float)rc.Height);
+#else
 				return CGFontGetFontBBox (handle);
+#endif
 			}
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static float CGFontGetItalicAngle(IntPtr font);
+		extern static CGFloat CGFontGetItalicAngle(IntPtr font);
 		public float ItalicAngle {
 			get {
+#if MAC64
+				return (float)CGFontGetItalicAngle (handle);
+#else
 				return CGFontGetItalicAngle (handle);
+#endif
 			}
 		}
 			
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static float CGFontGetStemV(IntPtr font);
+		extern static CGFloat CGFontGetStemV(IntPtr font);
 		public float StemV {
 			get {
+#if MAC64
+				return (float)CGFontGetStemV (handle);
+#else
 				return CGFontGetStemV (handle);
+#endif
 			}
 		}
 		
@@ -252,7 +278,7 @@ namespace MonoMac.CoreGraphics {
 
 #if !(GENERATOR || MONOMAC)
 		[DllImport (Constants.CoreTextLibrary)]
-		static extern IntPtr CTFontCreateWithGraphicsFont (IntPtr graphicsFont, float size, IntPtr matrix, IntPtr attributes);
+		static extern IntPtr CTFontCreateWithGraphicsFont (IntPtr graphicsFont, CGFloat size, IntPtr matrix, IntPtr attributes);
 		[Since(3,2)]
 		public CTFont ToCTFont (float size)
 		{
@@ -261,7 +287,7 @@ namespace MonoMac.CoreGraphics {
 
 		[Since (3,2)]
 		[DllImport (Constants.CoreTextLibrary)]
-		static extern IntPtr CTFontCreateWithGraphicsFont (IntPtr graphicsFont, float size, ref CGAffineTransform matrix, IntPtr attributes);
+		static extern IntPtr CTFontCreateWithGraphicsFont (IntPtr graphicsFont, CGFloat size, ref CGAffineTransform matrix, IntPtr attributes);
 		public CTFont ToCTFont (float size, ref CGAffineTransform matrix)
 		{
 			return new CTFont (CTFontCreateWithGraphicsFont (handle, size, ref matrix, IntPtr.Zero), true);

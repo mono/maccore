@@ -240,11 +240,11 @@ namespace MonoMac.ImageIO {
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
-		extern static int CGImageSourceGetCount (IntPtr handle);
+		extern static IntPtr CGImageSourceGetCount (IntPtr handle);
 		
 		public int ImageCount {
 			get {
-				return CGImageSourceGetCount (handle);
+				return CGImageSourceGetCount (handle).ToInt32();
 			}
 		}
 
@@ -266,12 +266,12 @@ namespace MonoMac.ImageIO {
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
-		extern static IntPtr CGImageSourceCopyPropertiesAtIndex (IntPtr handle, int idx, IntPtr dictOptions);
+		extern static IntPtr CGImageSourceCopyPropertiesAtIndex (IntPtr handle, IntPtr idx, IntPtr dictOptions);
 
 		[Advice ("Use GetProperties")]
 		public NSDictionary CopyProperties (NSDictionary dict, int imageIndex)
 		{
-			return new NSDictionary (CGImageSourceCopyPropertiesAtIndex (handle, imageIndex, dict == null ? IntPtr.Zero : dict.Handle));
+			return new NSDictionary (CGImageSourceCopyPropertiesAtIndex (handle, new IntPtr(imageIndex), dict == null ? IntPtr.Zero : dict.Handle));
 		}
 
 		[Advice ("Use GetProperties")]
@@ -293,21 +293,21 @@ namespace MonoMac.ImageIO {
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
-		extern static IntPtr CGImageSourceCreateImageAtIndex(IntPtr isrc, int index, IntPtr options);
+		extern static IntPtr CGImageSourceCreateImageAtIndex(IntPtr isrc, IntPtr index, IntPtr options);
 		public CGImage CreateImage (int index, CGImageOptions options)
 		{
 			using (var dict = options == null ? null : options.ToDictionary ()) {
-				var ret = CGImageSourceCreateImageAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
+				var ret = CGImageSourceCreateImageAtIndex (handle, new IntPtr(index), dict == null ? IntPtr.Zero : dict.Handle);
 				return new CGImage (ret, true);
 			}
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
-		extern static IntPtr CGImageSourceCreateThumbnailAtIndex (IntPtr isrc, int index, IntPtr options);
+		extern static IntPtr CGImageSourceCreateThumbnailAtIndex (IntPtr isrc, IntPtr index, IntPtr options);
 		public CGImage CreateThumbnail (int index, CGImageThumbnailOptions options)
 		{
 			using (var dict = options == null ? null : options.ToDictionary ()) {
-				var ret = CGImageSourceCreateThumbnailAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
+				var ret = CGImageSourceCreateThumbnailAtIndex (handle, new IntPtr(index), dict == null ? IntPtr.Zero : dict.Handle);
 				return new CGImage (ret, true);
 			}
 		}
@@ -349,11 +349,11 @@ namespace MonoMac.ImageIO {
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
-		extern static CGImageSourceStatus CGImageSourceGetStatusAtIndex (IntPtr handle, int idx);		
+		extern static CGImageSourceStatus CGImageSourceGetStatusAtIndex (IntPtr handle, IntPtr idx);		
 
 		public CGImageSourceStatus GetStatus (int index)
 		{
-			return CGImageSourceGetStatusAtIndex (handle, index);
+			return CGImageSourceGetStatusAtIndex (handle, new IntPtr(index));
 		}
 	}
 }

@@ -10,6 +10,20 @@ using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Generic;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.Foundation {
 	public partial class NSMutableData : IEnumerable, IEnumerable<byte> {
 
@@ -56,7 +70,7 @@ namespace MonoMac.Foundation {
 			int top = (int) Length;
 
 			for (int i = 0; i < top; i++){
-				if (source == Bytes && top == Length)
+				if (source == Bytes && top == (int)Length)
 					yield return Marshal.ReadByte (source, i);
 				else
 					throw new InvalidOperationException ("The NSMutableData has changed");
@@ -69,7 +83,7 @@ namespace MonoMac.Foundation {
 			int top = (int) Length;
 
 			for (int i = 0; i < top; i++){
-				if (source == Bytes && top == Length)
+				if (source == Bytes && top == (int)Length)
 					yield return Marshal.ReadByte (source, i);
 				else
 					throw new InvalidOperationException ("The NSMutableData has changed");

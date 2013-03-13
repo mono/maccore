@@ -25,6 +25,20 @@ using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.Foundation {
 	public partial class NSInputStream : NSStream {
 		const string selReadMaxLength = "read:maxLength:";
@@ -33,26 +47,29 @@ namespace MonoMac.Foundation {
 		IntPtr callback;
 		CFStreamClientContext context;
 
-		public int Read (byte [] buffer, uint len) {
+		public NSInteger Read (byte [] buffer, NSUInteger len) {
 			return objc_msgSend (Handle, Selector.GetHandle (selReadMaxLength), buffer, len);
 		}
 
 		[DllImport ("/usr/lib/libobjc.dylib")]
-		static extern int objc_msgSend (IntPtr handle, IntPtr sel, [In, Out] byte [] buffer, uint len);
+		static extern NSInteger objc_msgSend (IntPtr handle, IntPtr sel, [In, Out] byte [] buffer, NSUInteger len);
+
+		[DllImport ("/usr/lib/libobjc.dylib")]
+		static extern NSInteger objc_msgSend (IntPtr handle, IntPtr sel, IntPtr buffer, NSUInteger len);
 
 		[Export ("read:maxLength:")]
-		public virtual int Read (IntPtr buffer, uint len)
+		public virtual NSInteger Read (IntPtr buffer, NSUInteger len)
 		{
 			if (buffer == IntPtr.Zero)
 				throw new ArgumentNullException ("buffer");
 			
-			int ret;
+			NSInteger ret;
 			if (IsDirectBinding) {
-				ret = Messaging.int_objc_msgSend_IntPtr_UInt32 (this.Handle, Selector.GetHandle (selReadMaxLength), buffer, len);
+				ret = objc_msgSend (this.Handle, Selector.GetHandle (selReadMaxLength), buffer, len);
 			} else {
-				ret = Messaging.int_objc_msgSendSuper_IntPtr_UInt32 (this.SuperHandle, Selector.GetHandle (selReadMaxLength), buffer, len);
+				ret = objc_msgSend (this.SuperHandle, Selector.GetHandle (selReadMaxLength), buffer, len);
 			}
-			
+
 			return ret;
 		}
 

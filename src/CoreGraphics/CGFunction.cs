@@ -31,8 +31,21 @@ using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
 namespace MonoMac.CoreGraphics {
-	
+
 	public class CGFunction : INativeObject, IDisposable {
 		internal IntPtr handle;
 		GCHandle gch;
@@ -83,7 +96,7 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 
-		unsafe delegate void CGFunctionEvaluateCallback (IntPtr info, float *data, float *outData);
+		unsafe delegate void CGFunctionEvaluateCallback (IntPtr info, CGFloat *data, CGFloat *outData);
 			
 		[StructLayout (LayoutKind.Sequential)]
 		struct CGFunctionCallbacks {
@@ -93,9 +106,9 @@ namespace MonoMac.CoreGraphics {
 		}
 		
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGFunctionCreate (IntPtr data, int domainCount, float [] domain, int rangeDomain, float [] range, ref CGFunctionCallbacks callbacks);
+		extern static IntPtr CGFunctionCreate (IntPtr data, IntPtr domainCount, CGFloat [] domain, IntPtr rangeDomain, CGFloat [] range, ref CGFunctionCallbacks callbacks);
 		
-		unsafe public delegate void CGFunctionEvaluate (float *data, float *outData);
+		unsafe public delegate void CGFunctionEvaluate (CGFloat *data, CGFloat *outData);
 
 		public unsafe CGFunction (float [] domain, float [] range, CGFunctionEvaluate callback)
 		{
@@ -118,13 +131,23 @@ namespace MonoMac.CoreGraphics {
 			cbacks.release = IntPtr.Zero;
 
 			gch = GCHandle.Alloc (this);
-			handle = CGFunctionCreate (GCHandle.ToIntPtr (gch), domain != null ? domain.Length/2 : 0, domain, range != null ? range.Length/2 : 0, range, ref cbacks);
+#if MAC64
+			CGFloat[] _domain = new CGFloat[domain.Length];
+			Array.Copy(domain, _domain, domain.Length);
+			CGFloat[] _range = new CGFloat[range.Length];
+			Array.Copy(range, _range, range.Length);
+			handle = CGFunctionCreate (GCHandle.ToIntPtr (gch), domain != null ? new IntPtr(domain.Length/2) : IntPtr.Zero,
+			                           _domain, range != null ? new IntPtr(range.Length/2) : IntPtr.Zero, _range, ref cbacks);
+#else
+			handle = CGFunctionCreate (GCHandle.ToIntPtr (gch), domain != null ? new IntPtr(domain.Length/2) : IntPtr.Zero,
+			                           domain, range != null ? new IntPtr(range.Length/2) : IntPtr.Zero, range, ref cbacks);
+#endif	
 		}
 
 #if !MONOMAC
 		[MonoPInvokeCallback (typeof (CGFunctionEvaluateCallback))]
 #endif
-		unsafe static void EvaluateCallback (IntPtr info, float *input, float *output)
+		unsafe static void EvaluateCallback (IntPtr info, CGFloat *input, CGFloat *output)
 		{
 			GCHandle lgc = GCHandle.FromIntPtr (info);
 			CGFunction container = (CGFunction) lgc.Target;

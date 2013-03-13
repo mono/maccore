@@ -47,9 +47,23 @@ using System;
 using System.Drawing;
 using System.ComponentModel;
 
+#if MAC64
+using NSInteger = System.Int64;
+using NSUInteger = System.UInt64;
+using CGFloat = System.Double;
+#else
+using NSInteger = System.Int32;
+using NSUInteger = System.UInt32;
+using NSPoint = System.Drawing.PointF;
+using NSSize = System.Drawing.SizeF;
+using NSRect = System.Drawing.RectangleF;
+using CGFloat = System.Single;
+#endif
+
+
 namespace MonoMac.Foundation
 {
-	public delegate int NSComparator (NSObject obj1, NSObject obj2);
+	public delegate NSInteger NSComparator (NSObject obj1, NSObject obj2);
 	public delegate void NSAttributedRangeCallback (NSDictionary attrs, NSRange range, ref bool stop);
 	public delegate void NSAttributedStringCallback (NSObject value, NSRange range, ref bool stop);
 
@@ -58,13 +72,13 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	public interface NSArray {
 		[Export ("count")]
-		uint Count { get; }
+		NSUInteger Count { get; }
 
 		[Export ("objectAtIndex:")]
-		IntPtr ValueAt (uint idx);
+		IntPtr ValueAt (NSUInteger idx);
 
 		[Export ("arrayWithObjects:count:")][Static][Internal]
-		NSArray FromObjects (IntPtr array, int count);
+		NSArray FromObjects (IntPtr array, NSUInteger count);
 
 		[Export ("valueForKey:")]
 		NSObject ValueForKey (NSString key);
@@ -92,23 +106,23 @@ namespace MonoMac.Foundation
 		string Value { get; }
 
 		[Export ("attributesAtIndex:effectiveRange:")]
-		NSDictionary GetAttributes (int location, out NSRange effectiveRange);
+		NSDictionary GetAttributes (NSUInteger location, out NSRange effectiveRange);
 
 		[Export ("length")]
-		int Length { get; }
+		NSUInteger Length { get; }
 
 		// TODO: figure out the type, this deserves to be strongly typed if possble
 		[Export ("attribute:atIndex:effectiveRange:")]
-		NSObject GetAttribute (string attribute, int location, out NSRange effectiveRange);
+		NSObject GetAttribute (string attribute, NSUInteger location, out NSRange effectiveRange);
 
 		[Export ("attributedSubstringFromRange:"), Internal]
 		NSAttributedString Substring (NSRange range);
 
 		[Export ("attributesAtIndex:longestEffectiveRange:inRange:")]
-		NSDictionary GetAttributes (int location, out NSRange longestEffectiveRange, NSRange rangeLimit);
+		NSDictionary GetAttributes (NSUInteger location, out NSRange longestEffectiveRange, NSRange rangeLimit);
 
 		[Export ("attribute:atIndex:longestEffectiveRange:inRange:")]
-		NSObject GetAttribute (string attribute, int location, out NSRange longestEffectiveRange, NSRange rangeLimit);
+		NSObject GetAttribute (string attribute, NSUInteger location, out NSRange longestEffectiveRange, NSRange rangeLimit);
 
 		[Export ("isEqualToAttributedString:")]
 		bool IsEqual (NSAttributedString other);
@@ -131,7 +145,7 @@ namespace MonoMac.Foundation
 
 #if MONOMAC
 		[Export("size")]
-		SizeF Size { get; }
+		NSSize Size { get; }
 
 		[Field ("NSFontAttributeName", "AppKit")]
 		NSString FontAttributeName { get; }
@@ -215,34 +229,34 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSData htmlData, NSUrl baseUrl, out NSDictionary docAttributes);
 		
 		[Export ("drawAtPoint:")]
-		void DrawString (PointF point);
+		void DrawString (NSPoint point);
 		
 		[Export ("drawInRect:")]
-		void DrawString (RectangleF rect);
+		void DrawString (NSRect rect);
 		
 		[Export ("drawWithRect:options:")]
-		void DrawString (RectangleF rect, NSStringDrawingOptions options);
+		void DrawString (NSRect rect, NSStringDrawingOptions options);
 		
 #else
 		[Since (6,0)]
 		[Export ("size")]
-		SizeF Size { get; }
+		NSSize Size { get; }
 
 		[Since (6,0)]
 		[Export ("drawAtPoint:")]
-		void DrawString (PointF point);
+		void DrawString (NSPoint point);
 
 		[Since (6,0)]
 		[Export ("drawInRect:")]
-		void DrawString (RectangleF rect);
+		void DrawString (NSRect rect);
 
 		[Since (6,0)]
 		[Export ("drawWithRect:options:context:")]
-		void DrawString (RectangleF rect, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
+		void DrawString (NSRect rect, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
 
 		[Since (6,0)]
 		[Export ("boundingRectWithSize:options:context:")]
-		RectangleF GetBoundingRect (SizeF size, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
+		NSRect GetBoundingRect (NSSize size, NSStringDrawingOptions options, [NullAllowed] NSStringDrawingContext context);
 #endif
 	}
 
@@ -258,7 +272,7 @@ namespace MonoMac.Foundation
 		void SetObjectforKey (NSObject obj, NSObject key);
 
 		[Export ("setObject:forKey:cost:")]
-		void SetCost (NSObject obj, NSObject key, uint cost);
+		void SetCost (NSObject obj, NSObject key, NSUInteger cost);
 
 		[Export ("removeObjectForKey:")]
 		void RemoveObjectForKey (NSObject key);
@@ -277,10 +291,10 @@ namespace MonoMac.Foundation
 		NSCacheDelegate Delegate { get; set; }
 
 		[Export ("totalCostLimit")]
-		uint TotalCostLimit { get; set; }
+		NSUInteger TotalCostLimit { get; set; }
 
 		[Export ("countLimit")]
-		uint CountLimit { get; set; }
+		NSUInteger CountLimit { get; set; }
 
 		[Export ("evictsObjectsWithDiscardedContent")]
 		bool EvictsObjectsWithDiscardedContent { get; set; }
@@ -337,10 +351,10 @@ namespace MonoMac.Foundation
 		NSTimeZone TimeZone { get; set; } 
 
 		[Export ("firstWeekday")]
-		uint FirstWeekDay { get; set; } 
+		NSUInteger FirstWeekDay { get; set; } 
 
 		[Export ("minimumDaysInFirstWeek")]
-		uint MinimumDaysInFirstWeek { get; set; }
+		NSUInteger MinimumDaysInFirstWeek { get; set; }
 
 		//- (NSRange)minimumRangeOfUnit:(NSCalendarUnit)unit;
 		//- (NSRange)maximumRangeOfUnit:(NSCalendarUnit)unit;
@@ -633,19 +647,19 @@ namespace MonoMac.Foundation
 		NSData FromData (NSData source);
 
 		[Export ("dataWithBytes:length:"), Static]
-		NSData FromBytes (IntPtr bytes, uint size);
+		NSData FromBytes (IntPtr bytes, NSUInteger size);
 
 		[Export ("bytes")]
 		IntPtr Bytes { get; }
 
 		[Export ("length")]
-		uint Length { get; [NotImplemented] set; }
+		NSUInteger Length { get; [NotImplemented] set; }
 
 		[Export ("writeToFile:options:error:")]
-		bool _Save (string file, int options, IntPtr addr);
+		bool _Save (string file, NSUInteger options, IntPtr addr);
 		
 		[Export ("writeToURL:options:error:")]
-		bool _Save (NSUrl url, int options, IntPtr addr);
+		bool _Save (NSUrl url, NSUInteger options, IntPtr addr);
 
 		[Export ("rangeOfData:options:range:")]
 		[Since (4,0)]
@@ -664,7 +678,7 @@ namespace MonoMac.Foundation
 
 		[Export ("quarter")]
 		[Since (4,0)]
-		int Quarter { get; set; }
+		NSInteger Quarter { get; set; }
 
 		[Export ("date")]
 		[Since (4,0)]
@@ -672,46 +686,46 @@ namespace MonoMac.Foundation
 
 		//Detected properties
 		[Export ("era")]
-		int Era { get; set; }
+		NSInteger Era { get; set; }
 
 		[Export ("year")]
-		int Year { get; set; }
+		NSInteger Year { get; set; }
 
 		[Export ("month")]
-		int Month { get; set; }
+		NSInteger Month { get; set; }
 
 		[Export ("day")]
-		int Day { get; set; }
+		NSInteger Day { get; set; }
 
 		[Export ("hour")]
-		int Hour { get; set; }
+		NSInteger Hour { get; set; }
 
 		[Export ("minute")]
-		int Minute { get; set; }
+		NSInteger Minute { get; set; }
 
 		[Export ("second")]
-		int Second { get; set; }
+		NSInteger Second { get; set; }
 
 		[Export ("week")]
-		int Week { get; set; }
+		NSInteger Week { get; set; }
 
 		[Export ("weekday")]
-		int Weekday { get; set; }
+		NSInteger Weekday { get; set; }
 
 		[Export ("weekdayOrdinal")]
-		int WeekdayOrdinal { get; set; }
+		NSInteger WeekdayOrdinal { get; set; }
 
 		[Since (5,0)]
 		[Export ("weekOfMonth")]
-		int WeekOfMonth { get; set; }
+		NSInteger WeekOfMonth { get; set; }
 
 		[Since (5,0)]
 		[Export ("weekOfYear")]
-		int WeekOfYear { get; set; }
+		NSInteger WeekOfYear { get; set; }
 		
 		[Since (5,0)]
 		[Export ("yearForWeekOfYear")]
-		int YearForWeekOfYear { get; set; }
+		NSInteger YearForWeekOfYear { get; set; }
 
 		[Since (6,0)]
 		[Export ("leapMonth")]
@@ -891,7 +905,7 @@ namespace MonoMac.Foundation
 		NSData ReadDataToEndOfFile ();
 
 		[Export ("readDataOfLength:")]
-		NSData ReadDataOfLength (uint length);
+		NSData ReadDataOfLength (NSUInteger length);
 
 		[Export ("writeData:")]
 		void WriteData (NSData data);
@@ -1174,16 +1188,16 @@ namespace MonoMac.Foundation
 		void EnableUpdates ();
 
 		[Export ("resultCount")]
-		int ResultCount { get; }
+		NSUInteger ResultCount { get; }
 
 		[Export ("resultAtIndex:")]
-		NSObject ResultAtIndex (int idx);
+		NSObject ResultAtIndex (NSUInteger idx);
 
 		[Export ("results")]
 		NSMetadataItem[] Results { get; }
 
 		[Export ("indexOfResult:")]
-		int IndexOfResult (NSObject result);
+		NSUInteger IndexOfResult (NSObject result);
 
 		[Export ("valueLists")]
 		NSDictionary ValueLists { get; }
@@ -1192,7 +1206,7 @@ namespace MonoMac.Foundation
 		NSObject [] GroupedResults { get; }
 
 		[Export ("valueOfAttribute:forResultAtIndex:")]
-		NSObject ValueOfAttribute (string attribyteName, int atIndex);
+		NSObject ValueOfAttribute (string attribyteName, NSUInteger atIndex);
 
 		[Export ("delegate", ArgumentSemantic.Assign), NullAllowed]
 		NSMetadataQueryDelegate WeakDelegate { get; set; }
@@ -1336,7 +1350,7 @@ namespace MonoMac.Foundation
 		NSObject Value { get; }
 
 		[Export ("count")]
-		int Count { get; }
+		NSUInteger Count { get; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1351,10 +1365,10 @@ namespace MonoMac.Foundation
 		NSObject [] Subgroups { get; }
 
 		[Export ("resultCount")]
-		int ResultCount { get; }
+		NSUInteger ResultCount { get; }
 
 		[Export ("resultAtIndex:")]
-		NSObject ResultAtIndex (uint idx);
+		NSObject ResultAtIndex (NSUInteger idx);
 
 		[Export ("results")]
 		NSObject [] Results { get; }
@@ -1368,22 +1382,22 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSArray))]
 	public interface NSMutableArray {
 		[Export ("initWithCapacity:")]
-		IntPtr Constructor (int capacity);
+		IntPtr Constructor (NSUInteger capacity);
 		
 		[Export ("addObject:")]
 		void Add (NSObject obj);
 
 		[Export ("insertObject:atIndex:")]
-		void Insert (NSObject obj, int index);
+		void Insert (NSObject obj, NSUInteger index);
 
 		[Export ("removeLastObject")]
 		void RemoveLastObject ();
 
 		[Export ("removeObjectAtIndex:")]
-		void RemoveObject (int index);
+		void RemoveObject (NSUInteger index);
 
 		[Export ("replaceObjectAtIndex:withObject:")]
-		void ReplaceObject (int index, NSObject withObject);
+		void ReplaceObject (NSUInteger index, NSObject withObject);
 
 		[Export ("removeAllObjects")]
 		void RemoveAllObjects ();
@@ -1429,7 +1443,7 @@ namespace MonoMac.Foundation
 		void Replace (NSRange range, NSAttributedString value);
 		
 		[Export ("insertAttributedString:atIndex:")]
-		void Insert (NSAttributedString attrString, int location);
+		void Insert (NSAttributedString attrString, NSUInteger location);
 
 		[Export ("appendAttributedString:")]
 		void Append (NSAttributedString attrString);
@@ -1450,35 +1464,35 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSData))]
 	public interface NSMutableData {
 		[Static, Export ("dataWithCapacity:")]
-		NSMutableData FromCapacity (int capacity);
+		NSMutableData FromCapacity (NSUInteger capacity);
 
 		[Static, Export ("dataWithLength:")]
-		NSMutableData FromLength (int length);
+		NSMutableData FromLength (NSUInteger length);
 		
 		[Static, Export ("data")]
 		NSMutableData Create ();
 		
 		[Export ("setLength:")]
-		void SetLength (uint len);
+		void SetLength (NSUInteger len);
 
 		[Export ("mutableBytes")]
 		IntPtr MutableBytes { get; }
 
 		[Export ("initWithCapacity:")]
-		IntPtr Constructor (uint len);
+		IntPtr Constructor (NSUInteger len);
 
 		[Export ("appendData:")]
 		void AppendData (NSData other);
 
 		[Export ("appendBytes:length:")]
-		void AppendBytes (IntPtr bytes, uint len);
+		void AppendBytes (IntPtr bytes, NSUInteger len);
 
 		[Export ("setData:")]
 		void SetData (NSData data);
 
 		[Export ("length")]
 		[Override]
-		uint Length { get; set; }
+		NSUInteger Length { get; set; }
 	}
 
 	[BaseType (typeof (NSObject))]
@@ -1533,7 +1547,7 @@ namespace MonoMac.Foundation
 
 		[Export ("dictionaryWithObjects:forKeys:count:")]
 		[Static, Internal]
-		NSDictionary FromObjectsAndKeysInternal ([NullAllowed] NSArray objects, [NullAllowed] NSArray keys, int count);
+		NSDictionary FromObjectsAndKeysInternal ([NullAllowed] NSArray objects, [NullAllowed] NSArray keys, NSUInteger count);
 
 		[Export ("dictionaryWithObjects:forKeys:")]
 		[Static, Internal]
@@ -1552,7 +1566,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSUrl url);
 		
 		[Export ("count")]
-		uint Count { get; }
+		NSUInteger Count { get; }
 
 		[Export ("objectForKey:")]
 		NSObject ObjectForKey (NSObject key);
@@ -1601,16 +1615,16 @@ namespace MonoMac.Foundation
 	[DisableDefaultCtor]
 	public interface NSError {
 		[Static, Export ("errorWithDomain:code:userInfo:")]
-		NSError FromDomain (NSString domain, int code, [NullAllowed] NSDictionary userInfo);
+		NSError FromDomain (NSString domain, NSInteger code, [NullAllowed] NSDictionary userInfo);
 
 		[Export ("initWithDomain:code:userInfo:")]
-		IntPtr Constructor (NSString domain, int code, [NullAllowed] NSDictionary userInfo);
+		IntPtr Constructor (NSString domain, NSInteger code, [NullAllowed] NSDictionary userInfo);
 		
 		[Export ("domain")]
 		string Domain { get; }
 
 		[Export ("code")]
-		int Code { get; }
+		NSInteger Code { get; }
 
 		[Export ("userInfo")]
 		NSDictionary UserInfo { get; }
@@ -1789,10 +1803,10 @@ namespace MonoMac.Foundation
 		void SetOrthographyrange (NSOrthography orthography, NSRange range);
 
 		[Export ("orthographyAtIndex:effectiveRange:")]
-		NSOrthography GetOrthography (int charIndex, ref NSRange effectiveRange);
+		NSOrthography GetOrthography (NSUInteger charIndex, ref NSRange effectiveRange);
 
 		[Export ("stringEditedInRange:changeInLength:")]
-		void StringEditedInRange (NSRange newRange, int delta);
+		void StringEditedInRange (NSRange newRange, NSInteger delta);
 
 		[Export ("enumerateTagsInRange:scheme:options:usingBlock:")]
 		void EnumerateTagsInRange (NSRange range, NSString tagScheme, NSLinguisticTaggerOptions opts, NSLingusticEnumerator enumerator);
@@ -1801,13 +1815,13 @@ namespace MonoMac.Foundation
 		NSRange GetSentenceRangeForRange (NSRange range);
 
 		[Export ("tagAtIndex:scheme:tokenRange:sentenceRange:")]
-		string GetTag (int charIndex, NSString tagScheme, ref NSRange tokenRange, ref NSRange sentenceRange);
+		string GetTag (NSUInteger charIndex, NSString tagScheme, ref NSRange tokenRange, ref NSRange sentenceRange);
 
 		[Export ("tagsInRange:scheme:options:tokenRanges:"), Internal]
 		NSString [] GetTagsInRange (NSRange range, NSString tagScheme, NSLinguisticTaggerOptions opts, ref NSArray tokenRanges);
 
 		[Export ("possibleTagsAtIndex:scheme:tokenRange:sentenceRange:scores:"), Internal]
-		NSString [] GetPossibleTags (int charIndex, NSString tagScheme, ref NSRange tokenRange, ref NSRange sentenceRange, ref NSArray scores);
+		NSString [] GetPossibleTags (NSUInteger charIndex, NSString tagScheme, ref NSRange tokenRange, ref NSRange sentenceRange, ref NSArray scores);
 
 		//Detected properties
 		[Export ("string")]
@@ -2126,7 +2140,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSArray other);
 		
 		[Export ("count")]
-		uint Count { get; }
+		NSUInteger Count { get; }
 
 		[Export ("anyObject")]
 		NSObject AnyObject { get; }
@@ -2236,7 +2250,7 @@ namespace MonoMac.Foundation
 		NSData Data { get; }
 
 		[Export ("secondsFromGMTForDate:")]
-		int SecondsFromGMT (NSDate date);
+		NSInteger SecondsFromGMT (NSDate date);
 		
 		[Export ("abbreviationForDate:")]
 		string Abbreviation (NSDate date);
@@ -2260,7 +2274,7 @@ namespace MonoMac.Foundation
 		NSTimeZone LocalTimeZone { get; }
 
 		[Export ("secondsFromGMT")]
-		int GetSecondsFromGMT { get; }
+		NSInteger GetSecondsFromGMT { get; }
 
 		[Export ("defaultTimeZone"), Static]
 		NSTimeZone DefaultTimeZone { get; set; }
@@ -2943,7 +2957,7 @@ namespace MonoMac.Foundation
 		NSUrlCache SharedCache { get; set; }
 
 		[Export ("initWithMemoryCapacity:diskCapacity:diskPath:")]
-		IntPtr Constructor (uint memoryCapacity, uint diskCapacity, string diskPath);
+		IntPtr Constructor (NSUInteger memoryCapacity, NSUInteger diskCapacity, string diskPath);
 
 		[Export ("cachedResponseForRequest:")]
 		NSCachedUrlResponse CachedResponseForRequest (NSUrlRequest request);
@@ -2958,16 +2972,16 @@ namespace MonoMac.Foundation
 		void RemoveAllCachedResponses ();
 
 		[Export ("memoryCapacity")]
-		uint MemoryCapacity { get; set; }
+		NSUInteger MemoryCapacity { get; set; }
 
 		[Export ("diskCapacity")]
-		uint DiskCapacity { get; set; }
+		NSUInteger DiskCapacity { get; set; }
 
 		[Export ("currentMemoryUsage")]
-		uint CurrentMemoryUsage { get; }
+		NSUInteger CurrentMemoryUsage { get; }
 
 		[Export ("currentDiskUsage")]
-		uint CurrentDiskUsage { get; }
+		NSUInteger CurrentDiskUsage { get; }
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURLAuthenticationChallenge")]
@@ -2975,7 +2989,7 @@ namespace MonoMac.Foundation
 	[DisableDefaultCtor]
 	public interface NSUrlAuthenticationChallenge {
 		[Export ("initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:")]
-		IntPtr Constructor (NSUrlProtectionSpace space, NSUrlCredential credential, int previousFailureCount, NSUrlResponse response, [NullAllowed] NSError error, NSUrlConnection sender);
+		IntPtr Constructor (NSUrlProtectionSpace space, NSUrlCredential credential, NSInteger previousFailureCount, NSUrlResponse response, [NullAllowed] NSError error, NSUrlConnection sender);
 		
 		[Export ("initWithAuthenticationChallenge:sender:")]
 		IntPtr Constructor (NSUrlAuthenticationChallenge  challenge, NSUrlConnection sender);
@@ -2987,7 +3001,7 @@ namespace MonoMac.Foundation
 		NSUrlCredential ProposedCredential { get; }
 	
 		[Export ("previousFailureCount")]
-		int PreviousFailureCount { get; }
+		NSInteger PreviousFailureCount { get; }
 	
 		[Export ("failureResponse")]
 		NSUrlResponse FailureResponse { get; }
@@ -3099,7 +3113,7 @@ namespace MonoMac.Foundation
 		void ReceivedData (NSUrlConnection connection, NSData data);
 
 		[Export ("connection:didSendBodyData:totalBytesWritten:totalBytesExpectedToWrite:")]
-		void SentBodyData (NSUrlConnection connection, int bytesWritten, int totalBytesWritten, int totalBytesExpectedToWrite);
+		void SentBodyData (NSUrlConnection connection, NSInteger bytesWritten, NSInteger totalBytesWritten, NSInteger totalBytesExpectedToWrite);
 
 		[Export ("connectionDidFinishLoading:")]
 		void FinishedLoading (NSUrlConnection connection);
@@ -3214,7 +3228,7 @@ namespace MonoMac.Foundation
 		void EndUndoGrouping ();
 		
 		[Export ("groupingLevel")]
-		int GroupingLevel { get; }
+		NSInteger GroupingLevel { get; }
 		
 		[Export ("disableUndoRegistration")]
 		void DisableUndoRegistration ();
@@ -3229,7 +3243,7 @@ namespace MonoMac.Foundation
 		bool GroupsByEvent { get; set; }
 		
 		[Export ("levelsOfUndo")]
-		int LevelsOfUndo { get; set; }
+		NSInteger LevelsOfUndo { get; set; }
 		
 		[Export ("runLoopModes")]
 		string [] RunLoopModes { get; set; } 
@@ -3342,7 +3356,7 @@ namespace MonoMac.Foundation
 	public interface NSUrlProtectionSpace {
 		
 		[Export ("initWithHost:port:protocol:realm:authenticationMethod:")]
-		IntPtr Constructor (string host, int port, string protocol, string realm, string authenticationMethod);
+		IntPtr Constructor (string host, NSInteger port, string protocol, string realm, string authenticationMethod);
 	
 		//[Export ("initWithProxyHost:port:type:realm:authenticationMethod:")]
 		//IntPtr Constructor (string  host, int port, string type, string  realm, string authenticationMethod);
@@ -3360,7 +3374,7 @@ namespace MonoMac.Foundation
 		string Host { get; }
 	
 		[Export ("port")]
-		int  Port { get; }
+		NSInteger  Port { get; }
 	
 		[Export ("proxyType")]
 		string ProxyType { get; }
@@ -3488,7 +3502,7 @@ namespace MonoMac.Foundation
 
 		[Export ("dictionaryWithObjects:forKeys:count:")]
 		[Static, Internal]
-		NSMutableDictionary FromObjectsAndKeysInternalCount (NSArray objects, NSArray keys, int count);
+		NSMutableDictionary FromObjectsAndKeysInternalCount (NSArray objects, NSArray keys, NSUInteger count);
 
 		[Export ("dictionaryWithObjects:forKeys:")]
 		[Static, Internal, New]
@@ -3527,7 +3541,7 @@ namespace MonoMac.Foundation
 		IntPtr Constructor (NSSet other);
 		
 		[Export ("initWithCapacity:")]
-		IntPtr Constructor (int capacity);
+		IntPtr Constructor (NSUInteger capacity);
 
 		[Export ("addObject:")]
 		void Add (NSObject nso);
@@ -3593,7 +3607,7 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject), Name="NSURLResponse")]
 	public interface NSUrlResponse {
 		[Export ("initWithURL:MIMEType:expectedContentLength:textEncodingName:")]
-		IntPtr Constructor (NSUrl url, string mimetype, int expectedContentLength, [NullAllowed] string textEncodingName);
+		IntPtr Constructor (NSUrl url, string mimetype, NSInteger expectedContentLength, [NullAllowed] string textEncodingName);
 
 		[Export ("URL")]
 		NSUrl Url { get; }
@@ -3729,16 +3743,16 @@ namespace MonoMac.Foundation
 		SizeF StringSize ([NullAllowed] NSDictionary attributedStringAttributes);
 		
 		[Bind ("boundingRectWithSize:options:attributes:")]
-		RectangleF BoundingRectWithSize (SizeF size, NSStringDrawingOptions options, NSDictionary attributes);
+		NSRect BoundingRectWithSize (NSSize size, NSStringDrawingOptions options, NSDictionary attributes);
 		
 		[Bind ("drawAtPoint:withAttributes:")]
 		void DrawString (PointF point, NSDictionary attributes);
 		
 		[Bind ("drawInRect:withAttributes:")]
-		void DrawString (RectangleF rect, NSDictionary attributes);
+		void DrawString (NSRect rect, NSDictionary attributes);
 		
 		[Bind ("drawWithRect:options:attributes:")]
-		void DrawString (RectangleF rect, NSStringDrawingOptions options, NSDictionary attributes);
+		void DrawString (NSRect rect, NSStringDrawingOptions options, NSDictionary attributes);
 #else
 		[Bind ("sizeWithFont:")]
 		SizeF StringSize (UIFont font);
@@ -3777,13 +3791,13 @@ namespace MonoMac.Foundation
 		SizeF DrawString (RectangleF rect, UIFont font, UILineBreakMode mode, UITextAlignment alignment);
 #endif
 		[Export ("characterAtIndex:")]
-		char _characterAtIndex (int index);
+		char _characterAtIndex (NSUInteger index);
 
 		[Export ("length")]
-		int Length {get;}
+		NSUInteger Length {get;}
 
 		[Export ("hash"), Internal]
-		int Hash ();
+		NSUInteger Hash ();
 
 		[Export ("isEqualToString:"), Internal]
 		bool IsEqualTo (IntPtr handle);
@@ -4144,7 +4158,7 @@ namespace MonoMac.Foundation
 		NSOperation [] Operations { get; }
 
 		[Export ("operationCount")]
-		int OperationCount { get; }
+		NSUInteger OperationCount { get; }
 
 		[Export ("name")]
 		string Name { get; set; }
@@ -4165,7 +4179,7 @@ namespace MonoMac.Foundation
 
 		//Detected properties
 		[Export ("maxConcurrentOperationCount")]
-		int MaxConcurrentOperationCount { get; set; }
+		NSInteger MaxConcurrentOperationCount { get; set; }
 
 		[Export ("suspended")]
 		bool Suspended { [Bind ("isSuspended")]get; set; }
@@ -4248,7 +4262,7 @@ namespace MonoMac.Foundation
 		NSDictionary Properties { get; }
 
 		[Export ("version")]
-		uint Version { get; }
+		NSUInteger Version { get; }
 
 		[Export ("value")]
 		string Value { get; }
@@ -4318,16 +4332,16 @@ namespace MonoMac.Foundation
 	public interface NSHttpUrlResponse {
 		[Since (5,0)]
 		[Export ("initWithURL:statusCode:HTTPVersion:headerFields:")]
-		IntPtr Constructor (NSUrl url, int statusCode, string httpVersion, NSDictionary headerFields);
+		IntPtr Constructor (NSUrl url, NSInteger statusCode, string httpVersion, NSDictionary headerFields);
 		
 		[Export ("statusCode")]
-		int StatusCode { get; }
+		NSInteger StatusCode { get; }
 
 		[Export ("allHeaderFields")]
 		NSDictionary AllHeaderFields { get; }
 
 		[Export ("localizedStringForStatusCode:")][Static]
-		string LocalizedStringForStatusCode (int statusCode);
+		string LocalizedStringForStatusCode (NSInteger statusCode);
 	}
 	
 	[BaseType (typeof (NSObject))]
@@ -4495,28 +4509,28 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	public interface NSIndexPath {
 		[Export ("indexPathWithIndex:")][Static]
-		NSIndexPath FromIndex (uint index);
+		NSIndexPath FromIndex (NSUInteger index);
 
 		[Export ("indexPathWithIndexes:length:")][Internal][Static]
-		NSIndexPath _FromIndex (IntPtr indexes, int len);
+		NSIndexPath _FromIndex (IntPtr indexes, NSUInteger len);
 
 		[Export ("indexPathByAddingIndex:")]
-		NSIndexPath IndexPathByAddingIndex (uint index);
+		NSIndexPath IndexPathByAddingIndex (NSUInteger index);
 		
 		[Export ("indexPathByRemovingLastIndex")]
 		NSIndexPath IndexPathByRemovingLastIndex ();
 
 		[Export ("indexAtPosition:")]
-		uint IndexAtPosition (int position);
+		NSUInteger IndexAtPosition (NSUInteger position);
 
 		[Export ("length")]
-		int Length { get; } 
+		NSUInteger Length { get; } 
 
 		[Export ("getIndexes:")][Internal]
 		void _GetIndexes (IntPtr target);
 
 		[Export ("compare:")]
-		int Compare (NSIndexPath other);
+		NSInteger Compare (NSIndexPath other);
 
 #if !MONOMAC
 		// NSIndexPath UIKit Additions Reference
@@ -4548,43 +4562,43 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSObject))]
 	public interface NSIndexSet {
 		[Static, Export ("indexSetWithIndex:")]
-		NSIndexSet FromIndex (int idx);
+		NSIndexSet FromIndex (NSUInteger idx);
 
 		[Static, Export ("indexSetWithIndexesInRange:")]
 		NSIndexSet FromNSRange (NSRange indexRange);
 		
 		[Export ("initWithIndex:")]
-		IntPtr Constructor (uint index);
+		IntPtr Constructor (NSUInteger index);
 
 		[Export ("initWithIndexSet:")]
 		IntPtr Constructor (NSIndexSet other);
 
 		[Export ("count")]
-		int Count { get; }
+		NSUInteger Count { get; }
 
 		[Export ("isEqualToIndexSet:")]
 		bool IsEqual (NSIndexSet other);
 
 		[Export ("firstIndex")]
-		uint FirstIndex { get; }
+		NSUInteger FirstIndex { get; }
 
 		[Export ("lastIndex")]
-		uint LastIndex { get; }
+		NSUInteger LastIndex { get; }
 
 		[Export ("indexGreaterThanIndex:")]
-		uint IndexGreaterThan (uint index);
+		NSUInteger IndexGreaterThan (NSUInteger index);
 
 		[Export ("indexLessThanIndex:")]
-		uint IndexLessThan (uint index);
+		NSUInteger IndexLessThan (NSUInteger index);
 
 		[Export ("indexGreaterThanOrEqualToIndex:")]
-		uint IndexGreaterThanOrEqual (uint index);
+		NSUInteger IndexGreaterThanOrEqual (NSUInteger index);
 
 		[Export ("indexLessThanOrEqualToIndex:")]
-		uint IndexLessThanOrEqual (uint index);
+		NSUInteger IndexLessThanOrEqual (NSUInteger index);
 
 		[Export ("containsIndex:")]
-		bool Contains (uint index);
+		bool Contains (NSUInteger index);
 
 		[Export ("containsIndexes:")]
 		bool Contains (NSIndexSet indexes);
@@ -4617,7 +4631,7 @@ namespace MonoMac.Foundation
 
 		[Static]
 		[Export ("writeJSONObject:toStream:options:error:")]
-		int Serialize (NSObject obj, NSOutputStream stream, NSJsonWritingOptions opt, out NSError error);
+		NSInteger Serialize (NSObject obj, NSOutputStream stream, NSJsonWritingOptions opt, out NSError error);
 
 		[Static]
 		[Export ("JSONObjectWithStream:options:error:")]
@@ -4628,7 +4642,7 @@ namespace MonoMac.Foundation
 	[BaseType (typeof (NSIndexSet))]
 	public interface NSMutableIndexSet {
 		[Export ("initWithIndex:")]
-		IntPtr Constructor (uint index);
+		IntPtr Constructor (NSUInteger index);
 
 		[Export ("initWithIndexSet:")]
 		IntPtr Constructor (NSIndexSet other);
@@ -4643,13 +4657,13 @@ namespace MonoMac.Foundation
 		void Clear ();
 
 		[Export ("addIndex:")]
-		void Add (uint index);
+		void Add (NSUInteger index);
 
 		[Export ("removeIndex:")]
-		void Remove (uint index);
+		void Remove (NSUInteger index);
 
 		[Export ("shiftIndexesStartingAtIndex:by:")]
-		void ShiftIndexes (uint startIndex, int delta);
+		void ShiftIndexes (NSUInteger startIndex, NSInteger delta);
 	}
 	
 	[BaseType (typeof (NSObject), Delegates=new string [] { "WeakDelegate" }, Events=new Type [] { typeof (NSNetServiceDelegate)})]
@@ -4977,7 +4991,26 @@ namespace MonoMac.Foundation
 		
 		[Export ("CMTimeRangeValue"), Lion]
 		CMTimeRange CMTimeRangeValue { get; }
+
+#if MAC64
+		[Export ("valueWithRect:"), Static]
+		NSValue FromRectangle (NSRect rect);
 		
+		[Export ("valueWithSize:")][Static]
+		NSValue FromSize (NSSize size);
+		
+		[Export ("valueWithPoint:")][Static]
+		NSValue FromPoint (NSPoint point);
+		
+		[Export ("rectValue")]
+		NSRect RectangleValue { get; }
+		
+		[Export ("sizeValue")]
+		NSSize SizeValue { get; }
+		
+		[Export ("pointValue")]
+		NSPoint PointValue { get; }
+#else
 		[Export ("valueWithRect:"), Static]
 		NSValue FromRectangleF (System.Drawing.RectangleF rect);
 
@@ -4995,6 +5028,7 @@ namespace MonoMac.Foundation
 
 		[Export ("pointValue")]
 		System.Drawing.PointF PointFValue { get; }
+#endif
 
 		[Export ("rangeValue")]
 		NSRange RangeValue { get; }
@@ -5120,10 +5154,10 @@ namespace MonoMac.Foundation
 		bool BoolValue { get; }
 	
 		[Export ("integerValue")]
-		int IntValue { get; }
+		NSInteger IntValue { get; }
 	
 		[Export ("unsignedIntegerValue")]
-		uint UnsignedIntegerValue { get; }
+		NSUInteger UnsignedIntegerValue { get; }
 	
 		[Export ("stringValue")]
 		string StringValue { get; }
@@ -5364,7 +5398,7 @@ namespace MonoMac.Foundation
 		NSNumber Multiplier { get; set; }
 
 		[Export ("formatWidth")]
-		uint FormatWidth { get; set; }
+		NSUInteger FormatWidth { get; set; }
 
 		[Export ("paddingCharacter")]
 		string PaddingCharacter { get; set; }
@@ -5379,16 +5413,16 @@ namespace MonoMac.Foundation
 		NSNumber RoundingIncrement { get; set; }
 
 		[Export ("minimumIntegerDigits")]
-		int MinimumIntegerDigits { get; set; }
+		NSUInteger MinimumIntegerDigits { get; set; }
 
 		[Export ("maximumIntegerDigits")]
-		int MaximumIntegerDigits { get; set; }
+		NSUInteger MaximumIntegerDigits { get; set; }
 
 		[Export ("minimumFractionDigits")]
-		int MinimumFractionDigits { get; set; }
+		NSUInteger MinimumFractionDigits { get; set; }
 
 		[Export ("maximumFractionDigits")]
-		int MaximumFractionDigits { get; set; }
+		NSUInteger MaximumFractionDigits { get; set; }
 
 		[Export ("minimum")]
 		NSNumber Minimum { get; set; }
@@ -5406,10 +5440,10 @@ namespace MonoMac.Foundation
 		bool UsesSignificantDigits { get; set; }
 
 		[Export ("minimumSignificantDigits")]
-		uint MinimumSignificantDigits { get; set; }
+		NSUInteger MinimumSignificantDigits { get; set; }
 
 		[Export ("maximumSignificantDigits")]
-		uint MaximumSignificantDigits { get; set; }
+		NSUInteger MaximumSignificantDigits { get; set; }
 
 		[Export ("partialStringValidationEnabled")]
 		bool PartialStringValidationEnabled { [Bind ("isPartialStringValidationEnabled")]get; set; }
@@ -5479,10 +5513,10 @@ namespace MonoMac.Foundation
 		NSDecimalNumber Divide (NSDecimalNumber d, NSObject Behavior);
 
 		[Export ("decimalNumberByRaisingToPower:")]
-		NSDecimalNumber RaiseTo (uint power);
+		NSDecimalNumber RaiseTo (NSUInteger power);
 
 		[Export ("decimalNumberByRaisingToPower:withBehavior:")]
-		NSDecimalNumber RaiseTo (uint power, NSObject Behavior);
+		NSDecimalNumber RaiseTo (NSUInteger power, NSObject Behavior);
 		
 		[Export ("decimalNumberByMultiplyingByPowerOf10:")]
 		NSDecimalNumber MultiplyPowerOf10 (short power);
@@ -5494,7 +5528,7 @@ namespace MonoMac.Foundation
 		NSDecimalNumber Rounding (NSObject behavior);
 
 		[Export ("compare:")]
-		int Compare (NSNumber other);
+		NSInteger Compare (NSNumber other);
 
 		[Export ("defaultBehavior")][Static]
 		NSObject DefaultBehavior { get; set; }
@@ -5536,7 +5570,7 @@ namespace MonoMac.Foundation
 		string Name { get; set; }
 
 		[Export ("stackSize")]
-		uint StackSize { get; set; }
+		NSUInteger StackSize { get; set; }
 
 		[Export ("isMainThread")]
 		bool IsMainThread { get; }
@@ -5596,7 +5630,7 @@ namespace MonoMac.Foundation
 		string HostName { get; }
 
 		[Export ("operatingSystem")]
-		int OperatingSystem { get; }
+		NSUInteger OperatingSystem { get; }
 
 		[Export ("operatingSystemName")]
 		string OperatingSystemName { get; }
@@ -5608,10 +5642,10 @@ namespace MonoMac.Foundation
 		ulong PhysicalMemory { get; }
 		
 		[Export ("processorCount")]
-		int ProcessorCount { get; }
+		NSUInteger ProcessorCount { get; }
 		
 		[Export ("activeProcessorCount")]
-		int ActiveProcessorCount { get; }
+		NSUInteger ActiveProcessorCount { get; }
 
 		[Export ("systemUptime")]
 		double SystemUptime { get; }
@@ -6290,10 +6324,10 @@ namespace MonoMac.Foundation
 		string FileGroupOwnerAccountName ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileSystemNumber")]
-		int FileSystemNumber ([Target] NSDictionary fileAttributes);
+		NSInteger FileSystemNumber ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileSystemFileNumber")]
-		uint FileSystemFileNumber ([Target] NSDictionary fileAttributes);
+		NSUInteger FileSystemFileNumber ([Target] NSDictionary fileAttributes);
 
 		[Export ("fileExtensionHidden")]
 		bool FileExtensionHidden ([Target] NSDictionary fileAttributes);
