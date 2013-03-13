@@ -29,7 +29,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 using System;
-using System.Runtime.InteropServices;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreLocation {
@@ -44,21 +43,16 @@ namespace MonoMac.CoreLocation {
 
 		static CLLocation ()
 		{
-                        var handle = Dlfcn.dlopen (Constants.CoreLocationLibrary, 0);
-
+			var handle = Libraries.CoreLocation.Handle;
 			if (handle == IntPtr.Zero)
 				return;
 
-			try {
-				AccurracyBestForNavigation = Dlfcn.GetDouble (handle, "kCLLocationAccuracyBestForNavigation");
-				AccuracyBest = Dlfcn.GetDouble (handle, "kCLLocationAccuracyBest");
-				AccuracyNearestTenMeters = Dlfcn.GetDouble (handle, "kCLLocationAccuracyNearestTenMeters");
-				AccuracyHundredMeters = Dlfcn.GetDouble (handle, "kCLLocationAccuracyHundredMeters");
-				AccuracyKilometer = Dlfcn.GetDouble (handle, "kCLLocationAccuracyKilometer");
-				AccuracyThreeKilometers = Dlfcn.GetDouble (handle, "kCLLocationAccuracyThreeKilometers");
-			} finally {
-				Dlfcn.dlclose (handle);
-			}
+			AccurracyBestForNavigation = Dlfcn.GetDouble (handle, "kCLLocationAccuracyBestForNavigation");
+			AccuracyBest = Dlfcn.GetDouble (handle, "kCLLocationAccuracyBest");
+			AccuracyNearestTenMeters = Dlfcn.GetDouble (handle, "kCLLocationAccuracyNearestTenMeters");
+			AccuracyHundredMeters = Dlfcn.GetDouble (handle, "kCLLocationAccuracyHundredMeters");
+			AccuracyKilometer = Dlfcn.GetDouble (handle, "kCLLocationAccuracyKilometer");
+			AccuracyThreeKilometers = Dlfcn.GetDouble (handle, "kCLLocationAccuracyThreeKilometers");
 		}
 	}
 }

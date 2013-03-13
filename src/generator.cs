@@ -8,7 +8,7 @@
 //   Marek Safar (marek.safar@gmail.com)
 //
 // Copyright 2009-2010, Novell, Inc.
-// Copyright 2011-2012 Xamarin, Inc.
+// Copyright 2011-2013 Xamarin, Inc.
 //
 //
 // This generator produces various */*.g.cs files based on the
@@ -196,6 +196,11 @@ public static class ReflectionExtensions {
 	}
 }
 
+// Used to mark if a type is not a wrapper type.
+public class SyntheticAttribute : Attribute {
+	public SyntheticAttribute () { }
+}
+
 public class NeedsAuditAttribute : Attribute {
 	public NeedsAuditAttribute (string reason)
 	{
@@ -242,18 +247,6 @@ public class PostGetAttribute : Attribute {
 	}
 
 	public string MethodName { get; set; }
-}
-
-public class FieldAttribute : Attribute {
-	public FieldAttribute (string symbolName) {
-		SymbolName = symbolName;
-	}
-	public FieldAttribute (string symbolName, string libraryName) {
-		SymbolName = symbolName;
-		LibraryName = libraryName;
-	}
-	public string SymbolName { get; set; }
-	public string LibraryName { get; set; }
 }
 
 public class BaseTypeAttribute : Attribute {
@@ -754,7 +747,7 @@ public class TrampolineInfo {
 
 	public string StaticName {
 		get {
-			return "static_" + DelegateName;
+			return "S" + DelegateName;
 		}
 	}
 }
@@ -1167,8 +1160,8 @@ public class Generator {
 		}
 
 		var ti = new TrampolineInfo (FormatType (null, t),
-					     "Inner" + trampoline_name,
-					     "Trampoline" + trampoline_name,
+					     "D" + trampoline_name,
+					     "T" + trampoline_name,
 					     pars.ToString (), invoke.ToString (),
 					     returntype,
 					     mi.ReturnType.ToString (),
@@ -1719,6 +1712,9 @@ public class Generator {
 		if (delegate_types.Count > 0)
 			GenerateIndirectDelegateFile ();
 
+		if (trampolines.Count > 0)
+			GenerateTrampolines ();
+
 		if (libraries.Count > 0)
 			GenerateLibraryHandles ();
 	}
@@ -1743,6 +1739,62 @@ public class Generator {
 		sw.Close ();
 	}
 
+	void GenerateTrampolines ()
+	{
+		var library_file = Path.Combine (basedir, "ObjCRuntime/Trampolines.g.cs");
+		GeneratedFiles.Add (library_file);
+		sw = new StreamWriter (library_file);
+		
+		Header (sw);
+#if MONOMAC
+		print ("namespace MonoMac {"); indent++;
+#else
+		print ("namespace MonoTouch {"); indent++;
+#endif
+		print ("");
+		print ("[CompilerGenerated]");
+		print ("static class Trampolines {"); indent++;
+		foreach (var ti in trampolines.Values) {
+			print ("");
+			print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
+			print ("");
+			print ("static internal class {0} {{", ti.StaticName); indent++;
+			print ("");
+			print ("static internal readonly {0} Handler = {1};", ti.DelegateName, ti.TrampolineName);
+			print ("");
+			print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
+			print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
+			indent++;
+			print ("var descriptor = (BlockLiteral *) block;");
+			print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
+			bool is_void = ti.ReturnType == "void";
+			// FIXME: right now we only support 'null' when the delegate does not return a value
+			// otherwise we will need to know the default value to be returned (likely uncommon)
+			if (is_void) {
+				print ("if (del != null)");
+				indent++;
+				print ("del ({0});", ti.Invoke);
+				indent--;
+				if (ti.Clear.Length > 0){
+					print ("else");
+					indent++;
+					print (ti.Clear);
+					indent--;
+				}
+			} else {
+				print ("{0} retval = del ({1});", ti.DelegateReturnType, ti.Invoke);
+				print (ti.ReturnFormat, "retval");
+			}
+			indent--;
+			print ("}"); 
+			indent--;
+			print ("}");
+		}
+		indent--; print ("}");
+		indent--; print ("}");
+		sw.Close ();
+	}
+	
 	void GenerateLibraryHandles ()
 	{
 		var library_file = Path.Combine (basedir, "ObjCRuntime/Libraries.g.cs");
@@ -1758,13 +1810,13 @@ public class Generator {
 		print ("[CompilerGenerated]");
 		print ("static class Libraries {"); indent++;
 		foreach (string library_name in libraries) {
+			print ("static public class {0} {{", library_name); indent++;
 			if (BindThirdPartyLibrary && library_name == "__Internal") {
-				print ("static public readonly IntPtr Internal_Handle = Dlfcn.dlopen (null, 0);");
+				print ("static public readonly IntPtr Handle = Dlfcn.dlopen (null, 0);");
 			} else {
-				print ("static public class {0} {{", library_name); indent++;
 				print ("static public readonly IntPtr Handle = Dlfcn.dlopen (Constants.{0}Library, 0);", library_name);
-				indent--; print ("}");
 			}
+			indent--; print ("}");
 		}
 		indent--; print ("}");
 		indent--; print ("}");
@@ -2446,7 +2498,7 @@ public class Generator {
 				}
 				convs.AppendFormat (extra + "block_{0} = new BlockLiteral ();\n", pi.Name);
 				convs.AppendFormat (extra + "block_ptr_{0} = &block_{0};\n", pi.Name);
-				convs.AppendFormat (extra + "block_{0}.SetupBlock ({1}, {0});\n", pi.Name, trampoline_name);
+				convs.AppendFormat (extra + "block_{0}.SetupBlock (Trampolines.{1}.Handler, {0});\n", pi.Name, trampoline_name);
 				if (null_allowed)
 					convs.AppendFormat ("}}");
 
@@ -2750,6 +2802,7 @@ public class Generator {
 		bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType,  type);
 		bool is_new = HasAttribute (pi, typeof (NewAttribute));
 		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
+		bool is_wrapper = !HasAttribute (pi.DeclaringType, typeof(SyntheticAttribute));
 		bool is_unsafe = false;
 		
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
@@ -2861,10 +2914,12 @@ public class Generator {
 
 			PrintPlatformAttributes (pi);
 
-			if (export.ArgumentSemantic != ArgumentSemantic.None)
-				print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
-			else
-				print ("[Export (\"{0}\")]", sel);
+			if (!is_sealed || !is_wrapper) {
+				if (export.ArgumentSemantic != ArgumentSemantic.None)
+					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
+				else
+					print ("[Export (\"{0}\")]", sel);
+			}
 			if (is_abstract){
 				print ("get; ");
 			} else {
@@ -2904,7 +2959,7 @@ public class Generator {
 
 			PrintPlatformAttributes (pi);
 
-			if (!not_implemented){
+			if (!not_implemented && (!is_sealed || !is_wrapper)){
 				if (export.ArgumentSemantic != ArgumentSemantic.None)
 					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
 				else
@@ -2952,6 +3007,8 @@ public class Generator {
 				print ("#pragma warning restore 168");
 			}
 
+		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
+		bool is_wrapper = !HasAttribute (type, typeof(SyntheticAttribute));
 		string selector = null;
 		bool virtual_method = false;
 		string wrap_method = null;
@@ -2973,8 +3030,11 @@ public class Generator {
 			ExportAttribute ea = (ExportAttribute) attr [0];
 			selector = ea.Selector;
 					
-			print ("[Export (\"{0}\")]", ea.Selector);
-			virtual_method = mi.Name != "Constructor";
+			if (!is_sealed || !is_wrapper) {
+				var is_variadic = ea.IsVariadic ? ", IsVariadic = true" : string.Empty;
+				print ("[Export (\"{0}\"{1})]", ea.Selector, is_variadic);
+				virtual_method = mi.Name != "Constructor";
+			}
 		}
 
 		foreach (ObsoleteAttribute oa in mi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
@@ -3005,7 +3065,6 @@ public class Generator {
 		bool is_internal = HasAttribute (mi, typeof (InternalAttribute));
 		bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
 		bool is_new = HasAttribute (mi, typeof (NewAttribute));
-		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
 		bool is_unsafe = false;
 		bool is_autorelease = HasAttribute (mi, typeof (AutoreleaseAttribute));
 
@@ -3125,6 +3184,7 @@ public class Generator {
 			bool is_category_class = category_attribute.Length > 0;
 			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0 || is_category_class;
 			bool is_model = type.GetCustomAttributes (typeof (ModelAttribute), true).Length > 0;
+			bool is_protocol = HasAttribute (type, typeof (ProtocolAttribute));
 			var default_ctor_visibility = GetAttribute<DefaultCtorVisibilityAttribute> (type);
 			object [] btype = type.GetCustomAttributes (typeof (BaseTypeAttribute), true);
 			BaseTypeAttribute bta = btype.Length > 0 ? ((BaseTypeAttribute) btype [0]) : null;
@@ -3140,7 +3200,9 @@ public class Generator {
 				base_type = typeof (object);
 				class_mod = "static ";
 			} else {
-				print ("[Register(\"{0}\", true)]", objc_type_name);
+				if (is_protocol)
+					print ("[Protocol]");
+				print ("[Register(\"{0}\", {1})]", objc_type_name, HasAttribute (type, typeof (SyntheticAttribute)) ? "false" : "true");
 				if (need_abstract.ContainsKey (type))
 					class_mod = "abstract ";
 			} 
@@ -3359,6 +3421,7 @@ public class Generator {
 						print ("static {0} _{1};", fieldTypeName, field_pi.Name);
 					}
 
+					print ("[Field (\"{0}\",  \"{1}\")]", fieldAttr.SymbolName, library_name);
 					PrintPlatformAttributes (field_pi);
 					print ("{0} static {1} {2} {{", HasAttribute (field_pi, typeof (InternalAttribute)) ? "internal" : "public", fieldTypeName, field_pi.Name);
 					indent++;
@@ -3672,42 +3735,6 @@ public class Generator {
 			}
 
 			//
-			// Now the trampolines
-			//
-			foreach (var ti in trampolines.Values){
-				print ("internal delegate {0} {1} ({2});", ti.ReturnType, ti.DelegateName, ti.Parameters);
-				print ("[CompilerGenerated]");
-				print ("static readonly {0} {1} = {2};", ti.DelegateName, ti.StaticName, ti.TrampolineName);
-				print ("[MonoPInvokeCallback (typeof ({0}))]", ti.DelegateName);
-				print ("static unsafe {0} {1} ({2}) {{", ti.ReturnType, ti.TrampolineName, ti.Parameters);
-				indent++;
-				print ("var descriptor = (BlockLiteral *) block;");
-				print ("var del = ({0}) (descriptor->global_handle != IntPtr.Zero ? GCHandle.FromIntPtr (descriptor->global_handle).Target : GCHandle.FromIntPtr (descriptor->local_handle).Target);", ti.UserDelegate);
-				bool is_void = ti.ReturnType == "void";
-				// FIXME: right now we only support 'null' when the delegate does not return a value
-				// otherwise we will need to know the default value to be returned (likely uncommon)
-				if (is_void) {
-					print ("if (del != null)");
-					indent++;
-					print ("del ({0});", ti.Invoke);
-					indent--;
-					if (ti.Clear.Length > 0){
-						print ("else");
-						indent++;
-						print (ti.Clear);
-						indent--;
-					}
-
-				} else {
-					print ("{0} retval = del ({1});", ti.DelegateReturnType, ti.Invoke);
-					print (ti.ReturnFormat, "retval");
-				}
-				indent--;
-				print ("}");
-				print ("");
-			}
-
-			//
 			// Do we need a dispose method?
 			//
 			if (!is_static_class){
@@ -3778,9 +3805,9 @@ public class Generator {
 				print ("get {{ return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (class_ptr, UIAppearance.SelectorAppearance)); }}", appearance_type_name);
 				indent--;
 				print ("}\n");
-				print ("public static {0}{1} GetAppearanceForSubclass (Type subclass) {{", parent_implements_appearance ? "new " : "", appearance_type_name);
+				print ("public static {0}{1} GetAppearance<T> () {{", parent_implements_appearance ? "new " : "", appearance_type_name);
 				indent++;
-				print ("return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (Class.GetHandle (subclass), UIAppearance.SelectorAppearance));", appearance_type_name);
+				print ("return new {0} (MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend (Class.GetHandle (typeof (T)), UIAppearance.SelectorAppearance));", appearance_type_name);
 				indent--;
 				print ("}\n");
 				print ("public static {0}{1} AppearanceWhenContainedIn (params Type [] containers)", parent_implements_appearance ? "new " : "", appearance_type_name);
@@ -3867,9 +3894,7 @@ public class Generator {
 				del.Append (");");
 				print (del.ToString ());
 			}
-			trampolines.Clear ();
 
-			
 			if (eventArgTypes.Count > 0){
 				print ("\n");
 				print ("//");

@@ -1,5 +1,10 @@
 //
-// Copyright 2009-2010, Novell, Inc.
+// FieldAttribute.cs: The Field attribute
+//
+// Authors:
+//   Rolf Bjarne Kvinge <rolf@xamarin.com>
+//
+// Copyright 2013 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -20,19 +25,20 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+//
 using System;
 
 namespace MonoMac.Foundation {
-
-	[AttributeUsage (AttributeTargets.Class | AttributeTargets.Interface)]
-	public sealed class ModelAttribute : Attribute {
-
-		public ModelAttribute () {}
-	}
-	
-	[AttributeUsage (AttributeTargets.Class | AttributeTargets.Interface)]
-	public sealed class ProtocolAttribute : Attribute {
-		
-		public ProtocolAttribute () {}
+	[AttributeUsage (AttributeTargets.Property)]
+	public class FieldAttribute : Attribute {
+		public FieldAttribute (string symbolName) {
+			SymbolName = symbolName;
+		}
+		public FieldAttribute (string symbolName, string libraryName) {
+			SymbolName = symbolName;
+			LibraryName = libraryName;
+		}
+		public string SymbolName { get; set; }
+		public string LibraryName { get; set; }
 	}
 }

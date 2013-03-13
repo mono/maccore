@@ -61,6 +61,11 @@ namespace MonoMac.Foundation {
 			set { this.semantic = value; }
 		}
 
+		public bool IsVariadic {
+			get;
+			set;
+		}
+
 //#if MONOMAC
 		public ExportAttribute ToGetter (PropertyInfo prop) {
 			if (string.IsNullOrEmpty (Selector))
