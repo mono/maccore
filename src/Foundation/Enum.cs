@@ -40,13 +40,21 @@ namespace MonoMac.Foundation  {
 		PPC64  = 0x01000012
 	}
 
+#if MAC64
+	public enum NSComparisonResult : long {
+#else
 	public enum NSComparisonResult {
+#endif
 		Ascending = -1,
 		Same,
 		Descending
 	}
 
+#if MAC64
+	public enum NSUrlRequestCachePolicy : ulong {
+#else
 	public enum NSUrlRequestCachePolicy {
+#endif
 		UseProtocolCachePolicy = 0,
 		ReloadIgnoringLocalCacheData = 1,
 		ReloadIgnoringLocalAndRemoteCacheData = 4, // Unimplemented
@@ -455,7 +463,11 @@ namespace MonoMac.Foundation  {
 		None, PrecisionLoss, Underflow, Overflow, DivideByZero
 	}
 	
+#if MAC64
+	public enum NSStringDrawingOptions : long {
+#else
 	public enum NSStringDrawingOptions : uint {
+#endif
 		UsesLineFragmentOrigin = (1 << 0),
 		UsesFontLeading = (1 << 1),
 		DisableScreenFontSubstitution = (1 << 2),
@@ -510,7 +522,11 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSLinguisticTaggerOptions : ulong {
+#else
 	public enum NSLinguisticTaggerOptions {
+#endif
 		OmitWords = 1,
 		OmitPunctuation = 2,
 		OmitWhitespace = 4,
@@ -523,18 +539,30 @@ namespace MonoMac.Foundation  {
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSJsonReadingOptions : ulong {
+#else
 	public enum NSJsonReadingOptions {
+#endif	
 		MutableContainers = 1,
 		MutableLeaves = 2,
 		AllowFragments = 4
 	}
 
 	[Flags]
+#if MAC64
+	public enum NSJsonWritingOptions : ulong {
+#else
 	public enum NSJsonWritingOptions {
+#endif
 		PrettyPrinted = 1
 	}
 
+#if MAC64
+	public enum NSLocaleLanguageDirection : ulong {
+#else
 	public enum NSLocaleLanguageDirection {
+#endif
 		Unknown, LeftToRight, RightToLeft, TopToBottom, BottomToTop,
 	}
 
@@ -654,7 +682,11 @@ namespace MonoMac.Foundation  {
 		WrapCalendarComponents = 1 << 0,
 	}
 
+#if MAC64
+	public enum NSUrlRequestNetworkServiceType : ulong {
+#else
 	public enum NSUrlRequestNetworkServiceType {
+#endif
 		Default,
 		VoIP,
 		Video,
