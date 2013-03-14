@@ -807,6 +807,28 @@ public class GeneratedType {
 	}
 }
 
+class MemberInformation
+{
+	public readonly bool is_abstract, is_protected, is_internal, is_override, is_new, is_sealed, is_static, is_thread_static, is_autorelease, is_wrapper;
+	public readonly Generator.ThreadCheck threadCheck;
+
+	public MemberInformation (MemberInfo mi, Type type)
+	{
+		is_abstract = Generator.HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
+		is_protected = Generator.HasAttribute (mi, typeof (ProtectedAttribute));
+		is_internal = Generator.HasAttribute (mi, typeof (InternalAttribute));
+		is_override = Generator.HasAttribute (mi, typeof (OverrideAttribute)) || !Generator.MemberBelongsToType (mi.DeclaringType, type);
+		is_new = Generator.HasAttribute (mi, typeof (NewAttribute));
+		is_sealed = Generator.HasAttribute (mi, typeof (SealedAttribute));
+		is_static = Generator.HasAttribute (mi, typeof (StaticAttribute));
+		is_thread_static = Generator.HasAttribute (mi, typeof (IsThreadStaticAttribute));
+		is_autorelease = Generator.HasAttribute (mi, typeof (AutoreleaseAttribute));
+		is_wrapper = !Generator.HasAttribute (mi.DeclaringType, typeof(SyntheticAttribute));
+		threadCheck = Generator.HasAttribute (mi, typeof (ThreadSafeAttribute)) ? Generator.ThreadCheck.Off : Generator.ThreadCheck.On;
+
+	}
+}
+
 public class Generator {
 	internal static bool IsBtouch;
 
@@ -2751,7 +2773,7 @@ public class Generator {
 	// This is used to determine if the memberType is in the declaring type or in any of the
 	// inherited versions of the type.   We use this now, since we support inlining protocols
 	//
-	static bool MemberBelongsToType (Type memberType, Type hostType)
+	public static bool MemberBelongsToType (Type memberType, Type hostType)
 	{
 		if (memberType == hostType)
 			return true;
@@ -2804,22 +2826,14 @@ public class Generator {
 	{
 		string wrap;
 		var export = GetExportAttribute (pi, out wrap);
-		bool is_static = HasAttribute (pi, typeof (StaticAttribute));
-		bool is_thread_static = HasAttribute (pi, typeof (IsThreadStaticAttribute));
-		bool is_abstract = HasAttribute (pi, typeof (AbstractAttribute)) && pi.DeclaringType == type;
-		bool is_protected = HasAttribute (pi, typeof (ProtectedAttribute));
-		bool is_internal = HasAttribute (pi, typeof (InternalAttribute));
-		bool is_override = HasAttribute (pi, typeof (OverrideAttribute)) || !MemberBelongsToType (pi.DeclaringType,  type);
-		bool is_new = HasAttribute (pi, typeof (NewAttribute));
-		bool is_sealed = HasAttribute (pi, typeof (SealedAttribute));
-		bool is_wrapper = !HasAttribute (pi.DeclaringType, typeof(SyntheticAttribute));
+		var minfo = new MemberInformation (pi, type);
 		bool is_unsafe = false;
 		
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
 			is_unsafe = true;
 
-		var mod = is_protected ? "protected" : null;
-		mod += is_internal ? "internal" : null;
+		var mod = minfo.is_protected ? "protected" : null;
+		mod += minfo.is_internal ? "internal" : null;
 		if (string.IsNullOrEmpty (mod))
 			mod = "public";
 
@@ -2829,8 +2843,8 @@ public class Generator {
 			print ("{0} {1}{2}{3}{4} {5} {{",
 			       mod,
 			       is_unsafe ? "unsafe " : "",
-			       is_new ? "new " : "",
-			       (is_static ? "static " : ""),
+			       minfo.is_new ? "new " : "",
+			       (minfo.is_static ? "static " : ""),
 			       FormatType (pi.DeclaringType,  pi.PropertyType),
 			       pi.Name);
 			indent++;
@@ -2873,21 +2887,21 @@ public class Generator {
 		if (wrap == null) {
 			// [Model] has properties that only throws, so there's no point in adding unused backing fields
 			if (!is_model && DoesPropertyNeedBackingField (pi)) {
-				var_name = string.Format ("__mt_{0}_var{1}", pi.Name, is_static ? "_static" : "");
+				var_name = string.Format ("__mt_{0}_var{1}", pi.Name, minfo.is_static ? "_static" : "");
 
 				print ("[CompilerGenerated]");
 
-				if (is_thread_static)
+				if (minfo.is_thread_static)
 					print ("[ThreadStatic]");
-				print ("{1}object {0};", var_name, is_static ? "static " : "");
+				print ("{1}object {0};", var_name, minfo.is_static ? "static " : "");
 
-				if (!is_static){
+				if (!minfo.is_static){
 					instance_fields_to_clear_on_dispose.Add (var_name);
 				}
 			}
-			override_mod = is_sealed ? "" : (is_static ? "static " : (is_abstract ? "abstract " : (is_override ? "override " : "virtual ")));
+			override_mod = minfo.is_sealed ? "" : (minfo.is_static ? "static " : (minfo.is_abstract ? "abstract " : (minfo.is_override ? "override " : "virtual ")));
 		} else {
-			override_mod = is_static ? "static " : "";
+			override_mod = minfo.is_static ? "static " : "";
 		}
 
 		print_generated_code ();
@@ -2896,7 +2910,7 @@ public class Generator {
 		print ("{0} {1}{2}{3}{4} {5} {{",
 		       mod,
 		       is_unsafe ? "unsafe " : "",
-		       is_new ? "new " : "",
+		       minfo.is_new ? "new " : "",
 		       override_mod,
 		       FormatType (pi.DeclaringType,  pi.PropertyType),
 		       pi.Name);
@@ -2924,13 +2938,13 @@ public class Generator {
 
 			PrintPlatformAttributes (pi);
 
-			if (!is_sealed || !is_wrapper) {
+			if (!minfo.is_sealed || !minfo.is_wrapper) {
 				if (export.ArgumentSemantic != ArgumentSemantic.None)
 					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
 				else
 					print ("[Export (\"{0}\")]", sel);
 			}
-			if (is_abstract){
+			if (minfo.is_abstract){
 				print ("get; ");
 			} else {
 				print ("get {");
@@ -2940,14 +2954,14 @@ public class Generator {
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					if (!DoesPropertyNeedBackingField (pi)) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, null, BodyOption.None, threadCheck, pi);
-					} else if (is_static) {
-						GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck, pi);
+						GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, null, BodyOption.None, threadCheck, pi);
+					} else if (minfo.is_static) {
+						GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck, pi);
 					} else {
 						if (DoesPropertyNeedDirtyCheck (pi, export))
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck, pi);
+							GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck, pi);
 						else
-							GenerateMethodBody (type, getter, !is_static, is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck, pi);
+							GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck, pi);
 					}
 				}
 				print ("}\n");
@@ -2969,13 +2983,13 @@ public class Generator {
 
 			PrintPlatformAttributes (pi);
 
-			if (!not_implemented && (!is_sealed || !is_wrapper)){
+			if (!not_implemented && (!minfo.is_sealed || !minfo.is_wrapper)){
 				if (export.ArgumentSemantic != ArgumentSemantic.None)
 					print ("[Export (\"{0}\", ArgumentSemantic.{1})]", sel, export.ArgumentSemantic);
 				else
 					print ("[Export (\"{0}\")]", sel);
 			}
-			if (is_abstract){
+			if (minfo.is_abstract){
 				print ("set; ");
 			} else {
 				print ("set {");
@@ -2986,8 +3000,8 @@ public class Generator {
 				else if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !is_static, is_static, sel, null_allowed, null, BodyOption.None, threadCheck, pi);
-					if (!is_static && DoesPropertyNeedBackingField (pi)) {
+					GenerateMethodBody (type, setter, !minfo.is_static, minfo.is_static, sel, null_allowed, null, BodyOption.None, threadCheck, pi);
+					if (!minfo.is_static && DoesPropertyNeedBackingField (pi)) {
 						if (DoesPropertyNeedDirtyCheck (pi, export)) {
 #if !MONOMAC
 							print ("\tif (!IsNewRefcountEnabled ())");
@@ -3065,25 +3079,18 @@ public class Generator {
 
 		PrintPlatformAttributes (mi);
 
-		bool is_static = HasAttribute (mi, typeof (StaticAttribute));
-		if (is_static || category_extension_type != null)
+		var minfo = new MemberInformation (mi, type);
+		if (minfo.is_static || category_extension_type != null)
 			virtual_method = false;
 
-		ThreadCheck threadCheck = HasAttribute (mi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
-		bool is_abstract = HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
-		bool is_protected = HasAttribute (mi, typeof (ProtectedAttribute));
-		bool is_internal = HasAttribute (mi, typeof (InternalAttribute));
-		bool is_override = HasAttribute (mi, typeof (OverrideAttribute)) || !MemberBelongsToType (mi.DeclaringType, type);
-		bool is_new = HasAttribute (mi, typeof (NewAttribute));
 		bool is_unsafe = false;
-		bool is_autorelease = HasAttribute (mi, typeof (AutoreleaseAttribute));
 
 		foreach (ParameterInfo pi in mi.GetParameters ())
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
 				is_unsafe = true;
 
-		var mod = is_protected ? "protected" : null;
-		mod += is_internal ? "internal" : null;
+		var mod = minfo.is_protected ? "protected" : null;
+		mod += minfo.is_internal ? "internal" : null;
 		if (string.IsNullOrEmpty (mod))
 			mod = "public";
 
@@ -3092,12 +3099,12 @@ public class Generator {
 		print ("{0} {1}{2}{3}{4}{5}",
 		       mod,
 		       is_unsafe ? "unsafe " : "",
-		       is_new ? "new " : "",
-		       is_sealed ? "" : (is_abstract ? "abstract " : (virtual_method ? (is_override ? "override " : "virtual ") : (is_static || category_extension_type != null ? "static " : ""))),
+		       minfo.is_new ? "new " : "",
+		       minfo.is_sealed ? "" : (minfo.is_abstract ? "abstract " : (virtual_method ? (minfo.is_override ? "override " : "virtual ") : (minfo.is_static || category_extension_type != null ? "static " : ""))),
 		       MakeSignature (mi, out ctor, category_extension_type),
-		       is_abstract ? ";" : "");
+		       minfo.is_abstract ? ";" : "");
 
-		if (!is_abstract){
+		if (!minfo.is_abstract){
 			if (ctor) {
 				indent++;
 				print (": {0}", wrap_method == null ? "base (NSObjectFlag.Empty)" : wrap_method);
@@ -3119,12 +3126,12 @@ public class Generator {
 					indent--;
 				}
 			} else {
-				if (is_autorelease) {
+				if (minfo.is_autorelease) {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
 				}
-				GenerateMethodBody (type, mi, virtual_method, is_static, selector, false, null, BodyOption.None, threadCheck, null, is_appearance, category_extension_type);
-				if (is_autorelease) {
+				GenerateMethodBody (type, mi, virtual_method, minfo.is_static, selector, false, null, BodyOption.None, minfo.threadCheck, null, is_appearance, category_extension_type);
+				if (minfo.is_autorelease) {
 					print ("}");
 					indent--;
 				}
