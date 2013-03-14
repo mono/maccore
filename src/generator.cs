@@ -827,6 +827,15 @@ class MemberInformation
 		threadCheck = Generator.HasAttribute (mi, typeof (ThreadSafeAttribute)) ? Generator.ThreadCheck.Off : Generator.ThreadCheck.On;
 
 	}
+
+	public string GetVisibility ()
+	{
+		var mod = is_protected ? "protected" : null;
+		mod += is_internal ? "internal" : null;
+		if (string.IsNullOrEmpty (mod))
+			mod = "public";
+		return mod;
+	}
 }
 
 public class Generator {
@@ -2832,10 +2841,7 @@ public class Generator {
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
 			is_unsafe = true;
 
-		var mod = minfo.is_protected ? "protected" : null;
-		mod += minfo.is_internal ? "internal" : null;
-		if (string.IsNullOrEmpty (mod))
-			mod = "public";
+		var mod = minfo.GetVisibility ();
 
 		if (wrap != null){
 			print_generated_code ();
@@ -3089,10 +3095,7 @@ public class Generator {
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
 				is_unsafe = true;
 
-		var mod = minfo.is_protected ? "protected" : null;
-		mod += minfo.is_internal ? "internal" : null;
-		if (string.IsNullOrEmpty (mod))
-			mod = "public";
+		var mod = minfo.GetVisibility ();
 
 		bool ctor;
 		print_generated_code ();
