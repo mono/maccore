@@ -850,6 +850,36 @@ class MemberInformation
 			mod = "public";
 		return mod;
 	}
+
+	public string GetStaticModifiers ()
+	{
+		return GetModifiers (false, false);
+	}
+
+	public string GetVirtualModifiers ()
+	{
+		return GetModifiers (true, false);
+	}
+
+	public string GetModifiers (bool is_virtual, bool is_actually_static)
+	{
+		string mods = "";
+
+		mods += is_unsafe ? "unsafe " : null;
+		mods += is_new ? "new " : "";
+
+		if (is_sealed) {
+			mods += "";
+		} else if (is_static || is_actually_static) {
+			mods += "static ";
+		} else if (is_abstract) {
+			mods += "abstract ";
+		} else if (is_virtual) {
+			mods += is_override ? "override " : "virtual ";
+		}
+
+	    return mods;
+	}
 }
 
 public class Generator {
@@ -2856,11 +2886,9 @@ public class Generator {
 		if (wrap != null){
 			print_generated_code ();
 			PrintPropertyAttributes (pi);
-			print ("{0} {1}{2}{3}{4} {5} {{",
+			print ("{0} {1}{2} {3} {{",
 			       mod,
-			       minfo.is_unsafe ? "unsafe " : "",
-			       minfo.is_new ? "new " : "",
-			       (minfo.is_static ? "static " : ""),
+			       minfo.GetStaticModifiers (),
 			       FormatType (pi.DeclaringType,  pi.PropertyType),
 			       pi.Name);
 			indent++;
@@ -2898,7 +2926,6 @@ public class Generator {
 		}
 
 		string var_name = null;
-		string override_mod;
 		
 		if (wrap == null) {
 			// [Model] has properties that only throws, so there's no point in adding unused backing fields
@@ -2915,19 +2942,14 @@ public class Generator {
 					instance_fields_to_clear_on_dispose.Add (var_name);
 				}
 			}
-			override_mod = minfo.is_sealed ? "" : (minfo.is_static ? "static " : (minfo.is_abstract ? "abstract " : (minfo.is_override ? "override " : "virtual ")));
-		} else {
-			override_mod = minfo.is_static ? "static " : "";
 		}
 
 		print_generated_code ();
 		PrintPropertyAttributes (pi);
 
-		print ("{0} {1}{2}{3}{4} {5} {{",
+		print ("{0} {1}{2} {3} {{",
 		       mod,
-		       minfo.is_unsafe ? "unsafe " : "",
-		       minfo.is_new ? "new " : "",
-		       override_mod,
+		       minfo.GetVirtualModifiers (),
 		       FormatType (pi.DeclaringType,  pi.PropertyType),
 		       pi.Name);
 		indent++;
@@ -3103,11 +3125,9 @@ public class Generator {
 
 		bool ctor;
 		print_generated_code ();
-		print ("{0} {1}{2}{3}{4}{5}",
+		print ("{0} {1}{2}{3}",
 		       mod,
-		       minfo.is_unsafe ? "unsafe " : "",
-		       minfo.is_new ? "new " : "",
-		       minfo.is_sealed ? "" : (minfo.is_abstract ? "abstract " : (virtual_method ? (minfo.is_override ? "override " : "virtual ") : (minfo.is_static || category_extension_type != null ? "static " : ""))),
+		       minfo.GetModifiers (virtual_method, category_extension_type != null),
 		       MakeSignature (mi, out ctor, category_extension_type),
 		       minfo.is_abstract ? ";" : "");
 
