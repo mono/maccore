@@ -811,8 +811,9 @@ class MemberInformation
 {
 	public readonly bool is_abstract, is_protected, is_internal, is_override, is_new, is_sealed, is_static, is_thread_static, is_autorelease, is_wrapper;
 	public readonly Generator.ThreadCheck threadCheck;
+	public bool is_unsafe;
 
-	public MemberInformation (MemberInfo mi, Type type)
+	MemberInformation (MemberInfo mi, Type type)
 	{
 		is_abstract = Generator.HasAttribute (mi, typeof (AbstractAttribute)) && mi.DeclaringType == type;
 		is_protected = Generator.HasAttribute (mi, typeof (ProtectedAttribute));
@@ -826,6 +827,19 @@ class MemberInformation
 		is_wrapper = !Generator.HasAttribute (mi.DeclaringType, typeof(SyntheticAttribute));
 		threadCheck = Generator.HasAttribute (mi, typeof (ThreadSafeAttribute)) ? Generator.ThreadCheck.Off : Generator.ThreadCheck.On;
 
+	}
+
+	public MemberInformation (MethodInfo mi, Type type) : this ((MemberInfo)mi, type)
+	{
+		foreach (ParameterInfo pi in mi.GetParameters ())
+			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
+				is_unsafe = true;
+	}
+
+	public MemberInformation (PropertyInfo pi, Type type) : this ((MemberInfo)pi, type)
+	{
+		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
+			is_unsafe = true;
 	}
 
 	public string GetVisibility ()
@@ -2836,10 +2850,6 @@ public class Generator {
 		string wrap;
 		var export = GetExportAttribute (pi, out wrap);
 		var minfo = new MemberInformation (pi, type);
-		bool is_unsafe = false;
-		
-		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
-			is_unsafe = true;
 
 		var mod = minfo.GetVisibility ();
 
@@ -2848,7 +2858,7 @@ public class Generator {
 			PrintPropertyAttributes (pi);
 			print ("{0} {1}{2}{3}{4} {5} {{",
 			       mod,
-			       is_unsafe ? "unsafe " : "",
+			       minfo.is_unsafe ? "unsafe " : "",
 			       minfo.is_new ? "new " : "",
 			       (minfo.is_static ? "static " : ""),
 			       FormatType (pi.DeclaringType,  pi.PropertyType),
@@ -2915,7 +2925,7 @@ public class Generator {
 
 		print ("{0} {1}{2}{3}{4} {5} {{",
 		       mod,
-		       is_unsafe ? "unsafe " : "",
+		       minfo.is_unsafe ? "unsafe " : "",
 		       minfo.is_new ? "new " : "",
 		       override_mod,
 		       FormatType (pi.DeclaringType,  pi.PropertyType),
@@ -3089,19 +3099,13 @@ public class Generator {
 		if (minfo.is_static || category_extension_type != null)
 			virtual_method = false;
 
-		bool is_unsafe = false;
-
-		foreach (ParameterInfo pi in mi.GetParameters ())
-			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
-				is_unsafe = true;
-
 		var mod = minfo.GetVisibility ();
 
 		bool ctor;
 		print_generated_code ();
 		print ("{0} {1}{2}{3}{4}{5}",
 		       mod,
-		       is_unsafe ? "unsafe " : "",
+		       minfo.is_unsafe ? "unsafe " : "",
 		       minfo.is_new ? "new " : "",
 		       minfo.is_sealed ? "" : (minfo.is_abstract ? "abstract " : (virtual_method ? (minfo.is_override ? "override " : "virtual ") : (minfo.is_static || category_extension_type != null ? "static " : ""))),
 		       MakeSignature (mi, out ctor, category_extension_type),
