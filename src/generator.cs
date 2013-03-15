@@ -811,7 +811,8 @@ class MemberInformation
 {
 	public readonly bool is_abstract, is_protected, is_internal, is_override, is_new, is_sealed, is_static, is_thread_static, is_autorelease, is_wrapper;
 	public readonly Generator.ThreadCheck threadCheck;
-	public bool is_unsafe;
+	public bool is_unsafe, is_virtual_method, is_export, is_category_extension, is_variadic;
+	public string selector, wrap_method;
 
 	MemberInformation (MemberInfo mi, Type type)
 	{
@@ -829,17 +830,57 @@ class MemberInformation
 
 	}
 
-	public MemberInformation (MethodInfo mi, Type type) : this ((MemberInfo)mi, type)
+	public MemberInformation (MethodInfo mi, Type type, Type category_extension_type) : this ((MemberInfo)mi, type)
 	{
 		foreach (ParameterInfo pi in mi.GetParameters ())
 			if (pi.ParameterType.IsSubclassOf (typeof (Delegate)))
 				is_unsafe = true;
+
+		object [] attr = mi.GetCustomAttributes (typeof (ExportAttribute), true);
+		if (attr.Length != 1){
+			attr = mi.GetCustomAttributes (typeof (BindAttribute), true);
+			if (attr.Length != 1) {
+				attr = mi.GetCustomAttributes (typeof (WrapAttribute), true);
+				if (attr.Length != 1)
+					throw new BindingException (1012, true, "No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
+
+				wrap_method = ((WrapAttribute) attr [0]).MethodName;
+			} else {
+				BindAttribute ba = (BindAttribute) attr [0];
+				selector = ba.Selector;
+				is_virtual_method = ba.Virtual;
+			}
+		} else {
+			ExportAttribute ea = (ExportAttribute) attr [0];
+			selector = ea.Selector;
+			is_variadic = ea.IsVariadic;
+
+			if (!is_sealed || !is_wrapper) {
+				is_virtual_method = mi.Name != "Constructor";
+				is_export = true;
+			}
+		}
+
+		if (category_extension_type != null)
+			is_category_extension = true;
+
+		if (is_static || is_category_extension)
+			is_virtual_method = false;
 	}
 
 	public MemberInformation (PropertyInfo pi, Type type) : this ((MemberInfo)pi, type)
 	{
 		if (pi.PropertyType.IsSubclassOf (typeof (Delegate)))
 			is_unsafe = true;
+
+		var export = Generator.GetExportAttribute (pi, out wrap_method);
+		if (export != null)
+			selector = export.Selector;
+
+		if (wrap_method != null)
+			is_virtual_method = false;
+		else
+			is_virtual_method = !is_static;
 	}
 
 	public string GetVisibility ()
@@ -851,17 +892,7 @@ class MemberInformation
 		return mod;
 	}
 
-	public string GetStaticModifiers ()
-	{
-		return GetModifiers (false, false);
-	}
-
-	public string GetVirtualModifiers ()
-	{
-		return GetModifiers (true, false);
-	}
-
-	public string GetModifiers (bool is_virtual, bool is_actually_static)
+	public string GetModifiers ()
 	{
 		string mods = "";
 
@@ -870,11 +901,11 @@ class MemberInformation
 
 		if (is_sealed) {
 			mods += "";
-		} else if (is_static || is_actually_static) {
+		} else if (is_static || is_category_extension) {
 			mods += "static ";
 		} else if (is_abstract) {
 			mods += "abstract ";
-		} else if (is_virtual) {
+		} else if (is_virtual_method) {
 			mods += is_override ? "override " : "virtual ";
 		}
 
@@ -2888,7 +2919,7 @@ public class Generator {
 			PrintPropertyAttributes (pi);
 			print ("{0} {1}{2} {3} {{",
 			       mod,
-			       minfo.GetStaticModifiers (),
+			       minfo.GetModifiers (),
 			       FormatType (pi.DeclaringType,  pi.PropertyType),
 			       pi.Name);
 			indent++;
@@ -2949,7 +2980,7 @@ public class Generator {
 
 		print ("{0} {1}{2} {3} {{",
 		       mod,
-		       minfo.GetVirtualModifiers (),
+		       minfo.GetModifiers (),
 		       FormatType (pi.DeclaringType,  pi.PropertyType),
 		       pi.Name);
 		indent++;
@@ -3068,35 +3099,10 @@ public class Generator {
 				print ("#pragma warning restore 168");
 			}
 
-		bool is_sealed = HasAttribute (mi, typeof (SealedAttribute));
-		bool is_wrapper = !HasAttribute (type, typeof(SyntheticAttribute));
-		string selector = null;
-		bool virtual_method = false;
-		string wrap_method = null;
-		object [] attr = mi.GetCustomAttributes (typeof (ExportAttribute), true);
-		if (attr.Length != 1){
-			attr = mi.GetCustomAttributes (typeof (BindAttribute), true);
-			if (attr.Length != 1) {
-				attr = mi.GetCustomAttributes (typeof (WrapAttribute), true);
-				if (attr.Length != 1)
-					throw new BindingException (1012, true, "No Export or Bind attribute defined on {0}.{1}", type, mi.Name);
 
-				wrap_method = ((WrapAttribute) attr [0]).MethodName;
-			} else {
-				BindAttribute ba = (BindAttribute) attr [0];
-				selector = ba.Selector;
-				virtual_method = ba.Virtual;
-			}
-		} else {
-			ExportAttribute ea = (ExportAttribute) attr [0];
-			selector = ea.Selector;
-					
-			if (!is_sealed || !is_wrapper) {
-				var is_variadic = ea.IsVariadic ? ", IsVariadic = true" : string.Empty;
-				print ("[Export (\"{0}\"{1})]", ea.Selector, is_variadic);
-				virtual_method = mi.Name != "Constructor";
-			}
-		}
+		var minfo = new MemberInformation (mi, type, category_extension_type);
+		if (minfo.is_export)
+			print ("[Export (\"{0}\"{1})]", minfo.selector, minfo.is_variadic ? ", IsVariadic = true" : string.Empty);
 
 		foreach (ObsoleteAttribute oa in mi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
 			print ("[Obsolete (\"{0}\", {1})]",
@@ -3116,24 +3122,20 @@ public class Generator {
 
 		PrintPlatformAttributes (mi);
 
-		var minfo = new MemberInformation (mi, type);
-		if (minfo.is_static || category_extension_type != null)
-			virtual_method = false;
-
 		var mod = minfo.GetVisibility ();
 
 		bool ctor;
 		print_generated_code ();
 		print ("{0} {1}{2}{3}",
 		       mod,
-		       minfo.GetModifiers (virtual_method, category_extension_type != null),
+		       minfo.GetModifiers (),
 		       MakeSignature (mi, out ctor, category_extension_type),
 		       minfo.is_abstract ? ";" : "");
 
 		if (!minfo.is_abstract){
 			if (ctor) {
 				indent++;
-				print (": {0}", wrap_method == null ? "base (NSObjectFlag.Empty)" : wrap_method);
+				print (": {0}", minfo.wrap_method == null ? "base (NSObjectFlag.Empty)" : minfo.wrap_method);
 				indent--;
 			}
 
@@ -3143,12 +3145,12 @@ public class Generator {
 					
 			if (is_model)
 				print ("\tthrow new You_Should_Not_Call_base_In_This_Method ();");
-			else if (wrap_method != null) {
+			else if (minfo.wrap_method != null) {
 				if (!ctor) {
 					indent++;
 
 					string ret = mi.ReturnType == typeof (void) ? null : "return ";
-					print ("{0}{1};", ret, wrap_method);
+					print ("{0}{1};", ret, minfo.wrap_method);
 					indent--;
 				}
 			} else {
@@ -3156,7 +3158,7 @@ public class Generator {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
 				}
-				GenerateMethodBody (type, mi, virtual_method, minfo.is_static, selector, false, null, BodyOption.None, minfo.threadCheck, null, is_appearance, category_extension_type);
+				GenerateMethodBody (type, mi, minfo.is_virtual_method, minfo.is_static, minfo.selector, false, null, BodyOption.None, minfo.threadCheck, null, is_appearance, category_extension_type);
 				if (minfo.is_autorelease) {
 					print ("}");
 					indent--;
