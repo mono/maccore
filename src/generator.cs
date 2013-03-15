@@ -807,7 +807,7 @@ public class GeneratedType {
 	}
 }
 
-class MemberInformation
+public class MemberInformation
 {
 	public readonly bool is_abstract, is_protected, is_internal, is_override, is_new, is_sealed, is_static, is_thread_static, is_autorelease, is_wrapper;
 	public readonly Generator.ThreadCheck threadCheck;
@@ -2544,11 +2544,11 @@ public class Generator {
 	// The NullAllowed can be applied on a property, to avoid the ugly syntax, we allow it on the property
 	// So we need to pass this as `null_allowed_override',   This should only be used by setters.
 	//
-	public void GenerateMethodBody (Type type, MethodInfo mi, bool virtual_method, bool is_static, string sel, bool null_allowed_override, string var_name, BodyOption body_options, ThreadCheck threadCheck, PropertyInfo propInfo = null, bool is_appearance = false, Type category_type = null)
+	public void GenerateMethodBody (Type type, MemberInformation minfo, MethodInfo mi, string sel, bool null_allowed_override, string var_name, BodyOption body_options, PropertyInfo propInfo = null, bool is_appearance = false, Type category_type = null)
 	{
 		CurrentMethod = String.Format ("{0}.{1}", type.Name, mi.Name);
-		
-		bool needs_thread_check = type_needs_thread_checks && threadCheck == ThreadCheck.On;
+
+		bool needs_thread_check = type_needs_thread_checks && minfo.threadCheck == ThreadCheck.On;
 		string selector = SelectorField (sel);
 		var args = new StringBuilder ();
 		var convs = new StringBuilder ();
@@ -2719,10 +2719,10 @@ public class Generator {
 		}
 		
 		bool needs_temp = use_temp_return || disposes.Length > 0;
-		if (virtual_method || mi.Name == "Constructor"){
+		if (minfo.is_virtual_method || mi.Name == "Constructor"){
 			//print ("if (this.GetType () == typeof ({0})) {{", type.Name);
 			if (external) {
-				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, category_type);
+				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, minfo.is_static, category_type);
 			} else {
 				if (BindThirdPartyLibrary && mi.Name == "Constructor"){
 					print (init_binding_type);
@@ -2737,11 +2737,11 @@ public class Generator {
 				
 				print ("if (IsDirectBinding) {{", type.Name);
 				indent++;
-				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, category_type);
+				GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, minfo.is_static, category_type);
 				indent--;
 				print ("} else {");
 				indent++;
-				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, is_static, category_type);
+				GenerateInvoke (true, mi, selector, args.ToString (), needs_temp, minfo.is_static, category_type);
 				indent--;
 				print ("}");
 				
@@ -2756,7 +2756,7 @@ public class Generator {
 				}
 			}
 		} else {
-			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, is_static, category_type);
+			GenerateInvoke (false, mi, selector, args.ToString (), needs_temp, minfo.is_static, category_type);
 		}
 		
 		if (release_return)
@@ -3022,14 +3022,14 @@ public class Generator {
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					if (!DoesPropertyNeedBackingField (pi)) {
-						GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, null, BodyOption.None, minfo.threadCheck, pi);
+						GenerateMethodBody (type, minfo, getter, sel, false, null, BodyOption.None, pi);
 					} else if (minfo.is_static) {
-						GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.StoreRet, minfo.threadCheck, pi);
+						GenerateMethodBody (type, minfo, getter, sel, false, var_name, BodyOption.StoreRet, pi);
 					} else {
 						if (DoesPropertyNeedDirtyCheck (pi, export))
-							GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.CondStoreRet, minfo.threadCheck, pi);
+							GenerateMethodBody (type, minfo, getter, sel, false, var_name, BodyOption.CondStoreRet, pi);
 						else
-							GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.MarkRetDirty, minfo.threadCheck, pi);
+							GenerateMethodBody (type, minfo, getter, sel, false, var_name, BodyOption.MarkRetDirty, pi);
 					}
 				}
 				print ("}\n");
@@ -3068,7 +3068,7 @@ public class Generator {
 				else if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !minfo.is_static, minfo.is_static, sel, null_allowed, null, BodyOption.None, minfo.threadCheck, pi);
+					GenerateMethodBody (type, minfo, setter, sel, null_allowed, null, BodyOption.None, pi);
 					if (!minfo.is_static && DoesPropertyNeedBackingField (pi)) {
 						if (DoesPropertyNeedDirtyCheck (pi, export)) {
 #if !MONOMAC
@@ -3158,7 +3158,7 @@ public class Generator {
 					indent++;
 					print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
 				}
-				GenerateMethodBody (type, mi, minfo.is_virtual_method, minfo.is_static, minfo.selector, false, null, BodyOption.None, minfo.threadCheck, null, is_appearance, category_extension_type);
+				GenerateMethodBody (type, minfo, mi, minfo.selector, false, null, BodyOption.None, null, is_appearance, category_extension_type);
 				if (minfo.is_autorelease) {
 					print ("}");
 					indent--;
