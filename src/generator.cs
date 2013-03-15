@@ -2968,7 +2968,6 @@ public class Generator {
 			return;			
 		}
 
-		ThreadCheck threadCheck = HasAttribute (pi, typeof (ThreadSafeAttribute)) ? ThreadCheck.Off : ThreadCheck.On;
 		if (pi.CanRead){
 			var getter = pi.GetGetMethod ();
 			var ba = GetBindAttribute (getter);
@@ -2992,14 +2991,14 @@ public class Generator {
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
 					if (!DoesPropertyNeedBackingField (pi)) {
-						GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, null, BodyOption.None, threadCheck, pi);
+						GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, null, BodyOption.None, minfo.threadCheck, pi);
 					} else if (minfo.is_static) {
-						GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.StoreRet, threadCheck, pi);
+						GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.StoreRet, minfo.threadCheck, pi);
 					} else {
 						if (DoesPropertyNeedDirtyCheck (pi, export))
-							GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.CondStoreRet, threadCheck, pi);
+							GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.CondStoreRet, minfo.threadCheck, pi);
 						else
-							GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.MarkRetDirty, threadCheck, pi);
+							GenerateMethodBody (type, getter, !minfo.is_static, minfo.is_static, sel, false, var_name, BodyOption.MarkRetDirty, minfo.threadCheck, pi);
 					}
 				}
 				print ("}\n");
@@ -3038,7 +3037,7 @@ public class Generator {
 				else if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
-					GenerateMethodBody (type, setter, !minfo.is_static, minfo.is_static, sel, null_allowed, null, BodyOption.None, threadCheck, pi);
+					GenerateMethodBody (type, setter, !minfo.is_static, minfo.is_static, sel, null_allowed, null, BodyOption.None, minfo.threadCheck, pi);
 					if (!minfo.is_static && DoesPropertyNeedBackingField (pi)) {
 						if (DoesPropertyNeedDirtyCheck (pi, export)) {
 #if !MONOMAC
