@@ -3225,6 +3225,8 @@ public class Generator {
 	{
 		var minfo = new AsyncMethodInfo (type, mi, category_extension_type);
 
+		PrintMethodAttributes (mi);
+
 		PrintAsyncHeader (minfo);
 		if (minfo.is_abstract)
 			return;
@@ -3272,21 +3274,8 @@ public class Generator {
 		}
 	}
 
-
-	void GenerateMethod (Type type, MethodInfo mi, bool is_model, Type category_extension_type, bool is_appearance)
+	void PrintMethodAttributes (MethodInfo mi)
 	{
-		foreach (ParameterInfo pi in mi.GetParameters ())
-			if (HasAttribute (pi, typeof (RetainAttribute))){
-				print ("#pragma warning disable 168");
-				print ("{0} __mt_{1}_{2};", pi.ParameterType, mi.Name, pi.Name);
-				print ("#pragma warning restore 168");
-			}
-
-
-		var minfo = new MemberInformation (mi, type, category_extension_type);
-		if (minfo.is_export)
-			print ("[Export (\"{0}\"{1})]", minfo.selector, minfo.is_variadic ? ", IsVariadic = true" : string.Empty);
-
 		foreach (ObsoleteAttribute oa in mi.GetCustomAttributes (typeof (ObsoleteAttribute), false)) {
 			print ("[Obsolete (\"{0}\", {1})]",
 			       oa.Message, oa.IsError ? "true" : "false");
@@ -3302,7 +3291,23 @@ public class Generator {
 				print ("[EditorBrowsable (EditorBrowsableState.{0})]", ea.State);
 			}
 		}
+	}
 
+	void GenerateMethod (Type type, MethodInfo mi, bool is_model, Type category_extension_type, bool is_appearance)
+	{
+		foreach (ParameterInfo pi in mi.GetParameters ())
+			if (HasAttribute (pi, typeof (RetainAttribute))){
+				print ("#pragma warning disable 168");
+				print ("{0} __mt_{1}_{2};", pi.ParameterType, mi.Name, pi.Name);
+				print ("#pragma warning restore 168");
+			}
+
+
+		var minfo = new MemberInformation (mi, type, category_extension_type);
+		if (minfo.is_export)
+			print ("[Export (\"{0}\"{1})]", minfo.selector, minfo.is_variadic ? ", IsVariadic = true" : string.Empty);
+
+		PrintMethodAttributes (mi);
 		PrintPlatformAttributes (mi);
 
 		var mod = minfo.GetVisibility ();
