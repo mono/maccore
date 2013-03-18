@@ -666,6 +666,42 @@ public class CategoryAttribute : Attribute {
 }
 
 //
+// Apply this attribute to a method that you want an async version of a callback method.
+//
+// Use the ResultType or ResultTypeName attribute to describe any composite value to be by the Task object.
+// The format is the name of the type followed.
+//
+// Note that this only supports the case where the callback is the last parameter of the method.
+//
+// Like this:
+//[Export ("saveAccount:withCompletionHandler:")] [Async ("StoreSaveStatus,Success,Error")]
+//void SaveAccount (ACAccount account, ACAccountStoreSaveCompletionHandler completionHandler);
+// }
+[AttributeUsage (AttributeTargets.Method, AllowMultiple=false)]
+public class AsyncAttribute : Attribute {
+
+	//This will automagically generate the async method.
+	//This works with 4 kinds of callbacks: (), (NSError), (result), (result, NSError)
+	public AsyncAttribute () {}
+
+	//This works with 2 kinds of callbacks: (...) and (..., NSError) where ... is a size > 1 list of parameters
+	//Parameters are passed in order to a constructor in resultType
+	public AsyncAttribute (Type resultType) {
+		ResultType = resultType;
+	}
+
+	//This works with 2 kinds of callbacks: (...) and (..., NSError) where ... is a size > 1 list of parameters
+	//Parameters are passed in order to a constructor in resultType
+	//Result type is generated to have properties with names equal to the delegate parameters.
+	public AsyncAttribute (string resultTypeName) {
+		ResultTypeName = resultTypeName;
+	}
+
+	public Type ResultType { get; set; }
+	public string ResultTypeName { get; set; }
+}
+
+//
 // Used to encapsulate flags about types in either the parameter or the return value
 // For now, it only supports the [PlainString] attribute on strings.
 //
@@ -929,6 +965,9 @@ public class Generator {
 	Dictionary<Type,Type> delegates_emitted = new Dictionary<Type, Type> ();
 	Dictionary<Type,Type> notification_event_arg_types = new Dictionary<Type,Type> ();
 	List <string> libraries = new List <string> ();
+
+	List<Tuple<string, ParameterInfo[]>> async_result_types = new List<Tuple <string, ParameterInfo[]>> ();
+	HashSet<string> async_result_types_emitted = new HashSet<string> ();
 
 	//
 	// This contains delegates that are referenced in the source and need to be generated.
@@ -1408,7 +1447,7 @@ public class Generator {
 		return null;
 	}
 	
-	public T GetAttribute<T> (ICustomAttributeProvider mi) where T: class
+	public static T GetAttribute<T> (ICustomAttributeProvider mi) where T: class
 	{
 		object [] a = mi.GetCustomAttributes (typeof (T), true);
 		if (a.Length > 0)
@@ -1766,6 +1805,8 @@ public class Generator {
 					else if (attr is MarshalNativeExceptionsAttribute)
 						continue;
 					else if (attr is WrapAttribute)
+						continue;
+					else if (attr is AsyncAttribute)
 						continue;
 					else 
 						throw new BindingException (1007, true, "Unknown attribute {0} on {1}", attr.GetType (), t);
@@ -2199,13 +2240,18 @@ public class Generator {
 	//
 	public string MakeSignature (MethodInfo mi, out bool ctor, Type category_class)
 	{
+		return MakeSignature (mi, out ctor, false, category_class, mi.GetParameters ());
+	}
+
+	public string MakeSignature (MethodInfo mi, out bool ctor, bool is_async, Type category_class, ParameterInfo[] parameters)
+	{
 		StringBuilder sb = new StringBuilder ();
 		ctor = mi.Name == "Constructor";
-		string name =  ctor ? mi.DeclaringType.Name : mi.Name;
+		string name =  ctor ? mi.DeclaringType.Name : is_async ? mi.Name + "Async" : mi.Name;
 
 		if (mi.Name == "AutocapitalizationType"){
 		}
-		if (!ctor){
+		if (!ctor && !is_async){
 			sb.Append (FormatType (mi.DeclaringType, mi.ReturnType));
 			sb.Append (" ");
 		}
@@ -2220,7 +2266,7 @@ public class Generator {
 			sb.Append (" This");
 			comma = true;
 		}
-		foreach (var pi in mi.GetParameters ()){
+		foreach (var pi in parameters){
 			if (comma)
 				sb.Append (", ");
 			comma = true;
@@ -2247,6 +2293,7 @@ public class Generator {
 		"System.Runtime.InteropServices",
 		"System.Diagnostics",
 		"System.ComponentModel",
+		"System.Threading.Tasks",
 #if MONOMAC
 		"MonoMac",
 		"MonoMac.CoreFoundation",
@@ -3090,6 +3137,142 @@ public class Generator {
 		print ("}}\n", pi.Name);
 	}
 
+	class AsyncMethodInfo : MemberInformation {
+		public Type type;
+		public MethodInfo mi;
+		public Type category_extension_type;
+		public ParameterInfo[] async_initial_params, async_completion_params;
+		public bool has_nserror, is_void_async, is_single_arg_async;
+
+		public AsyncMethodInfo (Type type, MethodInfo mi, Type category_extension_type) : base (mi, type, category_extension_type)
+		{
+			this.mi = mi;
+			this.type = type;
+			this.category_extension_type = category_extension_type;
+			this.async_initial_params = Generator.DropLast (mi.GetParameters ());
+
+			//FIXME do proper error handling if the last parameter is not a delegate
+			var cbParams = mi.GetParameters ().Last ().ParameterType.GetMethod ("Invoke").GetParameters ();
+			async_completion_params = cbParams;
+
+			//WTF this fails: cbParams.Last ().ParameterType.Name == typeof (NSError)
+			if (cbParams.Length > 0 && cbParams.Last ().ParameterType.Name == "NSError") {
+				has_nserror = true;
+				cbParams = Generator.DropLast (cbParams);
+			}
+			if (cbParams.Length == 0)
+				is_void_async = true;
+			if (cbParams.Length == 1)
+				is_single_arg_async = true;
+		}
+	}
+
+	public static T[] DropLast<T> (T[] arr)
+	{
+		T[] res = new T [arr.Length - 1];
+		Array.Copy (arr, res, res.Length);
+		return res;
+	}
+
+	string GetReturnType (AsyncMethodInfo minfo)
+	{
+		if (minfo.is_void_async)
+			return "Task";
+		return "Task<" + GetAsyncTaskType (minfo) + ">";
+	}
+
+	string GetAsyncTaskType (AsyncMethodInfo minfo)
+	{
+		if (minfo.is_single_arg_async)
+			return FormatType (minfo.type, minfo.async_completion_params [0].ParameterType);
+
+		var attr = GetAttribute<AsyncAttribute> (minfo.mi);
+		if (attr.ResultTypeName != null)
+			return attr.ResultTypeName;
+		if (attr.ResultType != null)
+			return FormatType (minfo.type, attr.ResultType);
+
+		throw new BindingException (1023, true, "Async method {0} with more than one result parameter in the callback by neither ResultTypeName or ResultType", minfo.mi);
+	}
+
+	string GetInvokeParamList (ParameterInfo[] parameters)
+	{
+		StringBuilder sb = new StringBuilder ();
+		bool comma = false;
+		foreach (var pi in parameters) {
+			if (comma)
+				sb.Append (", ");
+			comma = true;
+			sb.Append (pi.Name);
+		}
+		return sb.ToString ();
+	}
+
+	void PrintAsyncHeader (AsyncMethodInfo minfo)
+	{
+		bool ctor;
+
+		print_generated_code ();
+		print ("{0} {1}{2} {3}",
+			minfo.GetVisibility (),
+			minfo.GetModifiers (),
+			GetReturnType (minfo),
+			MakeSignature (minfo.mi, out ctor, true, minfo.category_extension_type, minfo.async_initial_params),
+		    minfo.is_abstract ? ";" : "");
+	}
+
+	void GenerateAsyncMethod (Type type, MethodInfo mi, Type category_extension_type)
+	{
+		var minfo = new AsyncMethodInfo (type, mi, category_extension_type);
+
+		PrintAsyncHeader (minfo);
+		if (minfo.is_abstract)
+			return;
+
+		print ("{");
+		indent++;
+
+		if (minfo.is_void_async)
+			print ("var tcs = new TaskCompletionSource<bool> ();");
+		else
+			print ("var tcs = new TaskCompletionSource<{0}> ();", GetAsyncTaskType (minfo));
+		print ("{0}({1}{2}({3}) => {{",
+			mi.Name,
+			GetInvokeParamList (minfo.async_initial_params),
+			minfo.async_initial_params.Length > 0 ? ", " : "",
+			GetInvokeParamList (minfo.async_completion_params));
+		indent++;
+
+		if (minfo.has_nserror) {
+			var var_name = minfo.async_completion_params.Last ().Name;
+			print ("if ({0} != null)", var_name);
+			print ("\ttcs.SetException (new NSErrorException({0}));", var_name);
+		}
+
+		if (minfo.is_void_async)
+			print ("tcs.SetResult (true);");
+		else if (minfo.is_single_arg_async)
+			print ("tcs.SetResult ({0});", minfo.async_completion_params [0].Name);
+		else
+			print ("tcs.SetResult (new {0} ({1}));",
+				GetAsyncTaskType (minfo),
+				GetInvokeParamList (minfo.has_nserror ? DropLast (minfo.async_completion_params) : minfo.async_completion_params));
+		indent--;
+		print ("});");
+		print ("return tcs.Task;");
+		indent--;
+		print ("}\n");
+
+		var attr = GetAttribute<AsyncAttribute> (mi);
+		if (attr.ResultTypeName != null) {
+			if (minfo.has_nserror)
+				async_result_types.Add (new Tuple<string, ParameterInfo[]> (attr.ResultTypeName, DropLast (minfo.async_completion_params)));
+			else
+				async_result_types.Add (new Tuple<string, ParameterInfo[]> (attr.ResultTypeName, minfo.async_completion_params));
+		}
+	}
+
+
 	void GenerateMethod (Type type, MethodInfo mi, bool is_model, Type category_extension_type, bool is_appearance)
 	{
 		foreach (ParameterInfo pi in mi.GetParameters ())
@@ -3166,6 +3349,10 @@ public class Generator {
 			}
 			print ("}\n");
 		}
+
+		if (mi.IsDefined (typeof (AsyncAttribute), false))
+			GenerateAsyncMethod (type, mi, category_extension_type);
+
 	}
 	
 	public string GetGeneratedTypeName (Type type)
@@ -3974,9 +4161,52 @@ public class Generator {
 				indent--; print ("}\n");
 			}
 
+			if (async_result_types.Count > 0) {
+				print ("\n");
+				print ("//");
+				print ("// Async result classes");
+				print ("//");
+			}
+
+			foreach (var async_type in async_result_types) {
+				if (async_result_types_emitted.Contains (async_type.Item1))
+					continue;
+				async_result_types_emitted.Add (async_type.Item1);
+
+				print ("public class {0} {{", async_type.Item1); indent++;
+
+				StringBuilder ctor = new StringBuilder ();
+
+				bool comma = false;
+				foreach (var pi in async_type.Item2) {
+					print ("public {0} {1} {{ get; set; }}",
+						FormatType (type, pi.ParameterType),
+						Capitalize (pi.Name));
+
+					if (comma)
+						ctor.Append (", ");
+					comma = true;
+					ctor.Append (FormatType (type, pi.ParameterType)).Append (" ").Append (pi.Name);
+				}
+
+				print ("\npublic {0} ({1}) {{", async_type.Item1, ctor); indent++;
+				foreach (var pi in async_type.Item2) {
+					print ("this.{0} = {1};", Capitalize (pi.Name), pi.Name);
+				}
+				indent--; print ("}");
+
+				indent--; print ("}\n");
+			}
+			async_result_types.Clear ();
+
 			indent--;
 			print ("}");
 		}
+	}
+
+	static string Capitalize (string str)
+	{
+		return char.ToUpper (str[0]) + str.Substring (1);
 	}
 
 	string GetNotificationCenter (PropertyInfo pi)
