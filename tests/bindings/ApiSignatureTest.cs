@@ -134,9 +134,14 @@ namespace TouchUnit.Bindings {
 			return false;
 		}
 
+		protected virtual bool Skip (Type type, ConstructorInfo constructor, string selector)
+		{
+			return false;
+		}
+
 		public int CurrentParameter { get; private set; }
 
-		public MethodInfo CurrentMethod { get; private set; }
+		public MemberInfo CurrentMember { get; private set; }
 
 		public string CurrentSelector { get; private set; }
 
@@ -168,7 +173,7 @@ namespace TouchUnit.Bindings {
 					if (m.DeclaringType != t)
 						continue;
 
-					CurrentMethod = m;
+					CurrentMember = m;
 
 					foreach (object ca in m.GetCustomAttributes (true)) {
 						if (ca is ExportAttribute) {
@@ -246,6 +251,102 @@ namespace TouchUnit.Bindings {
 			Assert.AreEqual (0, Errors, "{0} errors found in {1} signatures validated", Errors, n);
 		}
 
+		[Test]
+		public void ConstructorSignatures ()
+		{
+			int n = 0;
+			Errors = 0;
+			
+			foreach (Type t in Assembly.GetTypes ()) {
+				
+				if (t.IsNested || !NSObjectType.IsAssignableFrom (t))
+					continue;
+				
+				if (Skip (t))
+					continue;
+				
+				CurrentType = t;
+				
+				FieldInfo fi = t.GetField ("class_ptr", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static);
+				if (fi == null)
+					continue; // e.g. *Delegate
+				IntPtr class_ptr = (IntPtr) fi.GetValue (null);
+				
+				foreach (var c in t.GetConstructors (BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)) {
+					
+					if (c.DeclaringType != t)
+						continue;
+
+					CurrentMember = c;
+					foreach (object ca in c.GetCustomAttributes (true)) {
+						if (ca is ExportAttribute) {
+							string name = (ca as ExportAttribute).Selector;
+							
+							if (Skip (t, c, name))
+								continue;
+							
+							CurrentSelector = name;
+							
+							IntPtr sel = Selector.GetHandle (name);
+							IntPtr method = class_getInstanceMethod (class_ptr, sel);
+							IntPtr tenc = method_getTypeEncoding (method);
+							string encoded = Marshal.PtrToStringAuto (tenc);
+							
+							if (LogProgress)
+								Console.WriteLine ("{0} {1} '{2} {3}' selector: {4} == {5}", ++n, t.Name, "ctor", c, name, encoded);
+							
+							// NSObject has quite a bit of stuff that's not usable (except by some class that inherits from it)
+							if (String.IsNullOrEmpty (encoded))
+								continue;
+							
+							int encoded_size = -1;
+							string [] elements = null;
+							try {
+								elements = Split (encoded, out encoded_size);
+							}
+							catch {
+							}
+							if (elements == null) {
+								if (LogProgress)
+									Console.WriteLine ("[WARNING] Could not parse encoded signature for {0} : {1}", name, encoded);
+								continue;
+							}
+
+							bool result = false;
+							// check return value
+							CurrentParameter = 0;
+							
+							int size = 2 * IntPtr.Size; // self + selector (@0:)
+							
+							var parameters = c.GetParameters ();
+							foreach (var p in parameters) {
+								CurrentParameter++;
+								var pt = p.ParameterType;
+								result = Check (elements [CurrentParameter], pt);
+								if (!ContinueOnFailure)
+									Assert.IsTrue (result, "Parameter {0}", CurrentParameter);
+								else if (!result) {
+									Console.WriteLine ("[FAIL] Parameter {0}: {1}", CurrentParameter, name);
+									Errors++;
+								}
+								size += Size (pt);
+							}
+							
+							// also ensure the encoded size match what MT (or XM) provides
+							// catch API errors (and should catch most 64bits issues as well)
+							result = size == encoded_size;
+							if (!ContinueOnFailure)
+								Assert.IsTrue (result, "Size {0} != {1}", encoded_size, size);
+							else if (!result) {
+								Console.WriteLine ("[FAIL] Size {0} != {1} for {2}", encoded_size, size, name);
+								Errors++;
+							}
+						}
+					}
+				}
+			}
+			Assert.AreEqual (0, Errors, "{0} errors found in {1} signatures validated", Errors, n);
+		}
 		protected virtual bool IsValidStruct (Type type, string structName)
 		{
 			switch (structName) {
