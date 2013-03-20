@@ -1836,7 +1836,7 @@ public class Generator {
 				continue;
 		
 			print ("namespace {0} {{", eventType.Namespace); indent++;
-			print ("public class {0} : NSNotificationEventArgs {{", eventType.Name); indent++;
+			print ("public partial class {0} : NSNotificationEventArgs {{", eventType.Name); indent++;
 			print ("public {0} (NSNotification notification) : base (notification) \n{{\n}}\n", eventType.Name);
 			int i = 0;
 			foreach (var prop in eventType.GetProperties (BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)){
