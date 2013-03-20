@@ -1844,6 +1844,7 @@ public class Generator {
 				if (attrs.Length == 0)
 					throw new BindingException (1010, true, "No Export attribute on {0}.{1} property", eventType, prop.Name);
 
+				var @internal = prop.GetCustomAttributes (typeof (InternalAttribute), true).FirstOrDefault ();
 				var export = attrs [0] as ExportAttribute;
 				var use_export_as_string_constant = export.ArgumentSemantic != ArgumentSemantic.None;
 				var null_allowed = HasAttribute (prop, typeof (NullAllowedAttribute));
@@ -1854,7 +1855,11 @@ public class Generator {
 
 				string kn = "k" + (i++);
 				if (use_export_as_string_constant){
-					print ("public {0}{1} {2} {{\n\tget {{\n", propertyType, nullable_type ? "?" : "", prop.Name);
+					print ("{0} {1}{2} {3} {{\n\tget {{\n",
+						@internal == null ? "public" : "internal",
+						propertyType,
+						nullable_type ? "?" : "",
+						prop.Name);
 					indent += 2;
 					print ("IntPtr value;");
 					print ("using (var str = new NSString (\"{0}\")){{", export.Selector);
@@ -1863,7 +1868,12 @@ public class Generator {
 				} else {
 					var lib = propNamespace.Substring (propNamespace.IndexOf (".") + 1);
 					print ("static IntPtr {0};", kn);
-					print ("public {0}{1} {2} {{\n\tget {{\n", propertyType, nullable_type ? "?" : "", prop.Name); indent += 2;
+					print ("{0} {1}{2} {3} {{\n\tget {{\n",
+						@internal == null ? "public" : "internal",
+						propertyType,
+						nullable_type ? "?" : "",
+						prop.Name);
+					indent += 2;
 					print ("IntPtr value; if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.SlowGetIntPtr (Constants.{2}Library, \"{3}\");", kn, MainPrefix, lib, export.Selector);
 				}
 				if (null_allowed || probe_presence){
