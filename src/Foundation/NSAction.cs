@@ -33,7 +33,7 @@ namespace MonoMac.Foundation {
 	// Use this for synchronous operations
 	[Register ("__MonoMac_NSActionDispatcher")]
 	internal sealed class NSActionDispatcher : NSObject {
-		public const string SelectorName = "apply";
+		public const string SelectorName = "xamarinApplySelector";
 		public static readonly Selector Selector = new Selector (SelectorName);
 
 		readonly NSAction action;
@@ -46,7 +46,7 @@ namespace MonoMac.Foundation {
 			this.action = action;
 		}
 
-		[Export ("apply")]
+		[Export (SelectorName)]
 		[Preserve (Conditional = true)]
 		public void Apply ()
 		{
@@ -79,7 +79,7 @@ namespace MonoMac.Foundation {
 			gch = GCHandle.Alloc (this);
 		}
 
-		[Export ("apply")]
+		[Export (NSActionDispatcher.SelectorName)]
 		[Preserve (Conditional = true)]
 		public void Apply ()
 		{
