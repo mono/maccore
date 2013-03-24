@@ -2368,8 +2368,9 @@ namespace MonoMac.Foundation
 		[Export ("initWithUUIDString:")]
 		IntPtr Constructor (string str);
 
-		[Export ("initWithUUIDBytes:"), Internal]
-		IntPtr Constructor (IntPtr bytes, bool unused);
+		// bound manually to keep the managed/native signatures identical
+		//[Export ("initWithUUIDBytes:"), Internal]
+		//IntPtr Constructor (IntPtr bytes, bool unused);
 
 		[Export ("getUUIDBytes:"), Internal]
 		void GetUuidBytes (IntPtr uuid);
@@ -3162,8 +3163,9 @@ namespace MonoMac.Foundation
 		//[Export ("certificates")]
 		//IntPtr [] Certificates { get; }
 	
-		[Export ("initWithTrust:")]
-		IntPtr Constructor (IntPtr SecTrustRef_trust, bool ignored);
+		// bound manually to keep the managed/native signatures identical
+		//[Export ("initWithTrust:")]
+		//IntPtr Constructor (IntPtr SecTrustRef_trust, bool ignored);
 	
 		[Static]
 		[Export ("credentialForTrust:")]

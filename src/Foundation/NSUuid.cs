@@ -4,10 +4,11 @@
 // Authors:
 //    MIguel de Icaza (miguel@xamarin.com)
 //
-// Copyright 2012 Xamarin Inc
+// Copyright 2012-2013 Xamarin Inc
 //
 using System;
 using System.Runtime.InteropServices;
+using MonoMac.ObjCRuntime;
 
 namespace MonoMac.Foundation {
 	partial class NSUuid {
@@ -16,7 +17,7 @@ namespace MonoMac.Foundation {
 			if (bytes == null)
 				throw new ArgumentNullException ("bytes");
 			if (bytes.Length < 16)
-				throw new ArgumentException ("lenght must be at least 16 bytes");
+				throw new ArgumentException ("length must be at least 16 bytes");
 			
 			IntPtr ret;
 			fixed (byte *p = &bytes [0]){
@@ -24,9 +25,16 @@ namespace MonoMac.Foundation {
 			}
 			return ret;
 		}
-		
-		unsafe public NSUuid (byte [] bytes) : this (GetIntPtr (bytes), true)
+
+		unsafe public NSUuid (byte [] bytes) : base (NSObjectFlag.Empty)
 		{
+			IntPtr ptr = GetIntPtr (bytes);
+
+			if (IsDirectBinding) {
+				Handle = MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSend_IntPtr (this.Handle, Selector.GetHandle ("initWithUUIDBytes:"), ptr);
+			} else {
+				Handle = MonoTouch.ObjCRuntime.Messaging.IntPtr_objc_msgSendSuper_IntPtr (this.SuperHandle, Selector.GetHandle ("initWithUUIDBytes:"), ptr);
+			}
 		}
 
 		public byte [] GetBytes ()
