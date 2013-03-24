@@ -129,14 +129,14 @@ namespace TouchUnit.Bindings {
 			return false;
 		}
 
-		protected virtual bool Skip (Type type, MethodInfo method, string selector)
+		protected virtual bool Skip (Type type, MethodBase method, string selector)
 		{
 			return false;
 		}
 
 		public int CurrentParameter { get; private set; }
 
-		public MethodInfo CurrentMethod { get; private set; }
+		public MethodBase CurrentMethod { get; private set; }
 
 		public string CurrentSelector { get; private set; }
 
@@ -163,87 +163,109 @@ namespace TouchUnit.Bindings {
 					continue; // e.g. *Delegate
 				IntPtr class_ptr = (IntPtr) fi.GetValue (null);
 
-				foreach (var m in t.GetMethods (BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)) {
+				foreach (MethodBase m in t.GetMethods (BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)) 
+					CheckMemberSignature (m, t, class_ptr, ref n);
+				foreach (MethodBase m in t.GetConstructors (BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance)) 
+					CheckMemberSignature (m, t, class_ptr, ref n);
+			}
+			Assert.AreEqual (0, Errors, "{0} errors found in {1} signatures validated", Errors, n);
+		}
 
-					if (m.DeclaringType != t)
+		void CheckMemberSignature (MethodBase m, Type t, IntPtr class_ptr, ref int n)
+		{				
+			var methodinfo = m as MethodInfo;
+			var constructorinfo = m as ConstructorInfo;
+
+			if (methodinfo == null && constructorinfo == null)
+				return;
+
+			if (m.DeclaringType != t)
+				return;
+			
+			CurrentMethod = m;
+			
+			foreach (object ca in m.GetCustomAttributes (true)) {
+				if (ca is ExportAttribute) {
+					string name = (ca as ExportAttribute).Selector;
+					
+					if (Skip (t, m, name))
 						continue;
+					
+					CurrentSelector = name;
+					
+					IntPtr sel = Selector.GetHandle (name);
+					IntPtr method;
+					if (methodinfo != null)
+						method = m.IsStatic ? class_getClassMethod (class_ptr, sel) :  class_getInstanceMethod (class_ptr, sel);
+					else
+						method = class_getInstanceMethod (class_ptr, sel);
+					IntPtr tenc = method_getTypeEncoding (method);
+					string encoded = Marshal.PtrToStringAuto (tenc);
+					
+					if (LogProgress)
+						Console.WriteLine ("{0} {1} '{2} {3}' selector: {4} == {5}", ++n, t.Name, methodinfo != null ? methodinfo.IsStatic ? "static" : "instance" : "ctor", m, name, encoded);
+					
+					// NSObject has quite a bit of stuff that's not usable (except by some class that inherits from it)
+					if (String.IsNullOrEmpty (encoded))
+						continue;
+					
+					int encoded_size = -1;
+					string [] elements = null;
+					try {
+						elements = Split (encoded, out encoded_size);
+					}
+					catch {
+					}
+					if (elements == null) {
+						if (LogProgress)
+							Console.WriteLine ("[WARNING] Could not parse encoded signature for {0} : {1}", name, encoded);
+						continue;
+					}
 
-					CurrentMethod = m;
+					bool result;
+					CurrentParameter = 0;
 
-					foreach (object ca in m.GetCustomAttributes (true)) {
-						if (ca is ExportAttribute) {
-							string name = (ca as ExportAttribute).Selector;
+					if (methodinfo != null) {
+						// check return value
 
-							if (Skip (t, m, name))
-								continue;
-
-							CurrentSelector = name;
-
-							IntPtr sel = Selector.GetHandle (name);
-							IntPtr method = m.IsStatic ? class_getClassMethod (class_ptr, sel) :  class_getInstanceMethod (class_ptr, sel);
-							IntPtr tenc = method_getTypeEncoding (method);
-							string encoded = Marshal.PtrToStringAuto (tenc);
-
-							if (LogProgress)
-								Console.WriteLine ("{0} {1} '{2} {3}' selector: {4} == {5}", ++n, t.Name, m.IsStatic ? "static" : "instance", m, name, encoded);
-
-							// NSObject has quite a bit of stuff that's not usable (except by some class that inherits from it)
-							if (String.IsNullOrEmpty (encoded))
-								continue;
-
-							int encoded_size = -1;
-							string [] elements = null;
-							try {
-								elements = Split (encoded, out encoded_size);
-							}
-							catch {
-							}
-							if (elements == null) {
-								if (LogProgress)
-									Console.WriteLine ("[WARNING] Could not parse encoded signature for {0} : {1}", name, encoded);
-								continue;
-							}
-
-							// check return value
-							CurrentParameter = 0;
-							bool result = Check (elements [CurrentParameter], m.ReturnType);
-							if (!ContinueOnFailure)
-								Assert.IsTrue (result, "Return Value");
-							else if (!result) {
-								Console.WriteLine ("[FAIL] Return Value: {0}", name);
-								Errors++;
-							}
-
-							int size = 2 * IntPtr.Size; // self + selector (@0:)
-
-							var parameters = m.GetParameters ();
-							foreach (var p in parameters) {
-								CurrentParameter++;
-								var pt = p.ParameterType;
-								result = Check (elements [CurrentParameter], pt);
-								if (!ContinueOnFailure)
-									Assert.IsTrue (result, "Parameter {0}", CurrentParameter);
-								else if (!result) {
-									Console.WriteLine ("[FAIL] Parameter {0}: {1}", CurrentParameter, name);
-									Errors++;
-								}
-								size += Size (pt);
-							}
-
-							// also ensure the encoded size match what MT (or XM) provides
-							// catch API errors (and should catch most 64bits issues as well)
-							result = size == encoded_size;
-							if (!ContinueOnFailure)
-								Assert.IsTrue (result, "Size {0} != {1}", encoded_size, size);
-							else if (!result) {
-								Console.WriteLine ("[FAIL] Size {0} != {1} for {2}", encoded_size, size, name);
-								Errors++;
-							}
+						result = Check (elements [CurrentParameter], methodinfo.ReturnType);
+						if (!ContinueOnFailure)
+							Assert.IsTrue (result, "Return Value");
+						else if (!result) {
+							Console.WriteLine ("[FAIL] Return Value: {0}", name);
+							Errors++;
 						}
+					}
+					
+					int size = 2 * IntPtr.Size; // self + selector (@0:)
+					
+					var parameters = m.GetParameters ();
+					foreach (var p in parameters) {
+						CurrentParameter++;
+						var pt = p.ParameterType;
+						if (n == 719)
+							Console.WriteLine ();
+						result = Check (elements [CurrentParameter], pt);
+						if (!ContinueOnFailure)
+							Assert.IsTrue (result, "Parameter {0}", CurrentParameter);
+						else if (!result) {
+							Console.WriteLine ("[FAIL] Parameter {0}: {1}", CurrentParameter, name);
+							Errors++;
+						}
+						size += Size (pt);
+					}
+					
+					// also ensure the encoded size match what MT (or XM) provides
+					// catch API errors (and should catch most 64bits issues as well)
+					result = size == encoded_size;
+					if (!ContinueOnFailure)
+						Assert.IsTrue (result, "Size {0} != {1}", encoded_size, size);
+					else if (!result) {
+						Console.WriteLine ("[FAIL] Size {0} != {1} for {2}", encoded_size, size, name);
+						Errors++;
 					}
 				}
 			}
-			Assert.AreEqual (0, Errors, "{0} errors found in {1} signatures validated", Errors, n);
 		}
 
 		protected virtual bool IsValidStruct (Type type, string structName)
