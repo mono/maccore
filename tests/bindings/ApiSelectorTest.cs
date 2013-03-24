@@ -217,7 +217,11 @@ namespace TouchUnit.Bindings {
 							if (!Messaging.bool_objc_msgSend_IntPtr (class_ptr, responds_handle, Selector.GetHandle (name)))
 								continue;
 
+							n++;
 							string setter_selector = String.Format ("set{0}{1}:", Char.ToUpperInvariant (name [0]), name.Substring (1));
+							if (LogProgress)
+								Console.WriteLine ("{0} {1} '{2} {3}' selector: {4}", n, t.Name, mg.IsStatic ? "static" : "instance", p, setter_selector);
+
 							bool result = !Messaging.bool_objc_msgSend_IntPtr (class_ptr, responds_handle, Selector.GetHandle (setter_selector));
 							if (!ContinueOnFailure)
 								Assert.IsTrue (result, t.Name + " - " + setter_selector);
@@ -225,12 +229,11 @@ namespace TouchUnit.Bindings {
 								Console.WriteLine ("[FAIL] {0} {1}", t, setter_selector);
 								Errors++;
 							}
-							n++;
 						}
 					}
 				}
 			}
-			Assert.AreEqual (0, Errors, "{0} potential errors found in {1} getters validated", Errors, n);
+			Assert.AreEqual (0, Errors, "{0} potential errors found in {1} setters validated", Errors, n);
 		}
 	}
 }
