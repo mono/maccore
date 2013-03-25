@@ -922,7 +922,7 @@ namespace MonoMac.CoreAnimation {
 	[BaseType (typeof (CAPropertyAnimation), Name="CAKeyframeAnimation")]
 	public interface CAKeyFrameAnimation {
 		[Static, New, Export ("animationWithKeyPath:")]
-		CAPropertyAnimation FromKeyPath (string path);
+		CAKeyFrameAnimation GetFromKeyPath (string path);
 
 		[Export ("values", ArgumentSemantic.Copy)]
 		NSObject [] Values { get; set; }
