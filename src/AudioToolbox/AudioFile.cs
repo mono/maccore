@@ -276,8 +276,8 @@ namespace MonoMac.AudioToolbox {
 				// }
 				//
 				unsafe {
-					var ptr = (byte *) this.ptr + 2 * sizeof (int) + index * Marshal.SizeOf (typeof (AudioFileMarker));
-					return (AudioFileMarker) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioFileMarker));
+					var ptr = (AudioFileMarker *) this.ptr + 2 * sizeof (int) + index * sizeof (AudioFileMarker);
+					return *ptr;
 				}
 			}
 		}
@@ -347,15 +347,15 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		public AudioFileRegionFlags Flags {
+		public unsafe AudioFileRegionFlags Flags {
 			get {
-				return (AudioFileRegionFlags) Marshal.ReadInt32 (ptr, sizeof (uint) + Marshal.SizeOf (typeof (IntPtr)));
+				return (AudioFileRegionFlags) Marshal.ReadInt32 (ptr, sizeof (uint) + sizeof (IntPtr));
 			}
 		}
 
-		public int Count {
+		public unsafe int Count {
 			get {
-				return Marshal.ReadInt32 (ptr, 2 * sizeof (uint) + Marshal.SizeOf (typeof (IntPtr)));
+				return Marshal.ReadInt32 (ptr, 2 * sizeof (uint) + sizeof (IntPtr));
 			}
 		}
 
@@ -365,15 +365,15 @@ namespace MonoMac.AudioToolbox {
 					throw new ArgumentOutOfRangeException ("index");
 
 				unsafe {
-					var ptr = (byte *) this.ptr + 3 * sizeof (int) + Marshal.SizeOf (typeof (IntPtr)) + index * Marshal.SizeOf (typeof (AudioFileMarker));
-					return (AudioFileMarker) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioFileMarker));
+					var ptr = (AudioFileMarker *) this.ptr + 3 * sizeof (int) + sizeof (IntPtr) + index * sizeof (AudioFileMarker);
+					return *ptr;
 				}
 			}
 		}
 
-		internal int TotalSize {
+		internal unsafe int TotalSize {
 			get {
-				return Count * Marshal.SizeOf (typeof (AudioFileMarker));
+				return Count * sizeof (AudioFileMarker);
 			}
 		}
 	}
@@ -991,7 +991,7 @@ namespace MonoMac.AudioToolbox {
 			return IntPtr.Zero;
 		}
 
-		T? GetProperty<T> (AudioFileProperty property) where T : struct
+		unsafe T? GetProperty<T> (AudioFileProperty property) where T : struct
 		{
 			int size, writable;
 
@@ -1002,8 +1002,10 @@ namespace MonoMac.AudioToolbox {
 				return null;
 			try {
 				var r = AudioFileGetProperty (handle, property, ref size, buffer);
-				if (r == 0)
-					return (T) Marshal.PtrToStructure (buffer, typeof (T));
+				if (r == 0){
+					T t = *(T*) buffer;
+					return t;
+				}
 
 				return null;
 			} finally {
@@ -1258,7 +1260,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		public AudioFilePacketTableInfo? PacketTableInfo {
+		public unsafe AudioFilePacketTableInfo? PacketTableInfo {
 			get {
 				return GetProperty<AudioFilePacketTableInfo> (AudioFileProperty.PacketTableInfo);
 			}
@@ -1267,7 +1269,7 @@ namespace MonoMac.AudioToolbox {
 					throw new ArgumentNullException ("value");
 
 				AudioFilePacketTableInfo afpti = value.Value;
-				var res = AudioFileSetProperty (handle, AudioFileProperty.PacketTableInfo, Marshal.SizeOf (typeof (AudioFilePacketTableInfo)), ref afpti);
+				var res = AudioFileSetProperty (handle, AudioFileProperty.PacketTableInfo, sizeof (AudioFilePacketTableInfo), ref afpti);
 				if (res != 0)
 					throw new ArgumentException (res.ToString ());
 			}
@@ -1326,7 +1328,7 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioFramePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
+				int size = sizeof (AudioFramePacketTranslation);
 				if (AudioFileGetProperty (handle, AudioFileProperty.PacketToFrame, ref size, (IntPtr) p) == 0)
 					return buffer.Frame;
 				return -1;
@@ -1340,7 +1342,7 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioFramePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
+				int size = sizeof (AudioFramePacketTranslation);
 				if (AudioFileGetProperty (handle, AudioFileProperty.FrameToPacket, ref size, (IntPtr) p) == 0){
 					frameOffsetInPacket = buffer.FrameOffsetInPacket;
 					return buffer.Packet;
@@ -1357,7 +1359,7 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioBytePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
+				int size = sizeof (AudioBytePacketTranslation);
 				if (AudioFileGetProperty (handle, AudioFileProperty.PacketToByte, ref size, (IntPtr) p) == 0){
 					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					return buffer.Byte;
@@ -1374,7 +1376,7 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioBytePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
+				int size = sizeof (AudioBytePacketTranslation);
 				if (AudioFileGetProperty (handle, AudioFileProperty.ByteToPacket, ref size, (IntPtr) p) == 0){
 					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					byteOffsetInPacket = buffer.ByteOffsetInPacket;

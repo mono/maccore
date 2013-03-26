@@ -355,7 +355,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		T? GetProperty<T> (AudioFileStreamProperty property) where T : struct
+		unsafe T? GetProperty<T> (AudioFileStreamProperty property) where T : struct
 		{
 			int size, writable;
 
@@ -366,8 +366,10 @@ namespace MonoMac.AudioToolbox {
 				return null;
 			try {
 				var r = AudioFileStreamGetProperty (handle, property, ref size, buffer);
-				if (r == 0)
-					return (T) Marshal.PtrToStructure (buffer, typeof (T));
+				if (r == 0){
+					T result = *(T*) buffer;
+					return result;
+				}
 
 				return null;
 			} finally {
@@ -502,7 +504,7 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioFramePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
+				int size = sizeof (AudioFramePacketTranslation);
 				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.PacketToFrame, ref size, (IntPtr) p) == 0)
 					return buffer.Frame;
 				return -1;
@@ -516,7 +518,7 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioFramePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
+				int size = sizeof (AudioFramePacketTranslation);
 				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.FrameToPacket, ref size, (IntPtr) p) == 0){
 					frameOffsetInPacket = buffer.FrameOffsetInPacket;
 					return buffer.Packet;
@@ -533,7 +535,7 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioBytePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
+				int size = sizeof (AudioBytePacketTranslation);
 				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.PacketToByte, ref size, (IntPtr) p) == 0){
 					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					return buffer.Byte;
@@ -550,7 +552,7 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioBytePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
+				int size = sizeof (AudioBytePacketTranslation);
 				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.ByteToPacket, ref size, (IntPtr) p) == 0){
 					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					byteOffsetInPacket = buffer.ByteOffsetInPacket;

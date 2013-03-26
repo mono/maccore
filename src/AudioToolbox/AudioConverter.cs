@@ -76,6 +76,7 @@ namespace MonoMac.AudioToolbox
 		None		= 2
 	}
 
+	[StructLayout (LayoutKind.Sequential)]
 	public struct AudioConverterPrimeInfo
 	{
 		public int LeadingFrames;
@@ -185,10 +186,10 @@ namespace MonoMac.AudioToolbox
 			}
 		}
 
-		public AudioConverterPrimeInfo PrimeInfo {
+		public unsafe AudioConverterPrimeInfo PrimeInfo {
 			get {
 				AudioConverterPrimeInfo value;
-				var size = Marshal.SizeOf (typeof (AudioConverterPrimeInfo));
+				var size = sizeof (AudioConverterPrimeInfo);
 				var res = AudioConverterGetProperty (handle, AudioConverterPropertyID.PrimeInfo, ref size, out value);
 				if (res != AudioConverterError.None)
 					throw new ArgumentException (res.ToString ());
@@ -328,7 +329,7 @@ namespace MonoMac.AudioToolbox
 			}
 		}
 
-		public AudioStreamBasicDescription CurrentOutputStreamDescription {
+		public unsafe AudioStreamBasicDescription CurrentOutputStreamDescription {
 			get {
 				int size;
 				bool writable;
@@ -341,13 +342,13 @@ namespace MonoMac.AudioToolbox
 				if (res != AudioConverterError.None)
 					throw new ArgumentException (res.ToString ());
 
-				var asbd = (AudioStreamBasicDescription) Marshal.PtrToStructure (ptr, typeof (AudioStreamBasicDescription));
+				var asbd = *(AudioStreamBasicDescription *) ptr;
 				Marshal.FreeHGlobal (ptr);
 				return asbd;
 			}
 		}
 
-		public AudioStreamBasicDescription CurrentInputStreamDescription {
+		public unsafe AudioStreamBasicDescription CurrentInputStreamDescription {
 			get {
 				int size;
 				bool writable;
@@ -360,7 +361,7 @@ namespace MonoMac.AudioToolbox
 				if (res != AudioConverterError.None)
 					throw new ArgumentException (res.ToString ());
 
-				var asbd = (AudioStreamBasicDescription) Marshal.PtrToStructure (ptr, typeof (AudioStreamBasicDescription));
+				var asbd = *(AudioStreamBasicDescription*) ptr;
 				Marshal.FreeHGlobal (ptr);
 				return asbd;
 			}
@@ -375,9 +376,9 @@ namespace MonoMac.AudioToolbox
 			}
 		}
 
-		public AudioFormat[] FormatList {
+		public unsafe AudioFormat[] FormatList {
 			get {
-				return GetArray<AudioFormat> (AudioConverterPropertyID.PropertyFormatList, Marshal.SizeOf (typeof (AudioFormat)));
+				return GetArray<AudioFormat> (AudioConverterPropertyID.PropertyFormatList, sizeof (AudioFormat));
 			}
 		}
 
@@ -568,9 +569,9 @@ namespace MonoMac.AudioToolbox
 			return value;
 		}
 
-		AudioValueRange[] GetAudioValueRange (AudioConverterPropertyID prop)
+		unsafe AudioValueRange[] GetAudioValueRange (AudioConverterPropertyID prop)
 		{
-			return GetArray<AudioValueRange> (prop, Marshal.SizeOf (typeof (AudioValueRange)));
+			return GetArray<AudioValueRange> (prop, sizeof (AudioValueRange));
 		}
 
 		unsafe T[] GetArray<T> (AudioConverterPropertyID prop, int elementSize) where T : struct

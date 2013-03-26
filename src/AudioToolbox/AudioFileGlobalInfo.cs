@@ -74,7 +74,7 @@ namespace MonoMac.AudioToolbox {
 		public static string GetFileTypeName (AudioFileType fileType)
 		{
 			IntPtr ptr;
-			var size = (uint) Marshal.SizeOf (typeof (IntPtr));
+			var size = (uint) sizeof (IntPtr);
 			if (AudioFileGetGlobalInfo (AudioFileGlobalProperty.FileTypeName, sizeof (AudioFileType), ref fileType, ref size, out ptr) != 0)
 				return null;
 
@@ -120,7 +120,7 @@ namespace MonoMac.AudioToolbox {
 		public static string[] AllExtensions {
 			get {
 				IntPtr ptr;
-				var size = (uint) Marshal.SizeOf (typeof (IntPtr));
+				var size = (uint) sizeof (IntPtr);
 				if (AudioFileGetGlobalInfo (AudioFileGlobalProperty.AllExtensions, 0, IntPtr.Zero, ref size, out ptr) != 0)
 					return null;
 				
@@ -131,7 +131,7 @@ namespace MonoMac.AudioToolbox {
 		public static string[] AllUTIs {
 			get {
 				IntPtr ptr;
-				var size = (uint) Marshal.SizeOf (typeof (IntPtr));
+				var size = (uint) sizeof (IntPtr);
 				if (AudioFileGetGlobalInfo (AudioFileGlobalProperty.AllUTIs, 0, IntPtr.Zero, ref size, out ptr) != 0)
 					return null;
 				
@@ -142,7 +142,7 @@ namespace MonoMac.AudioToolbox {
 		public static string[] AllMIMETypes {
 			get {
 				IntPtr ptr;
-				var size = (uint) Marshal.SizeOf (typeof (IntPtr));
+				var size = (uint) sizeof (IntPtr);
 				if (AudioFileGetGlobalInfo (AudioFileGlobalProperty.AllMIMETypes, 0, IntPtr.Zero, ref size, out ptr) != 0)
 					return null;
 				
@@ -173,7 +173,7 @@ namespace MonoMac.AudioToolbox {
 		public static string[] GetExtensions (AudioFileType fileType)
 		{
 			IntPtr ptr;
-			var size = (uint) Marshal.SizeOf (typeof (IntPtr));
+			var size = (uint) sizeof (IntPtr);
 			if (AudioFileGetGlobalInfo (AudioFileGlobalProperty.ExtensionsForType, sizeof (AudioFileType), ref fileType, ref size, out ptr) != 0)
 				return null;
 				
@@ -183,7 +183,7 @@ namespace MonoMac.AudioToolbox {
 		public static string[] GetUTIs (AudioFileType fileType)
 		{
 			IntPtr ptr;
-			var size = (uint) Marshal.SizeOf (typeof (IntPtr));
+			var size = (uint) sizeof (IntPtr);
 			if (AudioFileGetGlobalInfo (AudioFileGlobalProperty.UTIsForType, sizeof (AudioFileType), ref fileType, ref size, out ptr) != 0)
 				return null;
 				
@@ -193,7 +193,7 @@ namespace MonoMac.AudioToolbox {
 		public static string[] GetMIMETypes (AudioFileType fileType)
 		{
 			IntPtr ptr;
-			var size = (uint) Marshal.SizeOf (typeof (IntPtr));
+			var size = (uint) sizeof (IntPtr);
 			if (AudioFileGetGlobalInfo (AudioFileGlobalProperty.MIMETypesForType, sizeof (AudioFileType), ref fileType, ref size, out ptr) != 0)
 				return null;
 				
