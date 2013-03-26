@@ -21,6 +21,7 @@
 
 using System;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 #if MONOMAC
@@ -82,34 +83,53 @@ namespace TouchUnit.Bindings {
 					continue; // e.g. *Delegate
 				IntPtr class_ptr = (IntPtr) fi.GetValue (null);
 
-				foreach (var m in t.GetMethods (BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)) {
-					
-					if (m.DeclaringType != t || SkipDueToAttribute (m))
-						continue;
+				foreach (var m in t.GetMethods (BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)) 
+					CheckSelector (m, t, class_ptr, responds_handle, ref n);
+				foreach (var m in t.GetConstructors (BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)) 
+					CheckSelector (m, t, class_ptr, responds_handle, ref n);
 
-					foreach (object ca in m.GetCustomAttributes (true)) {
-						ExportAttribute export = (ca as ExportAttribute);
-						if (export == null)
-							continue;
-
-						string name = export.Selector;
-						if (Skip (t, name))
-							continue;
-						
-						bool result = Messaging.bool_objc_msgSend_IntPtr (class_ptr, responds_handle, Selector.GetHandle (name));
-						bool response = CheckResponse (result, t, m.DeclaringType, ref name);
-						if (!ContinueOnFailure)
-							Assert.IsTrue (response, name);
-						else if (!response) {
-							CheckResponse (result, t, m.DeclaringType, ref name);
-							Console.WriteLine ("[FAIL] {0}", name);
-							Errors++;
-						}
-						n++;
-					}
-				}
 			}
 			Assert.AreEqual (0, Errors, "{0} errors found in {1} instance selector validated", Errors, n);
+			Console.WriteLine (n);
+		}
+
+		void CheckSelector (MethodBase m, Type t, IntPtr class_ptr, IntPtr responds_handle, ref int n)
+		{
+			if (m.DeclaringType != t || SkipDueToAttribute (m))
+				return;
+
+			foreach (object ca in m.GetCustomAttributes (true)) {
+				ExportAttribute export = (ca as ExportAttribute);
+				if (export == null)
+					continue;
+				
+				string name = export.Selector;
+				if (Skip (t, name))
+					continue;
+
+				IntPtr sel = Selector.GetHandle (name);
+				IntPtr method = class_getInstanceMethod (class_ptr, sel);
+				IntPtr tenc = method_getTypeEncoding (method);
+				string encoded = Marshal.PtrToStringAuto (tenc);
+
+				if (LogProgress)
+					Console.WriteLine ("{0} {1} '{2} {3}' selector: {4} == {5}", n, t.Name, m is ConstructorInfo ? "ctor" : "instance", m, name, encoded);
+
+				// NSObject has quite a bit of stuff that's not usable (except by some class that inherits from it)
+				if (String.IsNullOrEmpty (encoded)) 
+					continue;
+
+				bool result = Messaging.bool_objc_msgSend_IntPtr (class_ptr, responds_handle, Selector.GetHandle (name));
+				bool response = CheckResponse (result, t, m.DeclaringType, ref name);
+				if (!ContinueOnFailure)
+					Assert.IsTrue (response, name);
+				else if (!response) {
+					CheckResponse (result, t, m.DeclaringType, ref name);
+					Console.WriteLine ("[FAIL] {0}", name);
+					Errors++;
+				}
+				n++;
+			}
 		}
 		
 		protected virtual void Dispose (NSObject obj, Type type)

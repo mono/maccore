@@ -21,6 +21,7 @@
 
 using System;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 #if MONOMAC
 using MonoMac.Foundation;
@@ -31,6 +32,20 @@ using MonoTouch.Foundation;
 namespace TouchUnit.Bindings {
 	
 	public abstract class ApiBaseTest {
+		
+		[DllImport ("/usr/lib/libobjc.dylib")]
+		// note: the returned string is not ours to free
+		protected static extern IntPtr objc_getClass (string name);
+		
+		[DllImport ("/usr/lib/libobjc.dylib")]
+		// note: the returned string is not ours to free
+		protected static extern IntPtr method_getTypeEncoding (IntPtr method);
+		
+		[DllImport ("/usr/lib/libobjc.dylib")]
+		protected static extern IntPtr class_getClassMethod (IntPtr klass, IntPtr selector);
+		
+		[DllImport ("/usr/lib/libobjc.dylib")]
+		protected static extern IntPtr class_getInstanceMethod (IntPtr klass, IntPtr selector);
 		
 		/// <summary>
 		/// Gets or sets a value indicating whether this test fixture will continue after failures.

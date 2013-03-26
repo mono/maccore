@@ -38,20 +38,6 @@ namespace TouchUnit.Bindings {
 
 	public abstract class ApiSignatureTest : ApiBaseTest {
 
-		[DllImport ("/usr/lib/libobjc.dylib")]
-		// note: the returned string is not ours to free
-		static extern IntPtr objc_getClass (string name);
-
-		[DllImport ("/usr/lib/libobjc.dylib")]
-		// note: the returned string is not ours to free
-		static extern IntPtr method_getTypeEncoding (IntPtr method);
-
-		[DllImport ("/usr/lib/libobjc.dylib")]
-		static extern IntPtr class_getClassMethod (IntPtr klass, IntPtr selector);
-
-		[DllImport ("/usr/lib/libobjc.dylib")]
-		static extern IntPtr class_getInstanceMethod (IntPtr klass, IntPtr selector);
-
 		protected  int Errors;
 
 		protected string[] Split (string encoded, out int size)
