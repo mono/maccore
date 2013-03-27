@@ -785,13 +785,11 @@ namespace MonoMac.AudioToolbox {
 
 			size = 12 + Channels.Length * desc_size;
 			IntPtr buffer = Marshal.AllocHGlobal (size);
-			int p;
 			Marshal.WriteInt32 (buffer, (int) AudioTag);
 			Marshal.WriteInt32 (buffer, 4, (int) ChannelUsage);
 			Marshal.WriteInt32 (buffer, 8, Channels.Length);
-			p = 12;
 
-			AudioChannelDescription *dest = (AudioChannelDescription *) buffer;
+			AudioChannelDescription *dest = (AudioChannelDescription *) ((byte *) buffer + 12);
 			foreach (var desc in Channels){
 				*dest = desc;
 				dest++;
