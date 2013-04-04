@@ -166,14 +166,8 @@ namespace MonoMac.AudioToolbox {
 			AudioFileType fileTypeHint,
 			out IntPtr file_id);
 
-		static AudioFileStream_PacketsProc dInPackets;
-		static AudioFileStream_PropertyListenerProc dPropertyListener;
-
-		static AudioFileStream ()
-		{
-			dInPackets = InPackets;
-			dPropertyListener = PropertyListener;
-		}
+		static readonly AudioFileStream_PacketsProc dInPackets = InPackets;
+		static readonly AudioFileStream_PropertyListenerProc dPropertyListener = PropertyListener;
 
 		[MonoPInvokeCallback(typeof(AudioFileStream_PacketsProc))]
 		static void InPackets (IntPtr clientData, int numberBytes, int numberPackets, IntPtr inputData, IntPtr packetDescriptions)
