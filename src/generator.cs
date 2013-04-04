@@ -3254,10 +3254,13 @@ public class Generator {
 			GetInvokeParamList (minfo.async_completion_params));
 		indent++;
 
+		int nesting_level = 1;
 		if (minfo.has_nserror) {
 			var var_name = minfo.async_completion_params.Last ().Name;
 			print ("if ({0} != null)", var_name);
 			print ("\ttcs.SetException (new NSErrorException({0}));", var_name);
+			print ("else");
+			++nesting_level; ++indent;
 		}
 
 		if (minfo.is_void_async)
@@ -3268,7 +3271,7 @@ public class Generator {
 			print ("tcs.SetResult (new {0} ({1}));",
 				GetAsyncTaskType (minfo),
 				GetInvokeParamList (minfo.has_nserror ? DropLast (minfo.async_completion_params) : minfo.async_completion_params));
-		indent--;
+		indent -= nesting_level;
 		print ("});");
 		print ("return tcs.Task;");
 		indent--;
