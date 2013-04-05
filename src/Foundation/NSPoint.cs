@@ -35,10 +35,33 @@ namespace MonoMac.Foundation {
 			X = point.X;
 			Y = point.Y;
 		}
+
+		public NSPoint(int x, int y)
+		{
 #if MAC64
+			X = (double)x;
+			Y = (double)y;
+#else
+			X = (float)x;
+			Y = (float)y;
+#endif
+		}
+#if MAC64
+		public NSPoint(double x, double y)
+		{
+			X = x;
+			Y = y;
+		}
+
 		public double X;
 		public double Y;
 #else
+		public NSPoint(float x, float y)
+		{
+			X = x;
+			Y = y;
+		}
+
 		public float X;
 		public float Y;
 #endif

@@ -35,6 +35,11 @@ namespace MonoMac.Foundation {
 			Width = size.Width;
 			Height = size.Height;
 		}
+		public NSSize(float width, float height)
+		{
+			Width = width;
+			Height = height;
+		}
 
 #if MAC64
 		public double Width;

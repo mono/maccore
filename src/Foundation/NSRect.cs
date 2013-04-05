@@ -38,13 +38,48 @@ namespace MonoMac.Foundation {
 			Size.Height = rect.Height;
 		}
 
+		public NSRect(NSPoint location, NSSize size)
+		{
+			Origin.X = location.X;
+			Origin.Y = location.Y;
+			Size.Width = size.Width;
+			Size.Height = size.Height;
+		}
+
+		public NSRect(System.Drawing.Point location, System.Drawing.Size size)
+		{
+			Origin.X = location.X;
+			Origin.Y = location.Y;
+			Size.Width = size.Width;
+			Size.Height = size.Height;
+		}
+
+		public NSRect(double x, double y, double width, double height)
+		{
+			Origin.X = x;
+			Origin.Y = y;
+			Size.Width = width;
+			Size.Height = height;
+		}
+
 		public NSPoint Origin;
 		public NSSize Size;
 
+		public NSPoint Location {
+			get
+			{
+				return Origin;
+			}
+		}
+
 #if MAC64
+		public double X { get { return Origin.X; } }
+		public double Y { get { return Origin.Y; } }
 		public double Width { get { return Size.Width; } }
 		public double Height { get { return Size.Height; } }
 #else
+		public float X { get { return Origin.X; } }
+		public float Y { get { return Origin.Y; } }
 		public float Width { get { return Size.Width; } }
 		public float Height { get { return Size.Height; } }
 #endif
