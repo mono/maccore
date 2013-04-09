@@ -1,10 +1,11 @@
 //
-// MonoMac.CoreServices.CFHTTPMessage
+// CFHTTPMessage.cs:
 //
 // Authors:
 //      Martin Baulig (martin.baulig@gmail.com)
+//      Marek Safar (marek.safar@gmail.com)
 //
-// Copyright 2012 Xamarin Inc. (http://www.xamarin.com)
+// Copyright 2012-2013 Xamarin Inc. (http://www.xamarin.com)
 //
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -146,6 +147,18 @@ namespace MonoMac.CoreServices {
 		}
 
 		[DllImport (Constants.CFNetworkLibrary)]
+		extern static IntPtr CFHTTPMessageCreateEmpty (IntPtr allocator, bool isRequest);
+
+		public static CFHTTPMessage CreateEmpty (bool request)
+		{
+			var handle = CFHTTPMessageCreateEmpty (IntPtr.Zero, request);
+			if (handle == IntPtr.Zero)
+				return null;
+
+			return new CFHTTPMessage (handle);			
+		}
+
+		[DllImport (Constants.CFNetworkLibrary)]
 		extern static IntPtr CFHTTPMessageCreateRequest (IntPtr allocator, IntPtr requestMethod,
 		                                                 IntPtr url, IntPtr httpVersion);
 
@@ -254,6 +267,25 @@ namespace MonoMac.CoreServices {
 				CheckHandle ();
 				return CFHTTPMessageIsHeaderComplete (Handle);
 			}
+		}
+
+		[DllImport (Constants.CFNetworkLibrary)]
+		extern static bool CFHTTPMessageAppendBytes (IntPtr message, ref byte[] newBytes, CFIndex numBytes);
+
+		public bool AppendBytes (byte[] bytes)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+
+			return AppendBytes (bytes, bytes.Length);
+		}
+
+		public bool AppendBytes (byte[] bytes, int count)
+		{
+			if (bytes == null)
+				throw new ArgumentNullException ("bytes");
+
+			return CFHTTPMessageAppendBytes (Handle, ref bytes, count);
 		}
 
 		[DllImport (Constants.CFNetworkLibrary)]
