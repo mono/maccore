@@ -121,6 +121,23 @@ namespace MonoMac.CoreFoundation {
 			return CFDictionaryGetValue (theDict, key);
 		}
 
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static int CFDictionaryGetCount (IntPtr theDict);
+		public int Count {
+			get { return CFDictionaryGetCount (Handle); }
+		}
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static void CFDictionaryGetKeysAndValues (IntPtr theDict, IntPtr[] keys, IntPtr[] values);
+		public void GetKeysAndValues (out IntPtr [] keys, out IntPtr [] values)
+		{
+			int count = this.Count;
+
+			keys = new IntPtr [count];
+			values = new IntPtr [count];
+			CFDictionaryGetKeysAndValues (Handle, keys, values);
+		}
+
 		public static bool GetBooleanValue (IntPtr theDict, IntPtr key)
 		{
 			var value = GetValue (theDict, key);
@@ -141,6 +158,16 @@ namespace MonoMac.CoreFoundation {
 			int value = 0;
 			using (var str = new CFString (key)) {
 				if (!CFNumberGetValue (CFDictionaryGetValue (Handle, str.Handle), /* kCFNumberSInt32Type */ 3, out value))
+					throw new System.Collections.Generic.KeyNotFoundException (string.Format ("Key {0} not found", key));
+				return value;
+			}
+		}
+
+		public long GetInt64Value (string key)
+		{
+			long value = 0;
+			using (var str = new CFString (key)) {
+				if (!CFNumberGetValue (CFDictionaryGetValue (Handle, str.Handle), /* kCFNumberSInt64Type */ 4, out value))
 					throw new System.Collections.Generic.KeyNotFoundException (string.Format ("Key {0} not found", key));
 				return value;
 			}
@@ -170,6 +197,9 @@ namespace MonoMac.CoreFoundation {
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		static extern bool CFNumberGetValue (IntPtr number, int theType, out int value);
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		static extern bool CFNumberGetValue (IntPtr number, int theType, out long value);
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static bool CFDictionaryContainsKey (IntPtr theDict, IntPtr key);
