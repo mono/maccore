@@ -3911,12 +3911,6 @@ namespace MonoMac.Foundation
 		[Static]
 		[Export ("inputStreamWithURL:")]
 		NSInputStream FromUrl (NSUrl url);
-
-		[Export ("_scheduleInCFRunLoop:forMode:")]
-		void ScheduleInCFRunLoop (CFRunLoop runloop, NSString mode);
-
-		[Export ("_unscheduleFromCFRunLoop:forMode:")]
-		void UnscheduleInCFRunLoop (CFRunLoop runloop, NSString mode);
 	}
 
 	//
