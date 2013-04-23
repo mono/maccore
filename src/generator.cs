@@ -1477,9 +1477,11 @@ public class Generator {
 	string MakeSig (string send, bool stret, MethodInfo mi)
 	{
 		var sb = new StringBuilder ();
-
-#if !MONOMAC
+		
 		if (HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute)))
+#if MONOMAC
+			sb.Append ("monomac_");
+#else
 			sb.Append ("monotouch_");
 #endif
 		
@@ -1547,7 +1549,7 @@ public class Generator {
 			return;
 		}
 
-		if (method_name.StartsWith ("monotouch_")) {
+		if (method_name.StartsWith ("monotouch_") || method_name.StartsWith ("monomac_")) {
 			print (m, "\t\t[DllImport (\"__Internal\", EntryPoint=\"{0}\")]", method_name);
 		} else {
 			print (m, "\t\t[DllImport (LIBOBJC_DYLIB, EntryPoint=\"{0}\")]", entry_point);
