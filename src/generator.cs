@@ -1429,7 +1429,11 @@ public class Generator {
 		if (!t.IsValueType || t.IsEnum || t.Assembly == typeof (object).Assembly)
 			return false;
 
+#if MAC64
+		return Marshal.SizeOf (t) > 16;
+#else
 		return Marshal.SizeOf (t) > 8;
+#endif
 	}
 
 	bool NeedStret (MethodInfo mi)
