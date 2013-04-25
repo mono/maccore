@@ -73,15 +73,15 @@ namespace MonoMac.Foundation {
 		}
 
 #if MAC64
-		public double X { get { return Origin.X; } }
-		public double Y { get { return Origin.Y; } }
-		public double Width { get { return Size.Width; } }
-		public double Height { get { return Size.Height; } }
+		public double X { get { return Origin.X; } set { Origin.X=value; } }
+		public double Y { get { return Origin.Y; } set { Origin.Y=value; } }
+		public double Width { get { return Size.Width; } set { Size.Width = value; } }
+		public double Height { get { return Size.Height; } set { Size.Height = value; } }
 #else
-		public float X { get { return Origin.X; } }
-		public float Y { get { return Origin.Y; } }
-		public float Width { get { return Size.Width; } }
-		public float Height { get { return Size.Height; } }
+		public float X { get { return Origin.X; } set { Origin.X=value; } }
+		public float Y { get { return Origin.Y; } set { Origin.Y=value; } }
+		public float Width { get { return Size.Width; } set { Size.Width = value; } }
+		public float Height { get { return Size.Height; } set { Size.Height = value; } }
 #endif
 	}
 }
