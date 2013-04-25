@@ -65,6 +65,40 @@ class BindingTouch {
 	
 	static int Main (string [] args)
 	{
+		string [] testArgs = new string[]{
+			"-a",
+			"-d=MONOMAC",
+			"-d=MAC64",
+			"--core",
+			"--sourceonly=generated_sources",
+			"-v",
+			"-tmpdir=.",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/appkit.cs",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/corewlan.cs",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/foundation-desktop.cs",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/imagekit.cs",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/qtkit.cs",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/pdfkit.cs",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/webkit.cs",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/composer.cs",
+			"/Users/stevenbaer/dev/github/mcneel/monomac/src/scriptingbridge.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/avfoundation.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/foundation.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/coreanimation.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/coredata.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/coreimage.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/coremidi.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/corelocation.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/imageio.cs",
+			"/Users/stevenbaer/dev/github/mcneel/maccore/src/quicklook.cs",
+			"--baselib=/Users/stevenbaer/dev/github/mcneel/monomac/src/core.dll",
+			"--ns=MonoMac.ObjCRuntime",
+			"-r=System.Drawing"
+		};
+		//args = testArgs;
+
+
+
 		try {
 			return Main2 (args);
 		} catch (Exception ex) {
