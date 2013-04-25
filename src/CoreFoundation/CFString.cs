@@ -79,10 +79,10 @@ namespace MonoMac.CoreFoundation {
 	}
 
 	public static class CFObject {
-		[DllImport (Constants.CoreFoundationLibrary, CharSet=CharSet.Unicode)]
-		internal extern static IntPtr CFRelease (IntPtr obj);
+		[DllImport (Constants.CoreFoundationLibrary)]
+		internal extern static void CFRelease (IntPtr obj);
 
-		[DllImport (Constants.CoreFoundationLibrary, CharSet=CharSet.Unicode)]
+		[DllImport (Constants.CoreFoundationLibrary)]
 		internal extern static IntPtr CFRetain (IntPtr obj);
 	}
 	
