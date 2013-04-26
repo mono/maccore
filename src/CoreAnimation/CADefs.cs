@@ -107,7 +107,7 @@ namespace MonoMac.CoreAnimation {
 	public partial class CAKeyFrameAnimation {
 
 		[Obsolete ("This method in the future will return a CAKeyFrameAnimation, update your source, or use GetFromKeyPath to avoid this warning for now")]
-		public CAPropertyAnimation FromKeyPath (string path)
+		public static CAPropertyAnimation FromKeyPath (string path)
 		{
 			return GetFromKeyPath (path);
 		}
