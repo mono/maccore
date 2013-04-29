@@ -714,7 +714,10 @@ namespace MonoMac.CoreMidi {
 	delegate void MidiReadProc (IntPtr packetList, IntPtr context, IntPtr srcPtr);
 	
 	public class MidiPort : MidiObject {
-		
+		#if !MONOMAC
+		static bool isDevice = MonoTouch.ObjCRuntime.Runtime.Arch == MonoTouch.ObjCRuntime.Arch.DEVICE;
+		#endif
+
 		[DllImport (Constants.CoreMidiLibrary)]
 		extern static int MIDIInputPortCreate (IntPtr client, IntPtr portName, MidiReadProc readProc, IntPtr context, out IntPtr midiPort);
 
@@ -770,7 +773,13 @@ namespace MonoMac.CoreMidi {
 			for (int i = 0; i < npackets; i++){
 				ushort len = (ushort) Marshal.ReadInt16 (packetList, p+8);
 				packets [i] = new MidiPacket (Marshal.ReadInt64 (packetList, p), len, (IntPtr)((long)packetList + p + 10));
-				p += 10 + len;
+#if !MONOMAC
+				// MIDIPacket must be 4-byte aligned for ARM
+				if (isDevice)
+					p += (((10 + len) + 3) & ~3);
+				else
+#endif
+					p += 10 + len;
 			}
 			return packets;
 		}
