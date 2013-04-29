@@ -3994,7 +3994,7 @@ namespace MonoMac.Foundation
 
 		[Field ("NSKeyValueChangeNotificationIsPriorKey")]
 		NSString ChangeNotificationIsPriorKey { get; }
-
+#if MONOMAC
 		// Cocoa Bindings added by Kenneth J. Pouncey 2010/11/17
 		[Export ("exposedBindings")]
 		NSString[] ExposedBindings ();
@@ -4013,7 +4013,7 @@ namespace MonoMac.Foundation
 
 		[Export ("optionDescriptionsForBinding:")]
 		NSObject[] BindingOptionDescriptions (string aBinding);
-#if MONOMAC
+
 		// NSPlaceholders (informal) protocol
 		[Static]
 		[Export ("defaultPlaceholderForMarker:withBinding:")]
@@ -4022,7 +4022,7 @@ namespace MonoMac.Foundation
 		[Static]
 		[Export ("setDefaultPlaceholder:forMarker:withBinding:")]
 		void SetDefaultPlaceholder (NSObject placeholder, NSObject marker, string binding);
-#endif
+
 		[Export ("objectDidEndEditing:")]
 		void ObjectDidEndEditing (NSObject editor);
 
@@ -4032,7 +4032,7 @@ namespace MonoMac.Foundation
 		[Export ("commitEditingWithDelegate:didCommitSelector:contextInfo:")]
 		//void CommitEditingWithDelegateDidCommitSelectorContextInfo (NSObject objDelegate, Selector didCommitSelector, IntPtr contextInfo);
 		void CommitEditing (NSObject objDelegate, Selector didCommitSelector, IntPtr contextInfo);
-
+#endif
 		[Export ("copy")]
 		NSObject Copy ();
 		
