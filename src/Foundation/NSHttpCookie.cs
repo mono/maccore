@@ -85,7 +85,10 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("cookie");
 			
 			string commentUrl = cookie.CommentUri != null ? cookie.CommentUri.ToString () : null;
-			CreateCookie (cookie.Name, cookie.Value, cookie.Path, cookie.Domain, cookie.Comment, commentUrl, cookie.Discard, cookie.Expires, null, cookie.Port, cookie.Secure, cookie.Version);
+			bool? discard = null;
+			if (cookie.Discard)
+				discard = true;
+			CreateCookie (cookie.Name, cookie.Value, cookie.Path, cookie.Domain, cookie.Comment, commentUrl, discard, cookie.Expires, null, cookie.Port, cookie.Secure, cookie.Version);
 		}
 		
 		void CreateCookie (string name, string value, string path, string domain, string comment, string commentUrl, bool? discard, DateTime? expires, int? maximumAge, string ports, bool? secure, int? version)
