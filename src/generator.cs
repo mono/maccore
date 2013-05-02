@@ -3991,6 +3991,7 @@ public class Generator {
 			if (!is_static_class){
 				object [] disposeAttr = type.GetCustomAttributes (typeof (DisposeAttribute), true);
 				if (disposeAttr.Length > 0 || instance_fields_to_clear_on_dispose.Count > 0){
+					print ("[CompilerGenerated]");
 					print ("protected override void Dispose (bool disposing)");
 					print ("{");
 					indent++;
