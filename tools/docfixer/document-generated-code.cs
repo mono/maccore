@@ -549,7 +549,7 @@ class DocumentGeneratedCode {
 				hot_summary [fullMethodName] = 1;
 		}
 		
-		tsummary.Value = "Asynchronous: " + summary.Value;
+		tsummary.Value = summary.Value;
 
 		// Copy remarks
 		CopyRemarksToAsync (node, nodeAsync, asyncName);
