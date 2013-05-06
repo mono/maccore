@@ -650,7 +650,6 @@ namespace MonoMac.CoreData
 		IntPtr Constructor (NSManagedObjectContextConcurrencyType ct);
 
 		[Export ("performBlock:")]
-		[Async]
 		void Perform (/* non null */ NSAction action);
 
 		[Export ("performBlockAndWait:")]
