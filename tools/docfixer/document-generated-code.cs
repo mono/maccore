@@ -8,7 +8,13 @@
 // erased in the compilation process (like the link between events
 // and their ObjC delegate classes).
 //
-// Copyright 2012 Xamarin Inc
+// Async Todo:
+//    For Async/ResultTypeName classes, which are produced by the generator.cs, we should automatically generate:
+//       * Remarks (no summary, since that should be added manually, because we merge that elsewhere)
+//       * Constructor docs, and parameter docs taken from the source parameters of the method
+//       * Descriptions of the generated properties
+//
+// Copyright 2012, 2013 Xamarin Inc
 //
 using System;
 using System.Collections.Generic;
@@ -49,6 +55,11 @@ class DocumentGeneratedCode {
 	static AppleDocMerger docGenerator;
 
 	static Dictionary<Type,XDocument> docs = new Dictionary<Type,XDocument> ();
+
+	static string GetPath (string ns, string typeName, bool notification = false)
+	{
+		return String.Format ("{0}/{1}/{2}{3}.xml", assembly_dir, ns, typeName, notification ? "+Notifications" : "");
+	}
 	
 	static string GetMdocPath (Type t, bool notification = false)
 	{
@@ -60,8 +71,8 @@ class DocumentGeneratedCode {
 			if (typeName == "NSObject2")
 				typeName = "NSObject";
 		}
-		
-		return String.Format ("{0}/{1}/{2}{3}.xml", assembly_dir, ns, typeName, notification ? "+Notifications" : "");
+
+		return GetPath (ns, typeName, notification);
 	}
 	
 	static XDocument GetDoc (Type t, bool notification = false)
@@ -89,6 +100,26 @@ class DocumentGeneratedCode {
 
 		return xmldoc;
 	}
+
+	static XDocument GetDoc (string full_type, out string path)
+	{
+		XDocument xmldoc;
+		int lastd = full_type.LastIndexOf (".");
+		string ns = full_type.Substring (0, lastd);
+		string type = full_type.Substring (lastd+1);
+
+		path = GetPath (ns, type);
+		try {
+			using (var f = File.OpenText (path))
+				xmldoc = XDocument.Load (f);
+		} catch {
+			Console.WriteLine ("Failure while loading {0}", path);
+			return null;
+		}
+
+		return xmldoc;
+	}
+	
 
 	static void Save (string xmldocpath, XDocument xmldoc)
 	{
@@ -126,6 +157,38 @@ class DocumentGeneratedCode {
 			}
 		}
 		return field;
+	}
+
+
+	// Due to method overloading, we have multiple matches, match the right one based on the parameter names/types
+	static XElement GetAsyncXmlNode (Type t, XDocument xdoc, string name, XElement referenceNode)
+	{
+		var methods = xdoc.XPathSelectElements ("Type/Members/Member[@MemberName='" + name + "']");
+
+		// The parameters must be shared as far as the async node needs
+		foreach (var asyncMethod in methods){
+			bool fail = false;
+			foreach (var apar in asyncMethod.XPathSelectElements ("Parameters/Parameter")){
+				var pname = apar.Attribute ("Name").Value;
+				var ptype = apar.Attribute ("Type").Value;
+
+
+				var expr = String.Format ("Parameters/Parameter[@Type='{0}' and @Name='{1}']", ptype, pname);
+				
+				if (referenceNode.XPathSelectElement (expr) == null){
+					fail = true;
+					break;
+				}
+			}
+			if (!fail)
+				return asyncMethod;
+		}
+		
+		if (!warnings_up_to_date.ContainsKey (t)){
+			Console.WriteLine ("Warning: {0} document is not up-to-date with the latest assembly (could not find Field <Member MemberName='{1}')", t, name);
+			warnings_up_to_date [t] = true;
+		}
+		return null;
 	}
 
 	static XElement GetXmlNodeFromExport (Type t, XDocument xdoc, string selector)
@@ -415,6 +478,178 @@ class DocumentGeneratedCode {
 
 		value.Add (XElement.Parse ("<para tool='nullallowed'>This value can be <see langword=\"null\"/>.</para>"));
 	}
+
+	//
+	// Copy the remarks to an async node, preserving any content on the target if needed, to do that
+	// we copy elements and flag them as "copied=true"
+	//
+	public static void CopyRemarksToAsync (XElement source, XElement target, string asyncName)
+	{
+		const string xpath = "Docs/remarks";
+		var tnode = target.XPathSelectElement (xpath);
+		var node = source.XPathSelectElement (xpath);
+
+		// Remove previously copied stuff.
+		foreach (var deletableElement in tnode.XPathSelectElements ("//*[@copied='true' or @generated='true']")){
+			deletableElement.Remove ();
+		}
+		if (tnode.Value == "To be added."){
+			tnode.Value = "";
+		}
+
+		// Wrap simple text
+		if (tnode.Elements ().Count () == 0 && tnode.Value != ""){
+			var val = tnode.Value;
+			tnode.Value = "";
+			tnode.Add (XElement.Parse ("<para>" + val + "</para>"));
+		}
+		
+		tnode.Add (XElement.Parse ("<para copied='true'>The " + asyncName + " method is suitable to be used with C# async by returning control to the caller with a Task representing the operation.</para>"));
+
+		// Add simple text from the original
+		if (node.Elements ().Count () == 0 && node.Value != "")
+			tnode.Add (XElement.Parse ("<para copied='true'>" + node.Value + "</para>"));
+		else {
+			foreach (var e in node.Elements ()){
+				var copy = new XElement (e);
+				e.SetAttributeValue ("copied", "true");
+			}
+		}
+	}
+
+	// If the contents of the node has any of our "improve" annotations, it means we have not
+	// manually edited it, so we want to inject some standard text.
+	static bool HasImproveAnnotation (XElement node)
+	{
+		var nodes = node.XPathSelectElements ("//*[@class='improve-task-t-return-type-description' or @class='improve']");
+		return nodes != null && nodes.Count () > 0;
+	}
+	
+	static Dictionary<string,int> async_result_types = new Dictionary<string,int>();
+	static Dictionary<string,int> hot_summary = new Dictionary<string,int>();
+	static Dictionary<string,List<string>> resultTypeNameUses = new Dictionary<string,List<string>> ();
+	
+	//
+	// Copy summary (maybe later we modify it?)
+	// Copy parameters
+	//
+	// This need some smarts to copy the description of the Task<T> result
+	// 
+	public static void UpdateAsyncDocsFromMaster (AsyncAttribute aa, Type t, string name, string asyncName, XElement node, XElement nodeAsync)
+	{
+		string fullMethodName = t.FullName + "." + asyncName;
+		// Copy the summary information
+		var tsummary = nodeAsync.XPathSelectElement ("Docs/summary");
+		var summary = node.XPathSelectElement ("Docs/summary");
+
+		if (summary.Value == "To be added."){
+			if (hot_summary.ContainsKey (fullMethodName))
+				hot_summary [fullMethodName]++;
+			else
+				hot_summary [fullMethodName] = 1;
+		}
+		
+		tsummary.Value = "Asynchronous: " + summary.Value;
+
+		// Copy remarks
+		CopyRemarksToAsync (node, nodeAsync, asyncName);
+
+		// Handle Return values
+		var lastParameter = node.XPathSelectElement ("Parameters/Parameter[last()]");
+		var returns = nodeAsync.XPathSelectElement ("Docs/returns");
+		var retType = nodeAsync.XPathSelectElement ("ReturnValue/ReturnType");
+		if (retType == null){
+			Console.WriteLine ("FAIL: {0}", nodeAsync);
+			Console.WriteLine (nodeAsync);
+			throw new Exception();
+		}
+		if (retType.Value == "System.Threading.Tasks.Task"){
+			returns.Value = "A task that represents the asynchronous " + name + " operation";
+		} else if (returns.Value == "To be added." || HasImproveAnnotation (returns)) {
+			var task_result_type = lastParameter.Attribute ("Type").Value;
+			// We have a Task<T>
+			returns.RemoveAll ();
+			if (task_result_type.StartsWith ("System.Action<")){
+				Console.WriteLine ("Improvement for Task<T> in {0}", fullMethodName);
+				var tresult_type = task_result_type.Substring (14).Trim ('>');
+				string standard_boring_text = "<para class='improve-task-t-return-type-description'>A task that represents the asynchronous " + name + " operation.  The value of the TResult parameter is of type " + tresult_type + ".</para>";
+
+				// Should eventually only remove if we have 'To be added.' but my local copy is butchered (cant git reset right now)
+				returns.Add (XElement.Parse (standard_boring_text));
+			} else {
+				// Load the delegate type from the disk, and pull the docs from it
+				var tresult_type = retType.Value.Substring (28).Trim ('>');
+				// If we have a [Async (ResultTypeName="xxx")]
+				if (aa.ResultTypeName != null){
+					//
+					// We know we need to look up the information from the type, get the full type name from the tresult_type
+					//
+					string path;
+					var tresultDoc = GetDoc (tresult_type, out path);
+					var tresultSummary = tresultDoc.XPathSelectElement ("/Type/Docs/summary").Value;
+					if (tresultSummary == "To be added."){
+						Console.WriteLine ("Improvement: If you document the delegate for the {0} summary, you will get better async docs for {1}", tresult_type, fullMethodName);
+					}
+					returns.Add (XElement.Parse ("<para>A task that represents the asynchronous " + name + " operation.   The value of the TResult parameter is of type " + tresult_type + ".  " +  tresultSummary + "</para>"));
+
+					List<string> list;
+					if (!resultTypeNameUses.TryGetValue (tresult_type, out list)){
+						list = new List<string> ();
+						resultTypeNameUses [tresult_type] = list;
+					}
+					list.Add (fullMethodName);
+
+					var used_by = string.Join (", ", list.Select (x=>"<see cref=\"T:" + x + "\"/>").ToArray ());
+					var trem = tresultDoc.XPathSelectElement ("/Type/Docs/remarks");
+					trem.RemoveAll ();
+					trem.Add (XElement.Parse ("<para>This class holds the return values from the asynchronous method" + (list.Count > 1 ? "s " : " ") + used_by + ".</para>"));
+					//
+					// Also document the Async [ResultTypeName]
+					//
+					var ctor = tresultDoc.XPathSelectElement ("/Type/Members/Member[@MemberName='.ctor']");
+					ctor.XPathSelectElement ("Docs/summary").Value = "Constructs an instance of " + tresult_type;
+					ctor.XPathSelectElement ("Docs/remarks").Value = "";
+					foreach (var par in ctor.XPathSelectElements ("Docs/param")){
+						par.Value = "Result value from the async operation";
+					}
+					
+					Console.WriteLine ("Saving {0} for {1}", path, fullMethodName);
+					tresultDoc.Save (path);
+				} else {
+					string path;
+					var delegateDoc = GetDoc (task_result_type, out path);
+					if (delegateDoc == null){
+						Console.WriteLine ("Error: Failed to load the documentation for a referenced delegate: {0}", task_result_type);
+						return;
+					}
+					returns.Add (XElement.Parse ("<para>A task that represents the asynchronous " + name + " operation.   The value of the TResult parameter is a " + task_result_type + ".</para>"));
+				}
+			}
+
+			if (async_result_types.ContainsKey (task_result_type))
+				async_result_types [task_result_type]++;
+			else
+				async_result_types [task_result_type] = 1;
+			//Console.WriteLine ("Method {0}.{1}'s Async really could use an explanation of the return type {2}", t, name, retType.Value);
+		}
+
+		//
+		// Copy parameter docs
+		//
+		foreach (var par in nodeAsync.XPathSelectElements ("Docs/param")){
+			var parName = par.Attribute ("name").Value;
+			var expr = "Docs/param[@name='" + parName + "']";
+
+			try {
+				var original = node.XPathSelectElements (expr).First ();
+				
+				par.Value = original.Value;
+			} catch {
+				Console.WriteLine ("Failed to lookup with {0} and {1} and {2}", expr, node, nodeAsync);
+			}
+		}
+		
+	}
 	
 	public static void ProcessNSO (Type t, BaseTypeAttribute bta)
 	{
@@ -471,9 +706,14 @@ class DocumentGeneratedCode {
 			// we will lookup the method by the [Export] attribute
 			//
 
-			if (mi.GetCustomAttributes (typeof (InternalAttribute), true).Length > 0)
+			try {
+				if (mi.GetCustomAttributes (typeof (InternalAttribute), true).Length > 0)
+					continue;
+			} catch (Exception FileNotFoundException){
+				Console.WriteLine ("*** Problem loading attributes for {0}.{1} ***", t, mi.Name);
 				continue;
-			
+			}
+
 			var attrs = mi.GetCustomAttributes (typeof (ExportAttribute), true);
 			if (attrs.Length == 0)
 				continue;
@@ -482,6 +722,21 @@ class DocumentGeneratedCode {
 			if (node == null){
 				Console.WriteLine ("Did not find the selector {0} on type {1}", ea.Selector, t);
 				continue;
+			}
+			
+			attrs = mi.GetCustomAttributes (typeof (AsyncAttribute), true);
+			if (attrs.Length > 0){
+				var aa = attrs [0] as AsyncAttribute;
+				var methodName = aa.MethodName;
+				if (methodName == null)
+					methodName = mi.Name + "Async";
+				
+				var nodeAsync = GetAsyncXmlNode (t, xmldoc, methodName, node);
+				if (nodeAsync == null)
+					Console.WriteLine ("*** ____ OH NO!  WE HAVE A PROBLEM: The Async Method Referenced is not on the documentation for {0} {1}, I expected {2}", t, mi.Name, methodName);
+				else {
+					UpdateAsyncDocsFromMaster (aa, t, mi.Name, methodName, node, nodeAsync);
+				}				
 			}
 			
 			if (mi.GetCustomAttributes (typeof (ThreadSafeAttribute), true).Length > 0){
@@ -613,7 +868,13 @@ class DocumentGeneratedCode {
 		}
 		Console.WriteLine ("saving");
 		SaveDocs ();
-		
+
+		Console.WriteLine ("Async Result Types");
+		foreach (var j in from kv in async_result_types orderby kv.Value descending select kv)
+			Console.WriteLine ("   Async Result: {1} {0}", j.Key, j.Value);
+		Console.WriteLine ("Hot summaries");
+		foreach (var j in from hskv in hot_summary orderby hskv.Value descending select hskv)
+			Console.WriteLine ("   Hot Summary: {1} {0}", j.Key, j.Value);
 		return 0;
 	}
 	
