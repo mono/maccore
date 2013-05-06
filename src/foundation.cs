@@ -3062,7 +3062,7 @@ namespace MonoMac.Foundation
 		[Since (5,0)]
 		[Static]
 		[Export ("sendAsynchronousRequest:queue:completionHandler:")]
-		[Async (ResultTypeName = "NSUrlAsyncResult")]
+		[Async (ResultTypeName = "NSUrlAsyncResult", MethodName="SendRequestAsync")]
 		void SendAsynchronousRequest (NSUrlRequest request, NSOperationQueue queue, NSUrlConnectionDataResponse completionHandler);
 		
 #if !MONOMAC
