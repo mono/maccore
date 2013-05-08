@@ -1027,6 +1027,7 @@ public class Generator {
 	
 	public bool BindThirdPartyLibrary = false;
 	public bool InlineSelectors;
+	public bool NativeExceptionMarshalling = false;
 	public string BaseDir { get { return basedir; } set { basedir = value; }}
 	string basedir;
 	public List<string> GeneratedFiles = new List<string> ();
@@ -1478,7 +1479,7 @@ public class Generator {
 	{
 		var sb = new StringBuilder ();
 		
-		if (HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute)))
+		if (NativeExceptionMarshalling && HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute)))
 #if MONOMAC
 			sb.Append ("monomac_");
 #else
@@ -2786,7 +2787,7 @@ public class Generator {
 					print (init_binding_type);
 				}
 				
-				var may_throw = HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute));
+				var may_throw = NativeExceptionMarshalling && HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute));
 				
 				if (may_throw) {
 					print ("try {");
