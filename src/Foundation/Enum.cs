@@ -342,9 +342,10 @@ namespace MonoMac.Foundation  {
 
 	[Flags]
 	public enum NSComparisonPredicateOptions {
-		None=0x00,
-		CaseInsensitive=0x01,
-		DiacriticInsensitive=0x02
+		None                 = 0x00,
+		CaseInsensitive      = 1<<0,
+		DiacriticInsensitive = 1<<1,
+		Normalized           = 1<<2
 	}	
 	
 	public enum NSCompoundPredicateType {
