@@ -336,7 +336,7 @@ namespace MonoMac.Foundation  {
 		EndsWith,
 		In,
 		CustomSelector,
-		Contains,
+		Contains = 99,
 		Between
 	}
 
