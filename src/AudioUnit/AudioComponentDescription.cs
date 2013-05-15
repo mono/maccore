@@ -1,4 +1,4 @@
-﻿//
+//
 // AudioComponentDescription.cs: AudioComponentDescription wrapper class
 //
 // Author:

@@ -1,4 +1,4 @@
-﻿//
+//
 // ExtAudioFile.cs: ExtAudioFile wrapper class
 //
 // Authors:

@@ -1,4 +1,4 @@
-﻿//
+//
 // AudioGraphEventArgs.cs: Audio graph callback event arguments
 //
 // Author:
