@@ -249,17 +249,16 @@ namespace MonoMac.CoreGraphics {
 		extern static	void CGContextSetLineDash(IntPtr c, float phase, float [] lengths, int count);
 		public void SetLineDash (float phase, float [] lengths)
 		{
-			if (lengths == null)
-				throw new ArgumentNullException ("lengths");
-			CGContextSetLineDash (handle, phase, lengths, lengths.Length);
+			int n = lengths == null ? 0 : lengths.Length;
+			CGContextSetLineDash (handle, phase, lengths, n);
 		}
 
 		public void SetLineDash (float phase, float [] lengths, int n)
 		{
 			if (lengths == null)
-				throw new ArgumentNullException ("lengths");
-			if (n > lengths.Length)
-				throw new ArgumentNullException ("n");
+				n = 0;
+			else if (n < 0 || n > lengths.Length)
+				throw new ArgumentException ("n");
 			CGContextSetLineDash (handle, phase, lengths, n);
 		}
 		
