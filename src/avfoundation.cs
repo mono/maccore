@@ -4292,10 +4292,10 @@ namespace MonoMac.AVFoundation {
 		void AdvanceToNextItem ();
 
 		[Export ("canInsertItem:afterItem:")]
-		bool CanInsert (AVPlayerItem item, AVPlayerItem afterItem);
+		bool CanInsert (AVPlayerItem item, [NullAllowed] AVPlayerItem afterItem);
 
 		[Export ("insertItem:afterItem:")]
-		void InsertItem (AVPlayerItem item, AVPlayerItem afterItem);
+		void InsertItem (AVPlayerItem item, [NullAllowed] AVPlayerItem afterItem);
 
 		[Export ("removeItem:")]
 		void RemoveItem (AVPlayerItem item);
