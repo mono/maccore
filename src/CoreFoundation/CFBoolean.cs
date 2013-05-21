@@ -77,6 +77,9 @@ namespace MonoMac.CoreFoundation {
 			}
 		}
 
+		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFBooleanGetTypeID")]
+		public extern static int GetTypeID ();
+
 		public void Dispose ()
 		{
 			Dispose (true);

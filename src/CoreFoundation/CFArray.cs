@@ -62,6 +62,9 @@ namespace MonoMac.CoreFoundation {
 			get {return handle;}
 		}
 
+		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFArrayGetTypeID")]
+		public extern static int GetTypeID ();
+
 		~CFArray ()
 		{
 			Dispose (false);

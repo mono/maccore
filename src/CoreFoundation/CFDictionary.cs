@@ -54,6 +54,9 @@ namespace MonoMac.CoreFoundation {
 			this.Handle = handle;
 		}
 		
+		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFDictionaryGetTypeID")]
+		public extern static int GetTypeID ();
+
 		~CFDictionary ()
 		{
 			Dispose (false);
