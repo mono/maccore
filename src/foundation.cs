@@ -4245,10 +4245,10 @@ namespace MonoMac.Foundation
 		[Export ("initWithArray:"), Internal]
 		IntPtr Constructor (NSArray array);
 
-		[Export ("unionSet"), Internal]
+		[Export ("unionSet:"), Internal]
 		void UnionSet (NSSet other);
 
-		[Export ("minusSet"), Internal]
+		[Export ("minusSet:"), Internal]
 		void MinusSet (NSSet other);
 
 		[Export ("insertObject:atIndex:")]
@@ -4293,7 +4293,7 @@ namespace MonoMac.Foundation
 		[Export ("removeObject:")]
 		void RemoveObject (NSObject obj);
 
-		[Export ("removeObjectsInArray")]
+		[Export ("removeObjectsInArray:")]
 		void RemoveObjects (NSObject [] objects);
 
 		[Export ("intersectOrderedSet:")]
