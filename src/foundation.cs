@@ -4169,6 +4169,147 @@ namespace MonoMac.Foundation
 	}
 
 	[BaseType (typeof (NSObject))]
+	public interface NSOrderedSet {
+		[Export ("initWithObject:")]
+		IntPtr Constructor (NSObject start);
+
+		[Export ("initWithArray:"), Internal]
+		IntPtr Constructor (NSArray array);
+
+		[Export ("initWithSet:")]
+		IntPtr Constructor (NSSet source);
+		
+		[Export ("initWithOrderedSet:")]
+		IntPtr Constructor (NSOrderedSet source);
+
+		[Export ("count")]
+		int Count { get; }
+
+		[Export ("objectAtIndex:"), Internal]
+		NSObject GetObject (int idx);
+
+		[Export ("array"), Internal]
+		IntPtr _ToArray ();
+
+		[Export ("indexOfObject:")]
+		int IndexOf (NSObject obj);
+		
+		[Export ("objectEnumerator"), Internal]
+		NSEnumerator _GetEnumerator ();
+
+		[Export ("set")]
+		NSSet AsSet ();
+
+		[Export ("containsObject:")]
+		bool Contains (NSObject obj);
+
+		[Export ("firstObject")]
+		NSObject FirstObject ();
+
+		[Export ("lastObject")]
+		NSObject LastObject ();
+
+		[Export ("isEqualToOrderedSet:")]
+		bool IsEqualToOrderedSet (NSOrderedSet other);
+
+		[Export ("intersectsOrderedSet:")]
+		bool Intersects (NSOrderedSet other);
+
+		[Export ("intersectsSet:")]
+		bool Intersects (NSSet other);
+		
+		[Export ("isSubsetOfOrderedSet:")]
+		bool IsSubset (NSOrderedSet other);
+		
+		[Export ("isSubsetOfSet:")]
+		bool IsSubset (NSSet other);
+
+		[Export ("reversedOrderedSet")]
+		NSOrderedSet GetReverseOrderedSet ();
+	}
+
+	[BaseType (typeof (NSOrderedSet))]
+	public interface NSMutableOrderedSet {
+		[Export ("initWithObject:")]
+		IntPtr Constructor (NSObject start);
+
+		[Export ("initWithSet:")]
+		IntPtr Constructor (NSSet source);
+
+		[Export ("initWithOrderedSet:")]
+		IntPtr Constructor (NSOrderedSet source);
+
+		[Export ("initWithCapacity:")]
+		IntPtr Constructor (int capacity);
+		
+		[Export ("initWithArray:"), Internal]
+		IntPtr Constructor (NSArray array);
+
+		[Export ("unionSet"), Internal]
+		void UnionSet (NSSet other);
+
+		[Export ("minusSet"), Internal]
+		void MinusSet (NSSet other);
+
+		[Export ("insertObject:atIndex:")]
+		void Insert (NSObject obj, int atIndex);
+
+		[Export ("removeObjectAtIndex:")]
+		void Remove (int index);
+
+		[Export ("replaceObjectAtIndex:withObject:")]
+		void Replace (int objectAtIndex, NSObject newObject);
+
+		[Export ("addObject:")]
+		void Add (NSObject obj);
+
+		[Export ("addObjectsFromArray:")]
+		void AddObjects (NSObject [] source);
+
+		[Export ("insertObjects:atIndexes:")]
+		void InsertObjects (NSObject [] objects, NSIndexSet atIndexes);
+
+		[Export ("removeObjectsAtIndexes:")]
+		void RemoveObjects (NSIndexSet indexSet);
+		
+		[Export ("exchangeObjectAtIndex:withObjectAtIndex:")]
+		void ExchangeObject (int first, int second);
+
+		[Export ("moveObjectsAtIndexes:toIndex:")]
+		void MoveObjects (NSIndexSet indexSet, int destination);
+
+		[Export ("setObject:atIndex:")]
+		void SetObject (NSObject obj, int index);
+
+		[Export ("replaceObjectsAtIndexes:withObjects:")]
+		void ReplaceObjects (NSIndexSet indexSet, NSObject [] replacementObjects);
+
+		[Export ("removeObjectsInRange:")]
+		void RemoveObjects (NSRange range);
+
+		[Export ("removeAllObjects")]
+		void RemoveAllObjects ();
+
+		[Export ("removeObject:")]
+		void RemoveObject (NSObject obj);
+
+		[Export ("removeObjectsInArray")]
+		void RemoveObjects (NSObject [] objects);
+
+		[Export ("intersectOrderedSet:")]
+		void Intersect (NSOrderedSet intersectWith);
+
+		[Export ("sortUsingComparator:")]
+		void Sort (NSComparator comparator);
+
+		[Export ("sortWithOptions:usingComparator:")]
+		void Sort (NSSortOptions sortOptions, NSComparator comparator);
+
+		[Export ("sortRange:options:usingComparator:")]
+		void SortRange (NSRange range, NSSortOptions sortOptions, NSComparator comparator);
+	}
+	
+	[BaseType (typeof (NSObject))]
 	// Objective-C exception thrown.  Name: NSInvalidArgumentException Reason: *** -[__NSArrayM insertObject:atIndex:]: object cannot be nil
 	[DisableDefaultCtor]
 	public interface NSOrthography {

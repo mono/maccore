@@ -1166,10 +1166,10 @@ namespace MonoMac.AVFoundation {
 		AVAssetReaderVideoCompositionOutput Create (AVAssetTrack [] videoTracks, [NullAllowed] CVPixelBufferAttributes settings);
 
 		[Export ("initWithVideoTracks:videoSettings:")]
-		IntPtr Constructor (AVAssetTrack [] videoTracks, NSDictionary videoSettings);
+		IntPtr Constructor (AVAssetTrack [] videoTracks, [NullAllowed] NSDictionary videoSettings);
 
 		[Wrap ("this (videoTracks, settings == null ? null : settings.Dictionary)")]
-		IntPtr Constructor (AVAssetTrack [] videoTracks, CVPixelBufferAttributes settings);		
+		IntPtr Constructor (AVAssetTrack [] videoTracks, [NullAllowed] CVPixelBufferAttributes settings);		
 
 		[Export ("videoSettings")]
 		NSDictionary WeakVideoSettings { get; }

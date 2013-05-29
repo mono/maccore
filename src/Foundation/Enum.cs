@@ -622,4 +622,11 @@ namespace MonoMac.Foundation  {
 		Background,
 		Voice
 	}
+
+	[Flags]
+	public enum NSSortOptions {
+		Concurrent = 1 << 0,
+		Stable = 1 << 4
+	}
+	
 }
