@@ -171,7 +171,7 @@ namespace MonoMac.Foundation {
 		}
 
 		[Serializable]
-		class ShimEnumerator : IDictionaryEnumerator, IEnumerator {
+		class ShimEnumerator : IDictionaryEnumerator, IDisposable, IEnumerator {
 			IEnumerator<KeyValuePair<NSObject, NSObject>> e;
 
 			public ShimEnumerator (NSMutableDictionary host)
