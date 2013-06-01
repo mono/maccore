@@ -4540,7 +4540,7 @@ namespace MonoMac.Foundation
 
 		[Static]
 		[Export ("JSONObjectWithData:options:error:")]
-		NSObject Deserialize (NSData data, NSJsonReadingOptions opt, NSError error);
+		NSObject Deserialize (NSData data, NSJsonReadingOptions opt, out NSError error);
 
 		[Static]
 		[Export ("writeJSONObject:toStream:options:error:")]
