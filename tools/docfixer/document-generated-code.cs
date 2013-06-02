@@ -255,8 +255,10 @@ class DocumentGeneratedCode {
 			//	value.Value = "Value will be null when the constant is not available";
 			//}
 
-			summary.RemoveAll ();
-			summary.Value = "Represents the value associated with the constant " + export;
+			if (summary.Value == "To be added."){
+				summary.RemoveAll ();
+				summary.Value = "Represents the value associated with the constant " + export;
+			}
 		}
 	}
 
