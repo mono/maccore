@@ -3437,6 +3437,8 @@ public class Generator {
 			bool is_static_class = type.GetCustomAttributes (typeof (StaticAttribute), true).Length > 0 || is_category_class;
 			bool is_model = type.GetCustomAttributes (typeof (ModelAttribute), true).Length > 0;
 			bool is_protocol = HasAttribute (type, typeof (ProtocolAttribute));
+			string class_visibility = HasAttribute (type, typeof (InternalAttribute)) ? "internal" : "public";
+
 			var default_ctor_visibility = GetAttribute<DefaultCtorVisibilityAttribute> (type);
 			object [] btype = type.GetCustomAttributes (typeof (BaseTypeAttribute), true);
 			BaseTypeAttribute bta = btype.Length > 0 ? ((BaseTypeAttribute) btype [0]) : null;
@@ -3467,7 +3469,8 @@ public class Generator {
 
 			PrintPlatformAttributes (type);
 
-			print ("public unsafe {0}partial class {1} {2} {{",
+			print ("{0} unsafe {1}partial class {2} {3} {{",
+			       class_visibility,
 			       class_mod,
 			       TypeName,
 			       base_type != typeof (object) && TypeName != "NSObject" && !is_category_class ? ": " + FormatType (type, base_type) : "");
