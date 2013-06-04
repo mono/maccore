@@ -1664,7 +1664,7 @@ public class Generator {
 		marshal_types.Add (new MarshalType (typeof (CGContext), "IntPtr", "{0}.Handle", "new CGContext ("));
 		marshal_types.Add (new MarshalType (typeof (CGImage), "IntPtr", "{0}.Handle", "new CGImage ("));
 		marshal_types.Add (new MarshalType (typeof (NSObject), "IntPtr", "{0}.Handle", "Runtime.GetNSObject ("));
-		marshal_types.Add (new MarshalType (typeof (Selector), "IntPtr", "{0}.Handle", "new Selector ("));
+		marshal_types.Add (new MarshalType (typeof (Selector), "IntPtr", "{0}.Handle", "Selector.FromHandle ("));
 		marshal_types.Add (new MarshalType (typeof (Class), "IntPtr", "{0}.Handle", "new Class ("));
 		marshal_types.Add (new MarshalType (typeof (NSString), "IntPtr", "{0}.Handle", "new NSString ("));
 		marshal_types.Add (new MarshalType (typeof (CFRunLoop), "IntPtr", "{0}.Handle", "new CFRunLoop ("));
