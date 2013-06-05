@@ -34,21 +34,13 @@ using MonoTouch.Foundation;
 using macdoc;
 
 class DocumentGeneratedCode {
-#if MONOMAC
-	Type nso = typeof (MonoMac.Foundation.NSObject);
-	const string ns = "MonoMac";
-	const string docBase = "/Developer/Documentation/DocSets/com.apple.adc.documentation.AppleSnowLeopard.CoreReference.docset";
-#else
-	Type nso = typeof (MonoTouch.Foundation.NSObject);
-	const string ns = "MonoTouch";
-	const string docBase = "/Library/Developer/Shared/Documentation/DocSets/com.apple.adc.documentation.AppleiOS5_0.iOSLibrary.docset";
-#endif
-
 	static void Help ()
 	{
-		Console.WriteLine ("Usage is: document-generated-code [--appledocs] temp.dll path-to-documentation");
+		Console.WriteLine ("Usage is: document-generated-code --ns-prefix=<prefix> [--apple-doc-dir=<path>] temp.dll path-to-documentation");
 	}
 
+	static string ns;
+	static string docBase;
 	static string assembly_dir;
 	static Assembly assembly;
 	static bool mergeAppledocs;
@@ -63,16 +55,15 @@ class DocumentGeneratedCode {
 	
 	static string GetMdocPath (Type t, bool notification = false)
 	{
-		var ns = t.Namespace;
-		var typeName = t.FullName.Substring (ns.Length+1);
-		if (ns == "MonoTouch.Foundation"){
+		var typeName = t.Name;
+		if (t.Namespace == ns){
 			if (typeName == "NSString2")
 				typeName = "NSString";
 			if (typeName == "NSObject2")
 				typeName = "NSObject";
 		}
 
-		return GetPath (ns, typeName, notification);
+		return GetPath (t.Namespace, typeName, notification);
 	}
 	
 	static XDocument GetDoc (Type t, bool notification = false)
@@ -195,7 +186,7 @@ class DocumentGeneratedCode {
 	{
 		return (from m in xdoc.XPathSelectElements ("Type/Members/Member")
 			let a = m.XPathSelectElement ("Attributes/Attribute/AttributeName")
-			where a != null && a.Value.IndexOf ("MonoTouch.Foundation.Export(\"" + selector + "\"") != -1
+			where a != null && a.Value.IndexOf (ns + ".Foundation.Export(\"" + selector + "\"") != -1
 			select m).FirstOrDefault ();
 	}
 
@@ -305,7 +296,7 @@ class DocumentGeneratedCode {
 		var evengArgsType = DocumentNotificationNestedType (t, pi, body.ToString ());
 
 		remarks.RemoveAll ();
-		remarks.Add (XElement.Parse ("<para id='tool-remark'>This constant can be used with the <see cref=\"T:MonoTouch.Foundation.NSNotificationCenter\"/> to register a listener for this notification.   This is an NSString instead of a string, because these values can be used as tokens in some native libraries instead of being used purely for their actual string content.    The 'notification' parameter to the callback contains extra information that is specific to the notification type.</para>"));
+		remarks.Add (XElement.Parse ("<para id='tool-remark'>This constant can be used with the <see cref=\"T:" + ns + ".Foundation.NSNotificationCenter\"/> to register a listener for this notification.   This is an NSString instead of a string, because these values can be used as tokens in some native libraries instead of being used purely for their actual string content.    The 'notification' parameter to the callback contains extra information that is specific to the notification type.</para>"));
 		remarks.Add (XElement.Parse (String.Format ("<para id='tool-remark'>If you want to subscribe to this notification, you can use the convenience <see cref='T:{0}+Notifications'/>.<see cref='M:{0}+Notifications.Observe{1}'/> method which offers strongly typed access to the parameters of the notification.</para>", t.Name, name)));
 		remarks.Add (XElement.Parse ("<para>The following example shows how to use the strongly typed Notifications class, to take the guesswork out of the available properties in the notification:</para>"));
 		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
@@ -359,9 +350,9 @@ class DocumentGeneratedCode {
 		class_summary.Add (XElement.Parse ("<para>Notification posted by the <see cref =\"T:" + t.FullName + "\"/> class.</para>"));
 		class_remarks.RemoveAll ();
 		class_remarks.Add (XElement.Parse ("<para>This is a static class which contains various helper methods that allow developers to observe events posted " +
-						   "in the iOS notification hub (<see cref=\"T:MonoTouch.Foundation.NSNotificationCenter\"/>).</para>"));
+						   "in the iOS notification hub (<see cref=\"T:" + ns + ".Foundation.NSNotificationCenter\"/>).</para>"));
 		class_remarks.Add (XElement.Parse ("<para>The methods defined in this class post events invoke the provided method or lambda with a " +
-						   "<see cref=\"T:MonoTouch.Foundation.NSNotificationEventArgs\"/> parameter which contains strongly typed properties for the notification arguments.</para>"));
+						   "<see cref=\"T:" + ns + ".Foundation.NSNotificationEventArgs\"/> parameter which contains strongly typed properties for the notification arguments.</para>"));
 
 		var notifications = from prop in t.GetProperties ()
 			let propName = prop.Name
@@ -398,7 +389,7 @@ class DocumentGeneratedCode {
 			handler.Value = "Method to invoke when the notification is posted.";
 			summary.Value = "Registers a method to be notified when the " + notification.Item2 + " notification is posted.";
 			returns.RemoveAll ();
-			returns.Add (XElement.Parse ("<para>The returned NSObject represents the registered notification.   Either call Dispose on the object to stop receiving notifications, or pass it to <see cref=\"M:MonoTouch.Foundation.NSNotificationCenter.RemoveObserver\"/></para>"));
+			returns.Add (XElement.Parse ("<para>The returned NSObject represents the registered notification.   Either call Dispose on the object to stop receiving notifications, or pass it to <see cref=\"M:" + ns + ".Foundation.NSNotificationCenter.RemoveObserver\"/></para>"));
 			remarks.RemoveAll ();
 			remarks.Add (XElement.Parse ("<para>The following example shows how you can use this method in your code</para>"));
 
@@ -805,12 +796,25 @@ class DocumentGeneratedCode {
 				Help ();
 				return 0;
 			}
-			if (arg == "--appledocs"){
-				mergeAppledocs = true;
-				continue;
-			}
 			if (arg == "--debugdoc"){
 				debugDoc = true;
+				continue;
+			}
+			if (arg.StartsWith("--apple-doc-dir")) {
+				mergeAppledocs = true;
+				var split = arg.Split('=');
+				if (split.Length == 2)
+					docBase = split[1];
+				else
+					docBase = args[++i];
+				continue;
+			}
+			if (arg.StartsWith("--ns-prefix")) {
+				var split = arg.Split('=');
+				if (split.Length == 2)
+					ns = split[1];
+				else
+					ns = args[++i];
 				continue;
 			}
 			
@@ -820,7 +824,7 @@ class DocumentGeneratedCode {
 				dir = arg;
 		}
 		
-		if (dir == null){
+		if (dir == null || ns == null || (mergeAppledocs && docBase == null)){
 			Help ();
 			return 1;
 		}
