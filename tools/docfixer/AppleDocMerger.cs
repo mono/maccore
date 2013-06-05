@@ -382,6 +382,9 @@ namespace macdoc
 		{
 			var path = db.CreateCommand ("select zkpath from znode join ztoken on znode.z_pk == ztoken.zparentnode where ztoken.ztokenname like \"" + t.Name + "\"").ExecuteScalar<string> ();
 			
+			if (path == null)
+				return null;
+
 			return Path.Combine (options.DocBase, "..", path);
 		}
 	
