@@ -23,7 +23,7 @@ namespace macdoc
 			// Default options
 			public Options ()
 			{
-				ImportSamples = true;
+				ImportSamples = false;
 				QuickSummaries = true;
 				CancellationToken = System.Threading.CancellationToken.None;
 			}
