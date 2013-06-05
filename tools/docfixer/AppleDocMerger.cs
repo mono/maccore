@@ -717,6 +717,9 @@ namespace macdoc
 				}
 				appledocpath = FixAppleDocPath (t, appledocpath);
 			}
+			if (context == null)
+				context = new ProcessingContext ();
+
 			context.CurrentAppleDocPath = appledocpath;
 			
 			return appledocpath;
