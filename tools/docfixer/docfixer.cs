@@ -31,6 +31,7 @@ public partial class DocGenerator
 	{
 		bool show_help = false;
 		bool useRawDoc = false;
+		string docBundle = null;
 		var mergerOptions = new AppleDocMerger.Options ();
 
 		var options = new OptionSet () {
@@ -52,6 +53,9 @@ public partial class DocGenerator
 			{ "use-raw-doc",
 			  "Process uncompiled mdoc documentation rather than a bundle",
 			  v => useRawDoc = v != null},
+			{ "doc-bundle=",
+			  "Process a bundle rather than uncompiled mdoc documentation",
+			  v => docBundle = v},
 			{ "allow-missing=",
 			  "Allow this many types to be missing before considering it an error",
 			  v => mergerOptions.ThrowOnMissingTypeCount = Int32.Parse(v)},
@@ -73,7 +77,7 @@ public partial class DocGenerator
 			return 1;
 		}
 
-		if (string.IsNullOrEmpty (monodocPath) || show_help) {
+		if (string.IsNullOrEmpty (monodocPath) || show_help || (useRawDoc && !string.IsNullOrEmpty(docBundle))) {
 			ShowHelp (options);
 			return 0;
 		}
@@ -81,8 +85,21 @@ public partial class DocGenerator
 		IMdocArchive mdocArchive = null;
 		if (useRawDoc)
 			mdocArchive = new MDocDirectoryArchive (Path.Combine (monodocPath, "en"));
-		else
-			mdocArchive = MDocZipArchive.ExtractAndLoad (Path.Combine (monodocPath, ArchiveName));
+		else {
+			string bundlePath;
+			if (!string.IsNullOrEmpty(docBundle)) {
+				bundlePath = Path.Combine(monodocPath, docBundle);
+			} else {
+				bundlePath = Path.Combine(monodocPath, "monomac-lib.zip");
+				if (!File.Exists(bundlePath))
+					bundlePath = Path.Combine(monodocPath, "MonoTouch-lib.zip");
+			}
+			if (!File.Exists(bundlePath)) {
+				Console.Error.WriteLine("{0} does not exist", bundlePath);
+				return 1;
+			}
+			mdocArchive = MDocZipArchive.ExtractAndLoad (bundlePath);
+		}
 		mergerOptions.MonodocArchive = mdocArchive;
 		var merger = new AppleDocMerger (mergerOptions);
 		merger.MergeDocumentation ();
