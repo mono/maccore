@@ -3492,12 +3492,13 @@ public class Generator {
 
 			// Regular bindings (those that are not-static) or categories need this
 			if (!is_static_class || is_category_class){
-				print ("[CompilerGenerated]");
-
 				if (is_category_class)
 					objc_type_name = FormatType (null, bta.BaseType);
 				
-				print ("static readonly IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", is_model ? "NSObject" : objc_type_name);
+				if (!is_model && !external) {
+					print ("[CompilerGenerated]");
+					print ("static readonly IntPtr class_ptr = Class.GetHandle (\"{0}\");\n", objc_type_name);
+				}
 			}
 			
 			if (!is_static_class){
