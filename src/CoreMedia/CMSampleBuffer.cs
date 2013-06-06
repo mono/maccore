@@ -5,7 +5,7 @@
 //			Marek Safar (marek.safar@gmail.com)
 //     
 // Copyright 2010 Novell, Inc
-// Copyright 2012 Xamarin Inc
+// Copyright 2012-2013 Xamarin Inc
 //
 using System;
 using System.Drawing;
@@ -16,6 +16,8 @@ using MonoMac;
 using MonoMac.Foundation;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
+
+using OSStatus = System.Int32;
 
 #if !COREBUILD
 using MonoMac.AudioToolbox;
@@ -123,6 +125,26 @@ namespace MonoMac.CoreMedia {
 
 			return new CMSampleBuffer (buffer, true);
 		}
+
+		[DllImport(Constants.CoreMediaLibrary)]
+		static extern OSStatus CMSampleBufferCreateCopyWithNewTiming (
+			IntPtr allocator,
+			IntPtr originalSBuf,
+			int numSampleTimingEntries,
+			CMSampleTimingInfo []sampleTimingArray,
+			out IntPtr sBufCopyOut
+			);
+
+		public static CMSampleBuffer CreateWithNewTiming (CMSampleBuffer original, CMSampleTimingInfo [] timing)
+		{
+			IntPtr handle;
+			OSStatus status;
+
+			if ((status = CMSampleBufferCreateCopyWithNewTiming (IntPtr.Zero, original.Handle, timing.Length, timing, out handle)) != 0)
+				throw new Exception (OSStatusToString (status));
+			
+			return new CMSampleBuffer (handle, true);
+		}
 /*
 		[DllImport(Constants.CoreMediaLibrary)]
 		int CMSampleBufferCallForEachSample (
@@ -161,15 +183,7 @@ namespace MonoMac.CoreMedia {
 		   CMSampleBufferRef sbuf,
 		   CMSampleBufferRef *sbufCopyOut
 		);
-
-		[DllImport(Constants.CoreMediaLibrary)]
-		int CMSampleBufferCreateCopyWithNewTiming (
-		   CFAllocatorRef allocator,
-		   CMSampleBufferRef originalSBuf,
-		   int numSampleTimingEntries,
-		   const CMSampleTimingInfo *sampleTimingArray,
-		   CMSampleBufferRef *sBufCopyOut
-		);*/
+		*/
 
 		[DllImport(Constants.CoreMediaLibrary)]
 		static extern CMSampleBufferError CMSampleBufferCreateForImageBuffer (IntPtr allocator,
@@ -442,15 +456,44 @@ namespace MonoMac.CoreMedia {
 		   int sampleIndex,
 		   CMSampleTimingInfo *timingInfoOut
 		);
+		*/
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		int CMSampleBufferGetSampleTimingInfoArray (
-		   CMSampleBufferRef sbuf,
+		static extern OSStatus CMSampleBufferGetSampleTimingInfoArray (
+		   IntPtr sbuf,
 		   int timingArrayEntries,
-		   CMSampleTimingInfo *timingArrayOut,
-		   int *timingArrayEntriesNeededOut
-		);*/
-		
+		   CMSampleTimingInfo [] timingArrayOut,
+		   out int timingArrayEntriesNeededOut
+		);
+
+#if !COREBUILD
+		public CMSampleTimingInfo [] GetSampleTimingInfo () {
+			int count;
+			OSStatus status;
+
+			if (handle == IntPtr.Zero)
+				return null;
+
+			if ((status = CMSampleBufferGetSampleTimingInfoArray (handle, 0, null, out count)) != 0)
+				throw new Exception (OSStatusToString (status));
+
+			CMSampleTimingInfo [] pInfo = new CMSampleTimingInfo [count];
+
+			if (count == 0)
+				return pInfo;
+
+			if ((status = CMSampleBufferGetSampleTimingInfoArray (handle, count, pInfo, out count)) != 0)
+				throw new Exception (OSStatusToString (status));	
+
+			return pInfo;
+		}
+
+		static string OSStatusToString (OSStatus status)
+		{
+			return new NSError (NSError.OsStatusErrorDomain, status).LocalizedDescription;
+		}
+#endif
+
 		[DllImport(Constants.CoreMediaLibrary)]
 		extern static uint CMSampleBufferGetTotalSampleSize (IntPtr handle);
 		
