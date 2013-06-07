@@ -137,11 +137,16 @@ namespace MonoMac.CoreMedia {
 
 		public static CMSampleBuffer CreateWithNewTiming (CMSampleBuffer original, CMSampleTimingInfo [] timing)
 		{
-			IntPtr handle;
 			OSStatus status;
+			return CreateWithNewTiming (original, timing, out status);
+		}
+
+		public static CMSampleBuffer CreateWithNewTiming (CMSampleBuffer original, CMSampleTimingInfo [] timing, out OSStatus status)
+		{
+			IntPtr handle;
 
 			if ((status = CMSampleBufferCreateCopyWithNewTiming (IntPtr.Zero, original.Handle, timing.Length, timing, out handle)) != 0)
-				throw new Exception (OSStatusToString (status));
+				return null;
 			
 			return new CMSampleBuffer (handle, true);
 		}
@@ -467,15 +472,22 @@ namespace MonoMac.CoreMedia {
 		);
 
 #if !COREBUILD
-		public CMSampleTimingInfo [] GetSampleTimingInfo () {
-			int count;
+		public CMSampleTimingInfo [] GetSampleTimingInfo ()
+		{
 			OSStatus status;
+			return GetSampleTimingInfo (out status);
+		}
+
+		public CMSampleTimingInfo [] GetSampleTimingInfo (out OSStatus status) {
+			int count;
+
+			status = 0;
 
 			if (handle == IntPtr.Zero)
 				return null;
 
 			if ((status = CMSampleBufferGetSampleTimingInfoArray (handle, 0, null, out count)) != 0)
-				throw new Exception (OSStatusToString (status));
+				return null;
 
 			CMSampleTimingInfo [] pInfo = new CMSampleTimingInfo [count];
 
@@ -483,7 +495,7 @@ namespace MonoMac.CoreMedia {
 				return pInfo;
 
 			if ((status = CMSampleBufferGetSampleTimingInfoArray (handle, count, pInfo, out count)) != 0)
-				throw new Exception (OSStatusToString (status));	
+				return null;
 
 			return pInfo;
 		}
