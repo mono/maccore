@@ -132,7 +132,7 @@ class BindingTouch {
 			{ "use-zero-copy", v=> zero_copy = true },
 			{ "nostdlib", "Does not reference mscorlib.dll library", l => nostdlib = true },
 			{ "no-mono-path", "Launches compiler with empty MONO_PATH", l => clean_mono_path = true },
-			{ "native-exception-marshalling", "Eanble the marshalling support for Objective-C exceptions", l => native_exception_marshalling = true },
+			{ "native-exception-marshalling", "Enable the marshalling support for Objective-C exceptions", l => native_exception_marshalling = true },
 			{ "inline-selectors:", "If Selector.GetHandle is inlined and does not need to be cached (default: false)", v => inline_selectors = string.Equals ("true", v, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty (v) },
 #if !MONOMAC
 			{ "link-with=,", "Link with a native library {0:FILE} to the binding, embedded as a resource named {1:ID}",
