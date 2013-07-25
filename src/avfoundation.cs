@@ -255,7 +255,7 @@ namespace MonoMac.AVFoundation {
 	}
 
 	[Since (5,0)]
-	[Static, Internal]
+	[Static]
 	interface AVVideoScalingModeKey
 	{
 		[Field ("AVVideoScalingModeFit")]
@@ -4018,7 +4018,7 @@ namespace MonoMac.AVFoundation {
 		
 		[Since (6,0)]
 		[Export ("outputs")]
-		AVPlayerItemOutput Outputs { get;  }
+		AVPlayerItemOutput [] Outputs { get;  }
 
 		[Since (6,0)]
 		[Export ("addOutput:")]
@@ -4098,8 +4098,9 @@ namespace MonoMac.AVFoundation {
 		[Export ("hasNewPixelBufferForItemTime:")]
 		bool HasNewPixelBufferForItemTime (CMTime itemTime);
 
+		[Protected]
 		[Export ("copyPixelBufferForItemTime:itemTimeForDisplay:")]
-		CVPixelBuffer CopyPixelBuffer (CMTime itemTime, ref CMTime outItemTimeForDisplay);
+		IntPtr WeakCopyPixelBuffer (CMTime itemTime, ref CMTime outItemTimeForDisplay);
 
 		[Export ("setDelegate:queue:")]
 		void SetDelegate (AVPlayerItemOutputPullDelegate delegateClass, DispatchQueue delegateQueue);

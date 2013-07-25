@@ -58,7 +58,7 @@ namespace MonoMac.Foundation {
 		public static implicit operator NSUrl (Uri uri)
 		{
 			if (uri.IsAbsoluteUri)
-				return new NSUrl (uri.AbsolutePath);
+				return new NSUrl (uri.AbsoluteUri);
 			else
 				return new NSUrl (uri.PathAndQuery);
 		}

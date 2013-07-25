@@ -9,6 +9,7 @@
 using System;
 using MonoTouch.Foundation;
 using MonoTouch.CoreMedia;
+using MonoTouch.CoreVideo;
 
 namespace MonoTouch.AVFoundation {
 	public partial class AVPlayer {
@@ -30,6 +31,17 @@ namespace MonoTouch.AVFoundation {
 		public void Seek (CMTime time, CMTime toleranceBefore, CMTime toleranceAfter, AVCompletionHandler completion)
 		{
 			Seek (time, toleranceBefore, toleranceAfter, (x) => { completion (); });
+		}
+	}
+
+	public partial class AVPlayerItemVideoOutput {
+		public CVPixelBuffer CopyPixelBuffer (CMTime itemTime, ref CMTime outItemTimeForDisplay)
+		{
+			var ptr = WeakCopyPixelBuffer (itemTime, ref outItemTimeForDisplay);
+			if (ptr == IntPtr.Zero)
+				return null;
+
+			return new CVPixelBuffer (ptr, true);
 		}
 	}
 }

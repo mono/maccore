@@ -36,6 +36,7 @@ using System.Runtime.InteropServices;
 using MonoMac.CoreFoundation;
 using MonoMac.ObjCRuntime;
 using MonoMac.Foundation;
+using System.Threading;
 
 using OSStatus = System.Int32;
 
@@ -92,6 +93,13 @@ namespace MonoMac.AudioToolbox {
 			Description = description;
 		}
 
+		// TODO: Should not be just int but int wrapped in struct because it's system-defined identifier
+		public int ID { get; private set; }
+		public string Description { get; private set; }
+	}
+
+	public class InputSourceInfo
+	{
 		public int ID { get; private set; }
 		public string Description { get; private set; }
 	}
@@ -339,6 +347,19 @@ namespace MonoMac.AudioToolbox {
 				return val;
 			}
 		}
+
+		static IntPtr GetIntPtr (AudioSessionProperty property)
+		{
+			unsafe {
+				IntPtr val;
+				int size = IntPtr.Size;
+				int k = AudioSessionGetProperty (property, ref size, (IntPtr) (&val));
+				if (k != 0)
+					throw new AudioSessionException (k);
+				
+				return val;
+			}
+		}
 		
 		static void SetDouble (AudioSessionProperty property, double val)
 		{
@@ -404,43 +425,37 @@ namespace MonoMac.AudioToolbox {
 		[Obsolete ("Deprecated in iOS 5.0. Use InputRoute or OutputRoute instead")]
 		static public string AudioRoute {
 			get {
-				return CFString.FetchString ((IntPtr) GetInt (AudioSessionProperty.AudioRoute));
+				return CFString.FetchString (GetIntPtr (AudioSessionProperty.AudioRoute));
 			}
 		}
 
 		[Since (5,0)]
 		static public AccessoryInfo[] InputSources {
 			get {
-				using (var array = new CFArray ((IntPtr) GetInt (AudioSessionProperty.InputSources))) {
-					var res = new AccessoryInfo [array.Count];
-					for (int i = 0; i < res.Length; ++i) {
-						var dict = array.GetValue (i);
-						var id = new NSNumber (CFDictionary.GetValue (dict, InputSourceKey_ID.Handle));
-						var desc = CFString.FetchString (CFDictionary.GetValue (dict, InputSourceKey_Description.Handle));
-
-						res [i] = new AccessoryInfo ((int) id, desc);
-						id.Dispose ();
-					}
-					return res;
-				}
+				return ExtractAccessoryInfo (GetIntPtr (AudioSessionProperty.InputSources), InputSourceKey_ID, InputSourceKey_Description);
 			}
 		}
 
 		[Since (5,0)]
 		static public AccessoryInfo[] OutputDestinations {
 			get {
-				using (var array = new CFArray ((IntPtr) GetInt (AudioSessionProperty.OutputDestinations))) {
-					var res = new AccessoryInfo [array.Count];
-					for (int i = 0; i < res.Length; ++i) {
-						var dict = array.GetValue (i);
-						var id = new NSNumber (CFDictionary.GetValue (dict, OutputDestinationKey_ID.Handle));
-						var desc = CFString.FetchString (CFDictionary.GetValue (dict, OutputDestinationKey_Description.Handle));
+				return ExtractAccessoryInfo (GetIntPtr (AudioSessionProperty.OutputDestinations), OutputDestinationKey_ID, OutputDestinationKey_Description);
+			}
+		}
 
-						res [i] = new AccessoryInfo ((int) id, desc);
-						id.Dispose ();
-					}
-					return res;
+		static AccessoryInfo[] ExtractAccessoryInfo (IntPtr ptr, NSString id, NSString description)
+		{
+			using (var array = new CFArray (ptr)) {
+				var res = new AccessoryInfo [array.Count];
+				for (int i = 0; i < res.Length; ++i) {
+					var dict = array.GetValue (i);
+					var n = new NSNumber (CFDictionary.GetValue (dict, id.Handle));
+					var desc = CFString.FetchString (CFDictionary.GetValue (dict, description.Handle));
+
+					res [i] = new AccessoryInfo ((int) n, desc);
+					id.Dispose ();
 				}
+				return res;
 			}
 		}
 
@@ -557,7 +572,7 @@ namespace MonoMac.AudioToolbox {
 		
 		static NSDictionary AudioRouteDescription {
 			get {
-				NSDictionary dict = new NSDictionary ((IntPtr) GetInt (AudioSessionProperty.AudioRouteDescription));
+				NSDictionary dict = new NSDictionary (GetIntPtr (AudioSessionProperty.AudioRouteDescription));
 				dict.Release ();
 				return dict;
 			}
@@ -669,8 +684,6 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		// InputSources
-
 		[Since (5,0)]
 		static public bool InputGainAvailable {
 			get {
@@ -706,12 +719,15 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioSessionAddPropertyListener(AudioSessionProperty id, _PropertyListener inProc, IntPtr userData);
+		extern static AudioSessionErrors AudioSessionAddPropertyListener(AudioSessionProperty id, _PropertyListener inProc, IntPtr userData);
 
 		static Hashtable listeners;
 
-		public static void AddListener (AudioSessionProperty property, PropertyListener listener)
+		public static AudioSessionErrors AddListener (AudioSessionProperty property, PropertyListener listener)
 		{
+			if (property == null)
+				throw new ArgumentNullException ("property");
+
 			if (listener == null)
 				throw new ArgumentNullException ("listener");
 
@@ -724,8 +740,11 @@ namespace MonoMac.AudioToolbox {
 
 			a.Add (listener);
 
-			if (a.Count == 1)
-				AudioSessionAddPropertyListener (property, Listener, IntPtr.Zero);
+			if (a.Count == 1) {
+				return AudioSessionAddPropertyListener (property, Listener, IntPtr.Zero);
+			}
+
+			return AudioSessionErrors.None;
 		}
 
 		public static void RemoveListener (AudioSessionProperty property, PropertyListener listener)
@@ -741,40 +760,119 @@ namespace MonoMac.AudioToolbox {
 				listeners [property] = null;
 		}
 
-               class RouteChangeListener {
-                       public EventHandler<AudioSessionRouteChangeEventArgs> cback;
-                       
-                       public RouteChangeListener (EventHandler<AudioSessionRouteChangeEventArgs> cback)
-                       {
-                               this.cback = cback;
-                       }
-
-                       public void Listener (AudioSessionProperty prop, int size, IntPtr data)
-                       {
-                               cback (null, new AudioSessionRouteChangeEventArgs (data));
-                       }
-               }
-               
                static Hashtable strongListenerHash;
-               
-               public static event EventHandler<AudioSessionRouteChangeEventArgs> AudioRouteChanged {
-                       add {
-                               if (strongListenerHash == null)
-                                       strongListenerHash = new Hashtable ();
-                               var routeChangeListener = new RouteChangeListener (value);
-                               strongListenerHash [value] = routeChangeListener;
-                               AddListener (AudioSessionProperty.AudioRouteChange, routeChangeListener.Listener);
-                       }
 
-                       remove {
-                               if (strongListenerHash == null)
-                                       return;
-                               var k = strongListenerHash [value] as RouteChangeListener;
-                               if (k != null){
-                                       RemoveListener (AudioSessionProperty.AudioRouteChange, k.Listener);
-                                       strongListenerHash.Remove (value);
-                               }
-                       }
-               }
+		static void AddListenerEvent<TEventArgs> (AudioSessionProperty property, EventHandler<TEventArgs> handler, PropertyListener listener)
+		{
+			if (strongListenerHash == null)
+				Interlocked.CompareExchange (ref strongListenerHash, new Hashtable (), null);
+
+			lock (strongListenerHash) {
+				strongListenerHash [handler] = listener;
+			}
+
+			AddListener (property, listener);
+		}
+
+		static void RemoveListenerEvent<TEventArgs> (AudioSessionProperty property, EventHandler<TEventArgs> handler)
+		{
+			if (strongListenerHash == null)
+				return;
+
+			PropertyListener listener;
+			lock (strongListenerHash) {
+				listener = (PropertyListener) strongListenerHash [handler]; 
+				if (listener == null)
+					return;
+
+				strongListenerHash.Remove (handler);
+			}
+
+			RemoveListener (AudioSessionProperty.CurrentHardwareOutputVolume, listener);
+		}
+
+		public static event EventHandler<AudioSessionRouteChangeEventArgs> AudioRouteChanged {
+			add {
+				AddListenerEvent (AudioSessionProperty.AudioRouteChange, value, 
+					(prop, size, data) => value (null, new AudioSessionRouteChangeEventArgs (data)));
+			}
+			remove {
+				RemoveListenerEvent (AudioSessionProperty.AudioRouteChange, value);
+			}
+		}
+
+		public static event EventHandler<float> CurrentHardwareOutputVolumeChanged {
+			add {
+				AddListenerEvent (AudioSessionProperty.CurrentHardwareOutputVolume, value, 
+					(prop, size, data) => value (null, (float) data));
+			}
+			remove {
+				RemoveListenerEvent (AudioSessionProperty.CurrentHardwareOutputVolume, value);
+			}
+		}
+
+ 		public static event EventHandler<bool> AudioInputBecameAvailable {
+			add {
+				AddListenerEvent (AudioSessionProperty.AudioInputAvailable, value, 
+					(prop, size, data) => value (null, data != IntPtr.Zero));
+			}
+			remove {
+				RemoveListenerEvent (AudioSessionProperty.AudioInputAvailable, value);
+			}
+		}
+
+		public static event EventHandler<bool> ServerDied {
+			add {
+				AddListenerEvent (AudioSessionProperty.ServerDied, value, 
+					(prop, size, data) => value (null, data != IntPtr.Zero));
+			}
+			remove {
+				RemoveListenerEvent (AudioSessionProperty.ServerDied, value);
+			}
+		}
+
+		[Since (5,0)]
+		public static event EventHandler<bool> InputGainBecameAvailable {
+			add {
+				AddListenerEvent (AudioSessionProperty.InputGainAvailable, value, 
+					(prop, size, data) => value (null, data != IntPtr.Zero));
+			}
+			remove {
+				RemoveListenerEvent (AudioSessionProperty.InputGainAvailable, value);
+			}
+		}
+
+		[Since (5,0)]
+		public static event EventHandler<float> InputGainScalarChanged {
+			add {
+				AddListenerEvent (AudioSessionProperty.InputGainScalar, value, 
+					(prop, size, data) => value (null, (float) data));
+			}
+			remove {
+				RemoveListenerEvent (AudioSessionProperty.InputGainScalar, value);
+			}
+		}
+
+		[Since (5,0)]
+		public static event EventHandler<AccessoryInfo[]> InputSourcesChanged {
+			add {
+				AddListenerEvent (AudioSessionProperty.InputSources, value, 
+					(prop, size, data) => value (null, ExtractAccessoryInfo (data, InputSourceKey_ID, InputSourceKey_Description)));
+			}
+			remove {
+				RemoveListenerEvent (AudioSessionProperty.InputSources, value);
+			}
+		}
+
+		[Since (5,0)]
+		public static event EventHandler<AccessoryInfo[]> OutputDestinationsChanged {
+			add {
+				AddListenerEvent (AudioSessionProperty.OutputDestinations, value, 
+					(prop, size, data) => value (null, ExtractAccessoryInfo (data, OutputDestinationKey_ID, OutputDestinationKey_Description)));
+			}
+			remove {
+				RemoveListenerEvent (AudioSessionProperty.OutputDestinations, value);
+			}
+		}
 	}
 }

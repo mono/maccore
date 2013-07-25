@@ -143,6 +143,16 @@ namespace MonoMac.CoreFoundation {
 			if (handle == IntPtr.Zero)
 				throw new ObjectDisposedException (GetType ().ToString ());
 		}			
+
+		[DllImport ("libc")]
+		extern static void dispatch_set_target_queue (/* dispatch_object_t */ IntPtr queue, /* dispatch_queue_t */ IntPtr target);
+
+		public void SetTargetQueue (DispatchQueue queue)
+		{
+			// note: null is allowed because DISPATCH_TARGET_QUEUE_DEFAULT is defined as NULL (dispatch/queue.h)
+			IntPtr q = queue == null ? IntPtr.Zero : queue.Handle;
+			dispatch_set_target_queue (handle, q);
+		}
 	}
 
 	public class DispatchQueue : DispatchObject  {

@@ -148,11 +148,6 @@ namespace MonoMac.CoreVideo {
 		internal CVImageBuffer (IntPtr handle, bool owns) : base (handle, owns)
 		{
 		}
-
-		~CVImageBuffer ()
-		{
-			Dispose (false);
-		}
 		
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static RectangleF CVImageBufferGetCleanRect (IntPtr imageBuffer);

@@ -1,6 +1,6 @@
 //
 // Copyright 2010, Novell, Inc.
-// Copyright 2011, 2012 Xamarin Inc
+// Copyright 2011, 2012, 2013 Xamarin Inc
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -151,8 +151,6 @@ namespace MonoMac.Foundation {
 	
 		public unsafe override string ToString ()
 		{
-			if (Handle == IntPtr.Zero)
-				return null;
 			return FromHandle (Handle);
 		}
 

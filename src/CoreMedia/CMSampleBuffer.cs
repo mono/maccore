@@ -127,11 +127,11 @@ namespace MonoMac.CoreMedia {
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]
-		static extern OSStatus CMSampleBufferCreateCopyWithNewTiming (
+		unsafe static extern OSStatus CMSampleBufferCreateCopyWithNewTiming (
 			IntPtr allocator,
 			IntPtr originalSBuf,
 			int numSampleTimingEntries,
-			CMSampleTimingInfo []sampleTimingArray,
+			CMSampleTimingInfo* sampleTimingArray,
 			out IntPtr sBufCopyOut
 			);
 
@@ -141,12 +141,13 @@ namespace MonoMac.CoreMedia {
 			return CreateWithNewTiming (original, timing, out status);
 		}
 
-		public static CMSampleBuffer CreateWithNewTiming (CMSampleBuffer original, CMSampleTimingInfo [] timing, out OSStatus status)
+		public unsafe static CMSampleBuffer CreateWithNewTiming (CMSampleBuffer original, CMSampleTimingInfo [] timing, out OSStatus status)
 		{
 			IntPtr handle;
 
-			if ((status = CMSampleBufferCreateCopyWithNewTiming (IntPtr.Zero, original.Handle, timing.Length, timing, out handle)) != 0)
-				return null;
+			fixed (CMSampleTimingInfo *t = timing)
+				if ((status = CMSampleBufferCreateCopyWithNewTiming (IntPtr.Zero, original.Handle, timing.Length, t, out handle)) != 0)
+					return null;
 			
 			return new CMSampleBuffer (handle, true);
 		}
@@ -464,10 +465,10 @@ namespace MonoMac.CoreMedia {
 		*/
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		static extern OSStatus CMSampleBufferGetSampleTimingInfoArray (
+		unsafe static extern OSStatus CMSampleBufferGetSampleTimingInfoArray (
 		   IntPtr sbuf,
 		   int timingArrayEntries,
-		   CMSampleTimingInfo [] timingArrayOut,
+		   CMSampleTimingInfo* timingArrayOut,
 		   out int timingArrayEntriesNeededOut
 		);
 
@@ -478,7 +479,7 @@ namespace MonoMac.CoreMedia {
 			return GetSampleTimingInfo (out status);
 		}
 
-		public CMSampleTimingInfo [] GetSampleTimingInfo (out OSStatus status) {
+		public unsafe CMSampleTimingInfo [] GetSampleTimingInfo (out OSStatus status) {
 			int count;
 
 			status = 0;
@@ -494,8 +495,9 @@ namespace MonoMac.CoreMedia {
 			if (count == 0)
 				return pInfo;
 
-			if ((status = CMSampleBufferGetSampleTimingInfoArray (handle, count, pInfo, out count)) != 0)
-				return null;
+			fixed (CMSampleTimingInfo* info = pInfo)
+				if ((status = CMSampleBufferGetSampleTimingInfoArray (handle, count, info, out count)) != 0)
+					return null;
 
 			return pInfo;
 		}

@@ -567,12 +567,12 @@ namespace MonoMac.CoreGraphics {
 		extern static IntPtr CGPathCreateMutableCopyByTransformingPath (IntPtr handle, ref CGAffineTransform transform);
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
-		extern static IntPtr CGPathCreateWithEllipse (RectangleF boundingRect, ref CGAffineTransform transform);
+		extern static IntPtr CGPathCreateWithEllipseInRect (RectangleF boundingRect, ref CGAffineTransform transform);
 
 		[Since (5,0)]
 		static public CGPath EllipseFromRect (RectangleF boundingRect, CGAffineTransform transform)
 		{
-			return MakeMutable (CGPathCreateWithEllipse (boundingRect, ref transform));
+			return MakeMutable (CGPathCreateWithEllipseInRect (boundingRect, ref transform));
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]

@@ -2025,7 +2025,10 @@ public class Generator {
 						nullable_type ? "?" : "",
 						prop.Name);
 					indent += 2;
-					print ("IntPtr value; if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.SlowGetIntPtr (Constants.{2}Library, \"{3}\");", kn, MainPrefix, lib, export.Selector);
+					if (BindThirdPartyLibrary)
+						print ("IntPtr value; if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.GetIntPtr (Libraries.__Internal.Handle, \"{2}\");", kn, MainPrefix, export.Selector);
+					else
+						print ("IntPtr value; if ({0} == IntPtr.Zero)\n\t{0} = {1}.ObjCRuntime.Dlfcn.GetIntPtr (Libraries.{2}.Handle, \"{3}\");", kn, MainPrefix, lib, export.Selector);
 				}
 				if (null_allowed || probe_presence){
 					if (probe_presence)
@@ -2788,8 +2791,8 @@ public class Generator {
 				}
 				
 				var may_throw = NativeExceptionMarshalling && HasAttribute (mi, typeof (MarshalNativeExceptionsAttribute));
-				
-				if (may_throw) {
+				var null_handle = may_throw && mi.Name == "Constructor";
+				if (null_handle) {
 					print ("try {");
 					indent++;
 				}
@@ -2804,7 +2807,7 @@ public class Generator {
 				indent--;
 				print ("}");
 				
-				if (may_throw) {
+				if (null_handle) {
 					indent--;
 					print ("} catch {");
 					indent++;
@@ -3080,6 +3083,10 @@ public class Generator {
 				if (is_model)
 					print ("\tthrow new ModelNotImplementedException ();");
 				else {
+					if (minfo.is_autorelease) {
+						indent++;
+						print ("using (var autorelease_pool = new NSAutoreleasePool ()) {");
+					}
 					if (!DoesPropertyNeedBackingField (pi)) {
 						GenerateMethodBody (type, minfo, getter, sel, false, null, BodyOption.None, pi);
 					} else if (minfo.is_static) {
@@ -3089,6 +3096,10 @@ public class Generator {
 							GenerateMethodBody (type, minfo, getter, sel, false, var_name, BodyOption.CondStoreRet, pi);
 						else
 							GenerateMethodBody (type, minfo, getter, sel, false, var_name, BodyOption.MarkRetDirty, pi);
+					}
+					if (minfo.is_autorelease) {
+						print ("}");
+						indent--;
 					}
 				}
 				print ("}\n");
@@ -3928,10 +3939,10 @@ public class Generator {
 							selRespondsToSelector = "selRespondsToSelector";
 						}
 
-						print ("[Export (\"respondsToSelector:\")]");
-						print ("bool _RespondsToSelector (IntPtr selHandle)");
+						print ("public override bool RespondsToSelector (Selector sel)");
 						print ("{");
 						++indent;
+						print ("IntPtr selHandle = sel.Handle;");
 						foreach (var mi in noDefaultValue) {
 							if (InlineSelectors) {
 								var eattrs = mi.GetCustomAttributes (typeof (ExportAttribute), false);
