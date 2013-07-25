@@ -67,6 +67,7 @@ namespace MonoMac.Foundation
 		NSArray FromObjects (IntPtr array, int count);
 
 		[Export ("valueForKey:")]
+		[MarshalNativeExceptions]
 		NSObject ValueForKey (NSString key);
 
 		[Export ("setValue:forKey:")]
@@ -1557,13 +1558,13 @@ namespace MonoMac.Foundation
 		[Export ("objectForKey:")]
 		NSObject ObjectForKey (NSObject key);
 
-		[Export ("allKeys")]
+		[Export ("allKeys")][Autorelease]
 		NSObject [] Keys { get; }
 
-		[Export ("allKeysForObject:")]
+		[Export ("allKeysForObject:")][Autorelease]
 		NSObject [] KeysForObject (NSObject obj);
 
-		[Export ("allValues")]
+		[Export ("allValues")][Autorelease]
 		NSObject [] Values { get; }
 
 		[Export ("descriptionInStringsFileFormat")]
@@ -1575,7 +1576,7 @@ namespace MonoMac.Foundation
 		[Export ("objectEnumerator")]
 		NSEnumerator ObjectEnumerator { get; }
 
-		[Export ("objectsForKeys:notFoundMarker:")]
+		[Export ("objectsForKeys:notFoundMarker:")][Autorelease]
 		NSObject [] ObjectsForKeys (NSArray keys, NSObject marker);
 		
 		[Export ("writeToFile:atomically:")]
@@ -2484,7 +2485,15 @@ namespace MonoMac.Foundation
 	
 		[Export ("objectIsForcedForKey:inDomain:")]
 		bool ObjectIsForced (string key, string domain);
-	
+
+		[Field ("NSGlobalDomain")]
+		NSString GlobalDomain { get; }
+
+		[Field ("NSArgumentDomain")]
+		NSString ArgumentDomain { get; }
+
+		[Field ("NSRegistrationDomain")]
+		NSString RegistrationDomain { get; }
 	}
 	
 	[BaseType (typeof (NSObject), Name="NSURL")]
@@ -3954,6 +3963,7 @@ namespace MonoMac.Foundation
 		bool AutomaticallyNotifiesObserversForKey (string key);
 
 		[Export ("valueForKey:")]
+		[MarshalNativeExceptions]
 		NSObject ValueForKey (NSString key);
 
 		[Export ("setValue:forKey:")]
@@ -4735,6 +4745,55 @@ namespace MonoMac.Foundation
 
 		[Export ("enumerateRangesInRange:options:usingBlock:")]
 		void EnumerateRanges (NSRange range, NSEnumerationOptions opts, NSRangeIterator iterator);
+	}
+
+	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // from the docs: " you should not create these objects using alloc and init."
+	public interface NSInvocation {
+
+		[Export ("selector")]
+		Selector Selector { get; set; }
+
+		[Export ("target")]
+		NSObject Target { get; set; }
+
+		// FIXME: We need some special marshaling support to handle these buffers...
+		[Internal, Export ("setArgument:atIndex:")]
+		void _SetArgument (IntPtr buffer, int index);
+
+		[Internal, Export ("getArgument:atIndex:")]
+		void _GetArgument (IntPtr buffer, int index);
+
+		[Internal, Export ("setReturnValue:")]
+		void _SetReturnValue (IntPtr buffer);
+
+		[Internal, Export ("getReturnValue:")]
+		void _GetReturnValue (IntPtr buffer);
+
+		[Export ("invoke")]
+		void Invoke ();
+
+		[Export ("invokeWithTarget:")]
+		void Invoke (NSObject target);
+
+		[Export ("methodSignature")]
+		NSMethodSignature MethodSignature { get; }
+	}
+
+	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor] // `init` returns a null handle
+	public interface NSMethodSignature {
+		[Export ("numberOfArguments")]
+		uint NumberOfArguments { get; }
+
+		[Export ("frameLength")]
+		uint FrameLength { get; }
+
+		[Export ("methodReturnLength")]
+		uint MethodReturnLength { get; }
+
+		[Export ("isOneway")]
+		bool IsOneway { get; }
 	}
 
 	[BaseType (typeof (NSObject), Name="NSJSONSerialization")]
@@ -5708,6 +5767,82 @@ namespace MonoMac.Foundation
 
 		[Export ("main")]
 		void Main ();
+	}
+
+	[BaseType (typeof (NSObject))]
+	[DisableDefaultCtor]
+	public interface NSPort {
+		[Static, Export ("port")]
+		NSPort Create ();
+
+		[Export ("invalidate")]
+		void Invalidate ();
+
+		[Export ("isValid")]
+		bool IsValid { get; }
+
+		[Export ("delegate"), NullAllowed]
+		NSObject WeakDelegate { get; set; }
+
+		[Wrap ("WeakDelegate"), NullAllowed]
+		NSPortDelegate Delegate { get; set; }
+	}
+
+	[Model, BaseType (typeof (NSObject))]
+	public interface NSPortDelegate {
+		[Export ("handlePortMessage:")]
+		void MessageReceived (NSPortMessage message);
+	}
+
+	[BaseType (typeof (NSObject))]
+	public interface NSPortMessage {
+		[Export ("initWithSendPort:receivePort:components:")]
+		IntPtr Constructor (NSPort sendPort, NSPort recvPort, NSArray components);
+
+		[Export ("sendBeforeDate:")]
+		bool SendBefore (NSDate date);
+
+		[Export ("components")]
+		NSArray Components { get; }
+
+		[Export ("receivePort")]
+		NSPort ReceivePort { get; }
+
+		[Export ("sendPort")]
+		NSPort SendPort { get; }
+
+		[Export ("msgid")]
+		uint MsgId { get; set; }
+	}
+
+	[BaseType (typeof (NSPort))]
+	public interface NSMachPort {
+		[Static, Export ("portWithMachPort:")]
+		NSPort FromMachPort (uint port);
+
+		[Static, Export ("portWithMachPort:options:")]
+		NSPort FromMachPort (uint port, NSMachPortRights options);
+
+		[Export ("machPort")]
+		uint MachPort { get; }
+
+		[Export ("removeFromRunLoop:forMode:")]
+		void RemoveFromRunLoop (NSRunLoop runLoop, NSString mode);
+
+		[Export ("scheduleInRunLoop:forMode:")]
+		void ScheduleInRunLoop (NSRunLoop runLoop, NSString mode);
+
+		[Export ("delegate"), NullAllowed]
+		NSObject WeakDelegate { get; set; }
+
+		[Wrap ("WeakDelegate"), NullAllowed]
+		NSMachPortDelegate Delegate { get; set; }
+	}
+
+	[Model, BaseType (typeof (NSPortDelegate))]
+	public interface NSMachPortDelegate {
+		[Export ("handleMachMessage:")]
+		void MachMessageReceived (IntPtr msgHeader);
 	}
 
 	[BaseType (typeof (NSObject))]

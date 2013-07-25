@@ -100,6 +100,13 @@ namespace MonoMac.Foundation  {
 		MutableContainersAndLeaves = 2
 	}
 
+	[Flags]
+	public enum NSMachPortRights {
+		None = 0,
+		SendRight = (1 << 0),
+		ReceiveRight = (1 << 1)
+	}
+
 	public enum NSNetServicesStatus {
 		UnknownError = -72000,
 		CollisionError = -72001,
