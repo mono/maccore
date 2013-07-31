@@ -97,6 +97,7 @@ namespace MonoMac.MobileCoreServices {
 		public static NSString JPEG;
 		public static NSString JPEG2000;
 		public static NSString TIFF;
+		public static NSString PICT;
 		public static NSString GIF;
 		public static NSString PNG;
 		public static NSString QuickTimeImage;
@@ -197,7 +198,8 @@ namespace MonoMac.MobileCoreServices {
 				JPEG = Dlfcn.GetStringConstant (handle, "kUTTypeJPEG");
 				JPEG2000 = Dlfcn.GetStringConstant (handle, "kUTTypeJPEG2000");
 				TIFF = Dlfcn.GetStringConstant (handle, "kUTTypeTIFF");
-				GIF = Dlfcn.GetStringConstant (handle, "kUTTypePICT");
+				PICT = Dlfcn.GetStringConstant (handle, "kUTTypePICT");
+				GIF = Dlfcn.GetStringConstant (handle, "kUTTypeGIF");
 				PNG = Dlfcn.GetStringConstant (handle, "kUTTypePNG");
 				QuickTimeImage = Dlfcn.GetStringConstant (handle, "kUTTypeQuickTimeImage");
 				AppleICNS = Dlfcn.GetStringConstant (handle, "kUTTypeAppleICNS");
