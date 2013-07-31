@@ -196,7 +196,7 @@ namespace MonoMac.Foundation {
 #if MONOMAC
 			Messaging.void_objc_msgSend (handle, Selector.AutoreleaseHandle);
 #else
-			Messaging.void_objc_msgSend (handle, Selector.GetHandle (Selector.AutoreleaseHandle));
+			Messaging.void_objc_msgSend (handle, Selector.GetHandle (Selector.Autorelease));
 #endif
 			return this;
 		}
