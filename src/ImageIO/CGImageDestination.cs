@@ -135,8 +135,10 @@ namespace MonoMac.ImageIO {
 				throw new ArgumentNullException ("typeIdentifier");
 
 			var dict = options == null ? null : options.ToDictionary ();
-			IntPtr p = CGImageDestinationCreateWithData (data.Handle, new NSString (typeIdentifier).Handle, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle);
-			var ret = p == IntPtr.Zero ? null : new CGImageDestination (p);
+			var typeId = NSString.CreateNative (typeIdentifier);
+			IntPtr p = CGImageDestinationCreateWithData (data.Handle, typeId, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle);
+			NSString.ReleaseNative (typeId);
+			var ret = p == IntPtr.Zero ? null : new CGImageDestination (p, true);
 			if (dict != null)
 				dict.Dispose ();
 			return ret;
@@ -158,8 +160,10 @@ namespace MonoMac.ImageIO {
 				throw new ArgumentNullException ("typeIdentifier");
 
 			var dict = options == null ? null : options.ToDictionary ();
-			IntPtr p = CGImageDestinationCreateWithURL (url.Handle, new NSString (typeIdentifier).Handle, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle);
-			var ret = p == IntPtr.Zero ? null : new CGImageDestination (p);
+			var typeId = NSString.CreateNative (typeIdentifier);
+			IntPtr p = CGImageDestinationCreateWithURL (url.Handle, typeId, (IntPtr) imageCount, dict == null ? IntPtr.Zero : dict.Handle);
+			NSString.ReleaseNative (typeId);
+			var ret = p == IntPtr.Zero ? null : new CGImageDestination (p, true);
 			if (dict != null)
 				dict.Dispose ();
 			return ret;
