@@ -62,8 +62,19 @@ namespace MonoMac.Foundation {
 		{
 			if (items == null)
 				return new NSArray (true);
-			NSObject [] nsoa = new NSObject [items.Length];
-			for (int i = 0; i < items.Length; i++){
+			return FromObjects (items.Length, items);
+		}
+
+		public static NSArray FromObjects (int count, params object [] items)
+		{
+			if (items == null)
+				return new NSArray (true);
+
+			if (count > items.Length)
+				throw new ArgumentException ("count is larger than the number of items", "count");
+
+			NSObject [] nsoa = new NSObject [count];
+			for (int i = 0; i < count; i++){
 				var k = NSObject.FromObject (items [i]);
 				if (k == null)
 					throw new ArgumentException (String.Format ("Do not know how to marshal object of type '{0}' to an NSObject", items [i].GetType ()));
