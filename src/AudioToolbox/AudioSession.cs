@@ -762,7 +762,7 @@ namespace MonoMac.AudioToolbox {
 
                static Hashtable strongListenerHash;
 
-		static void AddListenerEvent<TEventArgs> (AudioSessionProperty property, EventHandler<TEventArgs> handler, PropertyListener listener)
+		static void AddListenerEvent<TEventArgs> (AudioSessionProperty property, EventHandler<TEventArgs> handler, PropertyListener listener) where TEventArgs : EventArgs
 		{
 			if (strongListenerHash == null)
 				Interlocked.CompareExchange (ref strongListenerHash, new Hashtable (), null);
@@ -774,7 +774,7 @@ namespace MonoMac.AudioToolbox {
 			AddListener (property, listener);
 		}
 
-		static void RemoveListenerEvent<TEventArgs> (AudioSessionProperty property, EventHandler<TEventArgs> handler)
+		static void RemoveListenerEvent<TEventArgs> (AudioSessionProperty property, EventHandler<TEventArgs> handler) where TEventArgs : EventArgs
 		{
 			if (strongListenerHash == null)
 				return;
@@ -801,6 +801,7 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
+		/*
 		public static event EventHandler<float> CurrentHardwareOutputVolumeChanged {
 			add {
 				AddListenerEvent (AudioSessionProperty.CurrentHardwareOutputVolume, value, 
@@ -874,5 +875,6 @@ namespace MonoMac.AudioToolbox {
 				RemoveListenerEvent (AudioSessionProperty.OutputDestinations, value);
 			}
 		}
+		*/
 	}
 }
