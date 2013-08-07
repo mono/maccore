@@ -762,7 +762,7 @@ namespace MonoMac.AudioToolbox {
 
                static Hashtable strongListenerHash;
 
-		static void AddListenerEvent<TEventArgs> (AudioSessionProperty property, EventHandler<TEventArgs> handler, PropertyListener listener) where TEventArgs : EventArgs
+		static void AddListenerEvent (AudioSessionProperty property, object handler, PropertyListener listener)
 		{
 			if (strongListenerHash == null)
 				Interlocked.CompareExchange (ref strongListenerHash, new Hashtable (), null);
@@ -774,7 +774,7 @@ namespace MonoMac.AudioToolbox {
 			AddListener (property, listener);
 		}
 
-		static void RemoveListenerEvent<TEventArgs> (AudioSessionProperty property, EventHandler<TEventArgs> handler) where TEventArgs : EventArgs
+		static void RemoveListenerEvent (AudioSessionProperty property, object handler)
 		{
 			if (strongListenerHash == null)
 				return;
@@ -801,31 +801,30 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		/*
-		public static event EventHandler<float> CurrentHardwareOutputVolumeChanged {
+		public static event Action<float> CurrentHardwareOutputVolumeChanged {
 			add {
 				AddListenerEvent (AudioSessionProperty.CurrentHardwareOutputVolume, value, 
-					(prop, size, data) => value (null, (float) data));
+						  (prop, size, data) => value ((float) data));
 			}
 			remove {
 				RemoveListenerEvent (AudioSessionProperty.CurrentHardwareOutputVolume, value);
 			}
 		}
 
- 		public static event EventHandler<bool> AudioInputBecameAvailable {
+ 		public static event Action<bool> AudioInputBecameAvailable {
 			add {
 				AddListenerEvent (AudioSessionProperty.AudioInputAvailable, value, 
-					(prop, size, data) => value (null, data != IntPtr.Zero));
+						  (prop, size, data) => value (data != IntPtr.Zero));
 			}
 			remove {
 				RemoveListenerEvent (AudioSessionProperty.AudioInputAvailable, value);
 			}
 		}
 
-		public static event EventHandler<bool> ServerDied {
+		public static event Action<bool> ServerDied {
 			add {
 				AddListenerEvent (AudioSessionProperty.ServerDied, value, 
-					(prop, size, data) => value (null, data != IntPtr.Zero));
+						  (prop, size, data) => value (data != IntPtr.Zero));
 			}
 			remove {
 				RemoveListenerEvent (AudioSessionProperty.ServerDied, value);
@@ -833,10 +832,10 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[Since (5,0)]
-		public static event EventHandler<bool> InputGainBecameAvailable {
+		public static event Action<bool> InputGainBecameAvailable {
 			add {
 				AddListenerEvent (AudioSessionProperty.InputGainAvailable, value, 
-					(prop, size, data) => value (null, data != IntPtr.Zero));
+						  (prop, size, data) => value (data != IntPtr.Zero));
 			}
 			remove {
 				RemoveListenerEvent (AudioSessionProperty.InputGainAvailable, value);
@@ -844,10 +843,10 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[Since (5,0)]
-		public static event EventHandler<float> InputGainScalarChanged {
+		public static event Action<float> InputGainScalarChanged {
 			add {
 				AddListenerEvent (AudioSessionProperty.InputGainScalar, value, 
-					(prop, size, data) => value (null, (float) data));
+						  (prop, size, data) => value ((float) data));
 			}
 			remove {
 				RemoveListenerEvent (AudioSessionProperty.InputGainScalar, value);
@@ -855,10 +854,10 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[Since (5,0)]
-		public static event EventHandler<AccessoryInfo[]> InputSourcesChanged {
+		public static event Action<AccessoryInfo[]> InputSourcesChanged {
 			add {
 				AddListenerEvent (AudioSessionProperty.InputSources, value, 
-					(prop, size, data) => value (null, ExtractAccessoryInfo (data, InputSourceKey_ID, InputSourceKey_Description)));
+						  (prop, size, data) => value (ExtractAccessoryInfo (data, InputSourceKey_ID, InputSourceKey_Description)));
 			}
 			remove {
 				RemoveListenerEvent (AudioSessionProperty.InputSources, value);
@@ -866,15 +865,14 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		[Since (5,0)]
-		public static event EventHandler<AccessoryInfo[]> OutputDestinationsChanged {
+		public static event Action<AccessoryInfo[]> OutputDestinationsChanged {
 			add {
 				AddListenerEvent (AudioSessionProperty.OutputDestinations, value, 
-					(prop, size, data) => value (null, ExtractAccessoryInfo (data, OutputDestinationKey_ID, OutputDestinationKey_Description)));
+						  (prop, size, data) => value (ExtractAccessoryInfo (data, OutputDestinationKey_ID, OutputDestinationKey_Description)));
 			}
 			remove {
 				RemoveListenerEvent (AudioSessionProperty.OutputDestinations, value);
 			}
 		}
-		*/
 	}
 }
