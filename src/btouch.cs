@@ -42,13 +42,15 @@ class BindingTouch {
 	static string RootNS = "MonoMac";
 	static Type CoreObject = typeof (MonoMac.Foundation.NSObject);
 	static string tool_name = "bmac";
-	static string compiler = "gmcs";
+	static string compiler = "mcs";
+	static string net_sdk = "4";
 #else
 	static string baselibdll = "/Developer/MonoTouch/usr/lib/mono/2.1/monotouch.dll";
 	static string RootNS = "MonoTouch";
 	static Type CoreObject = typeof (MonoTouch.Foundation.NSObject);
 	static string tool_name = "btouch";
 	static string compiler = "/Developer/MonoTouch/usr/bin/smcs";
+	static string net_sdk = null;
 #endif
 
 	public static string ToolName {
@@ -122,6 +124,7 @@ class BindingTouch {
 			{ "r=", "Adds a reference", v => references.Add (v) },
 			{ "lib=", "Adds the directory to the search path for the compiler", v => libs.Add (v) },
 			{ "compiler=", "Sets the compiler to use", v => compiler = v },
+			{ "sdk=", "Sets the .NET SDK to use", v => net_sdk = v },
 			{ "d=", "Defines a symbol", v => defines.Add (v) },
 			{ "s=", "Adds a source file required to build the API", v => core_sources.Add (v) },
 			{ "v", "Sets verbose mode", v => verbose = true },
@@ -184,12 +187,13 @@ class BindingTouch {
 			var tmpass = Path.Combine (tmpdir, "temp.dll");
 
 			// -nowarn:436 is to avoid conflicts in definitions between core.dll and the sources
-			var cargs = String.Format ("-debug -unsafe -target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7} {8} {9}",
+			var cargs = String.Format ("{10} -debug -unsafe -target:library {0} -nowarn:436 -out:{1} -r:{2} {3} {4} {5} -r:{6} {7} {8} {9}",
 						   string.Join (" ", sources.ToArray ()),
 						   tmpass, Environment.GetCommandLineArgs ()[0],
 						   string.Join (" ", core_sources.ToArray ()), refs, unsafef ? "-unsafe" : "",
 						   baselibdll, string.Join (" ", defines.Select (x=> "-define:" + x).ToArray ()), paths,
-						   nostdlib ? "-nostdlib" : null);
+						   nostdlib ? "-nostdlib" : null,
+						   !String.IsNullOrEmpty (net_sdk) ? "-sdk:" + net_sdk : null);
 
 			var si = new ProcessStartInfo (compiler, cargs) {
 				UseShellExecute = false,
