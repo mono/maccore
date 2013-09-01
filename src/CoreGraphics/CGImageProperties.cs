@@ -112,18 +112,18 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 
-		public int? DPIHeight {
+		public float? DPIHeight {
 			get {
-				return GetInt32Value (Keys.DPIHeight);
+				return GetFloatValue (Keys.DPIHeight);
 			}
 			set {
 				SetNumberValue (Keys.DPIHeight, value);
 			}
 		}
 
-		public int? DPIWidth {
+		public float? DPIWidth {
 			get {
-				return GetInt32Value (Keys.DPIWidth);
+				return GetFloatValue (Keys.DPIWidth);
 			}
 			set {
 				SetNumberValue (Keys.DPIWidth, value);
