@@ -14,5 +14,9 @@ namespace MonoMac.Foundation {
 		public string LocalizedString (string key, string val, string table, string comment) {
 			return LocalizedString (key, val, table);
 		}
+
+		public string [] PathsForResources (string fileExtension) {
+			return PathsForResources (fileExtension, null);
+		}
 	}
 }

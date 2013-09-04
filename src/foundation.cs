@@ -4638,6 +4638,15 @@ namespace MonoMac.Foundation
 
 		[Export ("localizations")]
 		string [] Localizations { get; }
+
+		[Export ("pathsForResourcesOfType:inDirectory:")]
+		string [] PathsForResources (string fileExtension, [NullAllowed] string subDirectory);
+
+		[Export ("pathsForResourcesOfType:inDirectory:forLocalization:")]
+		string [] PathsForResources (string fileExtension, [NullAllowed] string subDirectory, [NullAllowed] string localizationName);
+
+		[Static, Export ("pathsForResourcesOfType:inDirectory:")]
+		string [] GetPathsForResources (string fileExtension, string bundlePath);
 	}
 
 	[BaseType (typeof (NSObject))]
