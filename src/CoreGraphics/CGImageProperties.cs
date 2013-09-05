@@ -112,6 +112,7 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 
+		[Obsolete ("Use the DPIHeightF property")]
 		public int? DPIHeight {
 			get {
 				return GetInt32Value (Keys.DPIHeight);
@@ -121,9 +122,28 @@ namespace MonoMac.CoreGraphics {
 			}
 		}
 
+		[Obsolete ("Use the DPIWidthF property")]
 		public int? DPIWidth {
 			get {
 				return GetInt32Value (Keys.DPIWidth);
+			}
+			set {
+				SetNumberValue (Keys.DPIWidth, value);
+			}
+		}
+
+		public float? DPIHeightF {
+			get {
+				return GetFloatValue (Keys.DPIHeight);
+			}
+			set {
+				SetNumberValue (Keys.DPIHeight, value);
+			}
+		}
+
+		public float? DPIWidthF {
+			get {
+				return GetFloatValue (Keys.DPIWidth);
 			}
 			set {
 				SetNumberValue (Keys.DPIWidth, value);
