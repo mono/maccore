@@ -574,21 +574,26 @@ namespace MonoMac.AudioToolbox
 			return GetArray<AudioValueRange> (prop, sizeof (AudioValueRange));
 		}
 
-		unsafe T[] GetArray<T> (AudioConverterPropertyID prop, int elementSize) where T : struct
+		unsafe T[] GetArray<T> (AudioConverterPropertyID prop, int elementSize)
 		{
 			int size;
 			bool writable;
 			if (AudioConverterGetPropertyInfo (handle, prop, out size, out writable) != AudioConverterError.None)
 				return null;
 
-			var data = new T[size / elementSize];
-			fixed (T* ptr = &data[0]) {
-				var res = AudioConverterGetProperty (handle, prop, ref size, (IntPtr)ptr);
+			var data = new T [size / elementSize];
+			var array_handle = GCHandle.Alloc (data, GCHandleType.Pinned);
+
+			try {
+				var ptr = array_handle.AddrOfPinnedObject ();
+				var res = AudioConverterGetProperty (handle, prop, ref size, ptr);
 				if (res != 0)
 					return null;
 
 				Array.Resize (ref data, size / elementSize);
 				return data;
+			} finally {
+				array_handle.Free ();
 			}
 		}		
 
