@@ -366,8 +366,7 @@ namespace MonoMac.AudioToolbox {
 			try {
 				LastError = AudioFileStreamGetProperty (handle, property, ref size, buffer);
 				if (LastError == 0){
-					T result = *(T*) buffer;
-					return result;
+					return (T) Marshal.PtrToStructure (buffer, typeof (T));
 				}
 
 				return null;
