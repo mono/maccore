@@ -831,8 +831,7 @@ namespace MonoMac.AudioToolbox {
 			try {
 				r = AudioQueueGetProperty (handle, property, buffer, ref size);
 				if (r == 0){
-					T result;
-					result = *(T*) buffer;
+					T result = (T) Marshal.PtrToStructure (buffer, typeof (T));
 					return result;
 				}
 
@@ -1057,11 +1056,11 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		unsafe static IntPtr MarshalArray<T> (ref T[] array, out int totalSize) where T : struct
+		unsafe static IntPtr MarshalArray (ref AudioQueueChannelAssignment[] array, out int totalSize)
 		{
-			int elementSize = sizeof (T);
+			int elementSize = sizeof (AudioQueueChannelAssignment);
 			totalSize = elementSize * array.Length;
-			var array_ptr = (T*) Marshal.AllocHGlobal (totalSize);
+			var array_ptr = (AudioQueueChannelAssignment*) Marshal.AllocHGlobal (totalSize);
 			
 			for (int i = 0; i < array.Length; i++)
 				array_ptr [i] = array [i];

@@ -1003,7 +1003,7 @@ namespace MonoMac.AudioToolbox {
 			try {
 				var r = AudioFileGetProperty (handle, property, ref size, buffer);
 				if (r == 0){
-					T t = *(T*) buffer;
+					T t = (T) Marshal.PtrToStructure (buffer, typeof (T));
 					return t;
 				}
 
