@@ -349,44 +349,20 @@ namespace MonoMac.CoreText {
 	}
 
 	[Since (3,2)]
-	public class CTFontDescriptor : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTFontDescriptor : CFType {
 		internal CTFontDescriptor (IntPtr handle)
 			: this (handle, false)
 		{
 		}
 
-		internal CTFontDescriptor (IntPtr handle, bool owns)
+		internal CTFontDescriptor (IntPtr handle, bool owns) 
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw ConstructorError.ArgumentNull (this, "handle");
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
 		~CTFontDescriptor ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get {return handle;}
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 #region Descriptor Creation
@@ -397,8 +373,8 @@ namespace MonoMac.CoreText {
 			if (name == null)
 				throw ConstructorError.ArgumentNull (this, "name");
 			using (CFString n = name)
-				handle = CTFontDescriptorCreateWithNameAndSize (n.Handle, size);
-			if (handle == IntPtr.Zero)
+				Handle = CTFontDescriptorCreateWithNameAndSize (n.Handle, size);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -408,8 +384,8 @@ namespace MonoMac.CoreText {
 		{
 			if (attributes == null)
 				throw ConstructorError.ArgumentNull (this, "attributes");
-			handle = CTFontDescriptorCreateWithAttributes (attributes.Dictionary.Handle);
-			if (handle == IntPtr.Zero)
+			Handle = CTFontDescriptorCreateWithAttributes (attributes.Dictionary.Handle);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -419,7 +395,7 @@ namespace MonoMac.CoreText {
 		{
 			if (attributes == null)
 				throw new ArgumentNullException ("attributes");
-			return CreateDescriptor (CTFontDescriptorCreateCopyWithAttributes (handle, attributes.Handle));
+			return CreateDescriptor (CTFontDescriptorCreateCopyWithAttributes (Handle, attributes.Handle));
 		}
 
 		static CTFontDescriptor CreateDescriptor (IntPtr h)
@@ -433,7 +409,7 @@ namespace MonoMac.CoreText {
 		{
 			if (attributes == null)
 				throw new ArgumentNullException ("attributes");
-			return CreateDescriptor (CTFontDescriptorCreateCopyWithAttributes (handle, attributes.Dictionary.Handle));
+			return CreateDescriptor (CTFontDescriptorCreateCopyWithAttributes (Handle, attributes.Dictionary.Handle));
 		}
 
 		// TODO: is there a better type to use for variationIdentifier?  
@@ -443,7 +419,7 @@ namespace MonoMac.CoreText {
 		public CTFontDescriptor WithVariation (uint variationIdentifier, float variationValue)
 		{
 			using (var id = new NSNumber (variationIdentifier))
-				return CreateDescriptor (CTFontDescriptorCreateCopyWithVariation  (handle, 
+				return CreateDescriptor (CTFontDescriptorCreateCopyWithVariation  (Handle, 
 							id.Handle, variationValue));
 		}
 
@@ -457,7 +433,7 @@ namespace MonoMac.CoreText {
 				throw new ArgumentNullException ("featureTypeIdentifier");
 			if (featureSelectorIdentifier == null)
 				throw new ArgumentNullException ("featureSelectorIdentifier");
-			return CreateDescriptor (CTFontDescriptorCreateCopyWithFeature (handle, featureTypeIdentifier.Handle, featureSelectorIdentifier.Handle));
+			return CreateDescriptor (CTFontDescriptorCreateCopyWithFeature (Handle, featureTypeIdentifier.Handle, featureSelectorIdentifier.Handle));
 		}
 
 		public CTFontDescriptor WithFeature (CTFontFeatureAllTypographicFeatures.Selector featureSelector)
@@ -654,7 +630,7 @@ namespace MonoMac.CoreText {
 		CTFontDescriptor WithFeature (FontFeatureGroup featureGroup, int featureSelector)
 		{
 			using (NSNumber t = new NSNumber ((int) featureGroup), f = new NSNumber (featureSelector)) {
-				return CreateDescriptor (CTFontDescriptorCreateCopyWithFeature (handle, t.Handle, f.Handle));
+				return CreateDescriptor (CTFontDescriptorCreateCopyWithFeature (Handle, t.Handle, f.Handle));
 			}
 		}
 
@@ -662,13 +638,13 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontDescriptorCreateMatchingFontDescriptors (IntPtr descriptor, IntPtr mandatoryAttributes);
 		public CTFontDescriptor[] GetMatchingFontDescriptors (NSSet mandatoryAttributes)
 		{
-			var cfArrayRef = CTFontDescriptorCreateMatchingFontDescriptors (handle, 
+			var cfArrayRef = CTFontDescriptorCreateMatchingFontDescriptors (Handle, 
 						mandatoryAttributes == null ? IntPtr.Zero : mandatoryAttributes.Handle);
 			if (cfArrayRef == IntPtr.Zero)
 				return new CTFontDescriptor [0];
 			var matches = NSArray.ArrayFromHandle (cfArrayRef,
 					fd => new CTFontDescriptor (cfArrayRef, false));
-			CFObject.CFRelease (cfArrayRef);
+			CFType.Release (cfArrayRef);
 			return matches;
 		}
 
@@ -688,7 +664,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontDescriptorCreateMatchingFontDescriptor (IntPtr descriptor, IntPtr mandatoryAttributes);
 		public CTFontDescriptor GetMatchingFontDescriptor (NSSet mandatoryAttributes)
 		{
-			return CreateDescriptor (CTFontDescriptorCreateMatchingFontDescriptors (handle, 
+			return CreateDescriptor (CTFontDescriptorCreateMatchingFontDescriptors (Handle, 
 						mandatoryAttributes == null ? IntPtr.Zero : mandatoryAttributes.Handle));
 		}
 
@@ -710,7 +686,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontDescriptorCopyAttributes (IntPtr descriptor);
 		public CTFontDescriptorAttributes GetAttributes()
 		{
-			var cfDictRef = CTFontDescriptorCopyAttributes (handle);
+			var cfDictRef = CTFontDescriptorCopyAttributes (Handle);
 			if (cfDictRef == IntPtr.Zero)
 				return null;
 			var dict = (NSDictionary) Runtime.GetNSObject (cfDictRef);
@@ -724,14 +700,14 @@ namespace MonoMac.CoreText {
 		{
 			if (attribute == null)
 				throw new ArgumentNullException ("attribute");
-			return Runtime.GetNSObject (CTFontDescriptorCopyAttribute (handle, attribute.Handle));
+			return Runtime.GetNSObject (CTFontDescriptorCopyAttribute (Handle, attribute.Handle));
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontDescriptorCopyLocalizedAttribute (IntPtr descriptor, IntPtr attribute, IntPtr language);
 		public NSObject GetLocalizedAttribute (NSString attribute)
 		{
-			return Runtime.GetNSObject (CTFontDescriptorCopyLocalizedAttribute (handle, attribute.Handle, IntPtr.Zero));
+			return Runtime.GetNSObject (CTFontDescriptorCopyLocalizedAttribute (Handle, attribute.Handle, IntPtr.Zero));
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -739,10 +715,10 @@ namespace MonoMac.CoreText {
 		public NSObject GetLocalizedAttribute (NSString attribute, out NSString language)
 		{
 			IntPtr lang;
-			var o = Runtime.GetNSObject (CTFontDescriptorCopyLocalizedAttribute (handle, attribute.Handle, out lang));
+			var o = Runtime.GetNSObject (CTFontDescriptorCopyLocalizedAttribute (Handle, attribute.Handle, out lang));
 			language = (NSString) Runtime.GetNSObject (lang);
 			if (lang != IntPtr.Zero)
-				CFObject.CFRelease (lang);
+				CFType.Release (lang);
 			return o;
 		}
 #endregion

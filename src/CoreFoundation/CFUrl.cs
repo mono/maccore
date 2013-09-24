@@ -39,41 +39,21 @@ namespace MonoMac.CoreFoundation {
 		HFS = 1,
 		Windows = 2
 	};
-	
-	public class CFUrl : INativeObject, IDisposable {
-		internal IntPtr handle;
 
+	public class CFUrl : CFType {
 		~CFUrl ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary, CharSet=CharSet.Unicode)]
 		extern static IntPtr CFURLCreateWithFileSystemPath (IntPtr allocator, IntPtr cfstringref, CFUrlPathStyle pathstyle, bool isdir);
 		
 		internal CFUrl (IntPtr handle)
+			: base (handle, true)
 		{
-			this.handle = handle;
 		}
-		
+
 		static public CFUrl FromFile (string filename)
 		{
 			using (var str = new CFString (filename)){
@@ -107,7 +87,7 @@ namespace MonoMac.CoreFoundation {
 		
 		public override string ToString ()
 		{
-			using (var str = new CFString (CFURLGetString (handle))) {
+			using (var str = new CFString (CFURLGetString (Handle))) {
 				return str.ToString ();
 			}
 		}
@@ -117,7 +97,7 @@ namespace MonoMac.CoreFoundation {
 		
 		public string FileSystemPath {
 			get {
-				return GetFileSystemPath (handle);
+				return GetFileSystemPath (Handle);
 			}
 		}
 
@@ -127,8 +107,12 @@ namespace MonoMac.CoreFoundation {
 				return str.ToString ();
 		}
 
-		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFURLGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static uint CFURLGetTypeID ();
+
+		public static uint TypeID {
+			get { return CFURLGetTypeID (); }
+		}
 	}
 	
 }

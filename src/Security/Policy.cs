@@ -34,9 +34,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 
 namespace MonoMac.Security {
-	public class SecPolicy : INativeObject, IDisposable {
-		IntPtr handle;
-
+	public class SecPolicy : CFType {
 		internal SecPolicy (IntPtr handle) 
 			: this (handle, false)
 		{
@@ -44,13 +42,8 @@ namespace MonoMac.Security {
 
 		[Preserve (Conditional=true)]
 		internal SecPolicy (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw new Exception ("Invalid handle");
-
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
 		[DllImport (Constants.SecurityLibrary)]
@@ -87,26 +80,12 @@ namespace MonoMac.Security {
 			Dispose (false);
 		}
 
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
+		[DllImport (Constants.SecurityLibrary)]
+		extern static uint SecPolicyGetTypeID ();
 
-		public IntPtr Handle {
-			get { return handle; }
+		public static uint TypeID {
+			get { return SecPolicyGetTypeID (); }
 		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-
-		[DllImport (Constants.SecurityLibrary, EntryPoint="SecPolicyGetTypeID")]
-		public extern static int GetTypeID ();
 
 		public static bool operator == (SecPolicy a, SecPolicy b)
 		{

@@ -36,35 +36,15 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreServices {
 
-	class CFHost : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	class CFHost : CFType {
 		CFHost (IntPtr handle)
+			: base (handle, true)
 		{
-			this.handle = handle;
 		}
 
 		~CFHost ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		[DllImport (Constants.CFNetworkLibrary)]

@@ -37,19 +37,15 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreServices {
 
-	public class CFHTTPMessage : CFType, INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CFHTTPMessage : CFType {
 		internal CFHTTPMessage (IntPtr handle)
 			: this (handle, false)
 		{
 		}
 
 		internal CFHTTPMessage (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-			this.handle = handle;
 		}
 
 		static readonly NSString _HTTPVersion1_0;
@@ -101,39 +97,16 @@ namespace MonoMac.CoreServices {
 			return result;
 		}
 
-		[DllImport (Constants.CFNetworkLibrary, EntryPoint="CFHTTPMessageGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.CFNetworkLibrary)]
+		extern static uint CFHTTPMessageGetTypeID ();
+
+		public static uint TypeID {
+			get { return CFHTTPMessageGetTypeID (); }
+		}
 
 		~CFHTTPMessage ()
 		{
 			Dispose (false);
-		}
-		
-		protected void CheckHandle ()
-		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException (GetType ().Name);
-		}
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get {
-				CheckHandle ();
-				return handle;
-			}
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero) {
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		static IntPtr GetVersion (Version version)
@@ -208,7 +181,7 @@ namespace MonoMac.CoreServices {
 
 		public bool IsRequest {
 			get {
-				CheckHandle ();
+				ThrowIfDisposed ();
 				return CFHTTPMessageIsRequest (Handle);
 			}
 		}
@@ -218,6 +191,7 @@ namespace MonoMac.CoreServices {
 
 		public HttpStatusCode ResponseStatusCode {
 			get {
+				ThrowIfDisposed ();
 				if (IsRequest)
 					throw new InvalidOperationException ();
 				int status = CFHTTPMessageGetResponseStatusCode (Handle);
@@ -230,6 +204,7 @@ namespace MonoMac.CoreServices {
 
 		public string ResponseStatusLine {
 			get {
+				ThrowIfDisposed ();
 				if (IsRequest)
 					throw new InvalidOperationException ();
 				var ptr = CFHTTPMessageCopyResponseStatusLine (Handle);
@@ -245,8 +220,8 @@ namespace MonoMac.CoreServices {
 
 		public Version Version {
 			get {
-				CheckHandle ();
-				IntPtr ptr = CFHTTPMessageCopyVersion (handle);
+				ThrowIfDisposed ();
+				IntPtr ptr = CFHTTPMessageCopyVersion (Handle);
 				try {
 					if (ptr.Equals (_HTTPVersion1_0.Handle))
 						return HttpVersion.Version10;
@@ -254,7 +229,7 @@ namespace MonoMac.CoreServices {
 						return HttpVersion.Version11;
 				} finally {
 					if (ptr != IntPtr.Zero)
-						CFObject.CFRelease (ptr);
+						CFType.Release (ptr);
 				}
 			}
 		}
@@ -264,7 +239,7 @@ namespace MonoMac.CoreServices {
 
 		public bool IsHeaderComplete {
 			get {
-				CheckHandle ();
+				ThrowIfDisposed ();
 				return CFHTTPMessageIsHeaderComplete (Handle);
 			}
 		}
@@ -282,6 +257,7 @@ namespace MonoMac.CoreServices {
 
 		public bool AppendBytes (byte[] bytes, int count)
 		{
+			ThrowIfDisposed ();
 			if (bytes == null)
 				throw new ArgumentNullException ("bytes");
 
@@ -293,8 +269,8 @@ namespace MonoMac.CoreServices {
 
 		public NSDictionary GetAllHeaderFields ()
 		{
-			CheckHandle ();
-			IntPtr ptr = CFHTTPMessageCopyAllHeaderFields (handle);
+			ThrowIfDisposed ();
+			IntPtr ptr = CFHTTPMessageCopyAllHeaderFields (Handle);
 			if (ptr == IntPtr.Zero)
 				return null;
 			return new NSDictionary (ptr);
@@ -334,6 +310,7 @@ namespace MonoMac.CoreServices {
 
 		public void ApplyCredentials (CFHTTPAuthentication auth, NetworkCredential credential)
 		{
+			ThrowIfDisposed ();
 			if (auth.RequiresAccountDomain) {
 				ApplyCredentialDictionary (auth, credential);
 				return;
@@ -391,6 +368,7 @@ namespace MonoMac.CoreServices {
 		                               NSString password, AuthenticationScheme scheme,
 		                               bool forProxy)
 		{
+			ThrowIfDisposed ();
 			return CFHTTPMessageAddAuthentication (
 				Handle, failureResponse.Handle, username.Handle,
 				password.Handle, GetAuthScheme (scheme), forProxy);
@@ -402,6 +380,7 @@ namespace MonoMac.CoreServices {
 
 		public void ApplyCredentialDictionary (CFHTTPAuthentication auth, NetworkCredential credential)
 		{
+			ThrowIfDisposed ();
 			var keys = new NSString [3];
 			var values = new CFString [3];
 			keys [0] = _AuthenticationUsername;
@@ -437,6 +416,7 @@ namespace MonoMac.CoreServices {
 
 		public void SetHeaderFieldValue (string name, string value)
 		{
+			ThrowIfDisposed ();
 			NSString nstr = (NSString)name;
 			NSString vstr = value != null ? (NSString)value : null;
 			IntPtr vptr = vstr != null ? vstr.Handle : IntPtr.Zero;
@@ -453,11 +433,13 @@ namespace MonoMac.CoreServices {
 
 		internal void SetBody (CFData data)
 		{
+			ThrowIfDisposed ();
 			CFHTTPMessageSetBody (Handle, data.Handle);
 		}
 
 		public void SetBody (byte[] buffer)
 		{
+			ThrowIfDisposed ();
 			using (var data = new CFDataBuffer (buffer))
 				CFHTTPMessageSetBody (Handle, data.Handle);
 		}

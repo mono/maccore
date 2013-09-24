@@ -111,7 +111,7 @@ namespace MonoMac.CoreGraphics {
 				throw new ArgumentNullException ("name");
 			
 			using (var s = new CFString (name)){
-				handle = CGColorGetConstantColor (s.handle);
+				handle = CGColorGetConstantColor (s.Handle);
 				if (handle == IntPtr.Zero)
 					throw new ArgumentException ("name");
 			}

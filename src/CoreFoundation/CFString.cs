@@ -78,19 +78,10 @@ namespace MonoMac.CoreFoundation {
 		}
 	}
 
-	public static class CFObject {
-		[DllImport (Constants.CoreFoundationLibrary)]
-		internal extern static void CFRelease (IntPtr obj);
-
-		[DllImport (Constants.CoreFoundationLibrary)]
-		internal extern static IntPtr CFRetain (IntPtr obj);
-	}
-	
-	public class CFString : INativeObject, IDisposable {
-		internal IntPtr handle;
+	public class CFString : CFType
+	{
 		internal string str;
-		
-		
+
 		[DllImport (Constants.CoreFoundationLibrary, CharSet=CharSet.Unicode)]
 		extern static IntPtr CFStringCreateWithCharacters (IntPtr allocator, string str, int count);
 
@@ -108,7 +99,7 @@ namespace MonoMac.CoreFoundation {
 			if (str == null)
 				throw new ArgumentNullException ("str");
 			
-			handle = CFStringCreateWithCharacters (IntPtr.Zero, str, str.Length);
+			Handle = CFStringCreateWithCharacters (IntPtr.Zero, str, str.Length);
 			this.str = str;
 		}
 
@@ -117,41 +108,28 @@ namespace MonoMac.CoreFoundation {
 			Dispose (false);
 		}
 
-		public IntPtr Handle {
-			get {
-				return handle;
-			}
+		[DllImport (Constants.CoreTextLibrary)]
+		extern static uint CFStringGetTypeID ();
+
+		public static uint TypeID {
+			get { return CFStringGetTypeID (); }
 		}
 
-		[DllImport (Constants.CoreTextLibrary, EntryPoint="CFStringGetTypeID")]
-		public extern static int GetTypeID ();
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
+		protected override void Dispose (bool disposing)
 		{
 			str = null;
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
+			base.Dispose (disposing);
 		}
-		
+
 		public CFString (IntPtr handle)
 			: this (handle, false)
 		{
 		}
-		
+
 		[Preserve (Conditional = true)]
 		internal CFString (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
 		internal static string FetchString (IntPtr handle)
@@ -183,7 +161,7 @@ namespace MonoMac.CoreFoundation {
 		public static implicit operator string (CFString x)
 		{
 			if (x.str == null)
-				x.str = FetchString (x.handle);
+				x.str = FetchString (x.Handle);
 			
 			return x.str;
 		}
@@ -198,7 +176,7 @@ namespace MonoMac.CoreFoundation {
 				if (str != null)
 					return str.Length;
 				else
-					return CFStringGetLength (handle);
+					return CFStringGetLength (Handle);
 			}
 		}
 
@@ -210,7 +188,7 @@ namespace MonoMac.CoreFoundation {
 				if (str != null)
 					return str [p];
 				else
-					return CFStringGetCharacterAtIndex (handle, p);
+					return CFStringGetCharacterAtIndex (Handle, p);
 			}
 		}
 		
@@ -218,7 +196,7 @@ namespace MonoMac.CoreFoundation {
 		{
 			if (str != null)
 				return str;
-			return FetchString (handle);
+			return FetchString (Handle);
 		}
 	}
 }

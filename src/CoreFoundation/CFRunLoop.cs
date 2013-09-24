@@ -57,19 +57,15 @@ namespace MonoMac.CoreFoundation {
 		public IntPtr Perform;
 	}
 
-	public class CFRunLoopSource : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CFRunLoopSource : CFType {
 		internal CFRunLoopSource (IntPtr handle)
 			: this (handle, false)
 		{
 		}
 
-		internal CFRunLoopSource (IntPtr handle, bool ownsHandle)
+		internal CFRunLoopSource (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (!ownsHandle)
-				CFObject.CFRetain (handle);
-			this.handle = handle;
 		}
 
 		~CFRunLoopSource ()
@@ -77,17 +73,12 @@ namespace MonoMac.CoreFoundation {
 			Dispose (false);
 		}
 
-		public IntPtr Handle {
-			get {
-				return handle;
-			}
-		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static CFIndex CFRunLoopSourceGetOrder (IntPtr source);
 		public int Order {
 			get {
-				return CFRunLoopSourceGetOrder (handle);
+				return CFRunLoopSourceGetOrder (Handle);
 			}
 		}
 
@@ -95,14 +86,14 @@ namespace MonoMac.CoreFoundation {
 		extern static void CFRunLoopSourceInvalidate (IntPtr source);
 		public void Invalidate ()
 		{
-			CFRunLoopSourceInvalidate (handle);
+			CFRunLoopSourceInvalidate (Handle);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static int CFRunLoopSourceIsValid (IntPtr source);
 		public bool IsValid {
 			get {
-				return CFRunLoopSourceIsValid (handle) != 0;
+				return CFRunLoopSourceIsValid (Handle) != 0;
 			}
 		}
 
@@ -110,21 +101,7 @@ namespace MonoMac.CoreFoundation {
 		extern static void CFRunLoopSourceSignal (IntPtr source);
 		public void Signal ()
 		{
-			CFRunLoopSourceSignal (handle);
-		}
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero) {
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
+			CFRunLoopSourceSignal (Handle);
 		}
 	}
 
@@ -147,12 +124,12 @@ namespace MonoMac.CoreFoundation {
 			var ptr = Marshal.AllocHGlobal (Marshal.SizeOf (typeof(CFRunLoopSourceContext)));
 			try {
 				Marshal.StructureToPtr (ctx, ptr, false);
-				handle = CFRunLoopSourceCreate (IntPtr.Zero, 0, ptr);
+				Handle = CFRunLoopSourceCreate (IntPtr.Zero, 0, ptr);
 			} finally {
 				Marshal.FreeHGlobal (ptr);
 			}
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new NotSupportedException ();
 		}
 
@@ -204,7 +181,7 @@ namespace MonoMac.CoreFoundation {
 
 		protected abstract void OnPerform ();
 
-		public override void Dispose (bool disposing)
+		protected override void Dispose (bool disposing)
 		{
 			if (disposing) {
 				if (gch.IsAllocated)
@@ -214,9 +191,8 @@ namespace MonoMac.CoreFoundation {
 		}
 	}
 
-	public class CFRunLoop : INativeObject, IDisposable {
+	public class CFRunLoop : CFType {
 		static IntPtr CoreFoundationLibraryHandle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
-		internal IntPtr handle;
 
 		static NSString _CFDefaultRunLoopMode;
 		public static NSString CFDefaultRunLoopMode {
@@ -269,21 +245,21 @@ namespace MonoMac.CoreFoundation {
 		extern static void CFRunLoopStop (IntPtr loop);
 		public void Stop ()
 		{
-			CFRunLoopStop (handle);
+			CFRunLoopStop (Handle);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static void CFRunLoopWakeUp (IntPtr loop);
 		public void WakeUp ()
 		{
-			CFRunLoopWakeUp (handle);
+			CFRunLoopWakeUp (Handle);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
 		extern static int CFRunLoopIsWaiting (IntPtr loop);
 		public bool IsWaiting {
 			get {
-				return CFRunLoopIsWaiting (handle) != 0;
+				return CFRunLoopIsWaiting (Handle) != 0;
 			}
 		}
 
@@ -318,7 +294,7 @@ namespace MonoMac.CoreFoundation {
 			if (mode == null)
 				throw new ArgumentNullException ("mode");
 
-			CFRunLoopAddSource (handle, source.Handle, mode.Handle);
+			CFRunLoopAddSource (Handle, source.Handle, mode.Handle);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -328,7 +304,7 @@ namespace MonoMac.CoreFoundation {
 			if (mode == null)
 				throw new ArgumentNullException ("mode");
 
-			return CFRunLoopContainsSource (handle, source.Handle, mode.Handle);
+			return CFRunLoopContainsSource (Handle, source.Handle, mode.Handle);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -338,7 +314,7 @@ namespace MonoMac.CoreFoundation {
 			if (mode == null)
 				throw new ArgumentNullException ("mode");
 
-			return CFRunLoopRemoveSource (handle, source.Handle, mode.Handle);
+			return CFRunLoopRemoveSource (Handle, source.Handle, mode.Handle);
 		}
 
 		internal CFRunLoop (IntPtr handle)
@@ -348,35 +324,13 @@ namespace MonoMac.CoreFoundation {
 
 		[Preserve (Conditional = true)]
 		internal CFRunLoop (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-			this.handle = handle;
 		}
 
 		~CFRunLoop ()
 		{
 			Dispose (false);
-		}
-
-		public IntPtr Handle {
-			get {
-				return handle;
-			}
-		}
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		public static bool operator == (CFRunLoop a, CFRunLoop b)
@@ -391,7 +345,7 @@ namespace MonoMac.CoreFoundation {
 
 		public override int GetHashCode ()
 		{
-			return handle.GetHashCode ();
+			return Handle.GetHashCode ();
 		}
 
 		public override bool Equals (object other)

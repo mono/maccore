@@ -119,7 +119,7 @@ namespace MonoMac.CoreFoundation {
 				}
 			}
 			if (release)
-				CFObject.CFRelease (cfErrorHandle);
+				CFType.Release (cfErrorHandle);
 			return e;
 		}
 
@@ -137,7 +137,7 @@ namespace MonoMac.CoreFoundation {
 		{
 			var r = CFString.FetchString (cfStringRef);
 			if (release && (cfStringRef != IntPtr.Zero))
-				CFObject.CFRelease (cfStringRef);
+				CFType.Release (cfStringRef);
 			return r;
 		}
 

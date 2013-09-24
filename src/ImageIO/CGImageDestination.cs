@@ -64,48 +64,28 @@ namespace MonoMac.ImageIO {
 		}
 	}
 	
-	public class CGImageDestination : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CGImageDestination : CFType {
 		// invoked by marshallers
 		internal CGImageDestination (IntPtr handle) : this (handle, false)
 		{
-			this.handle = handle;
 		}
 
 		[Preserve (Conditional=true)]
-		internal CGImageDestination (IntPtr handle, bool owns)
+		internal CGImageDestination (IntPtr handle, bool owns) : base (handle, owns)
 		{
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
 		~CGImageDestination ()
 		{
 			Dispose (false);
 		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
 
-		public IntPtr Handle {
-			get { return handle; }
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static uint CGImageDestinationGetTypeID ();
+
+		public static uint TypeID {
+			get { return CGImageDestinationGetTypeID (); }
 		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-				
-		[DllImport (Constants.ImageIOLibrary, EntryPoint="CGImageDestinationGetTypeID")]
-		public extern static int GetTypeID ();
 		
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageDestinationCopyTypeIdentifiers ();
@@ -176,7 +156,7 @@ namespace MonoMac.ImageIO {
 		{
 			if (properties == null)
 				throw new ArgumentNullException ("properties");
-			CGImageDestinationSetProperties (handle, properties.Handle);
+			CGImageDestinationSetProperties (Handle, properties.Handle);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -186,7 +166,7 @@ namespace MonoMac.ImageIO {
 			if (image == null)
 				throw new ArgumentNullException ("image");
 			
-			CGImageDestinationAddImage (handle, image.Handle, properties == null ? IntPtr.Zero : properties.Handle);
+			CGImageDestinationAddImage (Handle, image.Handle, properties == null ? IntPtr.Zero : properties.Handle);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -197,7 +177,7 @@ namespace MonoMac.ImageIO {
 			if (source == null)
 				throw new ArgumentNullException ("source");
 			
-			CGImageDestinationAddImageFromSource (handle, source.Handle, (IntPtr) index, properties == null ? IntPtr.Zero : properties.Handle);
+			CGImageDestinationAddImageFromSource (Handle, source.Handle, (IntPtr) index, properties == null ? IntPtr.Zero : properties.Handle);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -205,7 +185,7 @@ namespace MonoMac.ImageIO {
 
 		public bool Close ()
 		{
-			var success = CGImageDestinationFinalize (handle);
+			var success = CGImageDestinationFinalize (Handle);
 			Dispose ();
 			return success;
 		}

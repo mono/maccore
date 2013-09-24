@@ -44,51 +44,27 @@ namespace MonoMac.CoreText {
 	}
 
 	[Since (3,2)]
-	public class CTRun : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTRun : CFType {
 		internal CTRun (IntPtr handle)
 			: this (handle, false)
 		{
 		}
 
 		internal CTRun (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ArgumentNullException ("handle");
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 		
-		public IntPtr Handle {
-			get { return handle; }
-		}
-
 		~CTRun ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		extern static void CTRunDraw (IntPtr h, IntPtr context, NSRange range);
 		public void Draw (CGContext context, NSRange range)
 		{
-			CTRunDraw (handle, context.Handle, range);
+			CTRunDraw (Handle, context.Handle, range);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -97,7 +73,7 @@ namespace MonoMac.CoreText {
 		{
 			buffer = GetBuffer (range, buffer);
 
-			CTRunGetAdvances (handle, range, buffer);
+			CTRunGetAdvances (Handle, range, buffer);
 
 			return buffer;
 		}
@@ -128,7 +104,7 @@ namespace MonoMac.CoreText {
 
 		public CTStringAttributes GetAttributes ()
 		{
-			var d = (NSDictionary) Runtime.GetNSObject (CTRunGetAttributes (handle));
+			var d = (NSDictionary) Runtime.GetNSObject (CTRunGetAttributes (Handle));
 			return d == null ? null : new CTStringAttributes (d);
 		}
 
@@ -137,7 +113,7 @@ namespace MonoMac.CoreText {
 		extern static int CTRunGetGlyphCount (IntPtr handle);
 		public int GlyphCount {
 			get {
-				return CTRunGetGlyphCount (handle);
+				return CTRunGetGlyphCount (Handle);
 			}
 		}
 
@@ -147,7 +123,7 @@ namespace MonoMac.CoreText {
 		{
 			buffer = GetBuffer (range, buffer);
 
-			CTRunGetGlyphs (handle, range, buffer);
+			CTRunGetGlyphs (Handle, range, buffer);
 
 			return buffer;
 		}
@@ -164,7 +140,7 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		extern static RectangleF CTRunGetImageBounds (IntPtr h, IntPtr context, NSRange range);
 		public RectangleF GetImageBounds (CGContext context, NSRange range) {
-			return CTRunGetImageBounds (handle, context.Handle, range);
+			return CTRunGetImageBounds (Handle, context.Handle, range);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -173,7 +149,7 @@ namespace MonoMac.CoreText {
 		{
 			buffer = GetBuffer (range, buffer);
 
-			CTRunGetPositions (handle, range, buffer);
+			CTRunGetPositions (Handle, range, buffer);
 
 			return buffer;
 		}
@@ -191,7 +167,7 @@ namespace MonoMac.CoreText {
 		extern static CTRunStatus CTRunGetStatus (IntPtr handle);
 		public CTRunStatus Status {
 			get {
-				return CTRunGetStatus (handle);
+				return CTRunGetStatus (Handle);
 			}
 		}
 
@@ -201,7 +177,7 @@ namespace MonoMac.CoreText {
 		{
 			buffer = GetBuffer (range, buffer);
 
-			CTRunGetStringIndices (handle, range, buffer);
+			CTRunGetStringIndices (Handle, range, buffer);
 
 			return buffer;
 		}
@@ -219,7 +195,7 @@ namespace MonoMac.CoreText {
 		extern static NSRange CTRunGetStringRange (IntPtr handle);
 		public NSRange StringRange {
 			get {
-				return CTRunGetStringRange (handle);
+				return CTRunGetStringRange (Handle);
 			}
 		}
 		
@@ -227,7 +203,7 @@ namespace MonoMac.CoreText {
 		extern static CGAffineTransform CTRunGetTextMatrix (IntPtr handle);
 		public CGAffineTransform TextMatrix {
 			get {
-				return CTRunGetTextMatrix (handle);
+				return CTRunGetTextMatrix (Handle);
 			}
 		}
 		
@@ -236,13 +212,13 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		extern static double CTRunGetTypographicBounds (IntPtr h, NSRange range, IntPtr ascent, IntPtr descent, IntPtr leading);
 		public double GetTypographicBounds (NSRange range, out float ascent, out float descent, out float leading) {
-			return CTRunGetTypographicBounds (handle, range, out ascent, out descent, out leading);
+			return CTRunGetTypographicBounds (Handle, range, out ascent, out descent, out leading);
 		}
 
 		public double GetTypographicBounds ()
 		{
 			NSRange range = new NSRange () { Location = 0, Length = 0 };
-			return CTRunGetTypographicBounds (handle, range, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+			return CTRunGetTypographicBounds (Handle, range, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 		}
 	}
 }

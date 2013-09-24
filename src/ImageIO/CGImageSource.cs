@@ -128,10 +128,14 @@ namespace MonoMac.ImageIO {
 		}
 	}
 	
-	public class CGImageSource : INativeObject, IDisposable
+	public class CGImageSource : CFType
 	{
-		[DllImport (Constants.ImageIOLibrary, EntryPoint="CGImageSourceGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.ImageIOLibrary)]
+		extern static uint CGImageSourceGetTypeID ();
+
+		public static uint TypeID {
+			get { return CGImageSourceGetTypeID (); }
+		}
 
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCopyTypeIdentifiers ();
@@ -141,46 +145,21 @@ namespace MonoMac.ImageIO {
 				return NSArray.StringArrayFromHandle (CGImageSourceCopyTypeIdentifiers ());
 			}
 		}
-		
-		internal IntPtr handle;
-
 		// invoked by marshallers
 		internal CGImageSource (IntPtr handle) : this (handle, false)
 		{
-			this.handle = handle;
 		}
 
 		[Preserve (Conditional=true)]
-		internal CGImageSource (IntPtr handle, bool owns)
+		internal CGImageSource (IntPtr handle, bool owns) : base (handle, owns)
 		{
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
 		~CGImageSource ()
 		{
 			Dispose (false);
 		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
 
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-				
 		[DllImport (Constants.ImageIOLibrary)]
 		extern static IntPtr CGImageSourceCreateWithURL(IntPtr url, IntPtr options);
 
@@ -235,7 +214,7 @@ namespace MonoMac.ImageIO {
 		
 		public string TypeIdentifier {
 			get {
-				return NSString.FromHandle (CGImageSourceGetType (handle));
+				return NSString.FromHandle (CGImageSourceGetType (Handle));
 			}
 		}
 
@@ -244,7 +223,7 @@ namespace MonoMac.ImageIO {
 		
 		public int ImageCount {
 			get {
-				return CGImageSourceGetCount (handle);
+				return CGImageSourceGetCount (Handle);
 			}
 		}
 
@@ -254,7 +233,7 @@ namespace MonoMac.ImageIO {
 		[Advice ("Use GetProperties")]
 		public NSDictionary CopyProperties (NSDictionary dict)
 		{
-			return new NSDictionary (CGImageSourceCopyProperties (handle, dict == null ? IntPtr.Zero : dict.Handle));
+			return new NSDictionary (CGImageSourceCopyProperties (Handle, dict == null ? IntPtr.Zero : dict.Handle));
 		}
 
 		[Advice ("Use GetProperties")]
@@ -271,7 +250,7 @@ namespace MonoMac.ImageIO {
 		[Advice ("Use GetProperties")]
 		public NSDictionary CopyProperties (NSDictionary dict, int imageIndex)
 		{
-			return new NSDictionary (CGImageSourceCopyPropertiesAtIndex (handle, imageIndex, dict == null ? IntPtr.Zero : dict.Handle));
+			return new NSDictionary (CGImageSourceCopyPropertiesAtIndex (Handle, imageIndex, dict == null ? IntPtr.Zero : dict.Handle));
 		}
 
 		[Advice ("Use GetProperties")]
@@ -297,7 +276,7 @@ namespace MonoMac.ImageIO {
 		public CGImage CreateImage (int index, CGImageOptions options)
 		{
 			using (var dict = options == null ? null : options.ToDictionary ()) {
-				var ret = CGImageSourceCreateImageAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
+				var ret = CGImageSourceCreateImageAtIndex (Handle, index, dict == null ? IntPtr.Zero : dict.Handle);
 				return new CGImage (ret, true);
 			}
 		}
@@ -307,7 +286,7 @@ namespace MonoMac.ImageIO {
 		public CGImage CreateThumbnail (int index, CGImageThumbnailOptions options)
 		{
 			using (var dict = options == null ? null : options.ToDictionary ()) {
-				var ret = CGImageSourceCreateThumbnailAtIndex (handle, index, dict == null ? IntPtr.Zero : dict.Handle);
+				var ret = CGImageSourceCreateThumbnailAtIndex (Handle, index, dict == null ? IntPtr.Zero : dict.Handle);
 				return new CGImage (ret, true);
 			}
 		}
@@ -327,7 +306,7 @@ namespace MonoMac.ImageIO {
 		{
 			if (data == null)
 				throw new ArgumentNullException ("data");
-			CGImageSourceUpdateData (handle, data.Handle, final);
+			CGImageSourceUpdateData (Handle, data.Handle, final);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -337,7 +316,7 @@ namespace MonoMac.ImageIO {
 		{
 			if (provider == null)
 				throw new ArgumentNullException ("provider");
-			CGImageSourceUpdateDataProvider (handle, provider.Handle);
+			CGImageSourceUpdateDataProvider (Handle, provider.Handle);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -345,7 +324,7 @@ namespace MonoMac.ImageIO {
 		
 		public CGImageSourceStatus GetStatus ()
 		{
-			return CGImageSourceGetStatus (handle);
+			return CGImageSourceGetStatus (Handle);
 		}
 
 		[DllImport (Constants.ImageIOLibrary)]
@@ -353,7 +332,7 @@ namespace MonoMac.ImageIO {
 
 		public CGImageSourceStatus GetStatus (int index)
 		{
-			return CGImageSourceGetStatusAtIndex (handle, index);
+			return CGImageSourceGetStatusAtIndex (Handle, index);
 		}
 	}
 }

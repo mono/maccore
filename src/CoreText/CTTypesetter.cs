@@ -99,40 +99,15 @@ namespace MonoMac.CoreText {
 #endregion
 
 	[Since (3,2)]
-	public class CTTypesetter : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTTypesetter : CFType {
 		internal CTTypesetter (IntPtr handle, bool owns)
+			:base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw ConstructorError.ArgumentNull (this, "handle");
-
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
-		}
-		
-		public IntPtr Handle {
-			get {return handle;}
 		}
 
 		~CTTypesetter ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 #region Typesetter Creation
@@ -143,9 +118,9 @@ namespace MonoMac.CoreText {
 			if (value == null)
 				throw ConstructorError.ArgumentNull (this, "value");
 
-			handle = CTTypesetterCreateWithAttributedString (value.Handle);
+			Handle = CTTypesetterCreateWithAttributedString (value.Handle);
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -156,10 +131,10 @@ namespace MonoMac.CoreText {
 			if (value == null)
 				throw ConstructorError.ArgumentNull (this, "value");
 
-			handle = CTTypesetterCreateWithAttributedStringAndOptions (value.Handle,
+			Handle = CTTypesetterCreateWithAttributedStringAndOptions (value.Handle,
 					options == null ? IntPtr.Zero : options.Dictionary.Handle);
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 #endregion
@@ -169,7 +144,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTTypesetterCreateLineWithOffset (IntPtr typesetter, NSRange stringRange, double offset);
 		public CTLine GetLine (NSRange stringRange, double offset)
 		{
-			var h = CTTypesetterCreateLineWithOffset (handle, stringRange, offset);
+			var h = CTTypesetterCreateLineWithOffset (Handle, stringRange, offset);
 
 			if (h == IntPtr.Zero)
 				return null;
@@ -181,7 +156,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTTypesetterCreateLine (IntPtr typesetter, NSRange stringRange);
 		public CTLine GetLine (NSRange stringRange)
 		{
-			var h = CTTypesetterCreateLine (handle, stringRange);
+			var h = CTTypesetterCreateLine (Handle, stringRange);
 
 			if (h == IntPtr.Zero)
 				return null;
@@ -195,28 +170,28 @@ namespace MonoMac.CoreText {
 		static extern int CTTypesetterSuggestLineBreakWithOffset (IntPtr typesetter, int startIndex, double width, double offset);
 		public int SuggestLineBreak (int startIndex, double width, double offset)
 		{
-			return CTTypesetterSuggestLineBreakWithOffset (handle, startIndex, width, offset);
+			return CTTypesetterSuggestLineBreakWithOffset (Handle, startIndex, width, offset);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern int CTTypesetterSuggestLineBreak (IntPtr typesetter, int startIndex, double width);
 		public int SuggestLineBreak (int startIndex, double width)
 		{
-			return CTTypesetterSuggestLineBreak (handle, startIndex, width);
+			return CTTypesetterSuggestLineBreak (Handle, startIndex, width);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern int CTTypesetterSuggestClusterBreakWithOffset (IntPtr typesetter, int startIndex, double width, double offset);
 		public int SuggestClusterBreak (int startIndex, double width, double offset)
 		{
-			return CTTypesetterSuggestClusterBreakWithOffset (handle, startIndex, width, offset);
+			return CTTypesetterSuggestClusterBreakWithOffset (Handle, startIndex, width, offset);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern int CTTypesetterSuggestClusterBreak (IntPtr typesetter, int startIndex, double width);
 		public int SuggestClusterBreak (int startIndex, double width)
 		{
-			return CTTypesetterSuggestClusterBreak (handle, startIndex, width);
+			return CTTypesetterSuggestClusterBreak (Handle, startIndex, width);
 		}
 #endregion
 	}

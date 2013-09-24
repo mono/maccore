@@ -29,46 +29,23 @@ namespace MonoMac.CoreMedia {
 	}
 
 	[Since (4,0)]
-	public class CMFormatDescription : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CMFormatDescription : CFType {
 		internal CMFormatDescription (IntPtr handle)
+			: this (handle, true)
 		{
-			this.handle = handle;
 		}
 
 		[Preserve (Conditional=true)]
 		internal CMFormatDescription (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-
-			this.handle = handle;
 		}
 		
 		~CMFormatDescription ()
 		{
 			Dispose (false);
 		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-	
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-		
+				
 		/*[DllImport(Constants.CoreMediaLibrary)]
 		extern static CFPropertyListRef CMFormatDescriptionGetExtension (
 		   CMFormatDescriptionRef desc,
@@ -82,7 +59,7 @@ namespace MonoMac.CoreMedia {
 		
 		public NSDictionary GetExtensions ()
 		{
-			var cfDictRef = CMFormatDescriptionGetExtensions (handle);
+			var cfDictRef = CMFormatDescriptionGetExtensions (Handle);
 			if (cfDictRef == IntPtr.Zero)
 			{
 				return null;
@@ -102,7 +79,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMFormatDescriptionGetMediaSubType (handle);
+				return CMFormatDescriptionGetMediaSubType (Handle);
 			}
 		}
 
@@ -155,16 +132,15 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMFormatDescriptionGetMediaType (handle);
+				return CMFormatDescriptionGetMediaType (Handle);
 			}
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		extern static int CMFormatDescriptionGetTypeID ();
+		extern static uint CMFormatDescriptionGetTypeID ();
 		
-		public static int GetTypeID ()
-		{
-			return CMFormatDescriptionGetTypeID ();
+		public static uint TypeID {
+			get { return CMFormatDescriptionGetTypeID (); }
 		}
 
 #if !COREBUILD
@@ -204,7 +180,7 @@ namespace MonoMac.CoreMedia {
 
 		public AudioStreamBasicDescription? AudioStreamBasicDescription {
 			get {
-				var ret = CMAudioFormatDescriptionGetStreamBasicDescription (handle);
+				var ret = CMAudioFormatDescriptionGetStreamBasicDescription (Handle);
 				if (ret != IntPtr.Zero){
 					unsafe {
 						return *((AudioStreamBasicDescription *) ret);
@@ -220,7 +196,7 @@ namespace MonoMac.CoreMedia {
 		public AudioChannelLayout AudioChannelLayout {
 			get {
 				int size;
-				var res = CMAudioFormatDescriptionGetChannelLayout (handle, out size);
+				var res = CMAudioFormatDescriptionGetChannelLayout (Handle, out size);
 				if (res == IntPtr.Zero || size == 0)
 					return null;
 				return AudioChannelLayout.FromHandle (res);
@@ -233,7 +209,7 @@ namespace MonoMac.CoreMedia {
 			get {
 				unsafe {
 					int size;
-					var v = CMAudioFormatDescriptionGetFormatList (handle, out size);
+					var v = CMAudioFormatDescriptionGetFormatList (Handle, out size);
 					if (v == IntPtr.Zero)
 						return null;
 					var items = size / sizeof (AudioFormat);
@@ -252,7 +228,7 @@ namespace MonoMac.CoreMedia {
 		public byte [] AudioMagicCookie {
 			get {
 				int size;
-				var h = CMAudioFormatDescriptionGetMagicCookie (handle, out size);
+				var h = CMAudioFormatDescriptionGetMagicCookie (Handle, out size);
 				if (h == IntPtr.Zero)
 					return null;
 
@@ -269,7 +245,7 @@ namespace MonoMac.CoreMedia {
 		public AudioFormat AudioMostCompatibleFormat {
 			get {
 				unsafe {
-					var ret = (AudioFormat *) CMAudioFormatDescriptionGetMostCompatibleFormat (handle);
+					var ret = (AudioFormat *) CMAudioFormatDescriptionGetMostCompatibleFormat (Handle);
 					if (ret == null)
 						return new AudioFormat ();
 					return *ret;
@@ -283,7 +259,7 @@ namespace MonoMac.CoreMedia {
 		public AudioFormat AudioRichestDecodableFormat {
 			get {
 				unsafe {
-					var ret = (AudioFormat *) CMAudioFormatDescriptionGetRichestDecodableFormat (handle);
+					var ret = (AudioFormat *) CMAudioFormatDescriptionGetRichestDecodableFormat (Handle);
 					if (ret == null)
 						return new AudioFormat ();
 					return *ret;
@@ -297,7 +273,7 @@ namespace MonoMac.CoreMedia {
 		[Advice ("Use CMVideoFormatDescription")]
 		public Size  VideoDimensions {
 			get {
-				return CMVideoFormatDescriptionGetDimensions (handle);
+				return CMVideoFormatDescriptionGetDimensions (Handle);
 			}
 		}
 
@@ -307,7 +283,7 @@ namespace MonoMac.CoreMedia {
 		[Advice ("Use CMVideoFormatDescription")]
 		public RectangleF GetVideoCleanAperture (bool originIsAtTopLeft)
 		{
-			return CMVideoFormatDescriptionGetCleanAperture (handle, originIsAtTopLeft);
+			return CMVideoFormatDescriptionGetCleanAperture (Handle, originIsAtTopLeft);
 		}
 
 		[DllImport (Constants.CoreMediaLibrary)]
@@ -326,7 +302,7 @@ namespace MonoMac.CoreMedia {
 		[Advice ("Use CMVideoFormatDescription")]
 		public SizeF GetVideoPresentationDimensions (bool usePixelAspectRatio, bool useCleanAperture)
 		{
-			return CMVideoFormatDescriptionGetPresentationDimensions (handle, usePixelAspectRatio, useCleanAperture);
+			return CMVideoFormatDescriptionGetPresentationDimensions (Handle, usePixelAspectRatio, useCleanAperture);
 		}
 
 		[DllImport (Constants.CoreMediaLibrary)]
@@ -337,7 +313,7 @@ namespace MonoMac.CoreMedia {
 		{
 			if (imageBuffer == null)
 				throw new ArgumentNullException ("imageBuffer");
-			return CMVideoFormatDescriptionMatchesImageBuffer (handle, imageBuffer.Handle) != 0;
+			return CMVideoFormatDescriptionMatchesImageBuffer (Handle, imageBuffer.Handle) != 0;
 		}
 #endif
 	}
@@ -381,15 +357,17 @@ namespace MonoMac.CoreMedia {
 		public CMVideoFormatDescription (CMVideoCodecType codecType, Size size)
 			: base (IntPtr.Zero)
 		{
+			IntPtr handle;
 			var error = CMVideoFormatDescriptionCreate (IntPtr.Zero, codecType, size.Width, size.Height, IntPtr.Zero, out handle);
 			if (error != CMFormatDescriptionError.None)
 				throw new ArgumentException (error.ToString ());
+			Handle = handle;
 		}
 
 #if !COREBUILD
 		public Size Dimensions {
 			get {
-				return CMVideoFormatDescriptionGetDimensions (handle);
+				return CMVideoFormatDescriptionGetDimensions (Handle);
 			}
 		}
 
@@ -416,12 +394,12 @@ namespace MonoMac.CoreMedia {
 
 		public RectangleF GetCleanAperture (bool originIsAtTopLeft)
 		{
-			return CMVideoFormatDescriptionGetCleanAperture (handle, originIsAtTopLeft);
+			return CMVideoFormatDescriptionGetCleanAperture (Handle, originIsAtTopLeft);
 		}
 
 		public SizeF GetPresentationDimensions (bool usePixelAspectRatio, bool useCleanAperture)
 		{
-			return CMVideoFormatDescriptionGetPresentationDimensions (handle, usePixelAspectRatio, useCleanAperture);
+			return CMVideoFormatDescriptionGetPresentationDimensions (Handle, usePixelAspectRatio, useCleanAperture);
 		}
 #endif
 	}

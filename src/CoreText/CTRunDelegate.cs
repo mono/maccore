@@ -164,40 +164,15 @@ namespace MonoMac.CoreText {
 	}
 
 	[Since (3,2)]
-	public class CTRunDelegate : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTRunDelegate : CFType {
 		internal CTRunDelegate (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ArgumentNullException ("handle");
-
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
-		}
-		
-		public IntPtr Handle {
-			get {return handle;}
 		}
 
 		~CTRunDelegate ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 #region RunDelegate Creation
@@ -209,8 +184,8 @@ namespace MonoMac.CoreText {
 			if (operations == null)
 				throw ConstructorError.ArgumentNull (this, "operations");
 
-			handle = CTRunDelegateCreate (operations.GetCallbacks (), GCHandle.ToIntPtr (operations.handle));
-			if (handle == IntPtr.Zero)
+			Handle = CTRunDelegateCreate (operations.GetCallbacks (), GCHandle.ToIntPtr (operations.handle));
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 #endregion
@@ -221,7 +196,7 @@ namespace MonoMac.CoreText {
 
 		public CTRunDelegateOperations Operations {
 			get {
-				return CTRunDelegateOperations.GetOperations (CTRunDelegateGetRefCon (handle));
+				return CTRunDelegateOperations.GetOperations (CTRunDelegateGetRefCon (Handle));
 			}
 		}
 #endregion

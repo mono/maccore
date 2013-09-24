@@ -97,7 +97,7 @@ namespace MonoMac.CoreGraphics {
 		public static CGFont CreateWithFontName (string name)
 		{
 			using (CFString s = name){
-				return new CGFont (CGFontCreateWithFontName (s.handle), true);
+				return new CGFont (CGFontCreateWithFontName (s.Handle), true);
 			}
 		}
 		
@@ -222,7 +222,7 @@ namespace MonoMac.CoreGraphics {
 		public ushort GetGlyphWithGlyphName (string s)
 		{
 			using (var cs = new CFString (s)){
-				return CGFontGetGlyphWithGlyphName (handle, cs.handle);
+				return CGFontGetGlyphWithGlyphName (handle, cs.Handle);
 			}
 		}
 		
@@ -272,7 +272,11 @@ namespace MonoMac.CoreGraphics {
 		ToCTFont() overloads where attributes is CTFontDescriptorRef
 #endif // TODO
 
-		[DllImport (Constants.CoreTextLibrary, EntryPoint="CGFontGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.CoreTextLibrary)]
+		extern static uint CGFontGetTypeID ();
+
+		public static uint TypeID {
+			get { return CGFontGetTypeID (); }
+		}
 	}
 }

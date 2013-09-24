@@ -589,11 +589,11 @@ namespace MonoMac.Security {
 				if ((result == SecStatusCode.Success) && (ptr != IntPtr.Zero)) {
 					int cfType = CFType.GetTypeID (ptr);
 					
-					if (cfType == SecCertificate.GetTypeID ())
+					if (cfType == SecCertificate.TypeID)
 						return new SecCertificate (ptr, true);
-					else if (cfType == SecKey.GetTypeID ())
+					else if (cfType == SecKey.TypeID)
 						return new SecKey (ptr, true);
-					else if (cfType == SecIdentity.GetTypeID ())
+					else if (cfType == SecIdentity.TypeID)
 						return new SecIdentity (ptr, true);
 					else
 						throw new Exception (String.Format ("Unexpected type: 0x{0:x}", cfType));

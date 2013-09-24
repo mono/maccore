@@ -133,7 +133,7 @@ namespace MonoMac.ObjCRuntime {
 				return;
 			var strHandle = value == null ? IntPtr.Zero : value.Handle;
 			if (strHandle != IntPtr.Zero)
-				CFObject.CFRetain (strHandle);
+				CFType.Retain (strHandle);
 			Marshal.WriteIntPtr (indirect, strHandle);
 		}
 
@@ -144,7 +144,7 @@ namespace MonoMac.ObjCRuntime {
 				return;
 			var arrayHandle = array == null ? IntPtr.Zero : array.Handle;
 			if (arrayHandle != IntPtr.Zero)
-				CFObject.CFRetain (arrayHandle);
+				CFType.Retain (arrayHandle);
 			Marshal.WriteIntPtr (indirect, arrayHandle);
 		}
 #endif

@@ -27,10 +27,9 @@ namespace MonoMac.CoreMedia {
 	public delegate bool   CMBufferGetBool (INativeObject buffer);
 	public delegate int    CMBufferCompare (INativeObject first, INativeObject second);
 	
-	public class CMBufferQueue : INativeObject, IDisposable {
+	public class CMBufferQueue : CFType {
 		GCHandle gch;
 		Dictionary<IntPtr, INativeObject> queueObjects;
-		internal IntPtr handle;
 		CMBufferGetTime getDecodeTimeStamp;
 		CMBufferGetTime getPresentationTimeStamp;
 		CMBufferGetTime getDuration;
@@ -70,24 +69,11 @@ namespace MonoMac.CoreMedia {
 		{
 			Dispose (false);
 		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
 
-		public IntPtr Handle {
-			get { return handle; }
-		}
-	
 		protected virtual void Dispose (bool disposing)
 		{
 			queueObjects = null;
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
+			base.Dispose (disposing);
 			if (gch.IsAllocated)
 				gch.Free ();
 		}
@@ -125,7 +111,7 @@ namespace MonoMac.CoreMedia {
 			bq.isDataReady = isDataReady;
 			bq.compare = compare;
 
-			if (CMBufferQueueCreate (IntPtr.Zero, count, cbacks, out bq.handle) == 0)
+			if (CMBufferQueueCreate (IntPtr.Zero, count, cbacks, out bq.Handle) == 0)
 				return bq;
 
 			return null;
@@ -142,7 +128,7 @@ namespace MonoMac.CoreMedia {
 				var pcopy = &copy;
 				copy.refcon = GCHandle.ToIntPtr (bq.gch);
 			
-				if (CMBufferQueueCreate (IntPtr.Zero, count, (IntPtr) pcopy, out bq.handle) == 0)
+				if (CMBufferQueueCreate (IntPtr.Zero, count, (IntPtr) pcopy, out bq.Handle) == 0)
 					return bq;
 			}
 			return null;
@@ -160,7 +146,7 @@ namespace MonoMac.CoreMedia {
 				throw new ArgumentNullException ("cftypeBuffer");
 			lock (queueObjects){
 				var cfh = cftypeBuffer.Handle;
-				CMBufferQueueEnqueue (handle, cfh);
+				CMBufferQueueEnqueue (Handle, cfh);
 				if (!queueObjects.ContainsKey (cfh))
 					queueObjects [cfh] = cftypeBuffer;
 			}
@@ -177,11 +163,11 @@ namespace MonoMac.CoreMedia {
 			// dictionary, we kept the reference alive.   So we need to
 			// release the newly acquired reference
 			//
-			var oHandle = CMBufferQueueDequeueAndRetain (handle);
+			var oHandle = CMBufferQueueDequeueAndRetain (Handle);
 			if (oHandle == IntPtr.Zero)
 				return null;
 
-			CFObject.CFRelease (oHandle);
+			CFType.Release (oHandle);
 			lock (queueObjects){
 				var managed = queueObjects [oHandle];
 				queueObjects.Remove (oHandle);

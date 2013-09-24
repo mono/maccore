@@ -51,42 +51,17 @@ namespace MonoMac.CoreText {
 #endregion
 
 	[Since (3,2)]
-	public class CTGlyphInfo : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTGlyphInfo : CFType {
 		internal CTGlyphInfo (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw ConstructorError.ArgumentNull (this, "handle");
-
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 		
-		public IntPtr Handle {
-			get {return handle;}
-		}
-
 		~CTGlyphInfo ()
 		{
 			Dispose (false);
 		}
 		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-
 #region Glyph Info Creation
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTGlyphInfoCreateWithGlyphName (IntPtr glyphName, IntPtr font, IntPtr baseString);
@@ -101,9 +76,9 @@ namespace MonoMac.CoreText {
 
 			using (var gn = new NSString (glyphName))
 			using (var bs = new NSString (baseString))
-				handle = CTGlyphInfoCreateWithGlyphName (gn.Handle, font.Handle, bs.Handle);
+				Handle = CTGlyphInfoCreateWithGlyphName (gn.Handle, font.Handle, bs.Handle);
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -117,9 +92,9 @@ namespace MonoMac.CoreText {
 				throw ConstructorError.ArgumentNull (this, "baseString");
 
 			using (var bs = new NSString (baseString))
-				handle = CTGlyphInfoCreateWithGlyph (glyph, font.Handle, bs.Handle);
+				Handle = CTGlyphInfoCreateWithGlyph (glyph, font.Handle, bs.Handle);
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -131,9 +106,9 @@ namespace MonoMac.CoreText {
 				throw ConstructorError.ArgumentNull (this, "baseString");
 
 			using (var bs = new NSString (baseString))
-				handle = CTGlyphInfoCreateWithCharacterIdentifier (cid, collection, bs.Handle);
+				Handle = CTGlyphInfoCreateWithCharacterIdentifier (cid, collection, bs.Handle);
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 #endregion
@@ -143,7 +118,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTGlyphInfoGetGlyphName (IntPtr glyphInfo);
 		public string GlyphName {
 			get {
-				var cfStringRef = CTGlyphInfoGetGlyphName (handle);
+				var cfStringRef = CTGlyphInfoGetGlyphName (Handle);
 				return CFString.FetchString (cfStringRef);
 			}
 		}
@@ -151,13 +126,13 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern CGFontIndex CTGlyphInfoGetCharacterIdentifier (IntPtr glyphInfo);
 		public CGFontIndex CharacterIdentifier {
-			get {return CTGlyphInfoGetCharacterIdentifier (handle);}
+			get {return CTGlyphInfoGetCharacterIdentifier (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern CTCharacterCollection CTGlyphInfoGetCharacterCollection (IntPtr glyphInfo);
 		public CTCharacterCollection CharacterCollection {
-			get {return CTGlyphInfoGetCharacterCollection (handle);}
+			get {return CTGlyphInfoGetCharacterCollection (Handle);}
 		}
 #endregion
 

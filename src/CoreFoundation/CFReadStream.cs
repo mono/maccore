@@ -123,7 +123,7 @@ namespace MonoMac.CoreFoundation {
 
 		public int Read (byte[] buffer, int offset, int count)
 		{
-			CheckHandle ();
+			ThrowIfDisposed ();
 			if (offset < 0)
 				throw new ArgumentException ();
 			if (count < 1)

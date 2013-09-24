@@ -36,40 +36,15 @@ using MonoMac.CoreGraphics;
 namespace MonoMac.CoreText {
 
 	[Since (3,2)]
-	public class CTFramesetter : INativeObject, IDisposable {
-
-		internal IntPtr handle;
-
+	public class CTFramesetter : CFType {
 		internal CTFramesetter (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw ConstructorError.ArgumentNull (this, "handle");
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
-		}
-		
-		public IntPtr Handle {
-			get {return handle;}
 		}
 
 		~CTFramesetter ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 #region Framesetter Creation
@@ -79,8 +54,8 @@ namespace MonoMac.CoreText {
 		{
 			if (value == null)
 				throw ConstructorError.ArgumentNull (this, "value");
-			handle = CTFramesetterCreateWithAttributedString (value.Handle);
-			if (handle == IntPtr.Zero)
+			Handle = CTFramesetterCreateWithAttributedString (value.Handle);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 #endregion
@@ -92,7 +67,7 @@ namespace MonoMac.CoreText {
 		{
 			if (path == null)
 				throw new ArgumentNullException ("path");
-			var frame = CTFramesetterCreateFrame (handle, stringRange, path.Handle,
+			var frame = CTFramesetterCreateFrame (Handle, stringRange, path.Handle,
 					frameAttributes == null ? IntPtr.Zero : frameAttributes.Dictionary.Handle);
 			if (frame == IntPtr.Zero)
 				return null;
@@ -103,7 +78,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFramesetterGetTypesetter (IntPtr framesetter);
 		public CTTypesetter GetTypesetter ()
 		{
-			var h = CTFramesetterGetTypesetter (handle);
+			var h = CTFramesetterGetTypesetter (Handle);
 
 			if (h == IntPtr.Zero)
 				return null;
@@ -118,7 +93,7 @@ namespace MonoMac.CoreText {
 		public SizeF SuggestFrameSize (NSRange stringRange, CTFrameAttributes frameAttributes, SizeF constraints, out NSRange fitRange)
 		{
 			return CTFramesetterSuggestFrameSizeWithConstraints (
-					handle, stringRange,
+					Handle, stringRange,
 					frameAttributes == null ? IntPtr.Zero : frameAttributes.Dictionary.Handle,
 					constraints, out fitRange);
 		}

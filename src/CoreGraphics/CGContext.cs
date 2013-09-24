@@ -824,7 +824,7 @@ namespace MonoMac.CoreGraphics {
 		extern static void CGContextSetFont(IntPtr c, IntPtr font);
 		public void SetFont (CGFont font)
 		{
-			CGContextSetFont (handle, font.handle);
+			CGContextSetFont (handle, font.Handle);
 		}
 			
 		[DllImport (Constants.CoreGraphicsLibrary)]

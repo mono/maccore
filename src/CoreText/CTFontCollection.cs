@@ -85,39 +85,15 @@ namespace MonoMac.CoreText {
 	}
 
 	[Since (3,2)]
-	public class CTFontCollection : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTFontCollection : CFType {
 		internal CTFontCollection (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw ConstructorError.ArgumentNull (this, "handle");
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
 		~CTFontCollection ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 #region Collection Creation
@@ -125,9 +101,9 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCollectionCreateFromAvailableFonts (IntPtr options);
 		public CTFontCollection (CTFontCollectionOptions options)
 		{
-			handle = CTFontCollectionCreateFromAvailableFonts (
+			Handle = CTFontCollectionCreateFromAvailableFonts (
 					options == null ? IntPtr.Zero : options.Dictionary.Handle);
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -138,10 +114,10 @@ namespace MonoMac.CoreText {
 			using (var descriptors = queryDescriptors == null
 					? null 
 					: CFArray.FromNativeObjects (queryDescriptors))
-				handle = CTFontCollectionCreateWithFontDescriptors (
+				Handle = CTFontCollectionCreateWithFontDescriptors (
 						descriptors == null ? IntPtr.Zero : descriptors.Handle,
 						options == null ? IntPtr.Zero : options.Dictionary.Handle);
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -154,7 +130,7 @@ namespace MonoMac.CoreText {
 					? null 
 					: CFArray.FromNativeObjects (queryDescriptors)) {
 				h = CTFontCollectionCreateCopyWithFontDescriptors (
-						handle,
+						Handle,
 						descriptors == null ? IntPtr.Zero : descriptors.Handle,
 						options == null ? IntPtr.Zero : options.Dictionary.Handle);
 			}
@@ -169,12 +145,12 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCollectionCreateMatchingFontDescriptors (IntPtr collection);
 		public CTFontDescriptor[] GetMatchingFontDescriptors ()
 		{
-			var cfArrayRef = CTFontCollectionCreateMatchingFontDescriptors (handle);
+			var cfArrayRef = CTFontCollectionCreateMatchingFontDescriptors (Handle);
 			if (cfArrayRef == IntPtr.Zero)
 				return new CTFontDescriptor [0];
 			var matches = NSArray.ArrayFromHandle (cfArrayRef,
 					fd => new CTFontDescriptor (fd, false));
-			CFObject.CFRelease (cfArrayRef);
+			CFType.Release (cfArrayRef);
 			return matches;
 		}
 
@@ -199,14 +175,14 @@ namespace MonoMac.CoreText {
 			GCHandle comparison = GCHandle.Alloc (comparer);
 			try {
 				var cfArrayRef = CTFontCollectionCreateMatchingFontDescriptorsSortedWithCallback (
-						handle, 
+						Handle, 
 						new CTFontCollectionSortDescriptorsCallback (CompareDescriptors),
 						GCHandle.ToIntPtr (comparison));
 				if (cfArrayRef == IntPtr.Zero)
 					return new CTFontDescriptor [0];
 				var matches = NSArray.ArrayFromHandle (cfArrayRef,
 						fd => new CTFontDescriptor (cfArrayRef, false));
-				CFObject.CFRelease (cfArrayRef);
+				CFType.Release (cfArrayRef);
 				return matches;
 			}
 			finally {

@@ -37,9 +37,7 @@ using MonoMac.CoreFoundation;
 using MonoMac.Foundation;
 
 namespace MonoMac.Security {
-	public class SecTrust : INativeObject, IDisposable {
-		IntPtr handle;
-
+	public class SecTrust : CFType {
 		internal SecTrust (IntPtr handle) 
 			: this (handle, false)
 		{
@@ -47,17 +45,16 @@ namespace MonoMac.Security {
 
 		[Preserve (Conditional=true)]
 		internal SecTrust (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw new Exception ("Invalid handle");
-
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
-		[DllImport (Constants.SecurityLibrary, EntryPoint="SecTrustGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.SecurityLibrary)]
+		extern static uint SecTrustGetTypeID ();
+
+		public static uint TypeID {
+			get { return SecTrustGetTypeID (); }
+		}
 
 		[DllImport (Constants.SecurityLibrary)]
 		extern static SecStatusCode SecTrustCreateWithCertificates (IntPtr certOrCertArray, IntPtr policies, out IntPtr sectrustref);
@@ -118,10 +115,11 @@ namespace MonoMac.Security {
 		{
 			if (policy == null)
 				throw new ArgumentNullException ("policy");
-
+			IntPtr handle;
 			SecStatusCode result = SecTrustCreateWithCertificates (certHandle, policy.Handle, out handle);
 			if (result != SecStatusCode.Success)
 				throw new ArgumentException (result.ToString ());
+			Handle = handle;
 		}
 
 		[DllImport (Constants.SecurityLibrary)]
@@ -129,11 +127,11 @@ namespace MonoMac.Security {
 
 		public SecTrustResult Evaluate ()
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 
 			SecTrustResult trust;
-			SecStatusCode result = SecTrustEvaluate (handle, out trust);
+			SecStatusCode result = SecTrustEvaluate (Handle, out trust);
 			if (result != SecStatusCode.Success)
 				throw new InvalidOperationException (result.ToString ());
 			return trust;
@@ -144,9 +142,9 @@ namespace MonoMac.Security {
 
 		public int Count {
 			get {
-				if (handle == IntPtr.Zero)
+				if (Handle == IntPtr.Zero)
 					return 0;
-				return (int) SecTrustGetCertificateCount (handle);
+				return (int) SecTrustGetCertificateCount (Handle);
 			}
 		}
 
@@ -155,12 +153,12 @@ namespace MonoMac.Security {
 
 		public SecCertificate this [int index] {
 			get {
-				if (handle == IntPtr.Zero)
+				if (Handle == IntPtr.Zero)
 					throw new ObjectDisposedException ("SecTrust");
 				if ((index < 0) || (index >= Count))
 					throw new ArgumentOutOfRangeException ("index");
 
-				return new SecCertificate (SecTrustGetCertificateAtIndex (handle, index));
+				return new SecCertificate (SecTrustGetCertificateAtIndex (Handle, index));
 			}
 		}
 
@@ -169,10 +167,10 @@ namespace MonoMac.Security {
 
 		public SecKey GetPublicKey ()
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 
-			return new SecKey (SecTrustCopyPublicKey (handle), true);
+			return new SecKey (SecTrustCopyPublicKey (Handle), true);
 		}
 
 		[DllImport (Constants.SecurityLibrary)]
@@ -180,10 +178,10 @@ namespace MonoMac.Security {
 
 		public NSData GetExceptions ()
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 
-			return new NSData (SecTrustCopyExceptions (handle), false); // inverted boolean?
+			return new NSData (SecTrustCopyExceptions (Handle), false); // inverted boolean?
 		}
 
 		[DllImport (Constants.SecurityLibrary)]
@@ -191,11 +189,11 @@ namespace MonoMac.Security {
 
 		public bool SetExceptions (NSData data)
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 
 			IntPtr p = data == null ? IntPtr.Zero : data.Handle;
-			return SecTrustSetExceptions (handle, p);
+			return SecTrustSetExceptions (Handle, p);
 		}
 
 		[DllImport (Constants.SecurityLibrary)]
@@ -203,10 +201,10 @@ namespace MonoMac.Security {
 
 		public double GetVerifyTime ()
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 
-			return SecTrustGetVerifyTime (handle);
+			return SecTrustGetVerifyTime (Handle);
 		}
 
 		[DllImport (Constants.SecurityLibrary)]
@@ -214,12 +212,12 @@ namespace MonoMac.Security {
 
 		public SecStatusCode SetVerifyDate (DateTime date)
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 
 			// CFDateRef amd NSDate are toll-freee bridged
 			using (NSDate d = (NSDate) date) {
-				return SecTrustSetVerifyDate (handle, d.Handle);
+				return SecTrustSetVerifyDate (Handle, d.Handle);
 			}
 		}
 
@@ -228,10 +226,10 @@ namespace MonoMac.Security {
 
 		public SecStatusCode SetAnchorCertificates (X509CertificateCollection certificates)
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 			if (certificates == null)
-				return SecTrustSetAnchorCertificates (handle, IntPtr.Zero);
+				return SecTrustSetAnchorCertificates (Handle, IntPtr.Zero);
 
 			SecCertificate[] array = new SecCertificate [certificates.Count];
 			int i = 0;
@@ -242,10 +240,10 @@ namespace MonoMac.Security {
 
 		public SecStatusCode SetAnchorCertificates (X509Certificate2Collection certificates)
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 			if (certificates == null)
-				return SecTrustSetAnchorCertificates (handle, IntPtr.Zero);
+				return SecTrustSetAnchorCertificates (Handle, IntPtr.Zero);
 
 			SecCertificate[] array = new SecCertificate [certificates.Count];
 			int i = 0;
@@ -257,7 +255,7 @@ namespace MonoMac.Security {
 		SecStatusCode SetAnchorCertificates (SecCertificate[] array)
 		{
 			using (var certs = CFArray.FromNativeObjects (array)) {
-				return SecTrustSetAnchorCertificates (handle, certs.Handle);
+				return SecTrustSetAnchorCertificates (Handle, certs.Handle);
 			}
 		}
 
@@ -266,34 +264,15 @@ namespace MonoMac.Security {
 
 		public SecStatusCode SetAnchorCertificatesOnly (bool anchorCertificatesOnly)
 		{
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new ObjectDisposedException ("SecTrust");
 
-			return SecTrustSetAnchorCertificatesOnly (handle, anchorCertificatesOnly);
+			return SecTrustSetAnchorCertificatesOnly (Handle, anchorCertificatesOnly);
 		}
-
 
 		~SecTrust ()
 		{
 			Dispose (false);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero) {
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
 		}
 	}
 }

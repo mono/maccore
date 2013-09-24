@@ -55,18 +55,13 @@ namespace MonoMac.AddressBook {
 		MultiDictionary = ABMultiValue.Mask | Dictionary,
 	}
 
-	public abstract class ABRecord : INativeObject, IDisposable {
+	public abstract class ABRecord : CFType {
 
 		public const int InvalidRecordId = -1;
 		public const int InvalidPropertyId = -1;
 
-		IntPtr handle;
-
-		internal ABRecord (IntPtr handle, bool owns)
+		internal ABRecord (IntPtr handle, bool owns) : base (handle, owns)
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-			this.handle = handle;
 		}
 
 		internal static ABRecord FromHandle (IntPtr handle, ABAddressBook addressbook, bool owns = true)
@@ -101,24 +96,10 @@ namespace MonoMac.AddressBook {
 			Dispose (false);
 		}
 
-		public void Dispose ()
+		protected override void Dispose (bool disposing)
 		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero)
-				CFObject.CFRelease (handle);
-			handle = IntPtr.Zero;
+			base.Dispose (disposing);
 			AddressBook = null;
-		}
-
-		void AssertValid ()
-		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("");
 		}
 
 		internal ABAddressBook AddressBook {
@@ -127,11 +108,11 @@ namespace MonoMac.AddressBook {
 
 		public IntPtr Handle {
 			get {
-				AssertValid ();
-				return handle;
+				ThrowIfDisposed ();
+				return Handle;
 			}
 			internal set {
-				handle = value;				
+				Handle = value;
 			}
 		}
 

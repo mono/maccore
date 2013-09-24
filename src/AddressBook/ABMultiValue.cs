@@ -162,9 +162,8 @@ namespace MonoMac.AddressBook {
 		}
 	}
 
-	public class ABMultiValue<T> : INativeObject, IDisposable, IEnumerable<ABMultiValueEntry<T>>
+	public class ABMultiValue<T> : CFType, IEnumerable<ABMultiValueEntry<T>>
 	{
-		IntPtr handle;
 		internal Converter<IntPtr, T> toManaged;
 		internal Converter<T, IntPtr> toNative;
 
@@ -186,7 +185,7 @@ namespace MonoMac.AddressBook {
 			if (toNative == null)
 				throw new ArgumentNullException ("toNative");
 
-			this.handle = handle;
+			Handle = handle;
 			this.toManaged = toManaged;
 			this.toNative  = toNative;
 		}
@@ -196,35 +195,9 @@ namespace MonoMac.AddressBook {
 			Dispose (false);
 		}
 
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero)
-				CFObject.CFRelease (handle);
-			handle = IntPtr.Zero;
-		}
-
-		internal void AssertValid ()
-		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("");
-		}
-
-		public IntPtr Handle {
-			get {
-				AssertValid ();
-				return handle;
-			}
-		}
-
 		public virtual bool IsReadOnly {
 			get {
-				AssertValid ();
+				ThrowIfDisposed ();
 				return true;
 			}
 		}
@@ -295,7 +268,7 @@ namespace MonoMac.AddressBook {
 
 		public override bool IsReadOnly {
 			get {
-				AssertValid ();
+				ThrowIfDisposed ();
 				return false;
 			}
 		}

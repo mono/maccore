@@ -36,46 +36,20 @@ using MonoMac.Foundation;
 
 namespace MonoMac.CoreText {
 
-	public partial class CTFont : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public partial class CTFont : CFType {
 		internal CTFont (IntPtr handle)
 			: this (handle, false)
 		{
 		}
 
 		internal CTFont (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero) {
-				GC.SuppressFinalize (this);
-				throw new ArgumentNullException ("handle");
-			}
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
 		~CTFont ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 	}
 }

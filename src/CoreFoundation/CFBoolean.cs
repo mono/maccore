@@ -38,9 +38,7 @@ using MonoMac.Foundation;
 
 namespace MonoMac.CoreFoundation {
 	[Since (3,2)]
-	class CFBoolean : INativeObject, IDisposable {
-		IntPtr handle;
-
+	class CFBoolean : CFType {
 		public static readonly CFBoolean True;
 		public static readonly CFBoolean False;
 
@@ -60,10 +58,8 @@ namespace MonoMac.CoreFoundation {
 
 		[Preserve (Conditional = true)]
 		internal CFBoolean (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
 		~CFBoolean ()
@@ -71,27 +67,11 @@ namespace MonoMac.CoreFoundation {
 			Dispose (false);
 		}
 
-		public IntPtr Handle {
-			get {
-				return handle;
-			}
-		}
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static uint CFBooleanGetTypeID ();
 
-		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFBooleanGetTypeID")]
-		public extern static int GetTypeID ();
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
+		public static uint TypeID {
+			get { return CFBooleanGetTypeID (); }
 		}
 
 		public static implicit operator bool (CFBoolean value)
@@ -113,7 +93,7 @@ namespace MonoMac.CoreFoundation {
 		extern static bool CFBooleanGetValue (IntPtr boolean);
 
 		public bool Value {
-			get {return CFBooleanGetValue (handle);}
+			get {return CFBooleanGetValue (Handle);}
 		}
 
 		public static bool GetValue (IntPtr boolean)
