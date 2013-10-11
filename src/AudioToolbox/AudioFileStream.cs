@@ -166,14 +166,8 @@ namespace MonoMac.AudioToolbox {
 			AudioFileType fileTypeHint,
 			out IntPtr file_id);
 
-		static AudioFileStream_PacketsProc dInPackets;
-		static AudioFileStream_PropertyListenerProc dPropertyListener;
-
-		static AudioFileStream ()
-		{
-			dInPackets = InPackets;
-			dPropertyListener = PropertyListener;
-		}
+		static readonly AudioFileStream_PacketsProc dInPackets = InPackets;
+		static readonly AudioFileStream_PropertyListenerProc dPropertyListener = PropertyListener;
 
 		[MonoPInvokeCallback(typeof(AudioFileStream_PacketsProc))]
 		static void InPackets (IntPtr clientData, int numberBytes, int numberPackets, IntPtr inputData, IntPtr packetDescriptions)
@@ -234,7 +228,7 @@ namespace MonoMac.AudioToolbox {
 		
 		public AudioFileStreamStatus ParseBytes (int size, IntPtr data, bool discontinuity)
 		{
-			return AudioFileStreamParseBytes (handle, size, data, discontinuity ? (uint) 1 : (uint) 0);
+			return LastError = AudioFileStreamParseBytes (handle, size, data, discontinuity ? (uint) 1 : (uint) 0);
 		}
 
 		public AudioFileStreamStatus ParseBytes (byte [] bytes, bool discontinuity)
@@ -243,7 +237,7 @@ namespace MonoMac.AudioToolbox {
 				throw new ArgumentNullException ("bytes");
 			unsafe {
 				fixed (byte *bp = &bytes[0]){
-					return AudioFileStreamParseBytes (handle, bytes.Length, (IntPtr) bp, discontinuity ? (uint) 1 : (uint) 0);
+					return LastError = AudioFileStreamParseBytes (handle, bytes.Length, (IntPtr) bp, discontinuity ? (uint) 1 : (uint) 0);
 				}
 			}
 		}
@@ -261,7 +255,7 @@ namespace MonoMac.AudioToolbox {
 			
 			unsafe {
 				fixed (byte *bp = &bytes[0]){
-					return AudioFileStreamParseBytes (handle, count, (IntPtr) (bp + offset) , discontinuity ? (uint) 1 : (uint) 0);
+					return LastError = AudioFileStreamParseBytes (handle, count, (IntPtr) (bp + offset) , discontinuity ? (uint) 1 : (uint) 0);
 				}
 			}
 		}
@@ -275,24 +269,25 @@ namespace MonoMac.AudioToolbox {
 		public AudioFileStreamStatus Seek (long packetOffset, out long dataByteOffset, out bool isEstimate)
 		{
 			int v = 0;
-			var code = AudioFileStreamSeek (handle, packetOffset, out dataByteOffset, ref v);
-			if (code != AudioFileStreamStatus.Ok){
+			LastError = AudioFileStreamSeek (handle, packetOffset, out dataByteOffset, ref v);
+			if (LastError != AudioFileStreamStatus.Ok){
 				isEstimate = false;
-				return code;
+			} else {
+				isEstimate = (v & 1) == 1;
 			}
-			isEstimate = (v & 1) == 1;
-			return code;
+
+			return LastError;
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioFileStreamGetPropertyInfo(	
+		extern static AudioFileStreamStatus AudioFileStreamGetPropertyInfo(	
 			AudioFileStreamID inAudioFileStream,
 			AudioFileStreamProperty inPropertyID,
 			out int outPropertyDataSize,
 			out int isWritable);
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioFileStreamGetProperty(	
+		extern static AudioFileStreamStatus AudioFileStreamGetProperty(	
 			AudioFileStreamID inAudioFileStream,
 			AudioFileStreamProperty inPropertyID,
 			ref int ioPropertyDataSize,
@@ -307,16 +302,16 @@ namespace MonoMac.AudioToolbox {
 		{
 			int writable;
 
-			var r = AudioFileStreamGetPropertyInfo (handle, property, out size, out writable);
-			if (r != 0)
+			LastError = AudioFileStreamGetPropertyInfo (handle, property, out size, out writable);
+			if (LastError != 0)
 				return IntPtr.Zero;
 
 			var buffer = Marshal.AllocHGlobal (size);
 			if (buffer == IntPtr.Zero)
 				return IntPtr.Zero;
 
-			r = AudioFileStreamGetProperty (handle, property, ref size, buffer);
-			if (r == 0)
+			LastError = AudioFileStreamGetProperty (handle, property, ref size, buffer);
+			if (LastError == 0)
 				return buffer;
 			Marshal.FreeHGlobal (buffer);
 			return IntPtr.Zero;
@@ -327,7 +322,8 @@ namespace MonoMac.AudioToolbox {
 			unsafe {
 				int val = 0;
 				int size = 4;
-				if (AudioFileStreamGetProperty (handle, property, ref size, (IntPtr) (&val)) == 0)
+				LastError = AudioFileStreamGetProperty (handle, property, ref size, (IntPtr) (&val));
+				if (LastError == 0)
 					return val;
 				return 0;
 			}
@@ -338,7 +334,8 @@ namespace MonoMac.AudioToolbox {
 			unsafe {
 				double val = 0;
 				int size = 8;
-				if (AudioFileStreamGetProperty (handle, property, ref size, (IntPtr) (&val)) == 0)
+				LastError = AudioFileStreamGetProperty (handle, property, ref size, (IntPtr) (&val));
+				if (LastError == 0)
 					return val;
 				return 0;
 			}
@@ -349,25 +346,28 @@ namespace MonoMac.AudioToolbox {
 			unsafe {
 				long val = 0;
 				int size = 8;
-				if (AudioFileStreamGetProperty (handle, property, ref size, (IntPtr) (&val)) == 0)
+				LastError = AudioFileStreamGetProperty (handle, property, ref size, (IntPtr) (&val));
+				if (LastError == 0)
 					return val;
 				return 0;
 			}
 		}
 
-		T? GetProperty<T> (AudioFileStreamProperty property) where T : struct
+		unsafe T? GetProperty<T> (AudioFileStreamProperty property) where T : struct
 		{
 			int size, writable;
 
-			if (AudioFileStreamGetPropertyInfo (handle, property, out size, out writable) != 0)
+			LastError = AudioFileStreamGetPropertyInfo (handle, property, out size, out writable);
+			if (LastError != 0)
 				return null;
 			var buffer = Marshal.AllocHGlobal (size);
 			if (buffer == IntPtr.Zero)
 				return null;
 			try {
-				var r = AudioFileStreamGetProperty (handle, property, ref size, buffer);
-				if (r == 0)
+				LastError = AudioFileStreamGetProperty (handle, property, ref size, buffer);
+				if (LastError == 0){
 					return (T) Marshal.PtrToStructure (buffer, typeof (T));
+				}
 
 				return null;
 			} finally {
@@ -376,7 +376,7 @@ namespace MonoMac.AudioToolbox {
 		}
 		
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioFileStreamSetProperty(	
+		extern static AudioFileStreamStatus AudioFileStreamSetProperty(	
 			AudioFileStreamID inAudioFileStream,
 			AudioFileStreamProperty inPropertyID,
 			int inPropertyDataSize,
@@ -384,11 +384,12 @@ namespace MonoMac.AudioToolbox {
 
 		public bool SetProperty (AudioFileStreamProperty property, int dataSize, IntPtr propertyData)
 		{
-			return AudioFileStreamSetProperty (handle, property, dataSize, propertyData) == 0;
+			LastError = AudioFileStreamSetProperty (handle, property, dataSize, propertyData);
+			return LastError == 0;
 		}      
 
 		[DllImport (Constants.AudioToolboxLibrary)]
-		extern static OSStatus AudioFileStreamClose(AudioFileStreamID inAudioFileStream);
+		extern static AudioFileStreamStatus AudioFileStreamClose(AudioFileStreamID inAudioFileStream);
 
 		public bool ReadyToProducePackets {
 			get {
@@ -419,10 +420,10 @@ namespace MonoMac.AudioToolbox {
 			get {
 				int size;
 				var r = GetProperty (AudioFileStreamProperty.FormatList, out size);
-				var records = (AudioFormat *) r;
 				if (r == IntPtr.Zero)
 					return null;
 
+				var records = (AudioFormat *) r;
 				int itemSize = sizeof (AudioFormat);
 				int items = size/itemSize;
 				var ret = new AudioFormat [items];
@@ -502,8 +503,9 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioFramePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
-				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.PacketToFrame, ref size, (IntPtr) p) == 0)
+				int size = sizeof (AudioFramePacketTranslation);
+				LastError = AudioFileStreamGetProperty (handle, AudioFileStreamProperty.PacketToFrame, ref size, (IntPtr) p);
+				if (LastError == 0)
 					return buffer.Frame;
 				return -1;
 			}
@@ -516,8 +518,9 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioFramePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
-				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.FrameToPacket, ref size, (IntPtr) p) == 0){
+				int size = sizeof (AudioFramePacketTranslation);
+				LastError = AudioFileStreamGetProperty (handle, AudioFileStreamProperty.FrameToPacket, ref size, (IntPtr) p);
+				if (LastError == 0){
 					frameOffsetInPacket = buffer.FrameOffsetInPacket;
 					return buffer.Packet;
 				}
@@ -533,8 +536,9 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioBytePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
-				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.PacketToByte, ref size, (IntPtr) p) == 0){
+				int size = sizeof (AudioBytePacketTranslation);
+				LastError = AudioFileStreamGetProperty (handle, AudioFileStreamProperty.PacketToByte, ref size, (IntPtr) p);
+				if (LastError == 0){
 					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					return buffer.Byte;
 				}
@@ -550,8 +554,9 @@ namespace MonoMac.AudioToolbox {
 
 			unsafe {
 				AudioBytePacketTranslation *p = &buffer;
-				int size = Marshal.SizeOf (buffer);
-				if (AudioFileStreamGetProperty (handle, AudioFileStreamProperty.ByteToPacket, ref size, (IntPtr) p) == 0){
+				int size = sizeof (AudioBytePacketTranslation);
+				LastError = AudioFileStreamGetProperty (handle, AudioFileStreamProperty.ByteToPacket, ref size, (IntPtr) p);
+				if (LastError == 0){
 					isEstimate = (buffer.Flags & BytePacketTranslationFlags.IsEstimate) != 0;
 					byteOffsetInPacket = buffer.ByteOffsetInPacket;
 					return buffer.Packet;
@@ -579,5 +584,7 @@ namespace MonoMac.AudioToolbox {
 				return GetDouble (AudioFileStreamProperty.AverageBytesPerPacket);
 			}
 		}
+
+		public AudioFileStreamStatus LastError { get; private set; }
 	}
 }

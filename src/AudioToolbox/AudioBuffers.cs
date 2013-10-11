@@ -53,18 +53,23 @@ namespace MonoMac.AudioToolbox
 			this.owns = owns;
 		}
 
-		public AudioBuffers (int count)
+		public unsafe AudioBuffers (int count)
 		{
 			if (count < 0)
 				throw new ArgumentOutOfRangeException ("count");
 
-			var size = sizeof (int) + count * Marshal.SizeOf (typeof (AudioBuffer));
+			var size = sizeof (int) + count * sizeof (AudioBuffer);
 			address = Marshal.AllocHGlobal (size);
 			owns = true;
 
 			Marshal.WriteInt32 (address, 0, count);
-			for (int i = sizeof (int); i < size; i++)
-				Marshal.WriteByte (address, i, 0);
+			AudioBuffer *ptr = (AudioBuffer *) (((byte *) address) + sizeof (int));
+			for (int i = 0; i < count; i++){
+				ptr->NumberChannels = 0;
+				ptr->DataByteSize = 0;
+				ptr->Data = IntPtr.Zero;
+				ptr++;
+			}
 		}
 
 		~AudioBuffers ()
@@ -73,9 +78,9 @@ namespace MonoMac.AudioToolbox
 			GC.SuppressFinalize (this);
 		}
 
-		public int Count {
+		public unsafe int Count {
 			get {
-				return Marshal.ReadInt32 (address);
+				return *(int *) address;
 			}
 		}
 
@@ -96,8 +101,8 @@ namespace MonoMac.AudioToolbox
 				unsafe {
 					byte *baddress = (byte *) address;
 					
-					var ptr = baddress + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer));
-					return (AudioBuffer) Marshal.PtrToStructure ((IntPtr) ptr, typeof (AudioBuffer));
+					var ptr = baddress + sizeof (int) + index * sizeof (AudioBuffer);
+					return *(AudioBuffer *) ptr;
 				}
 			}
 			set {
@@ -106,10 +111,8 @@ namespace MonoMac.AudioToolbox
 
 				unsafe {
 					byte *baddress = (byte *) address;
-					var ptr = (IntPtr) (baddress + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer)));
-					Marshal.WriteInt32 (ptr, value.NumberChannels);
-					Marshal.WriteInt32 (ptr, sizeof (int), value.DataByteSize);
-					Marshal.WriteIntPtr (ptr, sizeof (int) + sizeof (int), value.Data);
+					var ptr = (AudioBuffer *) (baddress + sizeof (int) + index * sizeof (AudioBuffer));
+					*ptr = value;
 				}
 			}
 		}
@@ -126,8 +129,8 @@ namespace MonoMac.AudioToolbox
 
 			unsafe {
 				byte * baddress = (byte *) address;
-				var ptr = (IntPtr)(baddress + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer)) + sizeof (int) + sizeof (int));
-				Marshal.WriteIntPtr (ptr, data);
+				var ptr = (IntPtr *)(baddress + sizeof (int) + index * sizeof (AudioBuffer) + sizeof (int) + sizeof (int));
+				*ptr = data;
 			}
 		}
 
@@ -138,9 +141,11 @@ namespace MonoMac.AudioToolbox
 
 			unsafe {
 				byte *baddress = (byte *) address;
-				var ptr = (IntPtr)(baddress + sizeof (int) + index * Marshal.SizeOf (typeof (AudioBuffer)) + sizeof (int));
-				Marshal.WriteInt32 (ptr, dataByteSize);
-				Marshal.WriteIntPtr (ptr, sizeof (int), data);
+				var ptr = (int *)(baddress + sizeof (int) + index * sizeof (AudioBuffer) + sizeof (int));
+				*ptr = dataByteSize;
+				ptr++;
+				IntPtr *iptr = (IntPtr *) ptr;
+				*iptr = data;
 			}
 		}
 

@@ -4,7 +4,7 @@
 // Authors: Mono Team
 //     
 // Copyright (C) 2009 Novell, Inc
-// Copyright 2011, 2012 Xamarin Inc.
+// Copyright 2011-2013 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -69,13 +69,17 @@ namespace MonoMac.AddressBook {
 	//
 	// Meaning we can't rely on static constructors, as they could be invoked
 	// before those functions have been invoked. :-/
+	//
+	// Note that the above comment was removed from iOS 6.0+ documentation (and were not part of OSX docs AFAIK).
+	// It make sense since it's not possible to call those functions, from 6.0+ they will return NULL on devices,
+	// unless the application has been authorized to access the address book.
 	class InitConstants {
 		public static void Init () {}
 
 		static InitConstants ()
 		{
-			// ensure we can init.
-			CFObject.CFRelease (ABAddressBook.ABAddressBookCreate ());
+			// ensure we can init. This is needed before iOS6 (as per doc).
+			IntPtr p = ABAddressBook.ABAddressBookCreate ();
 
 			ABGroupProperty.Init ();
 			ABLabel.Init ();
@@ -89,6 +93,11 @@ namespace MonoMac.AddressBook {
 			ABPersonRelatedNamesLabel.Init ();
 			ABPersonUrlLabel.Init ();
 			ABSourcePropertyId.Init ();
+
+			// From iOS 6.0+ this might return NULL, e.g. if the application is not authorized to access the
+			// address book, and we would crash if we tried to release a null pointer
+			if (p != IntPtr.Zero)
+				CFObject.CFRelease (p);
 		}
 	}
 

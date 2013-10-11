@@ -55,20 +55,25 @@ namespace MonoMac.AudioToolbox {
 			return GetAvailable<AudioClassDescription> (AudioFormatProperty.Encoders, format);
 		}
 
-		unsafe static T[] GetAvailable<T> (AudioFormatProperty prop, AudioFormatType format) where T : struct
+		unsafe static T[] GetAvailable<T> (AudioFormatProperty prop, AudioFormatType format)
 		{		
 			uint size;
 			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (prop, sizeof (AudioFormatType), ref format, out size) != 0)
 				return null;
 
 			var data = new T[size / Marshal.SizeOf (typeof (T))];
-			fixed (T* ptr = data) {
-				var res = AudioFormatPropertyNative.AudioFormatGetProperty (prop, sizeof (AudioFormatType), ref format, ref size, (IntPtr)ptr);
+			var array_handle = GCHandle.Alloc (data, GCHandleType.Pinned);
+
+			try {
+				var ptr = array_handle.AddrOfPinnedObject ();
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (prop, sizeof (AudioFormatType), ref format, ref size, ptr);
 				if (res != 0)
 					return null;
 
 				Array.Resize (ref data, (int) size / Marshal.SizeOf (typeof (T)));
 				return data;
+			} finally {
+				array_handle.Free ();
 			}
 		}
 	}

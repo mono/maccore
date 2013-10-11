@@ -817,7 +817,7 @@ namespace MonoMac.AudioToolbox {
 		}
 
 		// Should be private
-		public T GetProperty<T> (AudioQueueProperty property)
+		public unsafe T GetProperty<T> (AudioQueueProperty property) where T:struct
 		{
 			int size;
 
@@ -830,8 +830,10 @@ namespace MonoMac.AudioToolbox {
 				return default(T);
 			try {
 				r = AudioQueueGetProperty (handle, property, buffer, ref size);
-				if (r == 0)
-					return (T) Marshal.PtrToStructure (buffer, typeof (T));
+				if (r == 0){
+					T result = (T) Marshal.PtrToStructure (buffer, typeof (T));
+					return result;
+				}
 
 				throw new AudioQueueException (r);
 			} finally {
@@ -1054,21 +1056,17 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-        unsafe static IntPtr MarshalArray<T> (ref T[] array, out int totalSize) where T : struct
-        {
-            int elementSize = Marshal.SizeOf (typeof (T));
-            totalSize = elementSize * array.Length;
-            IntPtr array_ptr = Marshal.AllocHGlobal (totalSize);
-            byte* ptr = (byte*) array_ptr.ToPointer();
-
-            for (int i = 0; i < array.Length; i++, ptr += elementSize)
-            {
-                IntPtr pos = new IntPtr (ptr);
-                Marshal.StructureToPtr (array [i], pos, false);
-            }
-
-            return array_ptr;
-        }	
+		unsafe static IntPtr MarshalArray (ref AudioQueueChannelAssignment[] array, out int totalSize)
+		{
+			int elementSize = sizeof (AudioQueueChannelAssignment);
+			totalSize = elementSize * array.Length;
+			var array_ptr = (AudioQueueChannelAssignment*) Marshal.AllocHGlobal (totalSize);
+			
+			for (int i = 0; i < array.Length; i++)
+				array_ptr [i] = array [i];
+			
+			return (IntPtr) array_ptr;
+		}	
 #endif
 
 		[DllImport (Constants.AudioToolboxLibrary)]

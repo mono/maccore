@@ -160,7 +160,7 @@ namespace MonoMac.AudioToolbox {
 
 		public unsafe static AudioChannelLayoutTag[] GetAvailableEncodeChannelLayoutTags (AudioStreamBasicDescription format)
 		{
-			var type_size = Marshal.SizeOf (format);
+			var type_size = sizeof (AudioStreamBasicDescription);
 			uint size;
 			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.AvailableEncodeChannelLayoutTags, type_size, ref format, out size) != 0)
 				return null;
@@ -178,12 +178,12 @@ namespace MonoMac.AudioToolbox {
 		public unsafe static int[] GetAvailableEncodeNumberChannels (AudioStreamBasicDescription format)
 		{
 			uint size;
-			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.AvailableEncodeNumberChannels, Marshal.SizeOf (format), ref format, out size) != 0)
+			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.AvailableEncodeNumberChannels, sizeof (AudioStreamBasicDescription), ref format, out size) != 0)
 				return null;
 
 			var data = new int[size / sizeof (int)];
 			fixed (int* ptr = data) {
-				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.AvailableEncodeNumberChannels, Marshal.SizeOf (format), ref format, ref size, ptr);
+				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.AvailableEncodeNumberChannels, sizeof (AudioStreamBasicDescription), ref format, ref size, ptr);
 				if (res != 0)
 					return null;
 
@@ -196,7 +196,7 @@ namespace MonoMac.AudioToolbox {
 			var afi = new AudioFormatInfo ();
 			afi.AudioStreamBasicDescription = this;
 
-			var type_size = Marshal.SizeOf (typeof (AudioFormat));
+			var type_size = sizeof (AudioFormat);
 			uint size;
 			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.OutputFormatList, type_size, ref afi, out size) != 0)
 				return null;
@@ -227,7 +227,7 @@ namespace MonoMac.AudioToolbox {
 				afi.MagicCookieWeak = b;
 				afi.MagicCookieSize = magicCookie.Length;
 
-				var type_size = Marshal.SizeOf (typeof (AudioFormat));
+				var type_size = sizeof (AudioFormat);
 				uint size;
 				if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.FormatList, type_size, ref afi, out size) != 0)
 					return null;
@@ -248,16 +248,18 @@ namespace MonoMac.AudioToolbox {
 
 		public static AudioFormatError GetFormatInfo (ref AudioStreamBasicDescription format)
 		{
-			var size = Marshal.SizeOf (format);
-			return AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatInfo, 0, IntPtr.Zero, ref size, ref format);
+			unsafe {
+				var size = sizeof (AudioStreamBasicDescription);
+				return AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatInfo, 0, IntPtr.Zero, ref size, ref format);
+			}
 		}
 
 		public unsafe string FormatName {
 			get {
 				IntPtr ptr;
-				var size = Marshal.SizeOf (typeof (IntPtr));
+				var size = sizeof (IntPtr);
 
-				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatName, Marshal.SizeOf (this), ref this, ref size, out ptr) != 0)
+				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatName, sizeof (AudioStreamBasicDescription), ref this, ref size, out ptr) != 0)
 					return null;
 
 				return new CFString (ptr, true);
@@ -269,7 +271,7 @@ namespace MonoMac.AudioToolbox {
 				uint data;
 				var size = sizeof (uint);
 
-				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatIsEncrypted, Marshal.SizeOf (this), ref this, ref size, out data) != 0)
+				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatIsEncrypted, sizeof (AudioStreamBasicDescription), ref this, ref size, out data) != 0)
 					return false;
 
 				return data != 0;				
@@ -281,7 +283,7 @@ namespace MonoMac.AudioToolbox {
 				uint data;
 				var size = sizeof (uint);
 
-				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatIsExternallyFramed, Marshal.SizeOf (this), ref this, ref size, out data) != 0)
+				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatIsExternallyFramed, sizeof (AudioStreamBasicDescription), ref this, ref size, out data) != 0)
 					return false;
 
 				return data != 0;				
@@ -293,7 +295,7 @@ namespace MonoMac.AudioToolbox {
 				uint data;
 				var size = sizeof (uint);
 
-				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatName, Marshal.SizeOf (this), ref this, ref size, out data) != 0)
+				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FormatName, sizeof (AudioStreamBasicDescription), ref this, ref size, out data) != 0)
 					return false;
 
 				return data != 0;				
@@ -435,14 +437,26 @@ namespace MonoMac.AudioToolbox {
 	{
 		public AudioChannelLabel Label;
 		public AudioChannelFlags Flags;
-		[MarshalAs (UnmanagedType.ByValArray, SizeConst = 3)]
-		public float[] Coords; // = new float[3];
+		float Coord0, Coord1, Coord2;
 
+		public float [] Coords {
+			get {
+				return new float [3] { Coord0, Coord1, Coord2 };
+			}
+			set {
+				if (value.Length != 3)
+					throw new ArgumentException ("Must contain three floats");
+				Coord0 = value [0];
+				Coord1 = value [1];
+				Coord2 = value [2];
+			}
+		}
+		
 		public unsafe string Name {
 			get {
 				IntPtr sptr;
-				int size = Marshal.SizeOf (typeof (IntPtr));
-				int ptr_size = Marshal.SizeOf (this);
+				int size = sizeof (IntPtr);
+				int ptr_size = sizeof (AudioChannelDescription);
 				var ptr = ToPointer ();
 
 				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.ChannelName, ptr_size, ptr, ref size, out sptr);
@@ -457,8 +471,8 @@ namespace MonoMac.AudioToolbox {
 		public unsafe string ShortName {
 			get {
 				IntPtr sptr;
-				int size = Marshal.SizeOf (typeof (IntPtr));
-				int ptr_size = Marshal.SizeOf (this);
+				int size = sizeof (IntPtr);
+				int ptr_size = sizeof (AudioChannelDescription);
 				var ptr = ToPointer ();
 
 				var res = AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.ChannelShortName, ptr_size, ptr, ref size, out sptr);
@@ -470,11 +484,11 @@ namespace MonoMac.AudioToolbox {
 			}
 		}
 
-		internal IntPtr ToPointer ()
+		internal unsafe IntPtr ToPointer ()
 		{
-			var ptr = Marshal.AllocHGlobal (sizeof (AudioChannelLabel) + sizeof (AudioChannelFlags) + 3 * sizeof (float));
-			Marshal.StructureToPtr (this, ptr, false);
-			return ptr;
+			var ptr = (AudioChannelDescription *) Marshal.AllocHGlobal (sizeof (AudioChannelLabel) + sizeof (AudioChannelFlags) + 3 * sizeof (float));
+			*ptr = this;
+			return (IntPtr) ptr;
 		}
 
 		public override string ToString ()
@@ -659,9 +673,10 @@ namespace MonoMac.AudioToolbox {
 			ChannelUsage = (AudioChannelBit) Marshal.ReadInt32 (h, 4);
 			Channels = new AudioChannelDescription [Marshal.ReadInt32 (h, 8)];
 			int p = 12;
+			int size = sizeof (AudioChannelDescription);
 			for (int i = 0; i < Channels.Length; i++){
-				Channels [i] = (AudioChannelDescription) Marshal.PtrToStructure((IntPtr) (unchecked (((byte *) h) + p)), typeof(AudioChannelDescription));
-				p += Marshal.SizeOf (typeof (AudioChannelDescription));
+				Channels [i] = *(AudioChannelDescription *) (unchecked (((byte *) h) + p));
+				p += size;
 			}
 		}
 
@@ -692,7 +707,7 @@ namespace MonoMac.AudioToolbox {
 		public unsafe string Name {
 			get {
 				IntPtr sptr;
-				int size = Marshal.SizeOf (typeof (IntPtr));
+				int size = sizeof (IntPtr);
 				int ptr_size;
 				var ptr = ToBlock (out ptr_size);
 
@@ -708,7 +723,7 @@ namespace MonoMac.AudioToolbox {
 		public unsafe string SimpleName {
 			get {
 				IntPtr sptr;
-				int size = Marshal.SizeOf (typeof (IntPtr));
+				int size = sizeof (IntPtr);
 				int ptr_size;
 				var ptr = ToBlock (out ptr_size);
 
@@ -766,19 +781,18 @@ namespace MonoMac.AudioToolbox {
 			if (Channels == null)
 				throw new ArgumentNullException ("Channels");
 			
-			var desc_size = Marshal.SizeOf (typeof (AudioChannelDescription));
+			var desc_size = sizeof (AudioChannelDescription);
 
 			size = 12 + Channels.Length * desc_size;
 			IntPtr buffer = Marshal.AllocHGlobal (size);
-			int p;
 			Marshal.WriteInt32 (buffer, (int) AudioTag);
 			Marshal.WriteInt32 (buffer, 4, (int) ChannelUsage);
 			Marshal.WriteInt32 (buffer, 8, Channels.Length);
-			p = 12;
 
+			AudioChannelDescription *dest = (AudioChannelDescription *) ((byte *) buffer + 12);
 			foreach (var desc in Channels){
-				Marshal.StructureToPtr (desc, (IntPtr) (unchecked (((byte *) buffer) + p)), false);
-				p += desc_size;
+				*dest = desc;
+				dest++;
 			}
 			
 			return buffer;
@@ -812,7 +826,7 @@ namespace MonoMac.AudioToolbox {
 			var input_ptr = inputLayout.ToBlock (out ptr_size);
 			var output_ptr = outputLayout.ToBlock (out ptr_size);
 			var array = new IntPtr[] { input_ptr, output_ptr };
-			ptr_size = Marshal.SizeOf (typeof (IntPtr)) * array.Length;
+			ptr_size = sizeof (IntPtr) * array.Length;
 
 			int[] value;
 			AudioFormatError res;
@@ -850,7 +864,7 @@ namespace MonoMac.AudioToolbox {
 			var input_ptr = inputLayout.ToBlock (out ptr_size);
 			var output_ptr = outputLayout.ToBlock (out ptr_size);
 			var array = new IntPtr[] { input_ptr, output_ptr };
-			ptr_size = Marshal.SizeOf (typeof (IntPtr)) * array.Length;
+			ptr_size = sizeof (IntPtr) * array.Length;
 
 			float[,] value;
 			AudioFormatError res;

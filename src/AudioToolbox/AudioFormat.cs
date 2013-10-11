@@ -55,7 +55,7 @@ namespace MonoMac.AudioToolbox {
  			fixed (AudioFormat* item = &formatList[0]) {
 				uint index;
 				int size = sizeof (uint);
-				var ptr_size = Marshal.SizeOf (formatList[0]) * formatList.Length;
+				var ptr_size = sizeof (AudioFormat) * formatList.Length;
 				if (AudioFormatPropertyNative.AudioFormatGetProperty (AudioFormatProperty.FirstPlayableFormatFromList, ptr_size, item, ref size, out index) != 0)
 					return null;
 
@@ -122,11 +122,11 @@ namespace MonoMac.AudioToolbox {
 
 		public unsafe float[] GetBalanceFade ()
 		{
-			var type_size = Marshal.SizeOf (typeof (Layout));
+			var type_size = sizeof (Layout);
 
 			var str = ToStruct ();
 			var ptr = Marshal.AllocHGlobal (type_size);
-			Marshal.StructureToPtr (str, ptr, false);
+			(*(Layout *) ptr) = str;
 
 			int size;
 			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.BalanceFade, type_size, ptr, out size) != 0)
@@ -170,12 +170,12 @@ namespace MonoMac.AudioToolbox {
 
 	public class AudioPanningInfo
 	{
+		[StructLayout (LayoutKind.Sequential)]
 		struct Layout
 		{
 			public PanningMode PanningMode;
 			public AudioChannelFlags CoordinateFlags;
-			[MarshalAs (UnmanagedType.ByValArray, SizeConst = 3)]
-			public float[] Coordinates;	
+			public float Coord0, Coord1, Coord2;
 			public float GainScale;
 			public IntPtr OutputChannelMapWeak;
 		}
@@ -186,7 +186,6 @@ namespace MonoMac.AudioToolbox {
 				throw new ArgumentNullException ("outputChannelMap");
 
 			this.OutputChannelMap = outputChannelMap;
-			Coordinates = new float[3];
 		}
 
 		public PanningMode PanningMode { get; set; }
@@ -197,11 +196,11 @@ namespace MonoMac.AudioToolbox {
 
 		public unsafe float[] GetPanningMatrix ()
 		{
-			var type_size = Marshal.SizeOf (typeof (Layout));
+			var type_size = sizeof (Layout);
 
 			var str = ToStruct ();
 			var ptr = Marshal.AllocHGlobal (type_size);
-			Marshal.StructureToPtr (str, ptr, false);
+			*((Layout *)ptr) = str;
 
 			int size;
 			if (AudioFormatPropertyNative.AudioFormatGetPropertyInfo (AudioFormatProperty.PanningMatrix, type_size, ptr, out size) != 0)
@@ -225,7 +224,9 @@ namespace MonoMac.AudioToolbox {
 			{
 				PanningMode = PanningMode,
 				CoordinateFlags = CoordinateFlags,
-				Coordinates = Coordinates,
+				Coord0 = Coordinates [0],
+				Coord1 = Coordinates [1],
+				Coord2 = Coordinates [2],
 				GainScale = GainScale
 			};
 
