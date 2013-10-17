@@ -192,6 +192,18 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGPDFContextCreateWithURL (IntPtr url, IntPtr rect, IntPtr dictionary);
 
+		[DllImport (Constants.CoreGraphicsLibrary)]
+		extern static IntPtr CGPDFContextCreate (IntPtr dataConsumer, ref RectangleF rect, IntPtr dictionary);
+		
+		
+		public CGContextPDF (CGDataConsumer dataConsumer, RectangleF mediaBox, CGPDFInfo info)
+		{
+			if (dataConsumer == null)
+				throw new ArgumentNullException ("dataConsumer");
+				
+			handle = CGPDFContextCreate (dataConsumer.Handle, ref mediaBox, info == null ? IntPtr.Zero : info.ToDictionary ().Handle);
+		}
+
 		public CGContextPDF (NSUrl url, RectangleF mediaBox, CGPDFInfo info)
 		{
 			if (url == null)
