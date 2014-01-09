@@ -178,7 +178,7 @@ namespace MonoMac.Darwin {
 		[DllImport (Constants.SystemLibrary)]
 		unsafe extern static int kevent (int kq, KernelEvent *changeList, int nChanges, KernelEvent *eventList, int nEvents, ref TimeSpec timeout);
 
-		public bool KEvent (KernelEvent [] changeList, int nChanges, KernelEvent [] eventList, int nEvents, ref TimeSpec timeOut)
+		public int KEvent (KernelEvent [] changeList, int nChanges, KernelEvent [] eventList, int nEvents, ref TimeSpec timeOut)
 		{
 			if (changeList != null && changeList.Length < nChanges)
 				throw new ArgumentException ("nChanges is larger than the number of elements in changeList");
@@ -189,11 +189,11 @@ namespace MonoMac.Darwin {
 			unsafe {
 				fixed (KernelEvent *cp = &changeList [0])
 					fixed (KernelEvent *ep = &eventList [0])
-						return kevent (handle, cp, nChanges, ep, nEvents, ref timeOut) != -1;
+						return kevent (handle, cp, nChanges, ep, nEvents, ref timeOut);
 			}
 		}
 
-		public bool KEvent (KernelEvent [] changeList, int nChanges, KernelEvent [] eventList, int nEvents)
+		public int KEvent (KernelEvent [] changeList, int nChanges, KernelEvent [] eventList, int nEvents)
 		{
 			if (changeList != null && changeList.Length < nChanges)
 				throw new ArgumentException ("nChanges is larger than the number of elements in changeList");
@@ -204,25 +204,25 @@ namespace MonoMac.Darwin {
 			unsafe {
 				fixed (KernelEvent *cp = &changeList [0])
 					fixed (KernelEvent *ep = &eventList [0])
-						return kevent (handle, cp, nChanges, ep, nEvents, IntPtr.Zero) != -1;
+						return kevent (handle, cp, nChanges, ep, nEvents, IntPtr.Zero);
 			}
 		}
 
-		public bool KEvent (KernelEvent [] changeList, KernelEvent [] eventList, ref TimeSpec timeOut)
+		public int KEvent (KernelEvent [] changeList, KernelEvent [] eventList, ref TimeSpec timeOut)
 		{
 			unsafe {
 				fixed (KernelEvent *cp = &changeList [0])
 					fixed (KernelEvent *ep = &eventList [0])
-						return kevent (handle, cp, changeList != null ? changeList.Length : 0, ep, eventList != null ? eventList.Length : 0, ref timeOut) != -1;
+						return kevent (handle, cp, changeList != null ? changeList.Length : 0, ep, eventList != null ? eventList.Length : 0, ref timeOut);
 			}
 		}
 
-		public bool KEvent (KernelEvent [] changeList, KernelEvent [] eventList)
+		public int KEvent (KernelEvent [] changeList, KernelEvent [] eventList)
 		{
 			unsafe {
 				fixed (KernelEvent *cp = &changeList [0])
 					fixed (KernelEvent *ep = &eventList [0])
-						return kevent (handle, cp, changeList != null ? changeList.Length : 0, ep, eventList != null ? eventList.Length : 0, IntPtr.Zero) != -1;
+						return kevent (handle, cp, changeList != null ? changeList.Length : 0, ep, eventList != null ? eventList.Length : 0, IntPtr.Zero);
 			}
 		}
 	}
