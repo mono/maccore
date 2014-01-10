@@ -37,25 +37,14 @@ namespace MonoMac.Darwin {
 		public int Seconds;
 		public int NanoSeconds;
 	}
-	
-	[StructLayout (LayoutKind.Explicit)]
+
+	[StructLayout (LayoutKind.Sequential, Pack = 0)]
 	public struct KernelEvent {
-		[FieldOffset (0)]
 		public IntPtr Ident;
-
-		[FieldOffset (8)]
 		public EventFilter Filter;
-
-		[FieldOffset (10)]
 		public EventFlags Flags;
-
-		[FieldOffset (12)]
 		public uint FilterFlags;
-
-		[FieldOffset (16)]
 		public IntPtr Data;
-
-		[FieldOffset (24)]
 		public IntPtr UserData;
 	}
 
@@ -184,12 +173,12 @@ namespace MonoMac.Darwin {
 		}
 
 		[DllImport (Constants.SystemLibrary)]
-		unsafe extern static int kevent (KernelEvent *changeList, int nChanges, KernelEvent *eventList, int nEvents, IntPtr timeout);
+		unsafe extern static int kevent (int kq, KernelEvent* changeList, int nChanges, KernelEvent* eventList, int nEvents, IntPtr timeout);
 		
 		[DllImport (Constants.SystemLibrary)]
-		unsafe extern static int kevent (KernelEvent *changeList, int nChanges, KernelEvent *eventList, int nEvents, ref TimeSpec timeout);
+		unsafe extern static int kevent (int kq, KernelEvent *changeList, int nChanges, KernelEvent *eventList, int nEvents, ref TimeSpec timeout);
 
-		public bool KEvent (KernelEvent [] changeList, int nChanges, KernelEvent [] eventList, int nEvents, ref TimeSpec timeOut)
+		public int KEvent (KernelEvent [] changeList, int nChanges, KernelEvent [] eventList, int nEvents, ref TimeSpec timeOut)
 		{
 			if (changeList != null && changeList.Length < nChanges)
 				throw new ArgumentException ("nChanges is larger than the number of elements in changeList");
@@ -200,11 +189,11 @@ namespace MonoMac.Darwin {
 			unsafe {
 				fixed (KernelEvent *cp = &changeList [0])
 					fixed (KernelEvent *ep = &eventList [0])
-						return kevent (cp, nChanges, ep, nEvents, ref timeOut) != -1;
+						return kevent (handle, cp, nChanges, ep, nEvents, ref timeOut);
 			}
 		}
 
-		public bool KEvent (KernelEvent [] changeList, int nChanges, KernelEvent [] eventList, int nEvents)
+		public int KEvent (KernelEvent [] changeList, int nChanges, KernelEvent [] eventList, int nEvents)
 		{
 			if (changeList != null && changeList.Length < nChanges)
 				throw new ArgumentException ("nChanges is larger than the number of elements in changeList");
@@ -215,25 +204,25 @@ namespace MonoMac.Darwin {
 			unsafe {
 				fixed (KernelEvent *cp = &changeList [0])
 					fixed (KernelEvent *ep = &eventList [0])
-						return kevent (cp, nChanges, ep, nEvents, IntPtr.Zero) != -1;
+						return kevent (handle, cp, nChanges, ep, nEvents, IntPtr.Zero);
 			}
 		}
 
-		public bool KEvent (KernelEvent [] changeList, KernelEvent [] eventList, ref TimeSpec timeOut)
+		public int KEvent (KernelEvent [] changeList, KernelEvent [] eventList, ref TimeSpec timeOut)
 		{
 			unsafe {
 				fixed (KernelEvent *cp = &changeList [0])
 					fixed (KernelEvent *ep = &eventList [0])
-						return kevent (cp, changeList != null ? changeList.Length : 0, ep, eventList != null ? eventList.Length : 0, ref timeOut) != -1;
+						return kevent (handle, cp, changeList != null ? changeList.Length : 0, ep, eventList != null ? eventList.Length : 0, ref timeOut);
 			}
 		}
 
-		public bool KEvent (KernelEvent [] changeList, KernelEvent [] eventList)
+		public int KEvent (KernelEvent [] changeList, KernelEvent [] eventList)
 		{
 			unsafe {
 				fixed (KernelEvent *cp = &changeList [0])
 					fixed (KernelEvent *ep = &eventList [0])
-						return kevent (cp, changeList != null ? changeList.Length : 0, ep, eventList != null ? eventList.Length : 0, IntPtr.Zero) != -1;
+						return kevent (handle, cp, changeList != null ? changeList.Length : 0, ep, eventList != null ? eventList.Length : 0, IntPtr.Zero);
 			}
 		}
 	}
