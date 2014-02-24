@@ -308,7 +308,7 @@ class DocumentGeneratedCode {
 		remarks.Add (XElement.Parse ("<para id='tool-remark'>This constant can be used with the <see cref=\"T:MonoTouch.Foundation.NSNotificationCenter\"/> to register a listener for this notification.   This is an NSString instead of a string, because these values can be used as tokens in some native libraries instead of being used purely for their actual string content.    The 'notification' parameter to the callback contains extra information that is specific to the notification type.</para>"));
 		remarks.Add (XElement.Parse (String.Format ("<para id='tool-remark'>If you want to subscribe to this notification, you can use the convenience <see cref='T:{0}+Notifications'/>.<see cref='M:{0}+Notifications.Observe{1}'/> method which offers strongly typed access to the parameters of the notification.</para>", t.Name, name)));
 		remarks.Add (XElement.Parse ("<para>The following example shows how to use the strongly typed Notifications class, to take the guesswork out of the available properties in the notification:</para>"));
-		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
+		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"C#\"><![CDATA[\n" +
 							    "//\n// Lambda style\n//\n\n// listening\n" +
 							    "notification = {0}.Notifications.Observe{1} ((sender, args) => {{\n    /* Access strongly typed args */\n{2}\n}});\n\n" +
 							    "// To stop listening:\n" +
@@ -319,16 +319,16 @@ class DocumentGeneratedCode {
 							    "void Setup ()\n{{\n" +
 							    "    notification = {0}.Notifications.Observe{1} (Callback);\n}}\n\n" +
 							    "void Teardown ()\n{{\n" +
-							    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body, evengArgsType)));
+							    "    notification.Dispose ();\n}}]]></code></example>", t.Name, mname, body, evengArgsType)));
 		remarks.Add (XElement.Parse ("<para>The following example shows how to use the notification with the DefaultCenter API:</para>"));
-		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
+		remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"C#\"><![CDATA[\n" +
 						      "// Lambda style\n" +
 						      "NSNotificationCenter.DefaultCenter.AddObserver (\n        {0}.{1}, (notification) => {{Console.WriteLine (\"Received the notification {0}\", notification); }}\n\n\n" +
 						      "// Method style\n" +
 						      "void Callback (NSNotification notification)\n{{\n" +
 						      "    Console.WriteLine (\"Received a notification {0}\", notification);\n}}\n\n" +
 						      "void Setup ()\n{{\n" +
-						      "    NSNotificationCenter.DefaultCenter.AddObserver ({0}.{1}, Callback);\n}}\n</code></example>", t.Name, name)));
+						      "    NSNotificationCenter.DefaultCenter.AddObserver ({0}.{1}, Callback);\n}}\n]]></code></example>", t.Name, name)));
 		
 
 		// Keep track of the uses, so we can list all of the observers.
@@ -402,7 +402,7 @@ class DocumentGeneratedCode {
 			remarks.RemoveAll ();
 			remarks.Add (XElement.Parse ("<para>The following example shows how you can use this method in your code</para>"));
 
-			remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"c#\">\n" +
+			remarks.Add (XElement.Parse (String.Format ("<example><code lang=\"C#\"><![CDATA[\n" +
 								    "//\n// Lambda style\n//\n\n// listening\n" +
 								    "notification = {0}.Notifications.{1} ((sender, args) => {{\n    /* Access strongly typed args */\n{2}\n}});\n\n" +
 								    "// To stop listening:\n" +
@@ -413,7 +413,7 @@ class DocumentGeneratedCode {
 								    "void Setup ()\n{{\n" +
 								    "    notification = {0}.Notifications.{1} (Callback);\n}}\n\n" +
 								    "void Teardown ()\n{{\n" +
-								    "    notification.Dispose ();\n}}</code></example>", t.Name, mname, body, handlerType)));
+								    "    notification.Dispose ();\n}}]]></code></example>", t.Name, mname, body, handlerType)));
 		
 		}
 		Save (GetMdocPath (t, true), class_doc);
