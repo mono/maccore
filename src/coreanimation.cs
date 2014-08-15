@@ -258,10 +258,10 @@ namespace MonoMac.CoreAnimation {
 #if MONOMAC
 		[Export ("layoutManager")]
 		NSObject LayoutManager { get; set; }
-#else
+#endif
+
 		[Export ("contentsScale")]
 		float ContentsScale { get; set; }
-#endif
 
 		[Export ("contentsRect")]
 		RectangleF ContentsRect { get; set; }
