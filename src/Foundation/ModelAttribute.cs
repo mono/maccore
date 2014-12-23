@@ -34,5 +34,8 @@ namespace MonoMac.Foundation {
 	public sealed class ProtocolAttribute : Attribute {
 		
 		public ProtocolAttribute () {}
+
+		public Type WrapperType { get; set; }
+		public string Name { get; set; }
 	}
 }
