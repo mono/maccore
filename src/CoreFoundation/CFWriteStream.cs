@@ -93,7 +93,7 @@ namespace MonoMac.CoreFoundation {
 
 		public int Write (byte[] buffer, int offset, int count)
 		{
-			CheckHandle ();
+			ThrowIfDisposed ();
 			if (offset < 0)
 				throw new ArgumentException ();
 			if (count < 1)

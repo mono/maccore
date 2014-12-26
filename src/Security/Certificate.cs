@@ -53,11 +53,15 @@ namespace MonoMac.Security {
 
 			this.handle = handle;
 			if (!owns)
-				CFObject.CFRetain (handle);
+				CFType.Retain (handle);
 		}
 
-		[DllImport (Constants.SecurityLibrary, EntryPoint="SecCertificateGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.SecurityLibrary)]
+		extern static uint SecCertificateGetTypeID ();
+
+		public static uint TypeID {
+			get { return SecCertificateGetTypeID (); }
+		}
 			
 		[DllImport (Constants.SecurityLibrary)]
 		extern static IntPtr SecCertificateCreateWithData (IntPtr allocator, IntPtr cfData);
@@ -117,7 +121,7 @@ namespace MonoMac.Security {
 				
 				IntPtr cfstr = SecCertificateCopySubjectSummary (handle);
 				string ret = CFString.FetchString (cfstr);
-				CFObject.CFRelease (cfstr);
+				CFType.Release (cfstr);
 				return ret;
 			}
 		}
@@ -157,15 +161,13 @@ namespace MonoMac.Security {
 		public virtual void Dispose (bool disposing)
 		{
 			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
+				CFType.Release (handle);
 				handle = IntPtr.Zero;
 			}
 		}
 	}
 
-	public class SecIdentity : INativeObject, IDisposable {
-		internal IntPtr handle;
-		
+	public class SecIdentity : CFType {
 		// invoked by marshallers
 		internal SecIdentity (IntPtr handle)
 			: this (handle, false)
@@ -174,58 +176,36 @@ namespace MonoMac.Security {
 		
 		[Preserve (Conditional = true)]
 		internal SecIdentity (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
-		[DllImport (Constants.SecurityLibrary, EntryPoint="SecIdentityGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.SecurityLibrary)]
+		extern static uint SecIdentityGetTypeID ();
+
+		public static uint TypeID {
+			get { return SecIdentityGetTypeID (); }
+		}
 
 		[DllImport (Constants.SecurityLibrary)]
 		extern static IntPtr SecIdentityCopyCertificate (IntPtr handle, out IntPtr cert);
 
 		public SecCertificate Certificate {
 			get {
-				if (handle == IntPtr.Zero)
-					throw new ObjectDisposedException ("SecIdentity");
+				ThrowIfDisposed ();
 				IntPtr cert;
-				SecIdentityCopyCertificate (handle, out cert);
-				return new SecCertificate (handle, true);
+				SecIdentityCopyCertificate (Handle, out cert);
+				return new SecCertificate (Handle, true);
 			}
 		}
 
-		
 		~SecIdentity ()
 		{
 			Dispose (false);
 		}
-
-		public IntPtr Handle {
-			get {
-				return handle;
-			}
-		}
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
 	}
 
-	public class SecKey : INativeObject, IDisposable {
-		internal IntPtr handle;
-		
+	public class SecKey : CFType {
 		// invoked by marshallers
 		public SecKey (IntPtr handle)
 			: this (handle, false)
@@ -234,14 +214,16 @@ namespace MonoMac.Security {
 		
 		[Preserve (Conditional = true)]
 		public SecKey (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
 		}
 
-		[DllImport (Constants.SecurityLibrary, EntryPoint="SecKeyGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.SecurityLibrary)]
+		extern static uint SecKeyGetTypeID ();
+
+		public static uint TypeID {
+			get { return SecKeyGetTypeID (); }
+		}
 		
 		[DllImport (Constants.SecurityLibrary)]
 		extern static SecStatusCode SecKeyGeneratePair (IntPtr dictHandle, out IntPtr pubKey, out IntPtr privKey);
@@ -269,10 +251,8 @@ namespace MonoMac.Security {
 
 		long BlockSize {
 			get {
-				if (handle == IntPtr.Zero)
-					throw new ObjectDisposedException ("SecKey");
-				
-				return (long) SecKeyGetBlockSize (handle);
+				ThrowIfDisposed ();
+				return (long) SecKeyGetBlockSize (Handle);
 			}
 		}
 
@@ -281,28 +261,25 @@ namespace MonoMac.Security {
 
 		SecStatusCode RawSign (SecPadding padding, IntPtr dataToSign, int dataToSignLen, out byte [] result)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("SecKey");
-				
-			result = new byte [(int) SecKeyGetBlockSize (handle)];
+			ThrowIfDisposed ();
+			result = new byte [(int) SecKeyGetBlockSize (Handle)];
 			unsafe {
 				fixed (byte *p = &result [0])
-					return SecKeyRawSign (handle, padding, dataToSign, (IntPtr) dataToSignLen, (IntPtr) p, (IntPtr)result.Length);
+					return SecKeyRawSign (Handle, padding, dataToSign, (IntPtr) dataToSignLen, (IntPtr) p, (IntPtr)result.Length);
 			}
 		}
 
 		SecStatusCode RawSign (SecPadding padding, byte [] dataToSign, out byte [] result)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("SecKey");
+			ThrowIfDisposed ();
 			if (dataToSign == null)
 				throw new ArgumentNullException ("dataToSign");
 
-			result = new byte [(int) SecKeyGetBlockSize (handle)];
+			result = new byte [(int) SecKeyGetBlockSize (Handle)];
 			unsafe {
 				fixed (byte *bp = &dataToSign [0]){
 					fixed (byte *p = &result [0])
-						return SecKeyRawSign (handle, padding, (IntPtr) bp, (IntPtr)dataToSign.Length, (IntPtr) p, (IntPtr) result.Length);
+						return SecKeyRawSign (Handle, padding, (IntPtr) bp, (IntPtr)dataToSign.Length, (IntPtr) p, (IntPtr) result.Length);
 				}
 			}
 		}
@@ -311,17 +288,13 @@ namespace MonoMac.Security {
 		extern static SecStatusCode SecKeyRawVerify (IntPtr handle, SecPadding padding, IntPtr signedData, IntPtr signedLen, IntPtr sign, IntPtr signLen);
 		public unsafe SecStatusCode RawVerify (SecPadding padding, IntPtr signedData, int signedDataLen, IntPtr signature, int signatureLen)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("SecKey");
-
-			return SecKeyRawVerify (handle, padding, signedData, (IntPtr) signedDataLen, signature, (IntPtr) signatureLen);
+			ThrowIfDisposed ();
+			return SecKeyRawVerify (Handle, padding, signedData, (IntPtr) signedDataLen, signature, (IntPtr) signatureLen);
 		}
 
 		public SecStatusCode RawVerify (SecPadding padding, byte [] signedData, byte [] signature)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("SecKey");
-
+			ThrowIfDisposed ();
 			if (signature == null)
 				throw new ArgumentNullException ("signature");
 			if (signedData == null)
@@ -329,7 +302,7 @@ namespace MonoMac.Security {
 			unsafe {
 				fixed (byte *sp = &signature[0]){
 					fixed (byte *dp = &signedData [0]){
-						return SecKeyRawVerify (handle, padding, (IntPtr) dp, (IntPtr) signedData.Length, (IntPtr) sp, (IntPtr) signature.Length);
+						return SecKeyRawVerify (Handle, padding, (IntPtr) dp, (IntPtr) signedData.Length, (IntPtr) sp, (IntPtr) signature.Length);
 					}
 				}
 			}
@@ -339,17 +312,13 @@ namespace MonoMac.Security {
 		extern static SecStatusCode SecKeyEncrypt (IntPtr handle, SecPadding padding, IntPtr plainText, IntPtr playLen, IntPtr cipherText, IntPtr cipherLen);
 		public unsafe SecStatusCode Encrypt (SecPadding padding, IntPtr plainText, int playLen, IntPtr cipherText, int cipherLen)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("SecKey");
-
-			return SecKeyEncrypt (handle, padding, plainText, (IntPtr) playLen, cipherText, (IntPtr) cipherLen);
+			ThrowIfDisposed ();
+			return SecKeyEncrypt (Handle, padding, plainText, (IntPtr) playLen, cipherText, (IntPtr) cipherLen);
 		}
 
 		public SecStatusCode Encrypt (SecPadding padding, byte [] plainText, byte [] cipherText)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("SecKey");
-
+			ThrowIfDisposed ();
 			if (cipherText == null)
 				throw new ArgumentNullException ("cipherText");
 			if (plainText == null)
@@ -357,7 +326,7 @@ namespace MonoMac.Security {
 			unsafe {
 				fixed (byte *cp = &cipherText[0]){
 					fixed (byte *pp = &plainText [0]){
-						return SecKeyEncrypt (handle, padding, (IntPtr) pp, (IntPtr) plainText.Length, (IntPtr) cp, (IntPtr) cipherText.Length);
+						return SecKeyEncrypt (Handle, padding, (IntPtr) pp, (IntPtr) plainText.Length, (IntPtr) cp, (IntPtr) cipherText.Length);
 					}
 				}
 			}
@@ -368,17 +337,13 @@ namespace MonoMac.Security {
 		
 		public unsafe SecStatusCode Decrypt (SecPadding padding, IntPtr cipherText, int cipherLen, IntPtr plainText, int playLen)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("SecKey");
-
-			return SecKeyDecrypt (handle, padding, cipherText, (IntPtr) cipherLen, plainText, (IntPtr) playLen);
+			ThrowIfDisposed ();
+			return SecKeyDecrypt (Handle, padding, cipherText, (IntPtr) cipherLen, plainText, (IntPtr) playLen);
 		}
 
 		public SecStatusCode Decrypt (SecPadding padding, byte [] cipherText, byte [] plainText)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("SecKey");
-
+			ThrowIfDisposed ();
 			if (cipherText == null)
 				throw new ArgumentNullException ("cipherText");
 			if (plainText == null)
@@ -386,7 +351,7 @@ namespace MonoMac.Security {
 			unsafe {
 				fixed (byte *cp = &cipherText[0]){
 					fixed (byte *pp = &plainText [0]){
-						return SecKeyDecrypt (handle, padding, (IntPtr) cp, (IntPtr) cipherText.Length, (IntPtr) pp, (IntPtr) plainText.Length);
+						return SecKeyDecrypt (Handle, padding, (IntPtr) cp, (IntPtr) cipherText.Length, (IntPtr) pp, (IntPtr) plainText.Length);
 					}
 				}
 			}
@@ -395,26 +360,6 @@ namespace MonoMac.Security {
 		~SecKey ()
 		{
 			Dispose (false);
-		}
-
-		public IntPtr Handle {
-			get {
-				return handle;
-			}
-		}
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 	}
 	

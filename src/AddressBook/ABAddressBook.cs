@@ -97,15 +97,14 @@ namespace MonoMac.AddressBook {
 			// From iOS 6.0+ this might return NULL, e.g. if the application is not authorized to access the
 			// address book, and we would crash if we tried to release a null pointer
 			if (p != IntPtr.Zero)
-				CFObject.CFRelease (p);
+				CFType.Release (p);
 		}
 	}
 
-	public class ABAddressBook : INativeObject, IDisposable, IEnumerable<ABRecord> {
+	public class ABAddressBook : CFType, IEnumerable<ABRecord> {
 
 		public static readonly NSString ErrorDomain;
 
-		IntPtr handle;
 		GCHandle sender;
 
 		[Obsolete ("Deprecated in iOS 6.0")]
@@ -115,7 +114,7 @@ namespace MonoMac.AddressBook {
 		[Obsolete ("Deprecated in iOS 6.0. Use static Create method instead")]
 		public ABAddressBook ()
 		{
-			this.handle = ABAddressBookCreate ();
+			Handle = ABAddressBookCreate ();
 
 			InitConstants.Init ();
 		}
@@ -137,18 +136,13 @@ namespace MonoMac.AddressBook {
 			return new ABAddressBook (handle, true);
 		}
 			
-		internal ABAddressBook (IntPtr handle, bool owns)
+		internal ABAddressBook (IntPtr handle, bool owns) : base (handle, owns)
 		{
 			InitConstants.Init ();
-			if (!owns)
-				CFObject.CFRetain (handle);
-			this.handle = handle;
 		}
 
-		internal ABAddressBook (IntPtr handle)
+		internal ABAddressBook (IntPtr handle) : this (handle, true)
 		{
-			InitConstants.Init ();
-			this.handle = handle;
 		}
 		
 		static ABAddressBook ()
@@ -169,32 +163,12 @@ namespace MonoMac.AddressBook {
 			Dispose (false);
 		}
 
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
 
-		protected virtual void Dispose (bool disposing)
+		protected override void Dispose (bool disposing)
 		{
-			if (handle != IntPtr.Zero)
-				CFObject.CFRelease (handle);
 			if (sender.IsAllocated)
 				sender.Free ();
-			handle = IntPtr.Zero;
-		}
-
-		void AssertValid ()
-		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException ("");
-		}
-
-		public IntPtr Handle {
-			get {
-				AssertValid ();
-				return handle;
-			}
+			base.Dispose (disposing);
 		}
 
 		[DllImport (Constants.AddressBookLibrary)]
@@ -213,6 +187,7 @@ namespace MonoMac.AddressBook {
 		[Since (6,0)]
 		public void RequestAccess (Action<bool,NSError> onCompleted)
 		{
+			ThrowIfDisposed ();
 			if (onCompleted == null)
 				throw new ArgumentNullException ("onCompleted");
 			unsafe {
@@ -242,7 +217,7 @@ namespace MonoMac.AddressBook {
 		extern static bool ABAddressBookHasUnsavedChanges (IntPtr addressBook);
 		public bool HasUnsavedChanges {
 			get {
-				AssertValid ();
+				ThrowIfDisposed ();
 				return ABAddressBookHasUnsavedChanges (Handle);
 			}
 		}
@@ -251,7 +226,7 @@ namespace MonoMac.AddressBook {
 		extern static bool ABAddressBookSave (IntPtr addressBook, out IntPtr error);
 		public void Save ()
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr error;
 			if (!ABAddressBookSave (Handle, out error))
 				throw CFException.FromCFError (error);
@@ -261,7 +236,7 @@ namespace MonoMac.AddressBook {
 		extern static void ABAddressBookRevert (IntPtr addressBook);
 		public void Revert ()
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			ABAddressBookRevert (Handle);
 		}
 
@@ -272,7 +247,7 @@ namespace MonoMac.AddressBook {
 			if (record == null)
 				throw new ArgumentNullException ("record");
 
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr error;
 			if (!ABAddressBookAddRecord (Handle, record.Handle, out error))
 				throw CFException.FromCFError (error);
@@ -286,7 +261,7 @@ namespace MonoMac.AddressBook {
 			if (record == null)
 				throw new ArgumentNullException ("record");
 
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr error;
 			if (!ABAddressBookRemoveRecord (Handle, record.Handle, out error))
 				throw CFException.FromCFError (error);
@@ -297,7 +272,7 @@ namespace MonoMac.AddressBook {
 		extern static int ABAddressBookGetPersonCount (IntPtr addressBook);
 		public int PeopleCount {
 			get {
-				AssertValid ();
+				ThrowIfDisposed ();
 				return ABAddressBookGetPersonCount (Handle);
 			}
 		}
@@ -306,7 +281,7 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr ABAddressBookCopyArrayOfAllPeople (IntPtr addressBook);
 		public ABPerson [] GetPeople ()
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllPeople (Handle);
 			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABPerson (h, this));
 		}
@@ -319,7 +294,7 @@ namespace MonoMac.AddressBook {
 		{
 			if (source == null)
 				throw new ArgumentNullException ("source");
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllPeopleInSource (Handle, source.Handle);
 			return NSArray.ArrayFromHandle (cfArrayRef, l => new ABPerson (l, this));
 		}
@@ -332,7 +307,7 @@ namespace MonoMac.AddressBook {
 		{
 			if (source == null)
 				throw new ArgumentNullException ("source");
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllPeopleInSourceWithSortOrdering (Handle, source.Handle, sortOrdering);
 			return NSArray.ArrayFromHandle (cfArrayRef, l => new ABPerson (l, this));
 		}		
@@ -341,7 +316,7 @@ namespace MonoMac.AddressBook {
 		extern static int ABAddressBookGetGroupCount (IntPtr addressBook);
 		public int GroupCount {
 			get {
-				AssertValid ();
+				ThrowIfDisposed ();
 				return ABAddressBookGetGroupCount (Handle);
 			}
 		}
@@ -350,7 +325,7 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr ABAddressBookCopyArrayOfAllGroups (IntPtr addressBook);
 		public ABGroup [] GetGroups ()
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllGroups (Handle);
 			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABGroup (h, this));
 		}
@@ -364,7 +339,7 @@ namespace MonoMac.AddressBook {
 			if (source == null)
 				throw new ArgumentNullException ("source");
 
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllGroupsInSource (Handle, source.Handle);
 			return NSArray.ArrayFromHandle (cfArrayRef, l => new ABGroup (l, this));
 		}
@@ -406,7 +381,7 @@ namespace MonoMac.AddressBook {
 
 		protected virtual void OnExternalChange (ExternalChangeEventArgs e)
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			EventHandler<ExternalChangeEventArgs> h = externalChange;
 			if (h != null)
 				h (this, e);
@@ -440,7 +415,7 @@ namespace MonoMac.AddressBook {
 
 		public IEnumerator<ABRecord> GetEnumerator ()
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			foreach (var p in GetPeople ())
 				yield return p;
 			foreach (var g in GetGroups ())
@@ -484,7 +459,7 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr /* CFArrayRef */ ABAddressBookCopyArrayOfAllSources (IntPtr /* ABAddressBookRef */ addressBook);
 		public ABSource [] GetAllSources ()
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr cfArrayRef = ABAddressBookCopyArrayOfAllSources (Handle);
 			return NSArray.ArrayFromHandle (cfArrayRef, h => new ABSource (h, this));
 		}
@@ -493,7 +468,7 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr /* ABRecordRef */ ABAddressBookCopyDefaultSource (IntPtr /* ABAddressBookRef */ addressBook);
 		public ABSource GetDefaultSource ()
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			IntPtr h = ABAddressBookCopyDefaultSource (Handle);
 			if (h == IntPtr.Zero)
 				return null;
@@ -504,7 +479,7 @@ namespace MonoMac.AddressBook {
 		extern static IntPtr /* ABRecordRef */ ABAddressBookGetSourceWithRecordID (IntPtr /* ABAddressBookRef */ addressBook, int /* ABRecordID */ sourceID);
 		public ABSource GetSource (int sourceID)
 		{
-			AssertValid ();
+			ThrowIfDisposed ();
 			var h = ABAddressBookGetSourceWithRecordID (Handle, sourceID);
 			if (h == IntPtr.Zero)
 				return null;

@@ -111,39 +111,15 @@ namespace MonoMac.CoreText {
 	}
 
 	[Since (3,2)]
-	public class CTFrame : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTFrame : CFType {
 		internal CTFrame (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw ConstructorError.ArgumentNull (this, "handle");
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
-		}
-		
-		public IntPtr Handle {
-			get { return handle; }
 		}
 
 		~CTFrame ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -153,12 +129,12 @@ namespace MonoMac.CoreText {
 		
 		public NSRange GetStringRange ()
 		{
-			return CTFrameGetStringRange (handle);
+			return CTFrameGetStringRange (Handle);
 		}
 
 		public NSRange GetVisibleStringRange ()
 		{
-			return CTFrameGetVisibleStringRange (handle);
+			return CTFrameGetVisibleStringRange (Handle);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -166,7 +142,7 @@ namespace MonoMac.CoreText {
 		
 		public CGPath GetPath ()
 		{
-			IntPtr h = CTFrameGetPath (handle);
+			IntPtr h = CTFrameGetPath (Handle);
 			return h == IntPtr.Zero ? null : new CGPath (h, false);
 		}
 
@@ -175,7 +151,7 @@ namespace MonoMac.CoreText {
 
 		public CTFrameAttributes GetFrameAttributes ()
 		{
-			var attrs = (NSDictionary) Runtime.GetNSObject (CTFrameGetFrameAttributes (handle));
+			var attrs = (NSDictionary) Runtime.GetNSObject (CTFrameGetFrameAttributes (Handle));
 			return attrs == null ? null : new CTFrameAttributes (attrs);
 		}
 		
@@ -184,7 +160,7 @@ namespace MonoMac.CoreText {
 
 		public CTLine [] GetLines ()
 		{
-			var cfArrayRef = CTFrameGetLines (handle);
+			var cfArrayRef = CTFrameGetLines (Handle);
 			if (cfArrayRef == IntPtr.Zero)
 				return new CTLine [0];
 
@@ -202,9 +178,9 @@ namespace MonoMac.CoreText {
 				throw new ArgumentNullException ("origins");
 			if (range.Length != 0 && origins.Length < range.Length)
 				throw new ArgumentException ("origins must contain at least range.Length elements.", "origins");
-			else if (origins.Length < CFArray.GetCount (CTFrameGetLines (handle)))
+			else if (origins.Length < CFArray.GetCount (CTFrameGetLines (Handle)))
 				throw new ArgumentException ("origins must contain at least GetLines().Length elements.", "origins");
-			CTFrameGetLineOrigins (handle, range, origins);
+			CTFrameGetLineOrigins (Handle, range, origins);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -215,7 +191,7 @@ namespace MonoMac.CoreText {
 			if (ctx == null)
 				throw new ArgumentNullException ("ctx");
 
-			CTFrameDraw (handle, ctx.Handle);
+			CTFrameDraw (Handle, ctx.Handle);
 		}
 	}
 }

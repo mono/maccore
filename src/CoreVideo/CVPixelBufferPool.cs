@@ -85,11 +85,10 @@ namespace MonoMac.CoreVideo {
 		}
 
 		[DllImport (Constants.CoreVideoLibrary)]
-		extern static int CVPixelBufferPoolGetTypeID ();
-		public int TypeID {
-			get {
-				return CVPixelBufferPoolGetTypeID ();
-			}
+		extern static uint CVPixelBufferPoolGetTypeID ();
+
+		public uint TypeID {
+			get { return CVPixelBufferPoolGetTypeID (); }
 		}
 
 #if !COREBUILD

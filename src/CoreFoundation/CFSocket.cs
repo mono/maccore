@@ -200,35 +200,21 @@ namespace MonoMac.CoreFoundation {
 		}
 	}
 
-	public class CFSocket : CFType, INativeObject, IDisposable {
-		IntPtr handle;
+	public class CFSocket : CFType {
 		GCHandle gch;
 
 		~CFSocket ()
 		{
 			Dispose (false);
 		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
 
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		protected virtual void Dispose (bool disposing)
+		protected override void Dispose (bool disposing)
 		{
 			if (disposing) {
 				if (gch.IsAllocated)
 					gch.Free ();
 			}
-			if (handle != IntPtr.Zero) {
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
+			base.Dispose (disposing);
 		}
 
 		delegate void CFSocketCallBack (IntPtr s, int type, IntPtr address, IntPtr data, IntPtr info);
@@ -294,17 +280,17 @@ namespace MonoMac.CoreFoundation {
 			var ptr = Marshal.AllocHGlobal (Marshal.SizeOf (typeof(CFStreamClientContext)));
 			try {
 				Marshal.StructureToPtr (ctx, ptr, false);
-				handle = CFSocketCreate (
+				Handle = CFSocketCreate (
 					IntPtr.Zero, family, type, proto, cbTypes, OnCallback, ptr);
 			} finally {
 				Marshal.FreeHGlobal (ptr);
 			}
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new CFSocketException (CFSocketError.Error);
 			gch = GCHandle.Alloc (this);
 
-			var source = new CFRunLoopSource (CFSocketCreateRunLoopSource (IntPtr.Zero, handle, 0));
+			var source = new CFRunLoopSource (CFSocketCreateRunLoopSource (IntPtr.Zero, Handle, 0));
 			loop.AddSource (source, CFRunLoop.CFDefaultRunLoopMode);
 		}
 
@@ -319,23 +305,23 @@ namespace MonoMac.CoreFoundation {
 			var ptr = Marshal.AllocHGlobal (Marshal.SizeOf (typeof(CFStreamClientContext)));
 			try {
 				Marshal.StructureToPtr (ctx, ptr, false);
-				handle = CFSocketCreateWithNative (
+				Handle = CFSocketCreateWithNative (
 					IntPtr.Zero, sock, cbTypes, OnCallback, ptr);
 			} finally {
 				Marshal.FreeHGlobal (ptr);
 			}
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw new CFSocketException (CFSocketError.Error);
 
-			var source = new CFRunLoopSource (CFSocketCreateRunLoopSource (IntPtr.Zero, handle, 0));
+			var source = new CFRunLoopSource (CFSocketCreateRunLoopSource (IntPtr.Zero, Handle, 0));
 			var loop = CFRunLoop.Current;
 			loop.AddSource (source, CFRunLoop.CFDefaultRunLoopMode);
 		}
 
 		CFSocket (IntPtr handle)
 		{
-			this.handle = handle;
+			Handle = handle;
 			gch = GCHandle.Alloc (this);
 
 			var source = new CFRunLoopSource (CFSocketCreateRunLoopSource (IntPtr.Zero, handle, 0));
@@ -370,7 +356,7 @@ namespace MonoMac.CoreFoundation {
 
 		internal CFSocketNativeHandle GetNative ()
 		{
-			return CFSocketGetNative (handle);
+			return CFSocketGetNative (Handle);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -388,7 +374,7 @@ namespace MonoMac.CoreFoundation {
 			flags |= CFSocketFlags.AutomaticallyReenableAcceptCallBack;
 			SetSocketFlags (flags);
 			using (var address = new CFSocketAddress (endpoint)) {
-				var error = CFSocketSetAddress (handle, address.Handle);
+				var error = CFSocketSetAddress (Handle, address.Handle);
 				if (error != CFSocketError.Success)
 					throw new CFSocketException (error);
 			}
@@ -399,7 +385,7 @@ namespace MonoMac.CoreFoundation {
 
 		public CFSocketFlags GetSocketFlags ()
 		{
-			return CFSocketGetSocketFlags (handle);
+			return CFSocketGetSocketFlags (Handle);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -407,7 +393,7 @@ namespace MonoMac.CoreFoundation {
 
 		public void SetSocketFlags (CFSocketFlags flags)
 		{
-			CFSocketSetSocketFlags (handle, flags);
+			CFSocketSetSocketFlags (Handle, flags);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -415,7 +401,7 @@ namespace MonoMac.CoreFoundation {
 
 		public void DisableCallBacks (CFSocketCallBackType types)
 		{
-			CFSocketDisableCallBacks (handle, types);
+			CFSocketDisableCallBacks (Handle, types);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -423,7 +409,7 @@ namespace MonoMac.CoreFoundation {
 
 		public void EnableCallBacks (CFSocketCallBackType types)
 		{
-			CFSocketEnableCallBacks (handle, types);
+			CFSocketEnableCallBacks (Handle, types);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -432,7 +418,7 @@ namespace MonoMac.CoreFoundation {
 		public void SendData (byte[] data, double timeout)
 		{
 			using (var buffer = new CFDataBuffer (data)) {
-				var error = CFSocketSendData (handle, IntPtr.Zero, buffer.Handle, timeout);
+				var error = CFSocketSendData (Handle, IntPtr.Zero, buffer.Handle, timeout);
 				if (error != CFSocketError.Success)
 					throw new CFSocketException (error);
 			}
@@ -509,7 +495,7 @@ namespace MonoMac.CoreFoundation {
 		public void Connect (IPEndPoint endpoint, double timeout)
 		{
 			using (var address = new CFSocketAddress (endpoint)) {
-				var error = CFSocketConnectToAddress (handle, address.Handle, timeout);
+				var error = CFSocketConnectToAddress (Handle, address.Handle, timeout);
 				if (error != CFSocketError.Success)
 					throw new CFSocketException (error);
 			}

@@ -185,7 +185,7 @@ namespace MonoMac.Foundation {
 				throw new ArgumentNullException ("key");
 
 			using (var str = new CFString (key)) {
-				return CFString.FetchString (CFDictionary.GetValue (Dictionary.Handle, str.handle));
+				return CFString.FetchString (CFDictionary.GetValue (Dictionary.Handle, str.Handle));
 			}
 		}		
 

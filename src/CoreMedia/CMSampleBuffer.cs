@@ -49,44 +49,21 @@ namespace MonoMac.CoreMedia {
 	}
 
 	[Since (4,0)]
-	public class CMSampleBuffer : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CMSampleBuffer : CFType {
 		internal CMSampleBuffer (IntPtr handle)
+			: this (handle, true)
 		{
-			this.handle = handle;
 		}
 
 		[Preserve (Conditional=true)]
 		internal CMSampleBuffer (IntPtr handle, bool owns)
+			: base (handle, owns) 
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-
-			this.handle = handle;
 		}
 		
 		~CMSampleBuffer ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-	
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 #if !COREBUILD
@@ -113,9 +90,9 @@ namespace MonoMac.CoreMedia {
 
 			IntPtr buffer;
 			error = CMAudioSampleBufferCreateWithPacketDescriptions (IntPtr.Zero,
-				dataBuffer == null ? IntPtr.Zero : dataBuffer.handle,
+				dataBuffer == null ? IntPtr.Zero : dataBuffer.Handle,
 				true, IntPtr.Zero, IntPtr.Zero,
-				formatDescription.handle,
+				formatDescription.Handle,
 				samplesCount, sampleTimestamp,
 				packetDescriptions,
 				out buffer);
@@ -211,7 +188,7 @@ namespace MonoMac.CoreMedia {
 			error = CMSampleBufferCreateForImageBuffer (IntPtr.Zero,
 				imageBuffer.handle, dataReady,
 				IntPtr.Zero, IntPtr.Zero,
-				formatDescription.handle,
+				formatDescription.Handle,
 				ref sampleTiming,
 				out buffer);
 
@@ -228,7 +205,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferDataIsReady (handle);
+				return CMSampleBufferDataIsReady (Handle);
 			}
 		}
 
@@ -264,7 +241,7 @@ namespace MonoMac.CoreMedia {
 		
 		public CMBlockBuffer GetDataBuffer ()
 		{
-			var blockHandle = CMSampleBufferGetDataBuffer (handle);			
+			var blockHandle = CMSampleBufferGetDataBuffer (Handle);			
 			if (blockHandle == IntPtr.Zero)
 			{
 				return null;
@@ -282,7 +259,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferGetDecodeTimeStamp (handle);
+				return CMSampleBufferGetDecodeTimeStamp (Handle);
 			}
 		}
 
@@ -293,7 +270,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferGetDuration (handle);
+				return CMSampleBufferGetDuration (Handle);
 			}
 		}
 
@@ -304,7 +281,7 @@ namespace MonoMac.CoreMedia {
 		public CMFormatDescription GetFormatDescription ()
 		{
 			var desc = default(CMFormatDescription);
-			var descHandle = CMSampleBufferGetFormatDescription (handle);
+			var descHandle = CMSampleBufferGetFormatDescription (Handle);
 			if (descHandle != IntPtr.Zero)
 			{
 				desc = new CMFormatDescription (descHandle, false);
@@ -314,7 +291,7 @@ namespace MonoMac.CoreMedia {
 
 		public CMAudioFormatDescription GetAudioFormatDescription ()
 		{
-			var descHandle = CMSampleBufferGetFormatDescription (handle);
+			var descHandle = CMSampleBufferGetFormatDescription (Handle);
 			if (descHandle == IntPtr.Zero)
 				return null;
 
@@ -323,7 +300,7 @@ namespace MonoMac.CoreMedia {
 
 		public CMVideoFormatDescription GetVideoFormatDescription ()
 		{
-			var descHandle = CMSampleBufferGetFormatDescription (handle);
+			var descHandle = CMSampleBufferGetFormatDescription (Handle);
 			if (descHandle == IntPtr.Zero)
 				return null;
 
@@ -337,12 +314,12 @@ namespace MonoMac.CoreMedia {
 
 		public CVImageBuffer GetImageBuffer ()
 		{
-			IntPtr ib = CMSampleBufferGetImageBuffer (handle);
+			IntPtr ib = CMSampleBufferGetImageBuffer (Handle);
 			if (ib == IntPtr.Zero)
 				return null;
 
 			var ibt = CFType.GetTypeID (ib);
-			if (ibt == CVPixelBuffer.CVImageBufferType)
+			if (ibt == CVPixelBuffer.TypeID)
 				return new CVPixelBuffer (ib, false);
 			return new CVImageBuffer (ib, false);
 		}
@@ -356,7 +333,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferGetNumSamples (handle);
+				return CMSampleBufferGetNumSamples (Handle);
 			}
 		}
 
@@ -367,7 +344,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferGetOutputDecodeTimeStamp (handle);
+				return CMSampleBufferGetOutputDecodeTimeStamp (Handle);
 			}
 		}
 
@@ -378,7 +355,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferGetOutputDuration (handle);
+				return CMSampleBufferGetOutputDuration (Handle);
 			}
 		}
 
@@ -389,7 +366,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferGetOutputPresentationTimeStamp (handle);
+				return CMSampleBufferGetOutputPresentationTimeStamp (Handle);
 			}
 		}
 		
@@ -398,7 +375,7 @@ namespace MonoMac.CoreMedia {
 		
 		public int /*CMSampleBufferError*/ SetOutputPresentationTimeStamp (CMTime outputPresentationTimeStamp)
 		{
-			return (int)CMSampleBufferSetOutputPresentationTimeStamp (handle, outputPresentationTimeStamp);
+			return (int)CMSampleBufferSetOutputPresentationTimeStamp (Handle, outputPresentationTimeStamp);
 		}
 
 		/*[DllImport(Constants.CoreMediaLibrary)]
@@ -416,7 +393,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferGetPresentationTimeStamp (handle);
+				return CMSampleBufferGetPresentationTimeStamp (Handle);
 			}
 		}
 		
@@ -427,7 +404,7 @@ namespace MonoMac.CoreMedia {
 		
 		public CMSampleBufferAttachmentSettings [] GetSampleAttachments (bool createIfNecessary)
 		{
-			var cfArrayRef = CMSampleBufferGetSampleAttachmentsArray (handle, createIfNecessary);
+			var cfArrayRef = CMSampleBufferGetSampleAttachmentsArray (Handle, createIfNecessary);
 			if (cfArrayRef == IntPtr.Zero)
 			{
 				return new CMSampleBufferAttachmentSettings [0];
@@ -445,7 +422,7 @@ namespace MonoMac.CoreMedia {
 		
 		public uint GetSampleSize (int sampleIndex)
 		{
-			return CMSampleBufferGetSampleSize (handle, sampleIndex);
+			return CMSampleBufferGetSampleSize (Handle, sampleIndex);
 		}
 		
 		/*[DllImport(Constants.CoreMediaLibrary)]
@@ -484,10 +461,10 @@ namespace MonoMac.CoreMedia {
 
 			status = 0;
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				return null;
 
-			if ((status = CMSampleBufferGetSampleTimingInfoArray (handle, 0, null, out count)) != 0)
+			if ((status = CMSampleBufferGetSampleTimingInfoArray (Handle, 0, null, out count)) != 0)
 				return null;
 
 			CMSampleTimingInfo [] pInfo = new CMSampleTimingInfo [count];
@@ -496,7 +473,7 @@ namespace MonoMac.CoreMedia {
 				return pInfo;
 
 			fixed (CMSampleTimingInfo* info = pInfo)
-				if ((status = CMSampleBufferGetSampleTimingInfoArray (handle, count, info, out count)) != 0)
+				if ((status = CMSampleBufferGetSampleTimingInfoArray (Handle, count, info, out count)) != 0)
 					return null;
 
 			return pInfo;
@@ -515,16 +492,15 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferGetTotalSampleSize (handle);
+				return CMSampleBufferGetTotalSampleSize (Handle);
 			}
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
-		extern static int CMSampleBufferGetTypeID ();
+		extern static uint CMSampleBufferGetTypeID ();
 		
-		public static int GetTypeID ()
-		{
-			return CMSampleBufferGetTypeID ();
+		public static uint TypeID {
+			get { return CMSampleBufferGetTypeID (); }
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
@@ -532,7 +508,7 @@ namespace MonoMac.CoreMedia {
 		
 		public int /*CMSampleBufferError*/ Invalidate()
 		{
-			return (int)CMSampleBufferInvalidate (handle);
+			return (int)CMSampleBufferInvalidate (Handle);
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
@@ -542,7 +518,7 @@ namespace MonoMac.CoreMedia {
 		{
 			get
 			{
-				return CMSampleBufferIsValid (handle);
+				return CMSampleBufferIsValid (Handle);
 			}
 		}
 		
@@ -551,7 +527,7 @@ namespace MonoMac.CoreMedia {
 		
 		public int /*CMSampleBufferError*/ MakeDataReady ()
 		{
-			return (int)CMSampleBufferMakeDataReady (handle);
+			return (int)CMSampleBufferMakeDataReady (Handle);
 		}
 		
 		[DllImport(Constants.CoreMediaLibrary)]
@@ -562,9 +538,9 @@ namespace MonoMac.CoreMedia {
 			var dataBufferHandle = IntPtr.Zero;
 			if (dataBuffer != null)
 			{
-				dataBufferHandle = dataBuffer.handle;
+				dataBufferHandle = dataBuffer.Handle;
 			}
-			return (int)CMSampleBufferSetDataBuffer (handle, dataBufferHandle);
+			return (int)CMSampleBufferSetDataBuffer (Handle, dataBufferHandle);
 		}
 		
 		/*[DllImport(Constants.CoreMediaLibrary)]
@@ -581,7 +557,7 @@ namespace MonoMac.CoreMedia {
 		
 		public int/*CMSampleBufferError*/ SetDataReady ()
 		{
-			return (int)CMSampleBufferSetDataReady (handle);
+			return (int)CMSampleBufferSetDataReady (Handle);
 		}
 		
 		/*[DllImport(Constants.CoreMediaLibrary)]
@@ -598,9 +574,9 @@ namespace MonoMac.CoreMedia {
 		{
 			var handleToTrack = IntPtr.Zero;
 			if (bufferToTrack != null) {
-				handleToTrack = bufferToTrack.handle;
+				handleToTrack = bufferToTrack.Handle;
 			}
-			return (int)CMSampleBufferTrackDataReadiness (handle, handleToTrack);
+			return (int)CMSampleBufferTrackDataReadiness (Handle, handleToTrack);
 		}
 
 	}

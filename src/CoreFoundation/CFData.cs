@@ -33,47 +33,29 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreFoundation {
 
-	class CFData : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	class CFData : CFType {
 		public CFData (IntPtr handle)
 			: this (handle, false)
 		{
 		}
 
 		public CFData (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-			this.handle = handle;
 		}
 
 		~CFData ()
 		{
 			Dispose (false);
 		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static uint CFDataGetTypeID ();
+
+		public static uint TypeID {
+			get { return CFDataGetTypeID (); }
 		}
 
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFDataGetTypeID")]
-		public extern static int GetTypeID ();
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
-		}
-		
 		public static CFData FromDataNoCopy (IntPtr buffer, int length)
 		{
 			return new CFData (CFDataCreateWithBytesNoCopy (IntPtr.Zero, buffer, length, CFAllocator.null_ptr), true);
@@ -83,7 +65,7 @@ namespace MonoMac.CoreFoundation {
 		extern static IntPtr CFDataCreateWithBytesNoCopy (IntPtr allocator, IntPtr bytes, int len, IntPtr deallocator);
 
 		public int Length {
-			get { return CFDataGetLength (handle); }
+			get { return CFDataGetLength (Handle); }
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -92,7 +74,7 @@ namespace MonoMac.CoreFoundation {
 		public byte[] GetBuffer ()
 		{
 			var buffer = new byte [Length];
-			var ptr = CFDataGetBytePtr (handle);
+			var ptr = CFDataGetBytePtr (Handle);
 			Marshal.Copy (ptr, buffer, 0, buffer.Length);
 			return buffer;
 		}
@@ -104,7 +86,7 @@ namespace MonoMac.CoreFoundation {
 		 * Exposes a read-only pointer to the underlying storage.
 		 */
 		public IntPtr Bytes {
-			get { return CFDataGetBytePtr (handle); }
+			get { return CFDataGetBytePtr (Handle); }
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]

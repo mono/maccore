@@ -36,9 +36,7 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreFoundation {
 
 	[Since (3,2)]
-	class CFDictionary : INativeObject, IDisposable {
-		public IntPtr Handle { get; private set; }
-	
+	class CFDictionary : CFType {
 		public static IntPtr KeyCallbacks;
 		public static IntPtr ValueCallbacks;
 
@@ -48,32 +46,20 @@ namespace MonoMac.CoreFoundation {
 		}
 
 		public CFDictionary (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-			this.Handle = handle;
 		}
-		
-		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFDictionaryGetTypeID")]
-		public extern static int GetTypeID ();
+
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static uint CFDictionaryGetTypeID ();
+
+		public static uint TypeID {
+			get { return CFDictionaryGetTypeID (); }
+		}
 
 		~CFDictionary ()
 		{
 			Dispose (false);
-		}
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public virtual void Dispose (bool disposing)
-		{
-			if (Handle != IntPtr.Zero){
-				CFObject.CFRelease (Handle);
-				Handle = IntPtr.Zero;
-			}
 		}
 
 		static CFDictionary ()
@@ -152,7 +138,7 @@ namespace MonoMac.CoreFoundation {
 		public string GetStringValue (string key)
 		{
 			using (var str = new CFString (key)) {
-				return CFString.FetchString (CFDictionaryGetValue (Handle, str.handle));
+				return CFString.FetchString (CFDictionaryGetValue (Handle, str.Handle));
 			}
 		}
 
@@ -179,14 +165,14 @@ namespace MonoMac.CoreFoundation {
 		public IntPtr GetIntPtrValue (string key)
 		{
 			using (var str = new CFString (key)) {
-				return CFDictionaryGetValue (Handle, str.handle);
+				return CFDictionaryGetValue (Handle, str.Handle);
 			}
 		}
 
 		public CFDictionary GetDictionaryValue (string key)
 		{
 			using (var str = new CFString (key)) {
-				var ptr = CFDictionaryGetValue (Handle, str.handle);
+				var ptr = CFDictionaryGetValue (Handle, str.Handle);
 				return ptr == IntPtr.Zero ? null : new CFDictionary (ptr);
 			}
 		}
@@ -194,7 +180,7 @@ namespace MonoMac.CoreFoundation {
 		public bool ContainsKey (string key)
 		{
 			using (var str = new CFString (key)) {
-				return CFDictionaryContainsKey (Handle, str.handle);
+				return CFDictionaryContainsKey (Handle, str.Handle);
 			}
 		}
 

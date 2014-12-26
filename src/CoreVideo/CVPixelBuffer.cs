@@ -33,11 +33,13 @@ namespace MonoMac.CoreVideo {
 		public static readonly NSString PlaneAlignmentKey;
 		public static readonly NSString OpenGLESCompatibilityKey;
 
-		public static readonly int CVImageBufferType;
-		
 		[DllImport (Constants.CoreVideoLibrary)]
-		extern static int CVPixelBufferGetTypeID ();
-		
+		extern static uint CVPixelBufferGetTypeID ();
+
+		public static uint TypeID {
+			get { return CVPixelBufferGetTypeID (); }
+		}
+
 		static CVPixelBuffer ()
 		{
 			var handle = Dlfcn.dlopen (Constants.CoreVideoLibrary, 0);
@@ -58,7 +60,6 @@ namespace MonoMac.CoreVideo {
 				OpenGLCompatibilityKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferOpenGLCompatibilityKey");
 				IOSurfacePropertiesKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferIOSurfacePropertiesKey");
 				PlaneAlignmentKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferPlaneAlignmentKey");
-				CVImageBufferType = CVPixelBufferGetTypeID ();
 				OpenGLESCompatibilityKey = Dlfcn.GetStringConstant (handle, "kCVPixelBufferOpenGLESCompatibilityKey");
 			}
 			finally {
@@ -134,7 +135,6 @@ namespace MonoMac.CoreVideo {
 		// TODO: CVPixelBufferCreateWithBytes
 		// TODO: CVPixelBufferCreateWithPlanarBytes
 		// TODO: CVPixelBufferGetExtendedPixels
-		// TODO: CVPixelBufferGetTypeID
 
 		[DllImport (Constants.CoreVideoLibrary)]
 		extern static CVReturn CVPixelBufferFillExtendedPixels (IntPtr pixelBuffer);

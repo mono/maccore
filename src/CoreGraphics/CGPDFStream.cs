@@ -62,7 +62,7 @@ namespace MonoMac.CoreGraphics {
 				int format;
 				IntPtr obj = CGPDFStreamCopyData (handle, out format);
 				var ret = new NSData (obj);
-				CFObject.CFRelease (obj);
+				CFType.Release (obj);
 				return ret;
 			}
 		}

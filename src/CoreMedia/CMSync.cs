@@ -134,7 +134,7 @@ namespace MonoMac.CoreMedia {
 			if (error != CMTimebaseError.None)
 				throw new ArgumentException (error.ToString ());
 
-			CFObject.CFRetain (Handle);
+			CFType.Retain (Handle);
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]
@@ -149,7 +149,7 @@ namespace MonoMac.CoreMedia {
 			if (error != CMTimebaseError.None)
 				throw new ArgumentException (error.ToString ());
 
-			CFObject.CFRetain (Handle);
+			CFType.Retain (Handle);
 		}
 
 
@@ -366,7 +366,7 @@ namespace MonoMac.CoreMedia {
 		internal CMClockOrTimebase (IntPtr handle, bool owns)
 		{
 			if (!owns)
-				CFObject.CFRetain (Handle);
+				CFType.Retain (Handle);
 			this.handle = handle;
 		}
 
@@ -384,7 +384,7 @@ namespace MonoMac.CoreMedia {
 		protected virtual void Dispose (bool disposing)
 		{
 			if (Handle != IntPtr.Zero){
-				CFObject.CFRelease (Handle);
+				CFType.Release (Handle);
 				handle = IntPtr.Zero;
 			}
 		}

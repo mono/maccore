@@ -98,12 +98,12 @@ namespace MonoMac.CoreAnimation {
 		public object WeakFont {
 			get {
 				var handle = _Font;
-				int type = CFType.GetTypeID (handle);
-				if (type == CTFont.GetTypeID ())
+				var type = CFType.GetTypeID (handle);
+				if (type == CTFont.TypeID)
 					return new CTFont (handle);
-				else if (type == CGFont.GetTypeID ())
+				else if (type == CGFont.TypeID)
 					return new CGFont (handle, false);
-				else if (type == CFString.GetTypeID ())
+				else if (type == CFString.TypeID)
 					return CFString.FetchString (handle);
 #if MONOMAC
 				else return (NSFont) Runtime.GetNSObject (handle);

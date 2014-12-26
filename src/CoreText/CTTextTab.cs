@@ -80,40 +80,15 @@ namespace MonoMac.CoreText {
 #endregion
 
 	[Since (3,2)]
-	public class CTTextTab : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTTextTab : CFType {
 		internal CTTextTab (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw ConstructorError.ArgumentNull (this, "handle");
-
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
-		}
-		
-		public IntPtr Handle {
-			get {return handle;}
 		}
 
 		~CTTextTab ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 #region Text Tab Creation
@@ -126,10 +101,10 @@ namespace MonoMac.CoreText {
 
 		public CTTextTab (CTTextAlignment alignment, double location, CTTextTabOptions options)
 		{
-			handle = CTTextTabCreate (alignment, location, 
+			Handle = CTTextTabCreate (alignment, location, 
 					options == null ? IntPtr.Zero : options.Dictionary.Handle);
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 #endregion
@@ -138,20 +113,20 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern CTTextAlignment CTTextTabGetAlignment (IntPtr tab);
 		public CTTextAlignment TextAlignment {
-			get {return CTTextTabGetAlignment (handle);}
+			get {return CTTextTabGetAlignment (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern double CTTextTabGetLocation (IntPtr tab);
 		public double Location {
-			get {return CTTextTabGetLocation (handle);}
+			get {return CTTextTabGetLocation (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTTextTabGetOptions (IntPtr tab);
 		public CTTextTabOptions GetOptions ()
 		{
-			var options = CTTextTabGetOptions (handle);
+			var options = CTTextTabGetOptions (Handle);
 			if (options == IntPtr.Zero)
 				return null;
 			return new CTTextTabOptions (

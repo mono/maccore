@@ -1538,8 +1538,8 @@ namespace MonoMac.CoreText {
 			if (name == null)
 				throw ConstructorError.ArgumentNull (this, "name");
 			using (NSString n = new NSString (name))
-				handle = CTFontCreateWithName (n.Handle, size, IntPtr.Zero);
-			if (handle == IntPtr.Zero)
+				Handle = CTFontCreateWithName (n.Handle, size, IntPtr.Zero);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1550,8 +1550,8 @@ namespace MonoMac.CoreText {
 			if (name == null)
 				throw ConstructorError.ArgumentNull (this, "name");
 			using (CFString n = name)
-				handle = CTFontCreateWithName (n.Handle, size, ref matrix);
-			if (handle == IntPtr.Zero)
+				Handle = CTFontCreateWithName (n.Handle, size, ref matrix);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1561,8 +1561,8 @@ namespace MonoMac.CoreText {
 		{
 			if (descriptor == null)
 				throw ConstructorError.ArgumentNull (this, "descriptor");
-			handle = CTFontCreateWithFontDescriptor (descriptor.Handle, size, IntPtr.Zero);
-			if (handle == IntPtr.Zero)
+			Handle = CTFontCreateWithFontDescriptor (descriptor.Handle, size, IntPtr.Zero);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1572,8 +1572,8 @@ namespace MonoMac.CoreText {
 		{
 			if (descriptor == null)
 				throw ConstructorError.ArgumentNull (this, "descriptor");
-			handle = CTFontCreateWithFontDescriptor (descriptor.Handle, size, ref matrix);
-			if (handle == IntPtr.Zero)
+			Handle = CTFontCreateWithFontDescriptor (descriptor.Handle, size, ref matrix);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1584,8 +1584,8 @@ namespace MonoMac.CoreText {
 			if (name == null)
 				throw ConstructorError.ArgumentNull (this, "name");
 			using (CFString n = name)
-				handle = CTFontCreateWithNameAndOptions (n.Handle, size, IntPtr.Zero, options);
-			if (handle == IntPtr.Zero)
+				Handle = CTFontCreateWithNameAndOptions (n.Handle, size, IntPtr.Zero, options);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1596,8 +1596,8 @@ namespace MonoMac.CoreText {
 			if (name == null)
 				throw ConstructorError.ArgumentNull (this, "name");
 			using (CFString n = name)
-				handle = CTFontCreateWithNameAndOptions (n.Handle, size, ref matrix, options);
-			if (handle == IntPtr.Zero)
+				Handle = CTFontCreateWithNameAndOptions (n.Handle, size, ref matrix, options);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1607,9 +1607,9 @@ namespace MonoMac.CoreText {
 		{
 			if (descriptor == null)
 				throw ConstructorError.ArgumentNull (this, "descriptor");
-			handle = CTFontCreateWithFontDescriptorAndOptions (descriptor.Handle,
+			Handle = CTFontCreateWithFontDescriptorAndOptions (descriptor.Handle,
 					size, IntPtr.Zero, options);
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1619,9 +1619,9 @@ namespace MonoMac.CoreText {
 		{
 			if (descriptor == null)
 				throw ConstructorError.ArgumentNull (this, "descriptor");
-			handle = CTFontCreateWithFontDescriptorAndOptions (descriptor.Handle,
+			Handle = CTFontCreateWithFontDescriptorAndOptions (descriptor.Handle,
 					size, ref matrix, options);
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1635,8 +1635,8 @@ namespace MonoMac.CoreText {
 		{
 			if (font == null)
 				throw new ArgumentNullException ("font");
-			handle = CTFontCreateWithGraphicsFont (font.Handle, size, ref transform, descriptor == null ? IntPtr.Zero : descriptor.Handle);
-			if (handle == IntPtr.Zero)
+			Handle = CTFontCreateWithGraphicsFont (font.Handle, size, ref transform, descriptor == null ? IntPtr.Zero : descriptor.Handle);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1644,8 +1644,8 @@ namespace MonoMac.CoreText {
 		{
 			if (font == null)
 				throw new ArgumentNullException ("font");
-			handle = CTFontCreateWithGraphicsFont2 (font.Handle, size, IntPtr.Zero, descriptor == null ? IntPtr.Zero : descriptor.Handle);
-			if (handle == IntPtr.Zero)
+			Handle = CTFontCreateWithGraphicsFont2 (font.Handle, size, IntPtr.Zero, descriptor == null ? IntPtr.Zero : descriptor.Handle);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1653,8 +1653,8 @@ namespace MonoMac.CoreText {
 		{
 			if (font == null)
 				throw new ArgumentNullException ("font");
-			handle = CTFontCreateWithGraphicsFont (font.Handle, size, ref transform, IntPtr.Zero);
-			if (handle == IntPtr.Zero)
+			Handle = CTFontCreateWithGraphicsFont (font.Handle, size, ref transform, IntPtr.Zero);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 		
@@ -1665,8 +1665,8 @@ namespace MonoMac.CoreText {
 			if (language == null)
 				throw ConstructorError.ArgumentNull (this, "language");
 			using (CFString l = language)
-				handle = CTFontCreateUIFontForLanguage (uiType, size, l.Handle);
-			if (handle == IntPtr.Zero)
+				Handle = CTFontCreateUIFontForLanguage (uiType, size, l.Handle);
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -1676,7 +1676,7 @@ namespace MonoMac.CoreText {
 		{
 			if (attributes == null)
 				throw new ArgumentNullException ("attributes");
-			return CreateFont (CTFontCreateCopyWithAttributes (handle, size, IntPtr.Zero, attributes.Handle));
+			return CreateFont (CTFontCreateCopyWithAttributes (Handle, size, IntPtr.Zero, attributes.Handle));
 		}
 
 		static CTFont CreateFont (IntPtr h)
@@ -1692,7 +1692,7 @@ namespace MonoMac.CoreText {
 		{
 			if (attributes == null)
 				throw new ArgumentNullException ("attributes");
-			return CreateFont (CTFontCreateCopyWithAttributes (handle, size, ref matrix, attributes.Handle));
+			return CreateFont (CTFontCreateCopyWithAttributes (Handle, size, ref matrix, attributes.Handle));
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -1700,7 +1700,7 @@ namespace MonoMac.CoreText {
 		public CTFont WithSymbolicTraits (float size, CTFontSymbolicTraits symTraitValue, CTFontSymbolicTraits symTraitMask)
 		{
 			return CreateFont (
-					CTFontCreateCopyWithSymbolicTraits (handle, size, IntPtr.Zero, symTraitValue, symTraitMask));
+					CTFontCreateCopyWithSymbolicTraits (Handle, size, IntPtr.Zero, symTraitValue, symTraitMask));
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -1708,7 +1708,7 @@ namespace MonoMac.CoreText {
 		public CTFont WithSymbolicTraits (float size, CTFontSymbolicTraits symTraitValue, CTFontSymbolicTraits symTraitMask, ref CGAffineTransform matrix)
 		{
 			return CreateFont (
-					CTFontCreateCopyWithSymbolicTraits (handle, size, ref matrix, symTraitValue, symTraitMask));
+					CTFontCreateCopyWithSymbolicTraits (Handle, size, ref matrix, symTraitValue, symTraitMask));
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -1718,7 +1718,7 @@ namespace MonoMac.CoreText {
 			if (family == null)
 				throw new ArgumentNullException ("family");
 			using (CFString f = family)
-				return CreateFont (CTFontCreateCopyWithFamily (handle, size, IntPtr.Zero, f.Handle));
+				return CreateFont (CTFontCreateCopyWithFamily (Handle, size, IntPtr.Zero, f.Handle));
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -1728,7 +1728,7 @@ namespace MonoMac.CoreText {
 			if (family == null)
 				throw new ArgumentNullException ("family");
 			using (CFString f = family)
-				return CreateFont (CTFontCreateCopyWithFamily (handle, size, ref matrix, f.Handle));
+				return CreateFont (CTFontCreateCopyWithFamily (Handle, size, ref matrix, f.Handle));
 		}
 
 #endregion
@@ -1742,7 +1742,7 @@ namespace MonoMac.CoreText {
 			if (value == null)
 				throw new ArgumentNullException ("value");
 			using (CFString v = value)
-				return CreateFont (CTFontCreateForString (handle, v.Handle, range));
+				return CreateFont (CTFontCreateForString (Handle, v.Handle, range));
 		}
 
 #endregion
@@ -1753,7 +1753,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCopyFontDescriptor (IntPtr font);
 		public CTFontDescriptor GetFontDescriptor ()
 		{
-			var h = CTFontCopyFontDescriptor (handle);
+			var h = CTFontCopyFontDescriptor (Handle);
 			if (h == IntPtr.Zero)
 				return null;
 			return new CTFontDescriptor (h, true);
@@ -1765,32 +1765,32 @@ namespace MonoMac.CoreText {
 		{
 			if (attribute == null)
 				throw new ArgumentNullException ("attribute");
-			return Runtime.GetNSObject (CTFontCopyAttribute (handle, attribute.Handle));
+			return Runtime.GetNSObject (CTFontCopyAttribute (Handle, attribute.Handle));
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetSize (IntPtr font);
 		public float Size {
-			get {return CTFontGetSize (handle);}
+			get {return CTFontGetSize (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern CGAffineTransform CTFontGetMatrix (IntPtr font);
 		public CGAffineTransform Matrix {
-			get {return CTFontGetMatrix (handle);}
+			get {return CTFontGetMatrix (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern CTFontSymbolicTraits CTFontGetSymbolicTraits (IntPtr font);
 		public CTFontSymbolicTraits SymbolicTraits {
-			get {return CTFontGetSymbolicTraits (handle);}
+			get {return CTFontGetSymbolicTraits (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyTraits (IntPtr font);
 		public CTFontTraits GetTraits ()
 		{
-			var d = (NSDictionary) Runtime.GetNSObject (CTFontCopyTraits (handle));
+			var d = (NSDictionary) Runtime.GetNSObject (CTFontCopyTraits (Handle));
 			if (d == null)
 				return null;
 			d.Release ();
@@ -1811,39 +1811,39 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyPostScriptName (IntPtr font);
 		public string PostScriptName {
-			get {return GetStringAndRelease (CTFontCopyPostScriptName (handle));}
+			get {return GetStringAndRelease (CTFontCopyPostScriptName (Handle));}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyFamilyName (IntPtr font);
 		public string FamilyName {
-			get {return GetStringAndRelease (CTFontCopyFamilyName (handle));}
+			get {return GetStringAndRelease (CTFontCopyFamilyName (Handle));}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyFullName (IntPtr font);
 		public string FullName {
-			get {return GetStringAndRelease (CTFontCopyFullName (handle));}
+			get {return GetStringAndRelease (CTFontCopyFullName (Handle));}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyDisplayName (IntPtr font);
 		public string DisplayName {
-			get {return GetStringAndRelease (CTFontCopyDisplayName (handle));}
+			get {return GetStringAndRelease (CTFontCopyDisplayName (Handle));}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyName (IntPtr font, IntPtr nameKey);
 		public string GetName (CTFontNameKey nameKey)
 		{
-			return GetStringAndRelease (CTFontCopyName (handle, CTFontNameKeyId.ToId (nameKey).Handle));
+			return GetStringAndRelease (CTFontCopyName (Handle, CTFontNameKeyId.ToId (nameKey).Handle));
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopyLocalizedName (IntPtr font, IntPtr nameKey);
 		public string GetLocalizedName (CTFontNameKey nameKey)
 		{
-			return GetStringAndRelease (CTFontCopyLocalizedName (handle, CTFontNameKeyId.ToId (nameKey).Handle));
+			return GetStringAndRelease (CTFontCopyLocalizedName (Handle, CTFontNameKeyId.ToId (nameKey).Handle));
 		}
 #endregion
 
@@ -1852,7 +1852,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCopyCharacterSet (IntPtr font);
 		public NSCharacterSet CharacterSet {
 			get {
-				var cs = (NSCharacterSet) Runtime.GetNSObject (CTFontCopyCharacterSet (handle));
+				var cs = (NSCharacterSet) Runtime.GetNSObject (CTFontCopyCharacterSet (Handle));
 				if (cs == null)
 					return null;
 				cs.Release ();
@@ -1863,18 +1863,18 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern uint CTFontGetStringEncoding (IntPtr font);
 		public uint StringEncoding {
-			get {return CTFontGetStringEncoding (handle);}
+			get {return CTFontGetStringEncoding (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCopySupportedLanguages (IntPtr font);
 		public string[] GetSupportedLanguages ()
 		{
-			var cfArrayRef = CTFontCopySupportedLanguages (handle);
+			var cfArrayRef = CTFontCopySupportedLanguages (Handle);
 			if (cfArrayRef == IntPtr.Zero)
 				return new string [0];
 			var languages = NSArray.ArrayFromHandle<string> (cfArrayRef, CFString.FetchString);
-			CFObject.CFRelease (cfArrayRef);
+			CFType.Release (cfArrayRef);
 			return languages;
 		}
 
@@ -1886,7 +1886,7 @@ namespace MonoMac.CoreText {
 			AssertLength ("characters", characters, count);
 			AssertLength ("glyphs",     characters, count);
 
-			return CTFontGetGlyphsForCharacters (handle, characters, glyphs, count);
+			return CTFontGetGlyphsForCharacters (Handle, characters, glyphs, count);
 		}
 
 		public bool GetGlyphsForCharacters (char[] characters, CGGlyph[] glyphs)
@@ -1920,67 +1920,67 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetAscent (IntPtr font);
 		public float AscentMetric {
-			get {return CTFontGetAscent (handle);}
+			get {return CTFontGetAscent (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetDescent (IntPtr font);
 		public float DescentMetric {
-			get {return CTFontGetDescent (handle);}
+			get {return CTFontGetDescent (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetLeading (IntPtr font);
 		public float LeadingMetric {
-			get {return CTFontGetLeading (handle);}
+			get {return CTFontGetLeading (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern uint CTFontGetUnitsPerEm (IntPtr font);
 		public uint UnitsPerEmMetric {
-			get {return CTFontGetUnitsPerEm (handle);}
+			get {return CTFontGetUnitsPerEm (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern int CTFontGetGlyphCount (IntPtr font);
 		public int GlyphCount {
-			get {return CTFontGetGlyphCount (handle);}
+			get {return CTFontGetGlyphCount (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern RectangleF CTFontGetBoundingBox (IntPtr font);
 		public RectangleF BoundingBox {
-			get {return CTFontGetBoundingBox (handle);}
+			get {return CTFontGetBoundingBox (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetUnderlinePosition (IntPtr font);
 		public float UnderlinePosition {
-			get {return CTFontGetUnderlinePosition (handle);}
+			get {return CTFontGetUnderlinePosition (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetUnderlineThickness (IntPtr font);
 		public float UnderlineThickness {
-			get {return CTFontGetUnderlineThickness (handle);}
+			get {return CTFontGetUnderlineThickness (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetSlantAngle (IntPtr font);
 		public float SlantAngle {
-			get {return CTFontGetSlantAngle (handle);}
+			get {return CTFontGetSlantAngle (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetCapHeight (IntPtr font);
 		public float CapHeightMetric {
-			get {return CTFontGetCapHeight (handle);}
+			get {return CTFontGetCapHeight (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTFontGetXHeight (IntPtr font);
 		public float XHeightMetric {
-			get {return CTFontGetXHeight (handle);}
+			get {return CTFontGetXHeight (Handle);}
 		}
 #endregion
 
@@ -1992,7 +1992,7 @@ namespace MonoMac.CoreText {
 			if (glyphName == null)
 				throw new ArgumentNullException ("glyphName");
 			using (NSString n = new NSString (glyphName))
-				return CTFontGetGlyphWithName (handle, n.Handle);
+				return CTFontGetGlyphWithName (Handle, n.Handle);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -2003,7 +2003,7 @@ namespace MonoMac.CoreText {
 			AssertLength ("glyphs",         glyphs, count);
 			AssertLength ("boundingRects",  boundingRects, count, true);
 
-			return CTFontGetBoundingRectsForGlyphs (handle, orientation, glyphs, boundingRects, count);
+			return CTFontGetBoundingRectsForGlyphs (Handle, orientation, glyphs, boundingRects, count);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -2015,7 +2015,7 @@ namespace MonoMac.CoreText {
 			AssertLength ("glyphs",         glyphs, count);
 			AssertLength ("boundingRects",  boundingRects, count, true);
 
-			return CTFontGetOpticalBoundsForGlyphs (handle, glyphs, boundingRects, count, 0);
+			return CTFontGetOpticalBoundsForGlyphs (Handle, glyphs, boundingRects, count, 0);
 		}
 
 		public RectangleF GetBoundingRects (CTFontOrientation orientation, CGGlyph[] glyphs)
@@ -2033,7 +2033,7 @@ namespace MonoMac.CoreText {
 			AssertLength ("glyphs",   glyphs, count);
 			AssertLength ("advances", advances, count, true);
 
-			return CTFontGetAdvancesForGlyphs (handle, orientation, glyphs, advances, count);
+			return CTFontGetAdvancesForGlyphs (Handle, orientation, glyphs, advances, count);
 		}
 
 		public double GetAdvancesForGlyphs (CTFontOrientation orientation, CGGlyph[] glyphs)
@@ -2051,14 +2051,14 @@ namespace MonoMac.CoreText {
 			AssertLength ("glyphs",       glyphs, count);
 			AssertLength ("translations", translations, count);
 
-			CTFontGetVerticalTranslationsForGlyphs (handle, glyphs, translations, count);
+			CTFontGetVerticalTranslationsForGlyphs (Handle, glyphs, translations, count);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTFontCreatePathForGlyph (IntPtr font, CGGlyph glyph, IntPtr transform);
 		public CGPath GetPathForGlyph (CGGlyph glyph)
 		{
-			var h = CTFontCreatePathForGlyph (handle, glyph, IntPtr.Zero);
+			var h = CTFontCreatePathForGlyph (Handle, glyph, IntPtr.Zero);
 			if (h == IntPtr.Zero)
 				return null;
 			return new CGPath (h, true);
@@ -2068,7 +2068,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCreatePathForGlyph (IntPtr font, CGGlyph glyph, ref CGAffineTransform transform);
 		public CGPath GetPathForGlyph (CGGlyph glyph, ref CGAffineTransform transform)
 		{
-			var h = CTFontCreatePathForGlyph (handle, glyph, ref transform);
+			var h = CTFontCreatePathForGlyph (Handle, glyph, ref transform);
 			if (h == IntPtr.Zero)
 				return null;
 			return new CGPath (h, true);
@@ -2089,7 +2089,7 @@ namespace MonoMac.CoreText {
 			int gl = glyphs.Length;
 			if (gl != positions.Length)
 				throw new ArgumentException ("array sizes fo context and glyphs differ");
-			CTFontDrawGlyphs (handle, glyphs, positions, gl, context.Handle);
+			CTFontDrawGlyphs (Handle, glyphs, positions, gl, context.Handle);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -2100,7 +2100,7 @@ namespace MonoMac.CoreText {
 		{
 			if (positions == null)
 				throw new ArgumentNullException ("positions");
-			return CTFontGetLigatureCaretPositions (handle, glyph, positions, positions.Length);
+			return CTFontGetLigatureCaretPositions (Handle, glyph, positions, positions.Length);
 		}
 #endregion
 
@@ -2109,12 +2109,12 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCopyVariationAxes (IntPtr font);
 		public CTFontVariationAxes[] GetVariationAxes ()
 		{
-			var cfArrayRef = CTFontCopyVariationAxes (handle);
+			var cfArrayRef = CTFontCopyVariationAxes (Handle);
 			if (cfArrayRef == IntPtr.Zero)
 				return new CTFontVariationAxes [0];
 			var axes = NSArray.ArrayFromHandle (cfArrayRef,
 					d => new CTFontVariationAxes ((NSDictionary) Runtime.GetNSObject (d)));
-			CFObject.CFRelease (cfArrayRef);
+			CFType.Release (cfArrayRef);
 			return axes;
 		}
 
@@ -2122,7 +2122,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCopyVariation (IntPtr font);
 		public CTFontVariation GetVariation ()
 		{
-			var cfDictionaryRef = CTFontCopyVariation (handle);
+			var cfDictionaryRef = CTFontCopyVariation (Handle);
 			if (cfDictionaryRef == IntPtr.Zero)
 				return null;
 			return new CTFontVariation ((NSDictionary) Runtime.GetNSObject (cfDictionaryRef));
@@ -2136,12 +2136,12 @@ namespace MonoMac.CoreText {
 		// Always returns only default features
 		public CTFontFeatures[] GetFeatures ()
 		{
-			var cfArrayRef = CTFontCopyFeatures (handle);
+			var cfArrayRef = CTFontCopyFeatures (Handle);
 			if (cfArrayRef == IntPtr.Zero)
 				return new CTFontFeatures [0];
 			var features = NSArray.ArrayFromHandle (cfArrayRef,
 					d => new CTFontFeatures ((NSDictionary) Runtime.GetNSObject (d)));
-			CFObject.CFRelease (cfArrayRef);
+			CFType.Release (cfArrayRef);
 			return features;
 		}
 
@@ -2150,12 +2150,12 @@ namespace MonoMac.CoreText {
 
 		public CTFontFeatureSettings[] GetFeatureSettings ()
 		{
-			var cfArrayRef = CTFontCopyFeatureSettings (handle);
+			var cfArrayRef = CTFontCopyFeatureSettings (Handle);
 			if (cfArrayRef == IntPtr.Zero)
 				return new CTFontFeatureSettings [0];
 			var featureSettings = NSArray.ArrayFromHandle (cfArrayRef,
 					d => new CTFontFeatureSettings ((NSDictionary) Runtime.GetNSObject (d)));
-			CFObject.CFRelease (cfArrayRef);
+			CFType.Release (cfArrayRef);
 			return featureSettings;
 		}
 #endregion
@@ -2165,7 +2165,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCopyGraphicsFont (IntPtr font, IntPtr attributes);
 		public CGFont ToCGFont (CTFontDescriptor attributes)
 		{
-			var h = CTFontCopyGraphicsFont (handle, attributes == null ? IntPtr.Zero : attributes.Handle);
+			var h = CTFontCopyGraphicsFont (Handle, attributes == null ? IntPtr.Zero : attributes.Handle);
 			if (h == IntPtr.Zero)
 				return null;
 			return new CGFont (h, true);
@@ -2182,13 +2182,13 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCopyAvailableTables (IntPtr font, CTFontTableOptions options);
 		public CTFontTable[] GetAvailableTables (CTFontTableOptions options)
 		{
-			var cfArrayRef = CTFontCopyAvailableTables (handle, options);
+			var cfArrayRef = CTFontCopyAvailableTables (Handle, options);
 			if (cfArrayRef == IntPtr.Zero)
 				return new CTFontTable [0];
 			var tables = NSArray.ArrayFromHandle (cfArrayRef, v => {
 					return (CTFontTable) (uint) v;
 			});
-			CFObject.CFRelease (cfArrayRef);
+			CFType.Release (cfArrayRef);
 			return tables;
 		}
 
@@ -2196,7 +2196,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTFontCopyTable (IntPtr font, CTFontTable table, CTFontTableOptions options);
 		public NSData GetFontTableData (CTFontTable table, CTFontTableOptions options)
 		{
-			IntPtr cfDataRef = CTFontCopyTable (handle, table, options);
+			IntPtr cfDataRef = CTFontCopyTable (Handle, table, options);
 			if (cfDataRef == IntPtr.Zero)
 				return null;
 			var d = new NSData (cfDataRef);
@@ -2206,7 +2206,7 @@ namespace MonoMac.CoreText {
 #endregion
 
 #region
-		[DllImport (Constants.CoreTextLibrary, EntryPoint="CTFontGetTypeID")]
+		[DllImport (Constants.CoreTextLibrary)]
 		extern static IntPtr CTFontCopyDefaultCascadeListForLanguages (IntPtr font, IntPtr languagePrefList);
 
 		[Since (6,0)]
@@ -2215,7 +2215,7 @@ namespace MonoMac.CoreText {
 			if (languages == null)
 				throw new ArgumentNullException ("languages");
 			using (var arr = NSArray.FromStrings (languages)){
-				using (var retArray = new CFArray (CTFontCopyDefaultCascadeListForLanguages (handle, arr.Handle), true)){
+				using (var retArray = new CFArray (CTFontCopyDefaultCascadeListForLanguages (Handle, arr.Handle), true)){
 					int n = retArray.Count;
 
 					var ret = new CTFontDescriptor [n];
@@ -2233,7 +2233,11 @@ namespace MonoMac.CoreText {
 			return FullName;
 		}
 
-		[DllImport (Constants.CoreTextLibrary, EntryPoint="CTFontGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.CoreTextLibrary)]
+		extern static uint CTFontGetTypeID ();
+
+		public static uint TypeID {
+			get { return CTFontGetTypeID (); }
+		}
 	}
 }

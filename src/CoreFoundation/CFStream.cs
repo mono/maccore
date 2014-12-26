@@ -131,8 +131,7 @@ namespace MonoMac.CoreFoundation {
 		Error
 	}
 
-	public abstract class CFStream : CFType, INativeObject, IDisposable {
-		IntPtr handle;
+	public abstract class CFStream : CFType {
 		GCHandle gch;
 		CFRunLoop loop;
 		NSString loopMode;
@@ -256,7 +255,7 @@ namespace MonoMac.CoreFoundation {
 		{
 			if (open || closed)
 				throw new InvalidOperationException ();
-			CheckHandle ();
+			ThrowIfDisposed ();
 			if (!DoOpen ()) {
 				CheckError ();
 				throw new InvalidOperationException ();
@@ -270,7 +269,7 @@ namespace MonoMac.CoreFoundation {
 		{
 			if (!open)
 				return;
-			CheckHandle ();
+			ThrowIfDisposed ();
 			if (loop != null) {
 				DoSetClient (null, 0, IntPtr.Zero);
 				UnscheduleFromRunLoop (loop, loopMode);
@@ -289,7 +288,7 @@ namespace MonoMac.CoreFoundation {
 
 		public CFStreamStatus GetStatus ()
 		{
-			CheckHandle ();
+			ThrowIfDisposed ();
 			return DoGetStatus ();
 		}
 
@@ -297,7 +296,7 @@ namespace MonoMac.CoreFoundation {
 
 		internal IntPtr GetProperty (NSString name)
 		{
-			CheckHandle ();
+			ThrowIfDisposed ();
 			return DoGetProperty (name);
 		}
 
@@ -307,7 +306,7 @@ namespace MonoMac.CoreFoundation {
 
 		internal void SetProperty (NSString name, INativeObject value)
 		{
-			CheckHandle ();
+			ThrowIfDisposed ();
 			if (DoSetProperty (name, value))
 				return;
 			throw new InvalidOperationException (string.Format (
@@ -413,7 +412,7 @@ namespace MonoMac.CoreFoundation {
 		{
 			if (open || closed || (loop != null))
 				throw new InvalidOperationException ();
-			CheckHandle ();
+			ThrowIfDisposed ();
 
 			loop = runLoop;
 			loopMode = runLoopMode;
@@ -442,43 +441,24 @@ namespace MonoMac.CoreFoundation {
 		                                     IntPtr context);
 
 		protected CFStream (IntPtr handle)
+			: base (handle, true)
 		{
-			this.handle = handle;
 			gch = GCHandle.Alloc (this);
-		}
-
-		protected void CheckHandle ()
-		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException (GetType ().Name);
 		}
 
 		~CFStream ()
 		{
 			Dispose (false);
 		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		protected virtual void Dispose (bool disposing)
+				
+		protected override void Dispose (bool disposing)
 		{
 			if (disposing) {
 				Close ();
 				if (gch.IsAllocated)
 					gch.Free ();
 			}
-			if (handle != IntPtr.Zero) {
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
+			base.Dispose (disposing);
 		}
 	}
 }

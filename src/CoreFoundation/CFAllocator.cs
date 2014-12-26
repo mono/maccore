@@ -33,7 +33,7 @@ using MonoMac.Foundation;
 using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreFoundation {	
-	public class CFAllocator : INativeObject, IDisposable 
+	public class CFAllocator : CFType
 	{
 		static CFAllocator Default_cf;
 		static CFAllocator SystemDefault_cf;
@@ -48,8 +48,6 @@ namespace MonoMac.CoreFoundation {
 		internal static readonly IntPtr null_ptr;
 		//static readonly IntPtr UseContextFlag;
 
-		IntPtr handle;
-		
 		static CFAllocator ()
 		{
 			var handle = Dlfcn.dlopen (Constants.CoreFoundationLibrary, 0);
@@ -66,38 +64,18 @@ namespace MonoMac.CoreFoundation {
 		}
 
 		public CFAllocator (IntPtr handle)
+			: this (handle, false)
 		{
-			this.handle = handle;
 		}
 
 		public CFAllocator (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-			this.handle = handle;
 		}
 
 		~CFAllocator ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get { return handle; }
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		public static CFAllocator Default {
@@ -135,7 +113,7 @@ namespace MonoMac.CoreFoundation {
 
 		public IntPtr Allocate (long size, CFAllocatorFlags hint = 0)
 		{
-			return CFAllocatorAllocate (handle, size, hint);
+			return CFAllocatorAllocate (Handle, size, hint);
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -143,7 +121,7 @@ namespace MonoMac.CoreFoundation {
 
 		public void Deallocate (IntPtr ptr)
 		{
-			CFAllocatorDeallocate (handle, ptr);
+			CFAllocatorDeallocate (Handle, ptr);
 		}
 
 		// TODO: Implement more methods

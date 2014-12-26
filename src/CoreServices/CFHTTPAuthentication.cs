@@ -35,54 +35,27 @@ using MonoMac.ObjCRuntime;
 
 namespace MonoMac.CoreServices {
 
-	public class CFHTTPAuthentication : CFType, INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CFHTTPAuthentication : CFType {
 		internal CFHTTPAuthentication (IntPtr handle)
 			: this (handle, false)
 		{
 		}
 
 		internal CFHTTPAuthentication (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (!owns)
-				CFObject.CFRetain (handle);
-			this.handle = handle;
 		}
 
-		[DllImport (Constants.CFNetworkLibrary, EntryPoint="CFHTTPAuthenticationGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.CFNetworkLibrary)]
+		extern static uint CFHTTPAuthenticationGetTypeID ();
+
+		public static uint TypeID {
+			get { return CFHTTPAuthenticationGetTypeID (); }
+		}
 
 		~CFHTTPAuthentication ()
 		{
 			Dispose (false);
-		}
-		
-		protected void CheckHandle ()
-		{
-			if (handle == IntPtr.Zero)
-				throw new ObjectDisposedException (GetType ().Name);
-		}
-
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		public IntPtr Handle {
-			get {
-				CheckHandle ();
-				return handle;
-			}
-		}
-		
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero) {
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		[DllImport (Constants.CFNetworkLibrary)]
@@ -104,7 +77,10 @@ namespace MonoMac.CoreServices {
 		extern static bool CFHTTPAuthenticationIsValid (IntPtr handle, IntPtr error);
 
 		public bool IsValid {
-			get { return CFHTTPAuthenticationIsValid (Handle, IntPtr.Zero); }
+			get {
+				ThrowIfDisposed ();
+				return CFHTTPAuthenticationIsValid (Handle, IntPtr.Zero);
+			}
 		}
 
 		[DllImport (Constants.CFNetworkLibrary)]
@@ -112,6 +88,7 @@ namespace MonoMac.CoreServices {
 
 		public bool AppliesToRequest (CFHTTPMessage request)
 		{
+			ThrowIfDisposed ();
 			if (!request.IsRequest)
 				throw new InvalidOperationException ();
 
@@ -122,21 +99,30 @@ namespace MonoMac.CoreServices {
 		extern static bool CFHTTPAuthenticationRequiresAccountDomain (IntPtr handle);
 
 		public bool RequiresAccountDomain {
-			get { return CFHTTPAuthenticationRequiresAccountDomain (Handle); }
+			get {
+				ThrowIfDisposed ();
+				return CFHTTPAuthenticationRequiresAccountDomain (Handle);
+			}
 		}
 
 		[DllImport (Constants.CFNetworkLibrary)]
 		extern static bool CFHTTPAuthenticationRequiresOrderedRequests (IntPtr handle);
 
 		public bool RequiresOrderedRequests {
-			get { return CFHTTPAuthenticationRequiresOrderedRequests (Handle); }
+			get {
+				ThrowIfDisposed ();
+				return CFHTTPAuthenticationRequiresOrderedRequests (Handle);
+			}
 		}
 
 		[DllImport (Constants.CFNetworkLibrary)]
 		extern static bool CFHTTPAuthenticationRequiresUserNameAndPassword (IntPtr handle);
 
 		public bool RequiresUserNameAndPassword {
-			get { return CFHTTPAuthenticationRequiresUserNameAndPassword (Handle); }
+			get {
+				ThrowIfDisposed ();
+				return CFHTTPAuthenticationRequiresUserNameAndPassword (Handle);
+			}
 		}
 
 		[DllImport (Constants.CFNetworkLibrary)]
@@ -144,6 +130,7 @@ namespace MonoMac.CoreServices {
 
 		public string GetMethod ()
 		{
+			ThrowIfDisposed ();
 			var ptr = CFHTTPAuthenticationCopyMethod (Handle);
 			if (ptr == IntPtr.Zero)
 				return null;

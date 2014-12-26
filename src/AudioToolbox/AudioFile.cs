@@ -293,7 +293,7 @@ namespace MonoMac.AudioToolbox {
 				return;
 
 			for (int i = 0; i < Count; ++i) {
-				CFObject.CFRelease (this [i].Name_cfstringref);
+				CFType.Release (this [i].Name_cfstringref);
 			}
 
 			Marshal.FreeHGlobal (ptr);
@@ -453,7 +453,7 @@ namespace MonoMac.AudioToolbox {
 				return;
 
 			for (int i = 0; i < Count; ++i) {
-				CFObject.CFRelease (this [i].NameWeak);
+				CFType.Release (this [i].NameWeak);
 			}
 
 			Marshal.FreeHGlobal (ptr);

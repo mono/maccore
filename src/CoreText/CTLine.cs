@@ -52,40 +52,15 @@ namespace MonoMac.CoreText {
     }
 	
 	[Since (3,2)]
-	public class CTLine : INativeObject, IDisposable {
-		internal IntPtr handle;
-
+	public class CTLine : CFType {
 		internal CTLine (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw ConstructorError.ArgumentNull (this, "handle");
-
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
-		}
-		
-		public IntPtr Handle {
-			get { return handle; }
 		}
 
 		~CTLine ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 #region Line Creation
@@ -96,9 +71,9 @@ namespace MonoMac.CoreText {
 			if (value == null)
 				throw ConstructorError.ArgumentNull (this, "value");
 
-			handle = CTLineCreateWithAttributedString (value.Handle);
+			Handle = CTLineCreateWithAttributedString (value.Handle);
 
-			if (handle == IntPtr.Zero)
+			if (Handle == IntPtr.Zero)
 				throw ConstructorError.Unknown (this);
 		}
 
@@ -106,7 +81,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTLineCreateTruncatedLine (IntPtr line, double width, CTLineTruncation truncationType, IntPtr truncationToken);
 		public CTLine GetTruncatedLine (double width, CTLineTruncation truncationType, CTLine truncationToken)
 		{
-			var h = CTLineCreateTruncatedLine (handle, width, truncationType,
+			var h = CTLineCreateTruncatedLine (Handle, width, truncationType,
 					truncationToken == null ? IntPtr.Zero : truncationToken.Handle);
 			if (h == IntPtr.Zero)
 				return null;
@@ -117,7 +92,7 @@ namespace MonoMac.CoreText {
 		static extern IntPtr CTLineCreateJustifiedLine (IntPtr line, float justificationFactor, double justificationWidth);
 		public CTLine GetJustifiedLine (float justificationFactor, double justificationWidth)
 		{
-			var h = CTLineCreateJustifiedLine (handle, justificationFactor, justificationWidth);
+			var h = CTLineCreateJustifiedLine (Handle, justificationFactor, justificationWidth);
 			if (h == IntPtr.Zero)
 				return null;
 			return new CTLine (h, true);
@@ -128,14 +103,14 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern int CTLineGetGlyphCount (IntPtr line);
 		public int GlyphCount {
-			get {return CTLineGetGlyphCount (handle);}
+			get {return CTLineGetGlyphCount (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern IntPtr CTLineGetGlyphRuns (IntPtr line);
 		public CTRun[] GetGlyphRuns ()
 		{
-			var cfArrayRef = CTLineGetGlyphRuns (handle);
+			var cfArrayRef = CTLineGetGlyphRuns (Handle);
 			if (cfArrayRef == IntPtr.Zero)
 				return new CTRun [0];
 
@@ -146,14 +121,14 @@ namespace MonoMac.CoreText {
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern NSRange CTLineGetStringRange (IntPtr line);
 		public NSRange StringRange {
-			get {return CTLineGetStringRange (handle);}
+			get {return CTLineGetStringRange (Handle);}
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern double CTLineGetPenOffsetForFlush (IntPtr line, float flushFactor, double flushWidth);
 		public double GetPenOffsetForFlush (float flushFactor, double flushWidth)
 		{
-			return CTLineGetPenOffsetForFlush (handle, flushFactor, flushWidth);
+			return CTLineGetPenOffsetForFlush (Handle, flushFactor, flushWidth);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -162,7 +137,7 @@ namespace MonoMac.CoreText {
 		{
 			if (context == null)
 				throw new ArgumentNullException ("context");
-			CTLineDraw (handle, context.Handle);
+			CTLineDraw (Handle, context.Handle);
 		}
 #endregion
 
@@ -173,7 +148,7 @@ namespace MonoMac.CoreText {
 		{
 			if (context == null)
 				throw new ArgumentNullException ("context");
-			return CTLineGetImageBounds (handle, context.Handle);
+			return CTLineGetImageBounds (Handle, context.Handle);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
@@ -181,27 +156,27 @@ namespace MonoMac.CoreText {
 		[Since (6,0)]
 		public RectangleF GetBounds (CTLineBoundsOptions options)
 		{
-			return CTLineGetBoundsWithOptions (handle, options);
+			return CTLineGetBoundsWithOptions (Handle, options);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern double CTLineGetTypographicBounds (IntPtr line, out float ascent, out float descent, out float leading);
 		public double GetTypographicBounds (out float ascent, out float descent, out float leading)
 		{
-			return CTLineGetTypographicBounds (handle, out ascent, out descent, out leading);
+			return CTLineGetTypographicBounds (Handle, out ascent, out descent, out leading);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern double CTLineGetTypographicBounds (IntPtr line, IntPtr ascent, IntPtr descent, IntPtr leading);
 		public double GetTypographicBounds ()
 		{
-			return CTLineGetTypographicBounds (handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+			return CTLineGetTypographicBounds (Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern double CTLineGetTrailingWhitespaceWidth (IntPtr line);
 		public double TrailingWhitespaceWidth {
-			get {return CTLineGetTrailingWhitespaceWidth (handle);}
+			get {return CTLineGetTrailingWhitespaceWidth (Handle);}
 		}
 #endregion
 
@@ -210,21 +185,21 @@ namespace MonoMac.CoreText {
 		static extern int CTLineGetStringIndexForPosition (IntPtr line, PointF position);
 		public int GetStringIndexForPosition (PointF position)
 		{
-			return CTLineGetStringIndexForPosition (handle, position);
+			return CTLineGetStringIndexForPosition (Handle, position);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTLineGetOffsetForStringIndex (IntPtr line, int charIndex, out float secondaryOffset);
 		public float GetOffsetForStringIndex (int charIndex, out float secondaryOffset)
 		{
-			return CTLineGetOffsetForStringIndex (handle, charIndex, out secondaryOffset);
+			return CTLineGetOffsetForStringIndex (Handle, charIndex, out secondaryOffset);
 		}
 
 		[DllImport (Constants.CoreTextLibrary)]
 		static extern float CTLineGetOffsetForStringIndex (IntPtr line, int charIndex, IntPtr secondaryOffset);
 		public float GetOffsetForStringIndex (int charIndex)
 		{
-			return CTLineGetOffsetForStringIndex (handle, charIndex, IntPtr.Zero);
+			return CTLineGetOffsetForStringIndex (Handle, charIndex, IntPtr.Zero);
 		}
 #endregion
 	}

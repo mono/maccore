@@ -356,7 +356,7 @@ namespace MonoMac.CoreMidi {
 			code = MIDIObjectGetStringProperty (handle, property, out val);
 			if (code == 0){
 				var ret = NSString.FromHandle (val);
-				CFObject.CFRelease (val);
+				CFType.Release (val);
 				return ret;
 			}
 			return null;

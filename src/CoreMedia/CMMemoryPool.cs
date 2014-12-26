@@ -17,10 +17,8 @@ using MonoMac.ObjCRuntime;
 namespace MonoMac.CoreMedia {
 
 	[Since (6,0)]
-	public class CMMemoryPool : IDisposable, INativeObject
+	public class CMMemoryPool : CFType
 	{
-		IntPtr handle;
-
 		static readonly IntPtr AgeOutPeriodSelector;
 		
 		static CMMemoryPool ()
@@ -38,7 +36,7 @@ namespace MonoMac.CoreMedia {
 
 		public CMMemoryPool ()
 		{
-			handle = CMMemoryPoolCreate (IntPtr.Zero);
+			Handle = CMMemoryPoolCreate (IntPtr.Zero);
 		}
 
 #if !COREBUILD
@@ -46,7 +44,7 @@ namespace MonoMac.CoreMedia {
 		{
 			using (var dict = new NSMutableDictionary ()) {
 				dict.LowlevelSetObject (AgeOutPeriodSelector, new NSNumber (ageOutPeriod.TotalSeconds).Handle);
-				handle = CMMemoryPoolCreate (dict.Handle);
+				Handle = CMMemoryPoolCreate (dict.Handle);
 			}
 		}
 #endif
@@ -54,26 +52,6 @@ namespace MonoMac.CoreMedia {
 		~CMMemoryPool ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (Handle != IntPtr.Zero){
-				CFObject.CFRelease (Handle);
-				handle = IntPtr.Zero;
-			}
-		}
-
-		public IntPtr Handle { 
-			get {
-				return handle;
-			}
 		}
 
 		[DllImport(Constants.CoreMediaLibrary)]

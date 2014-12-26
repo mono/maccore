@@ -38,9 +38,7 @@ using CFIndex = System.Int32;
 
 namespace MonoMac.CoreFoundation {
 	
-	class CFArray : INativeObject, IDisposable {
-
-		internal IntPtr handle;
+	class CFArray : CFType {
 
 		internal CFArray (IntPtr handle)
 			: this (handle, false)
@@ -49,39 +47,20 @@ namespace MonoMac.CoreFoundation {
 
 		[Preserve (Conditional = true)]
 		internal CFArray (IntPtr handle, bool owns)
+			: base (handle, owns)
 		{
-			if (handle == IntPtr.Zero)
-				throw new ArgumentNullException ("handle");
-
-			this.handle = handle;
-			if (!owns)
-				CFObject.CFRetain (handle);
-		}
-		
-		public IntPtr Handle {
-			get {return handle;}
 		}
 
-		[DllImport (Constants.CoreFoundationLibrary, EntryPoint="CFArrayGetTypeID")]
-		public extern static int GetTypeID ();
+		[DllImport (Constants.CoreFoundationLibrary)]
+		extern static uint CFArrayGetTypeID ();
+
+		public static uint TypeID {
+			get { return CFArrayGetTypeID (); }
+		}
 
 		~CFArray ()
 		{
 			Dispose (false);
-		}
-		
-		public void Dispose ()
-		{
-			Dispose (true);
-			GC.SuppressFinalize (this);
-		}
-
-		protected virtual void Dispose (bool disposing)
-		{
-			if (handle != IntPtr.Zero){
-				CFObject.CFRelease (handle);
-				handle = IntPtr.Zero;
-			}
 		}
 
 		// pointer to a const struct (REALLY APPLE?)
@@ -111,7 +90,7 @@ namespace MonoMac.CoreFoundation {
 		}
 
 		public int Count {
-			get {return CFArrayGetCount (handle);}
+			get {return CFArrayGetCount (Handle);}
 		}
 
 		[DllImport (Constants.CoreFoundationLibrary)]
@@ -122,7 +101,7 @@ namespace MonoMac.CoreFoundation {
 
 		public IntPtr GetValue (int index)
 		{
-			return CFArrayGetValueAtIndex (handle, new IntPtr (index));
+			return CFArrayGetValueAtIndex (Handle, new IntPtr (index));
 		}
 
 		public static unsafe IntPtr Create (params IntPtr[] values)

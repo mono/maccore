@@ -88,8 +88,8 @@ namespace MonoMac.CoreServices {
 				if (handle == IntPtr.Zero)
 					return null;
 
-				if (CFType.GetTypeID (handle) != CFUrl.GetTypeID ()) {
-					CFObject.CFRelease (handle);
+				if (CFType.GetTypeID (handle) != CFUrl.TypeID) {
+					CFType.Release (handle);
 					throw new InvalidCastException ();
 				}
 
@@ -104,8 +104,8 @@ namespace MonoMac.CoreServices {
 			if (handle == IntPtr.Zero)
 				return null;
 
-			if (CFType.GetTypeID (handle) != CFHTTPMessage.GetTypeID ()) {
-				CFObject.CFRelease (handle);
+			if (CFType.GetTypeID (handle) != CFHTTPMessage.TypeID) {
+				CFType.Release (handle);
 				throw new InvalidCastException ();
 			}
 
@@ -118,8 +118,8 @@ namespace MonoMac.CoreServices {
 			if (handle == IntPtr.Zero)
 				return null;
 
-			if (CFType.GetTypeID (handle) != CFHTTPMessage.GetTypeID ()) {
-				CFObject.CFRelease (handle);
+			if (CFType.GetTypeID (handle) != CFHTTPMessage.TypeID) {
+				CFType.Release (handle);
 				throw new InvalidCastException ();
 			}
 			return new CFHTTPMessage (handle);
