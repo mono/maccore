@@ -134,6 +134,9 @@ namespace MonoMac.Foundation
 		[Export("size")]
 		SizeF Size { get; }
 
+		[Field ("NSCursorAttributeName", "AppKit")]
+		NSString CursorAttributeName { get; }
+
 		[Field ("NSFontAttributeName", "AppKit")]
 		NSString FontAttributeName { get; }
 
