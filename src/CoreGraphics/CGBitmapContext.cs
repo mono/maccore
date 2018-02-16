@@ -108,7 +108,7 @@ namespace MonoMac.CoreGraphics {
 		[DllImport (Constants.CoreGraphicsLibrary)]
 		extern static IntPtr CGBitmapContextGetColorSpace (IntPtr cgContextRef);
 		public CGColorSpace ColorSpace {
-			get {return new CGColorSpace (CGBitmapContextGetColorSpace (Handle), true);}
+			get {return new CGColorSpace (CGBitmapContextGetColorSpace (Handle));}
 		}
 
 		[DllImport (Constants.CoreGraphicsLibrary)]
