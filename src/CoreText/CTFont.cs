@@ -1878,7 +1878,7 @@ namespace MonoMac.CoreText {
 			return languages;
 		}
 
-		[DllImport (Constants.CoreTextLibrary)]
+		[DllImport (Constants.CoreTextLibrary, CharSet = CharSet.Unicode)]
 		static extern bool CTFontGetGlyphsForCharacters (IntPtr font, [In] char[] characters, [Out] CGGlyph[] glyphs, int count);
 		public bool GetGlyphsForCharacters (char[] characters, CGGlyph[] glyphs, int count)
 		{
