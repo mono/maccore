@@ -23,9 +23,10 @@ namespace macdoc
 			// Default options
 			public Options ()
 			{
-				ImportSamples = true;
+				ImportSamples = false;
 				QuickSummaries = true;
 				CancellationToken = System.Threading.CancellationToken.None;
+				ThrowOnMissingTypeCount = 90;
 			}
 			
 			// Instruct the merger to take samples from a known repository and use them while merging to replace inline apple samples
@@ -59,6 +60,9 @@ namespace macdoc
 			
 			// Token used to end prematurely the process if needed
 			public CancellationToken CancellationToken { get; set; }
+
+			// Consider it an error (throw) if this many types or more were missing
+			public int ThrowOnMissingTypeCount { get; set; }
 		}
 		
 		class ProcessingContext
@@ -112,8 +116,8 @@ namespace macdoc
 				throw new ArgumentException (string.Format ("DocBase '{0}' isn't valid", options.DocBase), "options.DocBase");
 			
 			var dbPath = Path.Combine (options.DocBase, "..", "..", "docSet.dsidx");
-			if (!File.Exists (dbPath))
-				throw new ArgumentException ("DocBase doesn't contain a valid database file", "options.DocBase");
+				if (!File.Exists (dbPath))
+					throw new ArgumentException ("DocBase doesn't contain a valid database file", "options.DocBase");
 			db = new SQLiteConnection (dbPath);
 			
 			var samplesPath = string.IsNullOrEmpty (options.SamplesRepositoryPath) ? Path.Combine (options.DocBase, "samples.zip") : options.SamplesRepositoryPath;
@@ -172,7 +176,7 @@ namespace macdoc
 			if (!options.ImportSamples)
 				samples.Close (!options.DebugDocs);
 
-			if (numOfMissingAppleDocumentation > 90) {
+			if (numOfMissingAppleDocumentation > options.ThrowOnMissingTypeCount) {
 				throw new ApplicationException (string.Format ("Too many types were not found on this run ({0}), should be around 60-70 (mostly CoreImage, 3 UIKits, 2 CoreAnimation, 1 Foundation, 1 Bluetooth, 1 iAd",
 				                                               numOfMissingAppleDocumentation));
 			}
@@ -382,6 +386,9 @@ namespace macdoc
 		{
 			var path = db.CreateCommand ("select zkpath from znode join ztoken on znode.z_pk == ztoken.zparentnode where ztoken.ztokenname like \"" + t.Name + "\"").ExecuteScalar<string> ();
 			
+			if (path == null)
+				return null;
+
 			return Path.Combine (options.DocBase, "..", path);
 		}
 	
@@ -714,6 +721,9 @@ namespace macdoc
 				}
 				appledocpath = FixAppleDocPath (t, appledocpath);
 			}
+			if (context == null)
+				context = new ProcessingContext ();
+
 			context.CurrentAppleDocPath = appledocpath;
 			
 			return appledocpath;
